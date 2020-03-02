@@ -68,7 +68,7 @@ agencydeploy:
   only:
     - master
   script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.git-ce.rwth-aachen.de
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.git.rwth-aachen.de
     - docker tag agency registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/agency
     - docker push registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/agency
 
@@ -77,7 +77,7 @@ loggerdeploy:
   only:
     - master
   script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.git-ce.rwth-aachen.de
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.git.rwth-aachen.de
     - docker tag logger registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/logger
     - docker push registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/logger
 
@@ -86,6 +86,6 @@ dfdeploy:
   only:
     - master
   script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.git-ce.rwth-aachen.de
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.git.rwth-aachen.de
     - docker tag df registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/df
     - docker push registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/df
