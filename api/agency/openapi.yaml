@@ -1,0 +1,291 @@
+# Copyright 2020 Institute for Automation of Complex Power Systems,
+# E.ON Energy Research Center, RWTH Aachen University
+#
+# This project is licensed under either of
+# - Apache License, Version 2.0
+# - MIT License
+# at your option.
+#
+# Apache License, Version 2.0:
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# MIT License:
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+openapi: "3.0.0"
+info:
+  version: "1.0"
+  title: Agency
+  description: API of the Agency
+paths:
+  /api/agency:
+    get:
+      description: returns basic information about agency and agents
+      responses:
+        '200':
+          description: OK - agency information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgencyInfo'
+  /api/agency/agents:
+    post:
+      description: create and execute new agent
+      requestBody:
+        description: configuration of new agent
+        content:
+          applications/json:
+            schema:
+              $ref: '#/components/schemas/AgentInfo'
+        required: true
+      responses:
+        '201':
+          description: Created
+  /api/agency/msgs:
+    post:
+      description: post agent messages to agents that run in this agency
+      requestBody:
+        description: array of messages
+        content:
+          applications/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Message'
+        required: true
+      responses:
+        '201':
+          description: Created
+  /api/agency/msgundeliv:
+    post:
+      description: post message that could not be delivered
+      requestBody:
+        description: message
+        content:
+          applications/json:
+            schema:
+              $ref: '#/components/schemas/Message'
+        required: true
+      responses:
+        '201':
+          description: Created
+  /api/agency/agents/{agent-id}:
+    parameters:
+    - in: path
+      name: agent-id
+      description: ID of agent
+      required: true
+      schema:
+        type: integer
+    delete:
+      description: delete agent
+      responses:
+        '200':
+          description: succesful deletion
+  /api/agency/agents/{agent-id}/status:
+    parameters:
+    - in: path
+      name: agent-id
+      description: ID of agent
+      required: true
+      schema:
+        type: integer
+    get:
+      description: agent status
+      responses:
+        '200':
+          description: OK 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status' 
+components:
+  schemas:
+    AgencyInfo:
+      description: information about agency
+      properties:
+        spec:
+          description: spec of Agency
+          $ref: '#/components/schemas/AgencySpec'
+        status:
+          description: status of agency
+          $ref: '#/components/schemas/Status'
+    AgencySpec:
+      description: contains information about agency
+      properties:
+        masid:
+          description: ID of MAS
+          type: integer
+        name:
+          description: name of agency (hostname of pod given by Kubernetes)
+          type: string
+        id:
+          description: unique ID of agency
+          type: integer
+        log:
+          description: configuration of logging
+          $ref: '#/components/schemas/LogConfig'
+        agents:
+          description: list of all agents in agency
+          type: array
+          items:
+            type: integer
+    LogConfig:
+      description: contains information about agency
+      properties:
+        msg:
+          description: activation of msg log topic
+          type: boolean
+        app:
+          description: activation of app log topic
+          type: boolean
+        status:
+          description: activation of status log topic
+          type: boolean
+        debug:
+          description: activation of debug log topic
+          type: boolean
+    Status:
+      description: information about an agent's or agency's status
+      properties:
+        code:
+          description: status code
+          type: integer
+        lastupdate:
+          description: time of last update
+          type: date-time
+    AgentInfo:
+      description: detailed information about agent
+      properties:
+        spec:
+          description: spec of Agent
+          $ref: '#/components/schemas/AgentSpec'
+        address:
+          description: address of agent
+          $ref: '#/components/schemas/Address'
+        status:
+          description: status of agent
+          $ref: '#/components/schemas/Status'
+    AgentSpec:
+      description: contains information about a agent running in a MAS
+      properties:
+        masid:
+          description: ID of MAS
+          type: integer
+        agencyid:
+          description: ID of agency
+          type: integer
+        nodeid:
+          description: ID of node
+          type: integer
+        id:
+          description: unique ID of agent
+          type: integer
+        name: 
+          description: name/description of agent
+          type: string
+        type:
+          description: type of agent (application dependent)
+          type: string
+        subtype:
+          description: subtype of agent (application dependent)
+          type: string
+        custom:
+          description: custom agent specification
+          type: array
+          items:
+            type: byte
+    Address:
+      description: holds the address information of an agent
+      properties:
+        agency:
+          description: name of the agency
+          type: string
+    Message:
+      description: message for agent communication
+      properties:
+        ts:
+          description: sending time
+          type: date-time
+        perf:
+          description: Denotes the type of the communicative act of the ACL message
+          type: string
+        sender:
+          description: Denotes the identity of the sender of the message
+          type: integer
+        agencys:
+          description: Denotes the name of the sender agency
+          type: string
+        receiver:
+          description: Denotes the identity of the intended recipients of the message
+          type: integer
+        agencyr:
+          description: Denotes the name of the receiver agency
+          type: string
+        repto:
+          description: This parameter indicates that subsequent messages in this 
+                        conversation thread are to be directed to the agent named in the 
+                        reply-to parameter, instead of to the agent named in the sender 
+                        parameter
+          type: integer
+        content:
+          description: Denotes the content of the message
+          type: string
+        lang:
+          description: Denotes the language in which the content parameter is expressed
+          type: string
+        enc:
+          description: Denotes the specific encoding of the content language expression
+          type: string
+        ont:
+          description: Denotes the ontology(s) used to give a meaning to the symbols in 
+                        the content expression
+          type: string
+        prot:
+          description: Denotes the interaction protocol that the sending agent is 
+                        employing with this ACL message
+          type: string
+        convid:
+          description: Introduces an expression which is used to identify the ongoing 
+                        sequence of communicative acts that together form a conversation
+          type: integer
+        repwith:
+          description: Introduces an expression that will be used by the responding agent 
+                        to identify this message
+          type: string
+        inrepto:
+          description: Denotes an expression that references an earlier action to which 
+                        this message is a reply
+          type: string
+        repby:
+          description: Denotes a time and/or date expression which indicates the latest 
+                        time by which the sending agent would like to receive a reply
+          type: date-time

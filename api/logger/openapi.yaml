@@ -1,0 +1,268 @@
+# Copyright 2020 Institute for Automation of Complex Power Systems,
+# E.ON Energy Research Center, RWTH Aachen University
+#
+# This project is licensed under either of
+# - Apache License, Version 2.0
+# - MIT License
+# at your option.
+#
+# Apache License, Version 2.0:
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# MIT License:
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+openapi: "3.0.0"
+info:
+  version: "1.0"
+  title: Logger
+  description: API of the logger for state saving and logging
+paths:
+  /api/logging/{mas-id}/{agent-id}/{log-type}:
+    parameters:
+    - $ref: '#/components/parameters/masID'
+    - $ref: '#/components/parameters/agentID'
+    - $ref: '#/components/parameters/logType'
+    post:
+      description: create a new logging entry with specified log type
+      requestBody:
+        description: logging message
+        content:
+          applications/json:
+            schema:
+              $ref: '#/components/schemas/LogMessage'
+        required: true
+      responses:
+        '201':
+          description: Created
+  /api/logging/{mas-id}/list:
+    parameters:
+    - $ref: '#/components/parameters/masID'
+    post:
+        description: create new logging entries
+        requestBody:
+          description: logging messages
+          content:
+            applications/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LogMessage'
+          required: true
+        responses:
+          '201':
+            description: Created
+  /api/logging/{mas-id}/{agent-id}/{log-type}/latest/{num}:
+    parameters:
+    - $ref: '#/components/parameters/masID'
+    - $ref: '#/components/parameters/agentID'
+    - $ref: '#/components/parameters/logType'
+    - name: num
+      in: path
+      description: number of log messages
+      required: true
+      schema:
+        type: integer
+    get:
+      description: get num latest logging messages
+      responses:
+        '200':
+          description: OK - logging messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LogMessage'
+  /api/logging/{mas-id}/{agent-id}/{log-type}/time/{start}/{end}:
+    parameters:
+    - $ref: '#/components/parameters/masID'
+    - $ref: '#/components/parameters/agentID'
+    - $ref: '#/components/parameters/logType'
+    - name: start
+      in: path
+      description: start time of query
+      required: true
+      schema:
+        type: date-time
+    - name: end
+      in: path
+      description: end time of query
+      required: true
+      schema:
+        type: date-time
+    get:
+      description: get logging messages within specified time range
+      responses:
+        '200':
+          description: OK - logging messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LogMessage'
+#   /api/logging/{mas-id}/{agent-id}/comm:
+#     parameters:
+#     - $ref: '#/components/parameters/masID'
+#     - $ref: '#/components/parameters/agentID'
+#     put:
+#       description: update communication data
+#       requestBody:
+#         description: communication data
+#         content:
+#           applications/json:
+#             schema:
+#               type: array
+#               items:
+#                 $ref: '#/components/schemas/Communication'
+#         required: true
+#       responses:
+#         '201':
+#           description: Created
+#     get:
+#       description: get communication data
+#       responses:
+#         '200':
+#           description: OK - communication
+#           content:
+#             application/json:
+#               schema:
+#                 type: array
+#                 items:
+#                   $ref: '#/components/schemas/Communication'
+  /api/state/{mas-id}/{agent-id}:
+    parameters:
+    - $ref: '#/components/parameters/masID'
+    - $ref: '#/components/parameters/agentID'
+    get:
+      description: get state of agent
+      responses:
+        '200':
+          description: OK - agent state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/State'
+    put:
+      description: update agent state
+      requestBody:
+        description: new state
+        content:
+          applications/json:
+            schema:
+              $ref: '#/components/schemas/State'
+        required: true
+      responses:
+        '200':
+          description: OK - updated
+components:
+  parameters:
+    masID:
+      name: mas-id
+      in: path
+      description: ID of MAS
+      required: true
+      schema:
+        type: integer
+    agentID:
+      name: agent-id
+      in: path
+      description: ID of agent
+      required: true
+      schema:
+        type: integer
+    logType:
+      name: log-type
+      in: path
+      description: type of logging
+      required: true
+      schema:
+        type: string
+        enum: 
+          - error
+          - debug
+          - msg
+          - status
+          - app
+  schemas:
+    LogMessage:
+      description: information to be logged
+      properties:
+        masid: 
+          description: ID of MAS
+          type: integer
+        agentid:
+          description: ID of Agent
+          type: integer
+        logtype:
+          description: type of logging
+          type: string
+        timestamp:
+          description: time at which message was generated
+          type: date-time
+        msg:
+          description: message to be logged
+          type: string
+        data:
+          description: additional data
+          type: array
+          items:
+            type: byte
+    State:
+      description: state of agent
+      properties:
+        masid:
+          description: ID of MAS
+          type: integer
+        agentid:
+          description: ID of agent
+          type: integer
+        timestamp:
+          description: latest update time
+          type: date-time
+        state:
+          description: state of agent
+          type: array
+          items:
+            type: byte
+    Communication:
+      description: communication data
+      properties:
+        id:
+          description: id of other agent
+          type: integer
+        numsent:
+          description: number of messages sent to this agent
+          type: integer
+        numrecv:
+          description: number of messages recived from this agent
+          type: integer

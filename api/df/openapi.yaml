@@ -1,0 +1,248 @@
+# Copyright 2020 Institute for Automation of Complex Power Systems,
+# E.ON Energy Research Center, RWTH Aachen University
+#
+# This project is licensed under either of
+# - Apache License, Version 2.0
+# - MIT License
+# at your option.
+#
+# Apache License, Version 2.0:
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# MIT License:
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+openapi: "3.0.0"
+info:
+  version: "1.0"
+  title: Directory Facilitator
+  description: API of the DF
+paths:
+  /api/df/{mas-id}/svc:
+    parameters:
+    - $ref: '#/components/parameters/masID'
+    get:
+      description: returns all services within MAS
+      responses:
+        '200':
+          description: OK - services
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Service'
+    post:
+      description: register a new service in MAS
+      requestBody:
+        description: service to be registered
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Service'
+        required: true
+      responses:
+        '201':
+          description: Created
+  /api/df/{mas-id}/graph:
+    parameters:
+    - $ref: '#/components/parameters/masID'
+    get:
+      description: returns the graph of a mas
+      responses:
+        '200':
+          description: OK - graph
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Graph'
+    post:
+      description: update graph for MAS
+      requestBody:
+        description: new graph
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Graph'
+        required: true
+      responses:
+        '201':
+          description: Created
+  /api/df/{mas-id}/svc/desc/{desc}:
+    parameters:
+    - $ref: '#/components/parameters/masID'
+    get:
+      description: search for service in MAS
+      responses:
+        '200':
+          description: OK - all matching services
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Service'
+  /api/df/{mas-id}/svc/desc/{desc}/node/{node-id}/dist/{dist}:
+    parameters:
+    - $ref: '#/components/parameters/masID'
+    - $ref: '#/components/parameters/desc'
+    - $ref: '#/components/parameters/nodeID'
+    - $ref: '#/components/parameters/dist'
+    get:
+      description: search for service in MAS within specified distance
+      responses:
+        '200':
+          description: OK - all matching services
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Service'
+  /api/df/{mas-id}/svc/id/{svc-id}:
+    parameters:
+    - $ref: '#/components/parameters/masID'
+    - $ref: '#/components/parameters/svcID'
+    get:
+      description: returns service in MAS
+      responses:
+        '200':
+          description: OK - service
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+    delete:
+      description: deregisters service
+      responses:
+        '200':
+          description: succesful deletion
+components:
+  parameters:
+    masID:
+      name: mas-id
+      in: path
+      description: ID of MAS
+      required: true
+      schema:
+        type: integer
+    svcID:
+      name: svc-id
+      in: path
+      description: ID of service
+      required: true
+      schema:
+        type: integer
+    desc:
+      name: desc
+      in: path
+      description: description of service
+      required: true
+      schema:
+        type: string
+    nodeID:
+      name: node-id
+      in: path
+      description: ID of node
+      required: true
+      schema:
+        type: integer
+    dist:
+      name: dist
+      in: path
+      description: maximum distance from node
+      required: true
+      schema:
+        type: integer
+  schemas:
+    Service:
+      description: DF service
+      properties:
+        id:
+          description: id of service
+          type: integer
+        agid:
+          description: id of agent which registered service
+          type: integer
+        nodeid:
+          description: id of node
+          type: integer
+        masid:
+          description: id of MAS
+          type: integer
+        crat:
+          description: time of creation
+          type: date-time
+        chat:
+          description: time of last change
+          type: date-time
+        desc:
+          description: description of service
+          type: string
+        dist:
+          description: distance
+          type: float
+    Graph:
+      description: graph of MAS
+      properties:
+        node:
+          description: list of nodes
+          type: array
+          items:
+            $ref: '#/components/schemas/Node'
+        edge:
+          description: list of edges
+          type: array
+          items:
+            $ref: '#/components/schemas/Edge'
+    Node:
+      description: node of MAS graph
+      properties:
+        id:
+          description: id of node
+          type: integer
+        ags:
+          description: list of agents that are connected to node
+          type: array
+          items: 
+            type: integer
+    Edge:
+      description: edge between two graph nodes
+      properties:
+        n1:
+          description: id of first node
+          type: integer
+        n2:
+          description: id of second node
+          type: integer
+        weight:
+          description: weight of edge
+          type: float

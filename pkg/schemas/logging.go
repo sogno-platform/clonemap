@@ -1,0 +1,82 @@
+/*
+Copyright 2020 Institute for Automation of Complex Power Systems,
+E.ON Energy Research Center, RWTH Aachen University
+
+This project is licensed under either of
+- Apache License, Version 2.0
+- MIT License
+at your option.
+
+Apache License, Version 2.0:
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+MIT License:
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
+
+package schemas
+
+import (
+	"time"
+)
+
+// LogConfig contains configuration of logging service
+type LogConfig struct {
+	Msg    bool `json:"msg"`    // activation of msg log topic
+	App    bool `json:"app"`    // activation of app log topic
+	Status bool `json:"status"` // actication of status log topic
+	Debug  bool `json:"debug"`  // activation of debug log topic
+}
+
+// LogMessage contains data of a single agent log message
+type LogMessage struct {
+	MASID          int       `json:"masid"`          // ID of MAS agent runs in
+	AgentID        int       `json:"agentid"`        // ID of agent
+	Timestamp      time.Time `json:"timestamp"`      // time of message
+	LogType        string    `json:"logtype"`        // log type (error, debug, msg, status, app)
+	Message        string    `json:"msg"`            // log message
+	AdditionalData []byte    `json:"data,omitempty"` // additional information e.g in json
+}
+
+// State contains the state of an agent as byte array (json)
+type State struct {
+	MASID     int       `json:"masid"`     // ID of MAS agent runs in
+	AgentID   int       `json:"agentid"`   // ID of agent
+	Timestamp time.Time `json:"timestamp"` // time of state
+	State     []byte    `json:"state"`     // State
+}
+
+// Communication contains information regarding communication with another agent
+type Communication struct {
+	ID         int `json:"id"`      // id of other agent
+	NumMsgSent int `json:"numsent"` // number of messages sent to this agent
+	NumMsgRecv int `json:"numrecv"` // number of messages recived from this agent
+}

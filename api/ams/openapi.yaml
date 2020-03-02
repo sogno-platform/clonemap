@@ -1,0 +1,452 @@
+# Copyright 2020 Institute for Automation of Complex Power Systems,
+# E.ON Energy Research Center, RWTH Aachen University
+#
+# This project is licensed under either of
+# - Apache License, Version 2.0
+# - MIT License
+# at your option.
+#
+# Apache License, Version 2.0:
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# MIT License:
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+openapi: "3.0.0"
+info:
+  version: "1.0"
+  title: Agent Management System
+  description: API of the Agent Management System for user interaction with the MAS
+                and MAS-internal communication
+paths:
+  /api/clonemap:
+    get:
+      description: returns basic information about cloneMAP
+      responses:
+        '200':
+          description: OK - clonemap information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CloneMAP'
+  /api/clonemap/mas:
+    get:
+      description: returns list of running MASs
+      responses:
+        '200':
+          description: OK - list of MASs
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/MASs'
+    post:
+      description: create a new MAS ressource and sub-ressources
+      requestBody:
+        description: configuration of new MAS
+        content:
+          applications/json:
+            schema:
+              $ref: '#/components/schemas/MASConfig'
+        required: true
+      responses:
+        '201':
+          description: Created
+  /api/clonemap/mas/{mas-id}:
+    parameters:
+    - $ref: '#/components/parameters/masID'
+    get:
+      description: get static information and configuration of MAS
+      responses:
+        '200':
+          description: OK - information and configuration of MAS
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MASInfo'
+    delete:
+      description: delete MAS
+      responses:
+        '200':
+          description: succesful deletion
+  /api/clonemap/mas/{mas-id}/agents:
+    parameters:
+    - $ref: '#/components/parameters/masID'
+    get:
+      description: returns list of agents in MAS
+      responses:
+        '200':
+          description: OK - list of agents
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agents'
+    # post:
+    #   description: create new agent ressource
+    #   requestBody:
+    #     description: configuration of new agent
+    #     content:
+    #       applications/json:
+    #         schema:
+    #           $ref: '#/components/schemas/AgentSpec'
+    #     required: true
+    #   responses:
+    #     '201':
+    #       description: Created
+  /api/clonemap/mas/{mas-id}/agents/{agent-id}:
+    parameters:
+    - $ref: '#/components/parameters/masID'
+    - $ref: '#/components/parameters/agentID'
+    get:
+      description: information about agent
+      responses:
+        '200':
+          description: OK - information and configuration of agent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentInfo'
+    # delete:
+    #   description: delete agent
+    #   responses:
+    #     '200':
+    #       description: succesful deletion
+  /api/clonemap/mas/{mas-id}/agents/{agent-id}/address:
+    parameters:
+    - $ref: '#/components/parameters/masID'
+    - $ref: '#/components/parameters/agentID'
+    get:
+      description: get address information of agent for messaging purposes
+      responses:
+        '200':
+          description: OK - address information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+    put:
+      description: update address of agent
+      requestBody:
+        description: address
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Address'
+      responses:
+        '200':
+          description: OK - address update
+  /api/clonemap/mas/{mas-id}/agencies:
+    parameters:
+    - $ref: '#/components/parameters/masID'
+    get:
+      description: information about agencies
+      responses:
+        '200':
+          description: OK - list of agents
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agencies'
+  /api/clonemap/mas/{mas-id}/agencies/{agency-id}:
+    parameters:
+    - $ref: '#/components/parameters/masID'
+    - $ref: '#/components/parameters/agencyID'
+    get:
+      description: information about agency
+      responses:
+        '200':
+          description: OK - list of agents
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgencyConfig'
+components:
+  parameters:
+    masID:
+      name: mas-id
+      in: path
+      description: ID of MAS
+      required: true
+      schema:
+        type: integer
+    agentID:
+      name: agent-id
+      in: path
+      description: ID of agent
+      required: true
+      schema:
+        type: integer
+    agencyID:
+      name: agency-id
+      in: path
+      description: ID of agency
+      required: true
+      schema:
+        type: integer
+  schemas:
+    CloneMAP:
+      description: contains information about clonemap
+      properties:
+        version:
+          description: version of clonemap
+          type: string
+        uptime:
+          description: uptime of clonemap
+          type: date-time
+    MASSpec:
+      description: contains information about a MAS running in clonemap
+      properties:
+        id:
+          description: unique ID of MAS
+          type: integer
+        name:
+          description: name/description of MAS
+          type: string
+        registry:
+          description: docker registry
+          type: string
+        image:
+          description: docker image to be used for agencies
+          type: string
+        secret:
+          description: image pull secret
+          type: string
+        agentsperagency:
+          description: number of agents per agency
+          type: integer
+        log:
+          description: configuration of logging
+          $ref: '#/components/schemas/LogConfig'
+        uptime:
+          description: uptime
+          type: date-time
+    LogConfig:
+      description: contains information about agency
+      properties:
+        msg:
+          description: activation of msg log topic
+          type: boolean
+        app:
+          description: activation of app log topic
+          type: boolean
+        status:
+          description: activation of status log topic
+          type: boolean
+        debug:
+          description: activation of debug log topic
+          type: boolean
+    AgentSpec:
+      description: contains information about a agent running in a MAS
+      properties:
+        masid:
+          description: ID of MAS
+          type: integer
+        agencyid:
+          description: ID of agency
+          type: integer
+        nodeid:
+          description: ID of node
+          type: integer
+        id:
+          description: unique ID of agent
+          type: integer
+        name:
+          description: name/description of agent
+          type: string
+        type:
+          description: type of agent (application dependent)
+          type: string
+        subtype:
+          description: subtype of agent (application dependent)
+          type: string
+        custom:
+          description: custom agent specification
+          type: array
+          items:
+            type: byte
+    Address:
+      description: holds the address information of an agent
+      properties:
+        agency:
+          description: name of the agency
+          type: string
+    AgencySpec:
+      description: contains information about agency
+      properties:
+        masid:
+          description: ID of MAS
+          type: integer
+        name:
+          description: name of agency (hostname of pod given by Kubernetes)
+          type: string
+        id:
+          description: unique ID of agency
+          type: integer
+        log:
+          description: configuration of logging
+          $ref: '#/components/schemas/LogConfig'
+        agents:
+          description: list of all agents in agency
+          type: array
+          items:
+            type: integer
+    MASs:
+      description: contains informaton about how many MASs are running
+      properties:
+        counter:
+          description: number of running mas
+          type: integer
+        instances:
+          description: mass
+          type: array
+          items:
+            $ref: '#/components/schemas/MASSpec'
+    Agents:
+      description: contains informaton about how many agents are running
+      properties:
+        counter:
+          description: number of running agents
+          type: integer
+        instances:
+          description: agents
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentSpec'
+    Agencies:
+      description: contains informaton about how many agencies are running
+      properties:
+        counter:
+          description: number of running agencies
+          type: integer
+        instances:
+          description: agencies
+          type: array
+          items:
+            $ref: '#/components/schemas/AgencySpec'
+    MASInfo:
+      description: detailed information about MAS
+      properties:
+        spec:
+          description: spec of MAS
+          $ref: '#/components/schemas/MASSpec'
+        agents:
+          description: spec of agents
+          $ref: '#/components/schemas/Agents'
+        agencies:
+          description: spec of agencies
+          $ref: '#/components/schemas/Agencies'
+        status:
+          description: status of MAS
+          $ref: '#/components/schemas/Status'
+        graph:
+          description: graph of MAS
+          $ref: '#/components/schemas/Graph'
+    MASConfig:
+      description: contains information about mas to be started
+      properties:
+        spec:
+          description: spec of MAS
+          $ref: '#/components/schemas/MASSpec'
+        agents:
+          description: config of agents
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentSpec'
+        graph:
+          description: graph of MAS
+          $ref: '#/components/schemas/Graph'
+    AgentInfo:
+      description: detailed information about agent
+      properties:
+        spec:
+          description: spec of Agent
+          $ref: '#/components/schemas/AgentSpec'
+        address:
+          description: address of agent
+          $ref: '#/components/schemas/Address'
+        status:
+          description: status of agent
+          $ref: '#/components/schemas/Status'
+    AgencyConfig:
+      description: information about agency
+      properties:
+        spec:
+          description: spec of Agency
+          $ref: '#/components/schemas/AgencySpec'
+        agents:
+          description: all agents in agency
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentInfo'
+    Status:
+      description: information about an agent's or agency's status
+      properties:
+        code:
+          description: status code
+          type: integer
+        lastupdate:
+          description: time of last update
+          type: date-time
+    Graph:
+      description: stores one mas graph for topological search
+      properties:
+        node:
+          description: list of graph nodes
+          type: array
+          items:
+            $ref: '#/components/schemas/Node'
+        edge:
+          description: list of graph edges
+          type: array
+          items:
+            $ref: '#/components/schemas/Edge'
+    Node:
+      description: graph node
+      properties:
+        id:
+          description: unique ID of node
+          type: integer
+        ags:
+          description: list of agents attached to node
+          type: array
+          items:
+            type: integer
+    Edge:
+      description: one edge of graph
+      properties:
+        n1:
+          description: id of node 1
+          type: integer
+        n2:
+          description: id of node 2
+          type: integer
+        weight:
+          description: weight of edge
+          type: float
