@@ -1,0 +1,606 @@
+# Copyright 2020 Institute for Automation of Complex Power Systems,
+# E.ON Energy Research Center, RWTH Aachen University
+#
+# This project is licensed under either of
+# - Apache License, Version 2.0
+# - MIT License
+# at your option.
+#
+# Apache License, Version 2.0:
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# MIT License:
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+# ------------------- Namespace ------------------- #
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: clonemap
+---
+
+# ------------------- etcd Role ------------------- #
+
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: etcd-operator
+rules:
+- apiGroups:
+  - etcd.database.coreos.com
+  resources:
+  - etcdclusters
+  - etcdbackups
+  - etcdrestores
+  verbs:
+  - "*"
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - "*"
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - services
+  - endpoints
+  - persistentvolumeclaims
+  - events
+  verbs:
+  - "*"
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  verbs:
+  - "*"
+# The following permissions can be removed if not using S3 backup and TLS
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+---
+
+# ------------------- etcd Role Binding ------------------- #
+
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: etcd-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: etcd-operator
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: clonemap
+---
+
+# ------------------- etcd operator Deployment ------------------- #
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  namespace: clonemap
+  name: etcd-operator
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: etcd-operator
+    spec:
+      containers:
+      - name: etcd-operator
+        image: quay.io/coreos/etcd-operator:v0.9.2
+        command:
+        - etcd-operator
+        # Uncomment to act for resources in all namespaces. More information in doc/clusterwide.md
+        #- -cluster-wide
+        env:
+        - name: MY_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: MY_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+---
+
+# ------------------- etcd Cluster ------------------- #
+
+apiVersion: "etcd.database.coreos.com/v1beta2"
+kind: "EtcdCluster"
+metadata:
+  namespace: clonemap
+  name: "etcd-cluster"
+  ## Adding this annotation make this cluster managed by clusterwide operators
+  ## namespaced operators ignore it
+  # annotations:
+  #   etcd.database.coreos.com/scope: clusterwide
+spec:
+  size: 3
+  pod:
+    resources:
+      limits:
+        cpu: 300m
+        memory: 400Mi
+      requests:
+        cpu: 200m
+        memory: 300Mi
+version: "3.2.24"
+---
+
+# ------------------- mqtt cluster Service ------------------- #
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mqtt
+  namespace: clonemap
+  labels:
+    app: mosquitto
+spec:
+  ports:
+    - port: 1883
+      name: mqtt
+  clusterIP: None
+  selector:
+    app: mosquitto
+---
+
+# ------------------- mqtt external Service ------------------- #
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mqtt-np
+  namespace: clonemap
+  labels:
+    app: mosquitto
+spec:
+  type: NodePort
+  ports:
+    - port: 1883
+      protocol: TCP
+      nodePort: 31883
+      name: mqtt
+  selector:
+    app: mosquitto
+---
+
+# ------------------- mqtt ConfigMap ------------------- #
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mosquitto-config
+  namespace: clonemap
+data:
+  conf:
+    log_type none
+    log_dest none
+    set_tcp_nodelay true
+---
+
+# ------------------- mqtt Deployment ------------------- #
+
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: mosquitto
+  namespace: clonemap
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mosquitto
+    spec:
+      containers:
+      - name: mosquitto
+        image: eclipse-mosquitto
+        ports:
+          - containerPort: 1883
+        readinessProbe:
+          tcpSocket:
+            port: 1883
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        volumeMounts:
+        - name: config-volume
+          mountPath: /mosquitto/config
+      nodeSelector:
+        host: pan4
+      volumes:
+      - name: config-volume
+        configMap:
+          name: mosquitto-config
+          items:
+          - key: conf
+            path: mosquitto.conf
+---
+
+# ------------------- ams Service Account ------------------- #
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    k8s-app: ams
+  name: ams
+  namespace: clonemap
+---
+
+# ------------------- ams Role ------------------- #
+
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: ams-role
+  namespace: clonemap
+rules:
+- apiGroups: ["", "apps"]
+  resources: ["deployments", "pods", "services", "statefulsets"]
+  verbs: ["create", "get", "update", "delete", "list"]
+---
+
+# ------------------- ams RoleBinding ------------------- #
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ams
+  namespace: clonemap
+  labels:
+    k8s-app: ams
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: ams-role
+subjects:
+- kind: ServiceAccount
+  name: ams
+---
+
+# ------------------- ams Service ------------------- #
+
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: clonemap
+  name: ams
+  labels:
+    app: ams
+spec:
+  type: NodePort
+  ports:
+  - port: 9000
+    protocol: TCP
+    targetPort: ams-port
+    nodePort: 30009
+  selector:
+    app: ams
+    role: frontend
+---
+
+# ------------------- ams Deployment ------------------- #
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: clonemap
+  name: ams-deployment
+  labels:
+    app: ams
+spec:
+  selector:
+    matchLabels:
+      app: ams
+  template:
+    metadata:
+      namespace: clonemap
+      labels:
+        app: ams
+        role: frontend
+    spec:
+      containers:
+      - name: ams-container
+        image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/ams
+        env:
+          - name: CLONEMAP_DEPLOYMENT_TYPE
+            value: "production"
+          - name: CLONEMAP_RESOURCE_LIMITATION
+            value: "NO"
+          - name: CLONEMAP_STORAGE_TYPE
+            value: "etcd"
+          - name: CLONEMAP_LOG_LEVEL
+            value: "error"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "500m"
+          limits:
+            memory: "256Mi"
+            cpu: "600m"
+        ports:
+        - containerPort: 9000
+          name: ams-port
+        livenessProbe:
+          httpGet:
+            path: /api/clonemap
+            port: 9000
+          initialDelaySeconds: 30
+          timeoutSeconds: 20
+      serviceAccountName: ams
+---
+
+# ------------------- Cassandra configmap ------------------- #
+
+apiVersion: v1
+data:
+  cassandra-init.sh: |
+    cat >/import.cql <<EOF
+    CREATE KEYSPACE IF NOT EXISTS clonemap WITH replication = {'class': 'SimpleStrategy', 'replication_factor': '1'}  AND durable_writes = true;
+    CREATE TABLE clonemap.logging_error ( masid int, agentid int, t timestamp, log varchar, PRIMARY KEY ((masid, agentid), t)) WITH CLUSTERING ORDER BY (t ASC);
+    CREATE TABLE clonemap.logging_app ( masid int, agentid int, t timestamp, log varchar, PRIMARY KEY ((masid, agentid), t)) WITH CLUSTERING ORDER BY (t ASC);
+    CREATE TABLE clonemap.logging_msg ( masid int, agentid int, t timestamp, log varchar, PRIMARY KEY ((masid, agentid), t)) WITH CLUSTERING ORDER BY (t ASC);
+    CREATE TABLE clonemap.logging_status ( masid int, agentid int, t timestamp, log varchar, PRIMARY KEY ((masid, agentid), t)) WITH CLUSTERING ORDER BY (t ASC);
+    CREATE TABLE clonemap.logging_debug ( masid int, agentid int, t timestamp, log varchar, PRIMARY KEY ((masid, agentid), t)) WITH CLUSTERING ORDER BY (t ASC);
+    CREATE TABLE clonemap.state ( masid int, agentid int, state varchar, PRIMARY KEY (masid, agentid));
+    EOF
+
+    until cqlsh cassandra -f /import.cql; do
+    echo "cqlsh: Cassandra is unavailable to initialize - will retry later"
+    sleep 2
+    done
+kind: ConfigMap
+metadata:
+  name: cassinit
+  namespace: clonemap
+---
+
+# ------------------- Cassandra service ------------------- #
+
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: clonemap
+  name: cassandra
+  labels:
+    app: cass
+spec:
+  ports:
+  - port: 9042
+    protocol: TCP
+    targetPort: cql-port
+  selector:
+    app: cass
+---
+
+
+# ------------------- Cassandra deployment ------------------- #
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: clonemap
+  name: cass-deployment
+  labels:
+    app: cass
+spec:
+  selector:
+    matchLabels:
+      app: cass
+  template:
+    metadata:
+      namespace: clonemap
+      labels:
+        app: cass
+    spec:
+      containers:
+      - name: cass-container
+        image: cassandra
+        ports:
+        - containerPort: 7000
+          name: intra-node
+        - containerPort: 7001
+          name: tls-intra-node
+        - containerPort: 7199
+          name: jmx
+        - containerPort: 9042
+          name: cql-port
+---
+
+    # ------------------- Cassandra init job ------------------- #
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cassinit-job
+  namespace: clonemap
+spec:
+  ttlSecondsAfterFinished: 100
+  template:
+    spec:
+      containers:
+      - name: cassinit-container
+        image: cassandra
+        volumeMounts:
+        - name: init
+          mountPath: /cassinit
+        command: ["sh", "cassinit/cassandra-init.sh"]
+      restartPolicy: Never
+      volumes:
+      - name: init
+        configMap:
+          name: cassinit
+---
+
+# ------------------- logger Service ------------------- #
+
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: clonemap
+  name: logger
+  labels:
+    app: logger
+spec:
+  type: NodePort
+  ports:
+  - port: 11000
+    protocol: TCP
+    targetPort: logger-port
+    nodePort: 30011
+  selector:
+    app: logger
+    role: frontend
+---
+
+# ------------------- logger Deployment ------------------- #
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: clonemap
+  name: logger-deployment
+  labels:
+    app: logger
+spec:
+  selector:
+    matchLabels:
+      app: logger
+  template:
+    metadata:
+      namespace: clonemap
+      labels:
+        app: logger
+        role: frontend
+    spec:
+      containers:
+      - name: logger-container
+        image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/logger
+        env:
+          - name: CLONEMAP_DEPLOYMENT_TYPE
+            value: "production"
+          - name: CLONEMAP_LOG_LEVEL
+            value: "error"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "300m"
+          limits:
+            memory: "256Mi"
+            cpu: "400m"
+        ports:
+        - containerPort: 11000
+          name: logger-port
+        livenessProbe:
+          httpGet:
+            path: /api/logging/0/0/error/latest/1
+            port: 11000
+          initialDelaySeconds: 30
+          timeoutSeconds: 20
+---
+
+# ------------------- DF Service ------------------- #
+
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: clonemap
+  name: df
+  labels:
+    app: df
+spec:
+  type: NodePort
+  ports:
+  - port: 12000
+    protocol: TCP
+    targetPort: df-port
+    nodePort: 30012
+  selector:
+    app: df
+    role: frontend
+---
+
+# ------------------- df Deployment ------------------- #
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: clonemap
+  name: df-deployment
+  labels:
+    app: df
+spec:
+  selector:
+    matchLabels:
+      app: df
+  template:
+    metadata:
+      namespace: clonemap
+      labels:
+        app: df
+        role: frontend
+    spec:
+      containers:
+      - name: df-container
+        image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/df
+        env:
+          - name: CLONEMAP_DEPLOYMENT_TYPE
+            value: "production"
+          - name: CLONEMAP_LOG_LEVEL
+            value: "error"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "300m"
+          limits:
+            memory: "256Mi"
+            cpu: "400m"
+        ports:
+        - containerPort: 12000
+          name: df-port
+        livenessProbe:
+          httpGet:
+            path: /api/df/0/svc
+            port: 12000
+          initialDelaySeconds: 30
+          timeoutSeconds: 20
