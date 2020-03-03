@@ -42,6 +42,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+// Package httpretry implements methods for http requests which are repeated in case of errors.
 package httpretry
 
 import (
