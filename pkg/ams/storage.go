@@ -45,7 +45,7 @@ THE SOFTWARE.
 package ams
 
 // gives an interface for interaction with the storage (local or etcd). The Storage
-// stores the state of the AMS. This is MAS configuartion and MAS and agent status
+// stores the state of the AMS. This is MAS configuration and MAS and agent status
 
 import (
 	"errors"
@@ -98,7 +98,7 @@ type storage interface {
 	// deleteMAS deletes MAS with specified ID
 	deleteMAS(masID int) (err error)
 
-	// addAgent adds an agent to an exsiting MAS
+	// addAgent adds an agent to an existing MAS
 	addAgent(masID int, agentSpec schemas.AgentSpec) (err error)
 }
 
@@ -106,7 +106,7 @@ type storage interface {
 type CommData struct {
 	ID         int // id of other agent
 	NumMsgSent int // number of messages sent to this agent
-	NumMsgRecv int // number of messages recived from this agent
+	NumMsgRecv int // number of messages received from this agent
 }
 
 // information storage for local use of clonemap
@@ -385,7 +385,7 @@ func (stor *localStorage) deleteMAS(masID int) (err error) {
 	return
 }
 
-// addAgent adds an agent to an exsiting MAS
+// addAgent adds an agent to an existing MAS
 func (stor *localStorage) addAgent(masID int, agentSpec schemas.AgentSpec) (err error) {
 	return
 }

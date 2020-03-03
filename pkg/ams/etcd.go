@@ -269,7 +269,7 @@ func (stor *etcdStorage) deleteMAS(masID int) (err error) {
 	return
 }
 
-// addAgent adds an agent to an exsiting MAS
+// addAgent adds an agent to an existing MAS
 func (stor *etcdStorage) addAgent(masID int, agentSpec schemas.AgentSpec) (err error) {
 	return
 }

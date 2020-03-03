@@ -52,7 +52,7 @@ import (
 type LogConfig struct {
 	Msg    bool `json:"msg"`    // activation of msg log topic
 	App    bool `json:"app"`    // activation of app log topic
-	Status bool `json:"status"` // actication of status log topic
+	Status bool `json:"status"` // activation of status log topic
 	Debug  bool `json:"debug"`  // activation of debug log topic
 }
 
@@ -78,5 +78,5 @@ type State struct {
 type Communication struct {
 	ID         int `json:"id"`      // id of other agent
 	NumMsgSent int `json:"numsent"` // number of messages sent to this agent
-	NumMsgRecv int `json:"numrecv"` // number of messages recived from this agent
+	NumMsgRecv int `json:"numrecv"` // number of messages received from this agent
 }

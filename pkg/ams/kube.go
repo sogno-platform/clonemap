@@ -207,7 +207,7 @@ func (kube *kubeDeplyoment) createStatefulSet(masID int, image string, registry 
 			},
 		},
 	}
-	serv, err = servicesClient.Create(serv)
+	_, err = servicesClient.Create(serv)
 	if err != nil {
 		return
 	}
@@ -329,7 +329,7 @@ func (kube *kubeDeplyoment) createStatefulSet(masID int, image string, registry 
 			},
 		}
 		statefulsetclient := kube.clientset.Apps().StatefulSets("clonemap")
-		statefulset, err = statefulsetclient.Create(statefulset)
+		_, err = statefulsetclient.Create(statefulset)
 	}
 	return
 }

@@ -74,7 +74,7 @@ type ACL struct {
 // commData stores data about communication with other agent
 type commData struct {
 	numMsgSent int // number of messages sent to this agent
-	numMsgRecv int // number of messages recived from this agent
+	numMsgRecv int // number of messages received from this agent
 }
 
 // newACL creates a new ACL object

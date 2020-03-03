@@ -282,14 +282,19 @@ func (stor *etcdStorage) handleDFEvents() {
 				if len(path) == 3 {
 					if path[1] == "graph" {
 						err = stor.handleGraphEvents(masID, event.Kv)
+						if err != nil {
+							stor.logError.Println(err)
+							continue
+						}
 					}
 				} else if len(path) == 5 {
 					if path[1] == "mas" && path[3] == "svc" {
 						svcID := path[4]
+						err = stor.handleSvcEvents(masID, svcID, event.Kv)
 						if err != nil {
+							stor.logError.Println(err)
 							continue
 						}
-						err = stor.handleSvcEvents(masID, svcID, event.Kv)
 					}
 				}
 			}

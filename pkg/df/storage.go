@@ -245,7 +245,7 @@ func (stor *localStorage) searchServices(masID int, desc string) (svc []schemas.
 // searchLocalServices searches all services within a certain range from specified node
 func (stor *localStorage) searchLocalServices(masID int, nodeID int, dist float64,
 	desc string) (svc []schemas.Service, err error) {
-	nodes := make(map[int]float64)
+	var nodes map[int]float64
 	stor.mutex.Lock()
 	numMAS := len(stor.mas)
 	stor.mutex.Unlock()

@@ -128,7 +128,7 @@ func Get(client *http.Client, url string, delay time.Duration, numRetries int) (
 //Delete sends a delete request and retries in case of an error
 func Delete(client *http.Client, url string, body io.Reader, delay time.Duration,
 	numRetries int) (httpStatus int, err error) {
-	request := &http.Request{}
+	var request *http.Request
 	request, err = http.NewRequest("DELETE", url, nil)
 	resp := &http.Response{}
 	resp, err = client.Do(request)
@@ -156,7 +156,7 @@ func Delete(client *http.Client, url string, body io.Reader, delay time.Duration
 //Put sends a post request and retries in case of an error
 func Put(client *http.Client, url string, content []byte, delay time.Duration,
 	numRetries int) (body []byte, httpStatus int, err error) {
-	request := &http.Request{}
+	var request *http.Request
 	request, err = http.NewRequest("PUT", url, bytes.NewReader(content))
 	resp := &http.Response{}
 	resp, err = client.Do(request)
