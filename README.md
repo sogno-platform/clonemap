@@ -4,6 +4,8 @@ cloneMAP is a multi-agent platform (MAP) that is designed to run in a cloud envi
 The aim of this project is to combine the advantages of cloud computing and a distributed computing paradigm such as multi-agent systems.
 
 [![pipeline status](https://git.rwth-aachen.de/acs/public/cloud/mas/clonemap/badges/master/pipeline.svg)](git.rwth-aachen.de/acs/public/cloud/mas/clonemap/commits/master)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ## Overview
 
