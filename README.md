@@ -38,7 +38,13 @@ For easy user interaction it is planned to provide a WebUI that interacts with t
 
 ## Getting Started
 
-To get started with cloneMAP have a look at the installation requirements, the developer guide and the user guide.
+The following documentation is available for cloneMAP:
+
+- [Repository structure](docs/repo.md)
+- [Installation requirements](docs/installation.md)
+- [User guide](docs/user.md)
+
+Documentation of the code follows the [godoc](https://blog.golang.org/godoc-documenting-go-code) specification.
 
 ## Copyright
 
