@@ -16,17 +16,17 @@ cloneMAP consists of four modules. Each module is implemented in a scalable and 
 
 ### Core
 
-The *core* components of cloneMAP are the agent management system (AMS), an [etcd](https://coreos.com/etcd/) store and agencies. The AMS is responsible for managing all MASs and the corresponding agents running in cloneMAP. Typical tasks are agent creation, monitoring and termination. To allow the AMS to be horizontally scalable, its state (configuration and status information) is stored in an etcd cluster.
+The *core* components of cloneMAP are the agent management system (AMS), an [etcd](https://coreos.com/etcd/) store and agencies. The AMS ([API](api/ams/openapi.yaml)) is responsible for managing all MASs and the corresponding agents running in cloneMAP. Typical tasks are agent creation, monitoring and termination. To allow the AMS to be horizontally scalable, its state (configuration and status information) is stored in an etcd cluster.
 
-Agencies are the deployment unit for agents. Each agency hosts a specified number of agents. Agencies have the task to aggregate common operations in order to relieve the AMS. In Kubernetes terms an agency is a pod with one container. The agents are single go-routines executed within the agency.
+Agencies ([API](api/agency/openapi.yaml)) are the deployment unit for agents. Each agency hosts a specified number of agents. Agencies have the task to aggregate common operations in order to relieve the AMS. In Kubernetes terms an agency is a pod with one container. The agents are single go-routines executed within the agency.
 
 ### DF
 
-To provide agents with the ability to explore each other the so called directory facilitator (*DF*) is implemented. It consists of the scalable service registry and an etcd store. The same etcd cluster as for the AMS is used. The service registry provides functionalities such as registering, deregistering and searching for services. Hence, agents can us it as yellow pages service.
+To provide agents with the ability to explore each other the so called directory facilitator (*DF*) is implemented ([API](api/df/openapi.yaml)). It consists of the scalable service registry and an etcd store. The same etcd cluster as for the AMS is used. The service registry provides functionalities such as registering, deregistering and searching for services. Hence, agents can us it as yellow pages service.
 
 ### State and logging
 
-As agents usually have a certain state that changes over time, that state needs to be saved in order to make the platform robust. This is done by module *state and logging*. A DB service provides agents with a REST API for storing state and logs. Upon restart the agents can query the last state stored in the DB and continue their work from that point. A Cassandra DB is used as backend.
+As agents usually have a certain state that changes over time, that state needs to be saved in order to make the platform robust. This is done by module *state and logging*. A DB service provides agents with a [REST API](api/logger/openapi.yaml) for storing state and logs. Upon restart the agents can query the last state stored in the DB and continue their work from that point. A Cassandra DB is used as backend.
 
 ### IoT
 
@@ -57,7 +57,7 @@ This project is licensed under either of
 - Apache License, Version 2.0 ([LICENSE-Apache](LICENSE-Apache) or [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0))
 - MIT license ([LICENSE-MIT](LICENSE-MIT) or [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT))
 
-at you option.
+at your option.
 
 ## Contact
 
