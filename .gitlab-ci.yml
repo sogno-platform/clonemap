@@ -15,6 +15,12 @@ agencybuild:
     - export GOPATH=$HOME/go
     - docker build -f build/docker/agency/Dockerfile -t agency .
 
+benchmarkbuild:
+  stage: build
+  script:
+    - export GOPATH=$HOME/go
+    - docker build -f build/docker/benchmark/Dockerfile -t benchmark .
+
 loggerbuild:
   stage: build
   script:
@@ -71,6 +77,15 @@ agencydeploy:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.git.rwth-aachen.de
     - docker tag agency registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/agency
     - docker push registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/agency
+
+benchmarkdeploy:
+  stage: deploy
+  only:
+    - master
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.git.rwth-aachen.de
+    - docker tag benchmark registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/benchmark
+    - docker push registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/benchmark
 
 loggerdeploy:
   stage: deploy
