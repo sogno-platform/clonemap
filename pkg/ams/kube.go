@@ -294,7 +294,7 @@ func (kube *kubeDeplyoment) createStatefulSet(masID int, image string, registry 
 		}
 	}
 
-	if kube.deplType != "minikube" {
+	if kube.deplType != "minikube" && pullSecret != "" {
 		podSpec.ImagePullSecrets = []apicorev1.LocalObjectReference{
 			apicorev1.LocalObjectReference{
 				Name: pullSecret,
