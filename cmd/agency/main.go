@@ -61,10 +61,10 @@ func main() {
 
 func task(ag *agency.Agent) (err error) {
 	id := ag.GetAgentID()
-	ag.Logger.NewLog("app", "This is agent "+strconv.Itoa(id), nil)
+	ag.Logger.NewLog("app", "This is agent "+strconv.Itoa(id), "")
 	msg, _ := ag.ACL.NewMessage((id+1)%2, 0, 0, "Message from agent "+strconv.Itoa(id))
 	ag.ACL.SendMessage(msg)
 	msg, _ = ag.ACL.RecvMessageWait()
-	ag.Logger.NewLog("app", msg.Content, nil)
+	ag.Logger.NewLog("app", msg.Content, "")
 	return
 }

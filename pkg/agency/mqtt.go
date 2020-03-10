@@ -95,7 +95,7 @@ func (mq *MQTT) SendMessage(msg schemas.MQTTMessage, qos int) (err error) {
 	if err != nil {
 		return
 	}
-	err = mq.cmapLogger.NewLog("msg", "Sent MQTT message: "+string(msg.Content), msg.Content)
+	err = mq.cmapLogger.NewLog("msg", "Sent MQTT message: "+string(msg.Content), string(msg.Content))
 	return
 }
 
@@ -131,7 +131,7 @@ func (mq *MQTT) RecvMessageWait() (msg schemas.MQTTMessage, err error) {
 
 // newIncomingMQTTMessage adds message to channel for incoming messages
 func (mq *MQTT) newIncomingMQTTMessage(msg schemas.MQTTMessage) {
-	mq.cmapLogger.NewLog("msg", "Received MQTT message: "+string(msg.Content), msg.Content)
+	mq.cmapLogger.NewLog("msg", "Received MQTT message: "+string(msg.Content), string(msg.Content))
 	mq.mutex.Lock()
 	inbox, ok := mq.msgInTopic[msg.Topic]
 	mq.mutex.Unlock()

@@ -66,7 +66,7 @@ type Logger struct {
 }
 
 // NewLog sends a new logging message to the logging service
-func (log *Logger) NewLog(logType string, message string, data []byte) (err error) {
+func (log *Logger) NewLog(logType string, message string, data string) (err error) {
 	if logType != "error" && logType != "debug" && logType != "status" && logType != "msg" &&
 		logType != "app" {
 		err = errors.New("UnknownLogType")
@@ -93,7 +93,7 @@ func (log *Logger) NewLog(logType string, message string, data []byte) (err erro
 }
 
 // UpdateState overrides the state stored in database
-func (log *Logger) UpdateState(state []byte) (err error) {
+func (log *Logger) UpdateState(state string) (err error) {
 	agState := schemas.State{
 		MASID:     log.client.masID,
 		AgentID:   log.agentID,
@@ -104,7 +104,7 @@ func (log *Logger) UpdateState(state []byte) (err error) {
 }
 
 // RestoreState loads state saved in database and return it
-func (log *Logger) RestoreState() (state []byte, err error) {
+func (log *Logger) RestoreState() (state string, err error) {
 	var agState schemas.State
 	agState, _, err = client.GetState(log.client.masID, log.agentID)
 	state = agState.State

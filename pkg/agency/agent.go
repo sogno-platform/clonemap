@@ -63,7 +63,7 @@ type Agent struct {
 	name     string  // Name of agent
 	aType    string  // Type of agent
 	aSubtype string  // Subtype of agent
-	custom   []byte  // custom data
+	custom   string  // custom data
 	masID    int     // ID of MAS agent is belongs to
 	status   int     // Status of agent
 	ACL      *ACL    // agent communication
@@ -126,7 +126,7 @@ func (agent *Agent) GetAgentName() (ret string) {
 }
 
 // GetCustomData returns custom data
-func (agent *Agent) GetCustomData() (ret []byte) {
+func (agent *Agent) GetCustomData() (ret string) {
 	ret = agent.custom
 	return
 }

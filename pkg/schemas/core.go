@@ -81,7 +81,7 @@ type AgentSpec struct {
 	Name     string `json:"name,omitempty"`    // name/description of agent
 	AType    string `json:"type,omitempty"`    // type of agent (application dependent)
 	ASubtype string `json:"subtype,omitempty"` // subtype of agent (application dependent)
-	Custom   []byte `json:"custom,omitempty"`  // custom configuration data
+	Custom   string `json:"custom,omitempty"`  // custom configuration data
 }
 
 // Address holds the address information of an agent

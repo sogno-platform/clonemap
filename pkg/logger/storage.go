@@ -46,10 +46,11 @@ package logger
 
 import (
 	"errors"
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 	"sort"
 	"sync"
 	"time"
+
+	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 )
 
 // storage is the interface for logging and state storage (either local or in db)
@@ -88,7 +89,7 @@ type storage interface {
 type LogMessage struct {
 	Timestamp time.Time
 	Message   string
-	Data      []byte
+	Data      string
 }
 
 // IDs of agents and mas correspond to index in slices!
@@ -385,7 +386,7 @@ func (stor *localStorage) deleteAgentState(masID int, agentID int) (err error) {
 	stor.mutex.Lock()
 	if masID < len(stor.mas) {
 		if agentID < len(stor.mas[masID].agents) {
-			stor.mas[masID].agents[agentID].state.State = nil
+			stor.mas[masID].agents[agentID].state.State = ""
 		}
 	}
 	stor.mutex.Unlock()

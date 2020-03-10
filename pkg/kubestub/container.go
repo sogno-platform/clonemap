@@ -92,6 +92,7 @@ func (stub *LocalStub) createAMS() (err error) {
 		com += " -e CLONEMAP_DEPLOYMENT_TYPE=\"local\""
 		com += " -e CLONEMAP_STORAGE_TYPE=\"local\""
 		com += " -e CLONEMAP_SUFFIX=\".clonemap\""
+		com += " -e CLONEMAP_LOG_LEVEL=\"error\""
 		com += " ams"
 		cmd := exec.Command("bash", "-c", com)
 		cmdOut, err := cmd.Output()
@@ -128,6 +129,7 @@ func (stub *LocalStub) createLogger() (err error) {
 	com += " --hostname=logger"
 	com += " --network=clonemap-net"
 	com += " -e CLONEMAP_DEPLOYMENT_TYPE=\"local\""
+	com += " -e CLONEMAP_LOG_LEVEL=\"error\""
 	com += " logger"
 	cmd := exec.Command("bash", "-c", com)
 	cmdOut, err := cmd.Output()
@@ -163,6 +165,7 @@ func (stub *LocalStub) createDF() (err error) {
 	com += " --hostname=df"
 	com += " --network=clonemap-net"
 	com += " -e CLONEMAP_DEPLOYMENT_TYPE=\"local\""
+	com += " -e CLONEMAP_LOG_LEVEL=\"error\""
 	com += " df"
 	cmd := exec.Command("bash", "-c", com)
 	cmdOut, err := cmd.Output()
@@ -249,6 +252,7 @@ func (stub *LocalStub) createAgency(image string, agents int, masID int, agencyI
 	} else {
 		com += " -e CLONEMAP_DF=\"OFF\" "
 	}
+	com += " -e CLONEMAP_LOG_LEVEL=\"error\" "
 
 	com += image
 	cmd := exec.Command("bash", "-c", com)

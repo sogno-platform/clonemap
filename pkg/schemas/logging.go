@@ -63,7 +63,7 @@ type LogMessage struct {
 	Timestamp      time.Time `json:"timestamp"`      // time of message
 	LogType        string    `json:"logtype"`        // log type (error, debug, msg, status, app)
 	Message        string    `json:"msg"`            // log message
-	AdditionalData []byte    `json:"data,omitempty"` // additional information e.g in json
+	AdditionalData string    `json:"data,omitempty"` // additional information e.g in json
 }
 
 // State contains the state of an agent as byte array (json)
@@ -71,7 +71,7 @@ type State struct {
 	MASID     int       `json:"masid"`     // ID of MAS agent runs in
 	AgentID   int       `json:"agentid"`   // ID of agent
 	Timestamp time.Time `json:"timestamp"` // time of state
-	State     []byte    `json:"state"`     // State
+	State     string    `json:"state"`     // State
 }
 
 // Communication contains information regarding communication with another agent

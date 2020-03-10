@@ -69,7 +69,7 @@ type CustomAgentData struct {
 // Task switches the right benchmark task
 func Task(ag *agency.Agent) (err error) {
 	var config CustomAgentData
-	err = json.Unmarshal(ag.GetCustomData(), &config)
+	err = json.Unmarshal([]byte(ag.GetCustomData()), &config)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -97,7 +97,7 @@ func Task(ag *agency.Agent) (err error) {
 func pingPong(ag *agency.Agent, config CustomAgentData) (err error) {
 	// d := time.Until(config.StartTime)
 	err = ag.Logger.NewLog("status", "Starting PingPong Behavior; Peer: "+
-		strconv.Itoa(config.PeerID)+", Start: "+strconv.FormatBool(config.Start), nil)
+		strconv.Itoa(config.PeerID)+", Start: "+strconv.FormatBool(config.Start), "")
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -158,7 +158,7 @@ func pingPong(ag *agency.Agent, config CustomAgentData) (err error) {
 		avg = sum / len(rtts)
 		js, _ := json.Marshal(rtts)
 		err = ag.Logger.NewLog("status", "RTT in µs: min: "+strconv.Itoa(min)+", max: "+
-			strconv.Itoa(max)+", avg: "+strconv.Itoa(avg), js)
+			strconv.Itoa(max)+", avg: "+strconv.Itoa(avg), string(js))
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -198,7 +198,7 @@ func pingPong(ag *agency.Agent, config CustomAgentData) (err error) {
 // cpuLoad is the task function for a benchmark with high cpu load
 func cpuLoad(ag *agency.Agent, config CustomAgentData) (err error) {
 	err = ag.Logger.NewLog("status", "Starting CPU Load Behavior; Peer: "+
-		strconv.Itoa(config.PeerID)+", Start: "+strconv.FormatBool(config.Start), nil)
+		strconv.Itoa(config.PeerID)+", Start: "+strconv.FormatBool(config.Start), "")
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -248,7 +248,7 @@ func communication(ag *agency.Agent, config CustomAgentData) (err error) {
 
 func dfBench(ag *agency.Agent, config CustomAgentData) (err error) {
 	err = ag.Logger.NewLog("status", "Starting DF Behavior; Peer: "+
-		strconv.Itoa(config.PeerID)+", Start: "+strconv.FormatBool(config.Start), nil)
+		strconv.Itoa(config.PeerID)+", Start: "+strconv.FormatBool(config.Start), "")
 	if err != nil {
 		return
 	}
@@ -299,29 +299,29 @@ func dfBench(ag *agency.Agent, config CustomAgentData) (err error) {
 	}
 
 	js, _ := json.Marshal(rtts)
-	err = ag.Logger.NewLog("status", "Total time in µs: "+strconv.Itoa(rtts[10]), js)
+	err = ag.Logger.NewLog("status", "Total time in µs: "+strconv.Itoa(rtts[10]), string(js))
 
 	return
 }
 
 func stateTest(ag *agency.Agent, config CustomAgentData) (err error) {
 	time.Sleep(time.Second * 10)
-	err = ag.Logger.NewLog("status", "Starting state test Behavior", nil)
+	err = ag.Logger.NewLog("status", "Starting state test Behavior", "")
 	if err != nil {
 		return
 	}
-	var state []byte
+	var state string
 	state, err = ag.Logger.RestoreState()
 	if err != nil {
 		return
 	}
-	if state == nil {
-		err = ag.Logger.NewLog("status", "No previous state", nil)
+	if state == "" {
+		err = ag.Logger.NewLog("status", "No previous state", "")
 		if err != nil {
 			return
 		}
 	}
-	state = []byte("test state")
+	state = "test state"
 	err = ag.Logger.UpdateState(state)
 	if err != nil {
 		return
@@ -330,6 +330,6 @@ func stateTest(ag *agency.Agent, config CustomAgentData) (err error) {
 	if err != nil {
 		return
 	}
-	err = ag.Logger.NewLog("status", "State: "+string(state), nil)
+	err = ag.Logger.NewLog("status", "State: "+string(state), "")
 	return
 }
