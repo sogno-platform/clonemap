@@ -50,7 +50,7 @@ metadata:
 
 # ------------------- etcd Role ------------------- #
 
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: etcd-operator
@@ -96,7 +96,7 @@ rules:
 
 # ------------------- etcd Role Binding ------------------- #
 
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: etcd-operator
@@ -112,13 +112,16 @@ subjects:
 
 # ------------------- etcd operator Deployment ------------------- #
 
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: clonemap
   name: etcd-operator
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      name: etcd-operator
   template:
     metadata:
       labels:
@@ -220,13 +223,16 @@ data:
 
 # ------------------- mqtt Deployment ------------------- #
 
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mosquitto
   namespace: clonemap
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: mosquitto
   template:
     metadata:
       labels:
