@@ -229,9 +229,6 @@ components:
         name:
           description: name/description of MAS
           type: string
-        registry:
-          description: docker registry
-          type: string
         image:
           description: docker image to be used for agencies
           type: string

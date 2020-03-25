@@ -130,7 +130,6 @@ func dummyClient(s *http.Server, t *testing.T) {
 		Spec: schemas.MASSpec{
 			Name:               "test",
 			AgencyImage:        "agent",
-			DockerRegistry:     "registry.git.rwth-aachen.de/acs/research/ensure/clonemap/clonemap",
 			ImagePullSecret:    "",
 			NumAgentsPerAgency: 10,
 			Logging:            false,

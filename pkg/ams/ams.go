@@ -226,8 +226,8 @@ func (ams *AMS) startMAS(masID int, masInfo schemas.MASInfo, numAgencies int) (e
 	}
 
 	// deploy containers
-	err = ams.depl.newMAS(masID, masInfo.Spec.AgencyImage, masInfo.Spec.DockerRegistry,
-		masInfo.Spec.ImagePullSecret, numAgencies, masInfo.Spec.Logging, masInfo.Spec.MQTT,
+	err = ams.depl.newMAS(masID, masInfo.Spec.AgencyImage, masInfo.Spec.ImagePullSecret,
+		numAgencies, masInfo.Spec.Logging, masInfo.Spec.MQTT,
 		masInfo.Spec.DF)
 	if err != nil {
 		ams.logError.Println(err.Error())

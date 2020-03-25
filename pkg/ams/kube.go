@@ -70,7 +70,7 @@ type kubeDeplyoment struct {
 }
 
 // newMAS triggers the cluster manager to start new agency containers
-func (kube *kubeDeplyoment) newMAS(masID int, image string, registry string, pullSecret string,
+func (kube *kubeDeplyoment) newMAS(masID int, image string, pullSecret string,
 	numAgencies int, logging bool, mqtt bool, df bool) (err error) {
 	var exist bool
 	exist, err = kube.existStatefulSet(masID)
@@ -93,8 +93,8 @@ func (kube *kubeDeplyoment) newMAS(masID int, image string, registry string, pul
 				dfEnv = "OFF"
 			}
 
-			err = kube.createStatefulSet(masID, image, registry, pullSecret, numAgencies,
-				loggingEnv, mqttEnv, dfEnv)
+			err = kube.createStatefulSet(masID, image, pullSecret, numAgencies, loggingEnv, mqttEnv,
+				dfEnv)
 		} else {
 			// error
 		}
@@ -185,8 +185,8 @@ func (kube *kubeDeplyoment) getCPUCapacity() (cap int, err error) {
 
 // createStatefulSet creates a new headless service and a statefulset for agencies if it has not
 // been created yet
-func (kube *kubeDeplyoment) createStatefulSet(masID int, image string, registry string,
-	pullSecret string, numAgencies int, loggingEnv string, mqttEnv string,
+func (kube *kubeDeplyoment) createStatefulSet(masID int, image string, pullSecret string,
+	numAgencies int, loggingEnv string, mqttEnv string,
 	dfEnv string) (err error) {
 	// create service
 	servicesClient := kube.clientset.Core().Services("clonemap")
@@ -217,7 +217,6 @@ func (kube *kubeDeplyoment) createStatefulSet(masID int, image string, registry 
 	if kube.deplType == "minikube" {
 		pullPolicy = "IfNotPresent"
 	} else {
-		image = registry + "/" + image
 		pullPolicy = "Always"
 	}
 	podSpec := apicorev1.PodSpec{

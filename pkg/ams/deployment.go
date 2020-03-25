@@ -61,8 +61,8 @@ import (
 
 // deployment interface for interaction with storage
 type deployment interface {
-	newMAS(masID int, image string, registry string, pullSecret string, numAgencies int,
-		logging bool, mqtt bool, df bool) (err error)
+	newMAS(masID int, image string, pullSecret string, numAgencies int, logging bool, mqtt bool,
+		df bool) (err error)
 	scaleMAS(masID int, deltaAgencies int) (err error)
 	deleteMAS(masID int) (err error)
 }
@@ -73,8 +73,8 @@ type localDeployment struct {
 }
 
 // newMAS triggers the cluster manager to start new agency containers
-func (localdepl *localDeployment) newMAS(masID int, image string, registry string,
-	pullSecret string, numAgencies int, logging bool, mqtt bool, df bool) (err error) {
+func (localdepl *localDeployment) newMAS(masID int, image string, pullSecret string,
+	numAgencies int, logging bool, mqtt bool, df bool) (err error) {
 	for i := 0; i < numAgencies; i++ {
 		temp := schemas.StubAgencyConfig{
 			MASID:     masID,

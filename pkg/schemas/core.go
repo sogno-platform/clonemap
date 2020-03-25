@@ -60,7 +60,6 @@ type CloneMAP struct {
 type MASSpec struct {
 	ID                 int    `json:"id"`                        // unique ID of MAS
 	Name               string `json:"name,omitempty"`            // name/description of MAS
-	DockerRegistry     string `json:"registry"`                  // docker registry
 	AgencyImage        string `json:"image"`                     // docker image to be used for agencies
 	ImagePullSecret    string `json:"secret,omitempty"`          // image pull secret
 	NumAgentsPerAgency int    `json:"agentsperagency,omitempty"` // number of agents per agency
