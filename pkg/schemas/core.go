@@ -60,8 +60,6 @@ type CloneMAP struct {
 type MASSpec struct {
 	ID                 int    `json:"id"`                        // unique ID of MAS
 	Name               string `json:"name,omitempty"`            // name/description of MAS
-	AgencyImage        string `json:"image"`                     // docker image to be used for agencies
-	ImagePullSecret    string `json:"secret,omitempty"`          // image pull secret
 	NumAgentsPerAgency int    `json:"agentsperagency,omitempty"` // number of agents per agency
 	Logging            bool   `json:"logging"`                   // switch for logging module
 	// Analysis           bool      `json:"analysis"`                  // switch for analysis logging
@@ -73,14 +71,16 @@ type MASSpec struct {
 
 // AgentSpec contains information about a agent running in a MAS
 type AgentSpec struct {
-	MASID    int    `json:"masid"`             // ID of MAS
-	AgencyID int    `json:"agencyid"`          // name of the agency
-	NodeID   int    `json:"nodeid"`            // id of the node the agent is attached to
-	ID       int    `json:"id"`                // unique ID of agent
-	Name     string `json:"name,omitempty"`    // name/description of agent
-	AType    string `json:"type,omitempty"`    // type of agent (application dependent)
-	ASubtype string `json:"subtype,omitempty"` // subtype of agent (application dependent)
-	Custom   string `json:"custom,omitempty"`  // custom configuration data
+	MASID           int    `json:"masid"`             // ID of MAS
+	AgencyID        int    `json:"agencyid"`          // name of the agency
+	NodeID          int    `json:"nodeid"`            // id of the node the agent is attached to
+	ID              int    `json:"id"`                // unique ID of agent
+	AgencyImage     string `json:"image"`             // docker image to be used for agencies
+	ImagePullSecret string `json:"secret,omitempty"`  // image pull secret
+	Name            string `json:"name,omitempty"`    // name/description of agent
+	AType           string `json:"type,omitempty"`    // type of agent (application dependent)
+	ASubtype        string `json:"subtype,omitempty"` // subtype of agent (application dependent)
+	Custom          string `json:"custom,omitempty"`  // custom configuration data
 }
 
 // Address holds the address information of an agent

@@ -226,9 +226,14 @@ func (ams *AMS) startMAS(masID int, masInfo schemas.MASInfo, numAgencies int) (e
 	}
 
 	// deploy containers
-	err = ams.depl.newMAS(masID, masInfo.Spec.AgencyImage, masInfo.Spec.ImagePullSecret,
-		numAgencies, masInfo.Spec.Logging, masInfo.Spec.MQTT,
-		masInfo.Spec.DF)
+	image := ""
+	pullSecret := ""
+	if len(masInfo.Agents.Instances) > 0 {
+		image = masInfo.Agents.Instances[0].AgencyImage
+		pullSecret = masInfo.Agents.Instances[0].ImagePullSecret
+	}
+	err = ams.depl.newMAS(masID, image, pullSecret, numAgencies, masInfo.Spec.Logging,
+		masInfo.Spec.MQTT, masInfo.Spec.DF)
 	if err != nil {
 		ams.logError.Println(err.Error())
 		return

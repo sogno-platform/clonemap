@@ -129,8 +129,6 @@ func dummyClient(s *http.Server, t *testing.T) {
 	mas := schemas.MASConfig{
 		Spec: schemas.MASSpec{
 			Name:               "test",
-			AgencyImage:        "agent",
-			ImagePullSecret:    "",
 			NumAgentsPerAgency: 10,
 			Logging:            false,
 			MQTT:               false,
@@ -138,12 +136,16 @@ func dummyClient(s *http.Server, t *testing.T) {
 		},
 		Agents: []schemas.AgentSpec{
 			schemas.AgentSpec{
-				Name:  "test1",
-				AType: "test",
+				AgencyImage:     "agent",
+				ImagePullSecret: "",
+				Name:            "test1",
+				AType:           "test",
 			},
 			schemas.AgentSpec{
-				Name:  "test2",
-				AType: "test",
+				AgencyImage:     "agent",
+				ImagePullSecret: "",
+				Name:            "test2",
+				AType:           "test",
 			},
 		},
 	}

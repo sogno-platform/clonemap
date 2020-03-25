@@ -229,12 +229,6 @@ components:
         name:
           description: name/description of MAS
           type: string
-        image:
-          description: docker image to be used for agencies
-          type: string
-        secret:
-          description: image pull secret
-          type: string
         agentsperagency:
           description: number of agents per agency
           type: integer
@@ -274,6 +268,12 @@ components:
         id:
           description: unique ID of agent
           type: integer
+        image:
+          description: docker image to be used for agencies
+          type: string
+        secret:
+          description: image pull secret
+          type: string
         name:
           description: name/description of agent
           type: string
