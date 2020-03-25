@@ -166,9 +166,9 @@ func (agency *Agency) terminate(gracefulStop chan os.Signal) {
 // startAgents starts all the agents
 func (agency *Agency) startAgents() (err error) {
 	// request configuration
-	var agencyConfig schemas.AgencyConfig
-	agencyConfig, _, err = amsclient.GetAgencyConfig(agency.info.Spec.MASID, agency.info.Spec.ID)
-	agency.info.Spec.Logger = agencyConfig.Spec.Logger
+	var agencySpec schemas.AgencySpec
+	agencySpec, _, err = amsclient.GetAgencySpec(agency.info.Spec.MASID, agency.info.Spec.ID)
+	agency.info.Spec.Logger = agencySpec.Logger
 	if err != nil {
 		agency.info.Status = schemas.Status{
 			Code:       status.Error,
@@ -177,8 +177,8 @@ func (agency *Agency) startAgents() (err error) {
 		return
 	}
 	agency.logInfo.Println("Starting agents")
-	for i := 0; i < len(agencyConfig.Agents); i++ {
-		err = agency.createAgent(agencyConfig.Agents[i])
+	for i := 0; i < len(agencySpec.Agents); i++ {
+		err = agency.createAgent(agencySpec.Agents[i])
 		if err != nil {
 			agency.mutex.Lock()
 			agency.info.Status = schemas.Status{
@@ -196,7 +196,7 @@ func (agency *Agency) startAgents() (err error) {
 func (agency *Agency) createAgent(agentInfo schemas.AgentInfo) (err error) {
 	// check if agent does not exist
 	agency.mutex.Lock()
-	_, agExist := agency.localAgents[agentInfo.Spec.ID]
+	_, agExist := agency.localAgents[agentInfo.ID]
 	agency.mutex.Unlock()
 	if agExist {
 		err = errors.New("NotAllowedError")
@@ -208,7 +208,7 @@ func (agency *Agency) createAgent(agentInfo schemas.AgentInfo) (err error) {
 	agency.mutex.Lock()
 	ag := newAgent(agentInfo, msgIn, agency.aclLookup, agency.logger, agency.info.Spec.Logger,
 		agency.mqtt, agency.logError, agency.logInfo)
-	agency.localAgents[agentInfo.Spec.ID] = ag
+	agency.localAgents[agentInfo.ID] = ag
 	agency.mutex.Unlock()
 	ag.startAgent(agency.agentTask)
 	return

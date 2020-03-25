@@ -79,15 +79,15 @@ func newAgent(info schemas.AgentInfo, msgIn chan schemas.ACLMessage,
 	aclLookup func(int) (*ACL, error), log *loggerClient, logConfig schemas.LogConfig,
 	mqtt *mqttClient, logErr *log.Logger, logInf *log.Logger) (ag *Agent) {
 	ag = &Agent{
-		id:       info.Spec.ID,
+		id:       info.ID,
 		nodeID:   info.Spec.NodeID,
 		name:     info.Spec.Name,
 		aType:    info.Spec.AType,
 		aSubtype: info.Spec.ASubtype,
-		masID:    info.Spec.MASID,
+		masID:    info.MASID,
 		custom:   info.Spec.Custom,
 		mutex:    &sync.Mutex{},
-		ACL:      newACL(info.Spec.ID, msgIn, aclLookup, logErr, logInf),
+		ACL:      newACL(info.ID, msgIn, aclLookup, logErr, logInf),
 		logError: logErr,
 		logInfo:  logInf,
 	}

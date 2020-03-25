@@ -56,25 +56,48 @@ type CloneMAP struct {
 	Uptime  time.Time `json:"uptime,omitempty"`  // uptime of clonemap instance
 }
 
+// MASInfo contains info about MAS spec, agents and agencies in MAS
+type MASInfo struct {
+	Spec     MASSpec  `json:"spec"`
+	ID       int      `json:"id"`
+	Agents   Agents   `json:"agents"`
+	Agencies Agencies `json:"agencies"`
+	Status   Status   `json:"status"`
+	Graph    Graph    `json:"graph"`
+}
+
 // MASSpec contains information about a MAS running in clonemap
 type MASSpec struct {
-	ID                 int    `json:"id"`                        // unique ID of MAS
+	// ID                 int    `json:"id"`                        // unique ID of MAS
 	Name               string `json:"name,omitempty"`            // name/description of MAS
 	NumAgentsPerAgency int    `json:"agentsperagency,omitempty"` // number of agents per agency
 	Logging            bool   `json:"logging"`                   // switch for logging module
 	// Analysis           bool      `json:"analysis"`                  // switch for analysis logging
-	MQTT   bool      `json:"mqtt"` //switch for mqtt
-	DF     bool      `json:"df"`   //switch for df
-	Logger LogConfig `json:"log"`  // logger configuration
-	Uptime time.Time `json:"uptime"`
+	MQTT   bool        `json:"mqtt"` //switch for mqtt
+	DF     bool        `json:"df"`   //switch for df
+	Logger LogConfig   `json:"log"`  // logger configuration
+	Uptime time.Time   `json:"uptime"`
+	Agents []AgentSpec `json:"agents"`
+	Graph  Graph       `json:"graph"`
+}
+
+// AgentInfo contains information about agent spec, address, communication, mqtt and status
+type AgentInfo struct {
+	Spec     AgentSpec `json:"spec"`
+	MASID    int       `json:"masid"`    // ID of MAS
+	AgencyID int       `json:"agencyid"` // name of the agency
+	ImageID  int       `json:"imid"`     // ID of agency image
+	ID       int       `json:"id"`       // ID of agent
+	Address  Address   `json:"address"`
+	Status   Status    `json:"status"`
 }
 
 // AgentSpec contains information about a agent running in a MAS
 type AgentSpec struct {
-	MASID           int    `json:"masid"`             // ID of MAS
-	AgencyID        int    `json:"agencyid"`          // name of the agency
-	NodeID          int    `json:"nodeid"`            // id of the node the agent is attached to
-	ID              int    `json:"id"`                // unique ID of agent
+	// MASID           int    `json:"masid"`             // ID of MAS
+	// AgencyID int `json:"agencyid"` // name of the agency
+	NodeID int `json:"nodeid"` // id of the node the agent is attached to
+	// ID              int    `json:"id"`                // unique ID of agent
 	AgencyImage     string `json:"image"`             // docker image to be used for agencies
 	ImagePullSecret string `json:"secret,omitempty"`  // image pull secret
 	Name            string `json:"name,omitempty"`    // name/description of agent
@@ -88,25 +111,66 @@ type Address struct {
 	Agency string `json:"agency"`
 }
 
-// // MQTT contains information regarding MQTT topics of agents
-// type MQTT struct {
-// 	SubTopics []string // list of topics the agent has/should subscribed to
-// 	PubTopics []string // list of topics the agent can publish
-// }
-
-// AgencySpec contains information about agency
-type AgencySpec struct {
-	MASID  int       `json:"masid"` // ID of MAS
-	Name   string    `json:"name"`  // name of agency (hostname of pod given by kubernetes)
-	ID     int       `json:"id"`    // unique ID (contained in name)
-	Logger LogConfig `json:"log"`   // logger configuration
-	Agents []int     `json:"agents"`
-}
-
 // Status contains information about an agent's or agency's status
 type Status struct {
 	Code       int       `json:"code"`       // status code
 	LastUpdate time.Time `json:"lastupdate"` // time of last update
+}
+
+// AgencyInfo contains information about agency spec and status
+type AgencyInfo struct {
+	Spec   AgencySpec `json:"spec"`
+	Status Status     `json:"status"`
+}
+
+// AgencySpec contains information about agency
+type AgencySpec struct {
+	MASID  int         `json:"masid"` // ID of MAS
+	Name   string      `json:"name"`  // name of agency (hostname of pod given by kubernetes)
+	ID     int         `json:"id"`    // unique ID (contained in name)
+	Logger LogConfig   `json:"log"`   // logger configuration
+	Agents []AgentInfo `json:"agents"`
+}
+
+// MASs contains informaton about how many MASs are running
+type MASs struct {
+	Counter   int       `json:"counter"`   // number of running mas
+	Instances []MASSpec `json:"instances"` // mas ids
+}
+
+// Agents contains information about how many agents are running
+type Agents struct {
+	Counter   int         `json:"counter"`   // counter for agents
+	Instances []AgentInfo `json:"instances"` // agent ids
+}
+
+// Agencies contains information about how many agencies are running
+type Agencies struct {
+	Counter   int          `json:"counter"`   // counter for agents
+	Instances []AgencyInfo `json:"instances"` // agencies
+}
+
+// AgentStatus contains status of agency
+type AgentStatus struct {
+	ID     int    `json:"id"`     // unique ID
+	Status Status `json:"status"` // statuscode
+}
+
+// AgencyStatus contains status of agent
+type AgencyStatus struct {
+	Status Status        `json:"status"` // statuscode
+	Agents []AgentStatus `json:"agents"` // status of all agents in agency
+}
+
+// StubAgencyConfig holds configuration of agency to be started or terminated
+type StubAgencyConfig struct {
+	MASID     int    `json:"masid"`
+	AgencyID  int    `json:"agencyid"`
+	NumAgents int    `json:"numagents"`
+	Image     string `json:"image"`
+	Logging   bool   `json:"logging"` // switch for logging module
+	MQTT      bool   `json:"mqtt"`    //switch for mqtt
+	DF        bool   `json:"df"`      //switch for df
 }
 
 // ACLMessage struct representing agent message
@@ -213,83 +277,6 @@ func (msg ACLMessage) String() (ret string) {
 	}
 	ret += "Content: " + msg.Content
 	return
-}
-
-// MASs contains informaton about how many MASs are running
-type MASs struct {
-	Counter   int       `json:"counter"`   // number of running mas
-	Instances []MASSpec `json:"instances"` // mas ids
-}
-
-// Agents contains information about how many agents are running
-type Agents struct {
-	Counter   int         `json:"counter"`   // counter for agents
-	Instances []AgentSpec `json:"instances"` // agent ids
-}
-
-// Agencies contains information about how many agencies are running
-type Agencies struct {
-	Counter   int          `json:"counter"`   // counter for agents
-	Instances []AgencySpec `json:"instances"` // agencies
-}
-
-// MASInfo contains info about MAS spec, agents and agencies in MAS
-type MASInfo struct {
-	Spec     MASSpec  `json:"spec"`
-	Agents   Agents   `json:"agents"`
-	Agencies Agencies `json:"agencies"`
-	Status   Status   `json:"status"`
-	Graph    Graph    `json:"graph"`
-}
-
-// MASConfig contains information about configuration of MAS
-type MASConfig struct {
-	Spec   MASSpec     `json:"spec"`
-	Agents []AgentSpec `json:"agents"`
-	Graph  Graph       `json:"graph"`
-}
-
-// AgentInfo contains information about agent spec, address, communication, mqtt and status
-type AgentInfo struct {
-	Spec    AgentSpec `json:"spec"`
-	Address Address   `json:"address"`
-	Status  Status    `json:"status"`
-}
-
-// AgencyInfo contains information about agency spec and status
-type AgencyInfo struct {
-	Spec   AgencySpec `json:"spec"`
-	Status Status     `json:"status"`
-}
-
-// AgencyConfig contains information about agency spec and agents
-type AgencyConfig struct {
-	Spec   AgencySpec  `json:"spec"`
-	Agents []AgentInfo `json:"agents"`
-}
-
-// AgentStatus contains status of agency
-type AgentStatus struct {
-	ID     int    `json:"id"`     // unique ID
-	Status Status `json:"status"` // statuscode
-}
-
-// AgencyStatus contains status of agent
-type AgencyStatus struct {
-	Status Status        `json:"status"` // statuscode
-	Agents []AgentStatus `json:"agents"` // status of all agents in agency
-}
-
-// StubAgencyConfig holds configuration of agency to be started or terminated
-type StubAgencyConfig struct {
-	MASID     int    `json:"masid"`
-	AgencyID  int    `json:"agencyid"`
-	NumAgents int    `json:"numagents"`
-	Image     string `json:"image"`
-	Logging   bool   `json:"logging"` // switch for logging module
-	MQTT      bool   `json:"mqtt"`    //switch for mqtt
-	DF        bool   `json:"df"`      //switch for df
-
 }
 
 // FIPA performatives

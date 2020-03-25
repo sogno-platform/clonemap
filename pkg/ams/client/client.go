@@ -98,7 +98,7 @@ func GetMASs() (mass schemas.MASs, httpStatus int, err error) {
 }
 
 // PostMAS post an mas
-func PostMAS(mas schemas.MASConfig) (httpStatus int, err error) {
+func PostMAS(mas schemas.MASSpec) (httpStatus int, err error) {
 	js, _ := json.Marshal(mas)
 	_, httpStatus, err = httpretry.Post(httpClient, "http://"+Host+":"+strconv.Itoa(Port)+
 		"/api/clonemap/mas", "application/json", js, time.Second*2, 2)
@@ -190,8 +190,8 @@ func GetAgencies(masID int) (agencies schemas.Agencies, httpStatus int, err erro
 	return
 }
 
-// GetAgencyConfig requests agency information
-func GetAgencyConfig(masID int, agencyID int) (agency schemas.AgencyConfig, httpStatus int,
+// GetAgencySpec requests agency information
+func GetAgencySpec(masID int, agencyID int) (agency schemas.AgencySpec, httpStatus int,
 	err error) {
 	var body []byte
 	body, httpStatus, err = httpretry.Get(httpClient, "http://"+Host+":"+strconv.Itoa(Port)+
@@ -203,7 +203,7 @@ func GetAgencyConfig(masID int, agencyID int) (agency schemas.AgencyConfig, http
 	//fmt.Println(string(body))
 	err = json.Unmarshal(body, &agency)
 	if err != nil {
-		agency = schemas.AgencyConfig{}
+		agency = schemas.AgencySpec{}
 	}
 	return
 }

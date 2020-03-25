@@ -203,12 +203,12 @@ func (stor *etcdStorage) uploadAgentInfo(newMAS masStorage) (err error) {
 			if err != nil {
 				return
 			}
-			Ops[i] = clientv3.OpPut("ams/mas/"+strconv.Itoa(newMAS.spec.ID)+"/agent/"+
+			Ops[i] = clientv3.OpPut("ams/mas/"+strconv.Itoa(newMAS.id)+"/agent/"+
 				strconv.Itoa(agentIndex), string(res))
 			agentIndex++
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		cond := clientv3.Compare(clientv3.Version("ams/mas/"+strconv.Itoa(newMAS.spec.ID)+
+		cond := clientv3.Compare(clientv3.Version("ams/mas/"+strconv.Itoa(newMAS.id)+
 			"/agentcounter"), ">", 0)
 		_, err = stor.client.Txn(ctx).If(cond).Then(Ops...).Commit()
 		cancel()
@@ -239,12 +239,12 @@ func (stor *etcdStorage) uploadAgencyInfo(newMAS masStorage) (err error) {
 			if err != nil {
 				return
 			}
-			Ops[i] = clientv3.OpPut("ams/mas/"+strconv.Itoa(newMAS.spec.ID)+"/agency/"+
+			Ops[i] = clientv3.OpPut("ams/mas/"+strconv.Itoa(newMAS.id)+"/agency/"+
 				strconv.Itoa(agencyIndex), string(res))
 			agencyIndex++
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		cond := clientv3.Compare(clientv3.Version("ams/mas/"+strconv.Itoa(newMAS.spec.ID)+
+		cond := clientv3.Compare(clientv3.Version("ams/mas/"+strconv.Itoa(newMAS.id)+
 			"/agencycounter"), ">", 0)
 		_, err = stor.client.Txn(ctx).If(cond).Then(Ops...).Commit()
 		cancel()

@@ -104,10 +104,10 @@ func (agency *Agency) aclLookup(agentID int) (acl *ACL, err error) {
 	agency.mutex.Unlock()
 	// check if remote agency is already known
 	if ok {
-		agency.logInfo.Println("New remote agent ", agentInfo.Spec.ID, " in known agency ", address.Agency)
+		agency.logInfo.Println("New remote agent ", agentInfo.ID, " in known agency ", address.Agency)
 		ag = newAgent(agentInfo, remAgency.msgIn, nil, nil, schemas.LogConfig{}, nil, agency.logError, agency.logInfo)
 	} else {
-		agency.logInfo.Println("New remote agent ", agentInfo.Spec.ID, " in unknown agency ", address.Agency)
+		agency.logInfo.Println("New remote agent ", agentInfo.ID, " in unknown agency ", address.Agency)
 		// create new remote agency
 		remAgency = &remoteAgency{
 			msgIn: make(chan schemas.ACLMessage, 1000),

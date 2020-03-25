@@ -185,16 +185,16 @@ func (ams *AMS) getAgencies(masID int) (ret schemas.Agencies, err error) {
 	return
 }
 
-// getAgencyConfig returns status of one agency
-func (ams *AMS) getAgencyConfig(masID int, agencyID int) (ret schemas.AgencyConfig, err error) {
-	ret, err = ams.stor.getAgencyConfig(masID, agencyID)
+// getAgencySpec returns status of one agency
+func (ams *AMS) getAgencySpec(masID int, agencyID int) (ret schemas.AgencySpec, err error) {
+	ret, err = ams.stor.getAgencySpec(masID, agencyID)
 	return
 }
 
 // createMAS creates a new mas according to masconfig
-func (ams *AMS) createMAS(masConf schemas.MASConfig) (err error) {
+func (ams *AMS) createMAS(masSpec schemas.MASSpec) (err error) {
 	// fill masInfo
-	masInfo, numAgencies := ams.configureMAS(masConf)
+	masInfo, numAgencies := ams.configureMAS(masSpec)
 
 	// safe mas in storage and get ID
 	var masID int
@@ -229,8 +229,8 @@ func (ams *AMS) startMAS(masID int, masInfo schemas.MASInfo, numAgencies int) (e
 	image := ""
 	pullSecret := ""
 	if len(masInfo.Agents.Instances) > 0 {
-		image = masInfo.Agents.Instances[0].AgencyImage
-		pullSecret = masInfo.Agents.Instances[0].ImagePullSecret
+		image = masInfo.Agents.Instances[0].Spec.AgencyImage
+		pullSecret = masInfo.Agents.Instances[0].Spec.ImagePullSecret
 	}
 	err = ams.depl.newMAS(masID, image, pullSecret, numAgencies, masInfo.Spec.Logging,
 		masInfo.Spec.MQTT, masInfo.Spec.DF)
@@ -244,30 +244,30 @@ func (ams *AMS) startMAS(masID int, masInfo schemas.MASInfo, numAgencies int) (e
 }
 
 // configureMAS fills the missing configuration as agencies, agent ids and addresses
-func (ams *AMS) configureMAS(masConf schemas.MASConfig) (masInfo schemas.MASInfo, numAgencies int) {
+func (ams *AMS) configureMAS(masSpec schemas.MASSpec) (masInfo schemas.MASInfo, numAgencies int) {
 	// MAS configuration
-	masInfo.Spec = masConf.Spec
-	masInfo.Agents.Counter = len(masConf.Agents)
-	masInfo.Agents.Instances = make([]schemas.AgentSpec, masInfo.Agents.Counter,
+	masInfo.Spec = masSpec
+	masInfo.Agents.Counter = len(masSpec.Agents)
+	masInfo.Agents.Instances = make([]schemas.AgentInfo, masInfo.Agents.Counter,
 		masInfo.Agents.Counter)
-	numAgencies = len(masConf.Agents) / masConf.Spec.NumAgentsPerAgency
-	if len(masConf.Agents)%masConf.Spec.NumAgentsPerAgency > 0 {
+	numAgencies = len(masSpec.Agents) / masSpec.NumAgentsPerAgency
+	if len(masSpec.Agents)%masSpec.NumAgentsPerAgency > 0 {
 		numAgencies++
 	}
 	masInfo.Agencies.Counter = numAgencies
-	masInfo.Agencies.Instances = make([]schemas.AgencySpec, numAgencies, numAgencies)
-	masInfo.Graph = masConf.Graph
+	masInfo.Agencies.Instances = make([]schemas.AgencyInfo, numAgencies, numAgencies)
+	masInfo.Graph = masSpec.Graph
 	if len(masInfo.Graph.Node) == 0 {
 		masInfo.Graph.Node = append(masInfo.Graph.Node, schemas.Node{ID: 0})
 	}
 
 	// agent configuration
 	for i := 0; i < masInfo.Agents.Counter; i++ {
-		masInfo.Agents.Instances[i] = masConf.Agents[i]
+		masInfo.Agents.Instances[i].Spec = masSpec.Agents[i]
 		masInfo.Agents.Instances[i].ID = i
-		masInfo.Agents.Instances[i].AgencyID = i / masConf.Spec.NumAgentsPerAgency
+		masInfo.Agents.Instances[i].AgencyID = i / masSpec.NumAgentsPerAgency
 		for j := range masInfo.Graph.Node {
-			if masInfo.Graph.Node[j].ID == masInfo.Agents.Instances[i].NodeID {
+			if masInfo.Graph.Node[j].ID == masInfo.Agents.Instances[i].Spec.NodeID {
 				masInfo.Graph.Node[j].Agent = append(masInfo.Graph.Node[j].Agent,
 					masInfo.Agents.Instances[i].ID)
 				break
@@ -280,16 +280,16 @@ func (ams *AMS) configureMAS(masConf schemas.MASConfig) (masInfo schemas.MASInfo
 	for i := 0; i < numAgencies; i++ {
 		agencySpec := schemas.AgencySpec{
 			ID:     i,
-			Logger: masConf.Spec.Logger,
+			Logger: masSpec.Logger,
 		}
-		for j := 0; j < masConf.Spec.NumAgentsPerAgency; j++ {
+		for j := 0; j < masSpec.NumAgentsPerAgency; j++ {
 			if agentCounter >= masInfo.Agents.Counter {
 				break
 			}
-			agencySpec.Agents = append(agencySpec.Agents, agentCounter)
+			agencySpec.Agents = append(agencySpec.Agents, masInfo.Agents.Instances[agentCounter])
 			agentCounter++
 		}
-		masInfo.Agencies.Instances[i] = agencySpec
+		masInfo.Agencies.Instances[i].Spec = agencySpec
 	}
 	return
 }

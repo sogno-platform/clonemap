@@ -86,8 +86,8 @@ type storage interface {
 	// getAgencies returns specs of all agencies in MAS
 	getAgencies(masID int) (ret schemas.Agencies, err error)
 
-	// getAgencyConfig returns status of one agency
-	getAgencyConfig(masID int, agencyID int) (ret schemas.AgencyConfig, err error)
+	// getAgencySpec returns status of one agency
+	getAgencySpec(masID int, agencyID int) (ret schemas.AgencySpec, err error)
 
 	// registerMAS registers a new MAS with the storage and returns its ID
 	registerMAS() (masID int, err error)
@@ -122,6 +122,7 @@ type localStorage struct {
 
 // mas storage
 type masStorage struct {
+	id            int // mas id
 	spec          schemas.MASSpec
 	status        schemas.Status
 	agentCounter  int                 // counter for agents
@@ -170,16 +171,16 @@ func (stor *localStorage) getMASInfo(masID int) (ret schemas.MASInfo, err error)
 	ret.Spec = stor.mas[masID].spec
 	ret.Status = stor.mas[masID].status
 	ret.Graph = stor.mas[masID].graph
-	ret.Agencies.Instances = make([]schemas.AgencySpec, len(stor.mas[masID].agencies),
+	ret.Agencies.Instances = make([]schemas.AgencyInfo, len(stor.mas[masID].agencies),
 		len(stor.mas[masID].agencies))
 	for i := 0; i < len(stor.mas[masID].agencies); i++ {
-		ret.Agencies.Instances[i] = stor.mas[masID].agencies[i].Spec
+		ret.Agencies.Instances[i].Spec = stor.mas[masID].agencies[i].Spec
 	}
 	ret.Agencies.Counter = stor.mas[masID].agencyCounter
-	ret.Agents.Instances = make([]schemas.AgentSpec, len(stor.mas[masID].agents),
+	ret.Agents.Instances = make([]schemas.AgentInfo, len(stor.mas[masID].agents),
 		len(stor.mas[masID].agents))
 	for i := 0; i < len(stor.mas[masID].agents); i++ {
-		ret.Agents.Instances[i] = stor.mas[masID].agents[i].Spec
+		ret.Agents.Instances[i].Spec = stor.mas[masID].agents[i].Spec
 	}
 	ret.Agents.Counter = stor.mas[masID].agentCounter
 	stor.mutex.Unlock()
@@ -194,10 +195,10 @@ func (stor *localStorage) getAgents(masID int) (ret schemas.Agents, err error) {
 		err = errors.New("MAS does not exist")
 		return
 	}
-	ret.Instances = make([]schemas.AgentSpec, len(stor.mas[masID].agents),
+	ret.Instances = make([]schemas.AgentInfo, len(stor.mas[masID].agents),
 		len(stor.mas[masID].agents))
 	for i := 0; i < len(stor.mas[masID].agents); i++ {
-		ret.Instances[i] = stor.mas[masID].agents[i].Spec
+		ret.Instances[i].Spec = stor.mas[masID].agents[i].Spec
 	}
 	ret.Counter = stor.mas[masID].agentCounter
 	stor.mutex.Unlock()
@@ -272,19 +273,19 @@ func (stor *localStorage) getAgencies(masID int) (ret schemas.Agencies, err erro
 		err = errors.New("Agency does not exist")
 		return
 	}
-	ret.Instances = make([]schemas.AgencySpec, len(stor.mas[masID].agencies),
+	ret.Instances = make([]schemas.AgencyInfo, len(stor.mas[masID].agencies),
 		len(stor.mas[masID].agencies))
 	for i := 0; i < len(stor.mas[masID].agencies); i++ {
-		ret.Instances[i] = stor.mas[masID].agencies[i].Spec
+		ret.Instances[i].Spec = stor.mas[masID].agencies[i].Spec
 	}
 	ret.Counter = stor.mas[masID].agencyCounter
 	stor.mutex.Unlock()
 	return
 }
 
-// getAgencyConfig returns status of one agency
-func (stor *localStorage) getAgencyConfig(masID int,
-	agencyID int) (ret schemas.AgencyConfig, err error) {
+// getAgencySpec returns status of one agency
+func (stor *localStorage) getAgencySpec(masID int,
+	agencyID int) (ret schemas.AgencySpec, err error) {
 	stor.mutex.Lock()
 	if len(stor.mas)-1 < masID {
 		stor.mutex.Unlock()
@@ -296,17 +297,17 @@ func (stor *localStorage) getAgencyConfig(masID int,
 		err = errors.New("Agency does not exist")
 		return
 	}
-	ret.Spec = stor.mas[masID].agencies[agencyID].Spec
-	ret.Agents = make([]schemas.AgentInfo, len(ret.Spec.Agents), len(ret.Spec.Agents))
-	for i := 0; i < len(ret.Spec.Agents); i++ {
-		var temp schemas.AgentInfo
-		temp, err = stor.getAgentInfoNolock(masID, ret.Spec.Agents[i])
-		if err != nil {
-			stor.mutex.Unlock()
-			return
-		}
-		ret.Agents[i] = temp
-	}
+	ret = stor.mas[masID].agencies[agencyID].Spec
+	// ret.Agents = make([]schemas.AgentInfo, len(ret.Spec.Agents), len(ret.Spec.Agents))
+	// for i := 0; i < len(ret.Spec.Agents); i++ {
+	// 	var temp schemas.AgentInfo
+	// 	temp, err = stor.getAgentInfoNolock(masID, ret.Spec.Agents[i].ID)
+	// 	if err != nil {
+	// 		stor.mutex.Unlock()
+	// 		return
+	// 	}
+	// 	ret.Agents[i] = temp
+	// }
 	stor.mutex.Unlock()
 	return
 }
@@ -331,7 +332,7 @@ func (stor *localStorage) storeMAS(masID int, masInfo schemas.MASInfo) (err erro
 		}
 	} else {
 		// check if mas stor is already populated
-		if stor.mas[masID].spec.ID == masID {
+		if stor.mas[masID].id == masID {
 			err = errors.New("MAS already exists")
 			return
 		}
@@ -350,17 +351,17 @@ func createMASStorage(masID int, masInfo schemas.MASInfo) (ret masStorage) {
 	ret.agencyCounter = masInfo.Agencies.Counter
 	ret.graph = masInfo.Graph
 
-	ret.spec.ID = masID
+	ret.id = masID
 	ret.agents = make([]schemas.AgentInfo, ret.agentCounter, ret.agentCounter)
 	for i := 0; i < ret.agentCounter; i++ {
-		ret.agents[i].Spec = masInfo.Agents.Instances[i]
-		ret.agents[i].Spec.MASID = masID
+		ret.agents[i].Spec = masInfo.Agents.Instances[i].Spec
+		ret.agents[i].MASID = masID
 		ret.agents[i].Address.Agency = "mas-" + strconv.Itoa(masID) + "-agency-" +
-			strconv.Itoa(ret.agents[i].Spec.AgencyID) + ".mas" + strconv.Itoa(masID) + "agencies"
+			strconv.Itoa(ret.agents[i].AgencyID) + ".mas" + strconv.Itoa(masID) + "agencies"
 	}
 	ret.agencies = make([]schemas.AgencyInfo, ret.agencyCounter, ret.agencyCounter)
 	for i := 0; i < ret.agencyCounter; i++ {
-		ret.agencies[i].Spec = masInfo.Agencies.Instances[i]
+		ret.agencies[i].Spec = masInfo.Agencies.Instances[i].Spec
 		ret.agencies[i].Spec.MASID = masID
 		ret.agencies[i].Spec.Name = "mas-" + strconv.Itoa(masID) + "-agency-" + strconv.Itoa(i) +
 			".mas" + strconv.Itoa(masID) + "agencies"

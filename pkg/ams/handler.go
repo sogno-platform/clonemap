@@ -138,19 +138,19 @@ func (ams *AMS) handleAPI(w http.ResponseWriter, r *http.Request) {
 						resvalid = true
 					}
 				}
-			} else if respath[5] == "agencies" {
-				var agencyID int
-				agencyID, cmapErr = strconv.Atoi(respath[6])
-				if cmapErr == nil {
-					// if respath[7] == "status" {
-					// 	cmapErr, httpErr = ams.handleAgencyStatus(masID, agencyID, w, r)
-					// 	resvalid = true
-					// } else
-					if respath[7] == "config" {
-						cmapErr, httpErr = ams.handleAgencyConfig(masID, agencyID, w, r)
-						resvalid = true
-					}
-				}
+				// } else if respath[5] == "agencies" {
+				// 	var agencyID int
+				// 	agencyID, cmapErr = strconv.Atoi(respath[6])
+				// 	if cmapErr == nil {
+				// 		// if respath[7] == "status" {
+				// 		// 	cmapErr, httpErr = ams.handleAgencyStatus(masID, agencyID, w, r)
+				// 		// 	resvalid = true
+				// 		// } else
+				// 		if respath[7] == "config" {
+				// 			cmapErr, httpErr = ams.handleAgencyConfig(masID, agencyID, w, r)
+				// 			resvalid = true
+				// 		}
+				// 	}
 			}
 		}
 	default:
@@ -195,10 +195,10 @@ func (ams *AMS) handleMAS(w http.ResponseWriter, r *http.Request) (cmapErr, http
 		var body []byte
 		body, cmapErr = ioutil.ReadAll(r.Body)
 		if cmapErr == nil {
-			var masConfig schemas.MASConfig
-			cmapErr = json.Unmarshal(body, &masConfig)
+			var masSpec schemas.MASSpec
+			cmapErr = json.Unmarshal(body, &masSpec)
 			if cmapErr == nil {
-				cmapErr = ams.createMAS(masConfig)
+				cmapErr = ams.createMAS(masSpec)
 				if cmapErr == nil {
 					httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Ressource Created"))
 				} else {
@@ -340,9 +340,9 @@ func (ams *AMS) handleAgency(masID int, w http.ResponseWriter, r *http.Request) 
 func (ams *AMS) handleAgencyID(masID int, agencyid int, w http.ResponseWriter,
 	r *http.Request) (cmapErr, httpErr error) {
 	if r.Method == "GET" {
-		var agencyConfig schemas.AgencyConfig
-		agencyConfig, cmapErr = ams.getAgencyConfig(masID, agencyid)
-		httpErr = httpreply.Resource(w, agencyConfig, cmapErr)
+		var agencySpec schemas.AgencySpec
+		agencySpec, cmapErr = ams.getAgencySpec(masID, agencyid)
+		httpErr = httpreply.Resource(w, agencySpec, cmapErr)
 	} else {
 		httpErr = httpreply.MethodNotAllowed(w)
 		cmapErr = errors.New("Error: Method not allowed on path /api/clonemap/mas/{mas-id}/" +
@@ -351,22 +351,22 @@ func (ams *AMS) handleAgencyID(masID int, agencyid int, w http.ResponseWriter,
 	return
 }
 
-// handleAgencyConfig is the handler for requests to path
-// /api/clonemap/mas/{mas-id}/agencies/{agency-id}/config
-func (ams *AMS) handleAgencyConfig(masID int, agencyid int, w http.ResponseWriter,
-	r *http.Request) (cmapErr, httpErr error) {
-	if r.Method == "GET" {
-		// return config of specified agency
-		var agencyConfig schemas.AgencyConfig
-		agencyConfig, cmapErr = ams.getAgencyConfig(masID, agencyid)
-		httpErr = httpreply.Resource(w, agencyConfig, cmapErr)
-	} else {
-		httpErr = httpreply.MethodNotAllowed(w)
-		cmapErr = errors.New("Error: Method not allowed on path /api/clonemap/mas/{mas-id}/" +
-			"agencies/{agency-id}/config")
-	}
-	return
-}
+// // handleAgencyConfig is the handler for requests to path
+// // /api/clonemap/mas/{mas-id}/agencies/{agency-id}/config
+// func (ams *AMS) handleAgencyConfig(masID int, agencyid int, w http.ResponseWriter,
+// 	r *http.Request) (cmapErr, httpErr error) {
+// 	if r.Method == "GET" {
+// 		// return config of specified agency
+// 		var agencyConfig schemas.AgencyConfig
+// 		agencyConfig, cmapErr = ams.getAgencyConfig(masID, agencyid)
+// 		httpErr = httpreply.Resource(w, agencyConfig, cmapErr)
+// 	} else {
+// 		httpErr = httpreply.MethodNotAllowed(w)
+// 		cmapErr = errors.New("Error: Method not allowed on path /api/clonemap/mas/{mas-id}/" +
+// 			"agencies/{agency-id}/config")
+// 	}
+// 	return
+// }
 
 // listen opens a http server listening and serving request
 func (ams *AMS) listen() (err error) {
