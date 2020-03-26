@@ -340,8 +340,8 @@ func (ams *AMS) handleAgency(masID int, w http.ResponseWriter, r *http.Request) 
 func (ams *AMS) handleAgencyID(masID int, agencyid int, w http.ResponseWriter,
 	r *http.Request) (cmapErr, httpErr error) {
 	if r.Method == "GET" {
-		var agencySpec schemas.AgencySpec
-		agencySpec, cmapErr = ams.getAgencySpec(masID, agencyid)
+		var agencySpec schemas.AgencyInfoFull
+		agencySpec, cmapErr = ams.getAgencyInfoFull(masID, agencyid)
 		httpErr = httpreply.Resource(w, agencySpec, cmapErr)
 	} else {
 		httpErr = httpreply.MethodNotAllowed(w)

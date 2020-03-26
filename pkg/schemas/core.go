@@ -58,46 +58,59 @@ type CloneMAP struct {
 
 // MASInfo contains info about MAS spec, agents and agencies in MAS
 type MASInfo struct {
-	Spec     MASSpec  `json:"spec"`
-	ID       int      `json:"id"`
-	Agents   Agents   `json:"agents"`
-	Agencies Agencies `json:"agencies"`
-	Status   Status   `json:"status"`
+	Spec        MASSpec          `json:"spec"`
+	ID          int              `json:"id"`
+	ImageGroups []ImageGroupInfo `json:"groups"`
+	Agents      Agents           `json:"agents"`
+	Agencies    Agencies         `json:"agencies"`
+	Uptime      time.Time        `json:"uptime"`
+	Status      Status           `json:"status"`
 }
 
 // MASSpec contains information about a MAS running in clonemap
 type MASSpec struct {
-	Name               string      `json:"name,omitempty"`            // name/description of MAS
-	NumAgentsPerAgency int         `json:"agentsperagency,omitempty"` // number of agents per agency
-	Logging            bool        `json:"logging"`                   // switch for logging module
-	MQTT               bool        `json:"mqtt"`                      //switch for mqtt
-	DF                 bool        `json:"df"`                        //switch for df
-	Logger             LogConfig   `json:"log"`                       // logger configuration
-	Uptime             time.Time   `json:"uptime"`
-	Agents             []AgentSpec `json:"agents"`
-	Graph              Graph       `json:"graph"`
+	Name               string         `json:"name,omitempty"`            // name/description of MAS
+	NumAgentsPerAgency int            `json:"agentsperagency,omitempty"` // number of agents per agency
+	Logging            bool           `json:"logging"`                   // switch for logging module
+	MQTT               bool           `json:"mqtt"`                      //switch for mqtt
+	DF                 bool           `json:"df"`                        //switch for df
+	Logger             LogConfig      `json:"log"`                       // logger configuration
+	ImageGroups        ImageGroupSpec `json:"groups"`
+	Graph              Graph          `json:"graph"`
+}
+
+// ImageGroupInfo contains information about all agents that have the same image
+type ImageGroupInfo struct {
+	Image      string `json:"image"`            // docker image to be used for agencies
+	PullSecret string `json:"secret,omitempty"` // image pull secret
+	ID         int    `json:"id"`
+}
+
+// ImageGroupSpec contains information about all agents that have the same image
+type ImageGroupSpec struct {
+	Image      string      `json:"image"`            // docker image to be used for agencies
+	PullSecret string      `json:"secret,omitempty"` // image pull secret
+	Agents     []AgentSpec `json:"agents"`
 }
 
 // AgentInfo contains information about agent spec, address, communication, mqtt and status
 type AgentInfo struct {
-	Spec     AgentSpec `json:"spec"`
-	MASID    int       `json:"masid"`    // ID of MAS
-	AgencyID int       `json:"agencyid"` // name of the agency
-	ImageID  int       `json:"imid"`     // ID of agency image
-	ID       int       `json:"id"`       // ID of agent
-	Address  Address   `json:"address"`
-	Status   Status    `json:"status"`
+	Spec         AgentSpec `json:"spec"`
+	MASID        int       `json:"masid"`    // ID of MAS
+	AgencyID     int       `json:"agencyid"` // name of the agency
+	ImageGroupID int       `json:"imid"`     // ID of agency image
+	ID           int       `json:"id"`       // ID of agent
+	Address      Address   `json:"address"`
+	Status       Status    `json:"status"`
 }
 
 // AgentSpec contains information about a agent running in a MAS
 type AgentSpec struct {
-	NodeID          int    `json:"nodeid"`            // id of the node the agent is attached to
-	AgencyImage     string `json:"image"`             // docker image to be used for agencies
-	ImagePullSecret string `json:"secret,omitempty"`  // image pull secret
-	Name            string `json:"name,omitempty"`    // name/description of agent
-	AType           string `json:"type,omitempty"`    // type of agent (application dependent)
-	ASubtype        string `json:"subtype,omitempty"` // subtype of agent (application dependent)
-	Custom          string `json:"custom,omitempty"`  // custom configuration data
+	NodeID   int    `json:"nodeid"`            // id of the node the agent is attached to
+	Name     string `json:"name,omitempty"`    // name/description of agent
+	AType    string `json:"type,omitempty"`    // type of agent (application dependent)
+	ASubtype string `json:"subtype,omitempty"` // subtype of agent (application dependent)
+	Custom   string `json:"custom,omitempty"`  // custom configuration data
 }
 
 // Address holds the address information of an agent
@@ -111,19 +124,26 @@ type Status struct {
 	LastUpdate time.Time `json:"lastupdate"` // time of last update
 }
 
-// AgencyInfo contains information about agency spec and status
+// AgencyInfo contains information about agency spec and status (for storage)
 type AgencyInfo struct {
-	Spec   AgencySpec `json:"spec"`
-	Status Status     `json:"status"`
+	MASID        int       `json:"masid"` // ID of MAS
+	Name         string    `json:"name"`  // name of agency (hostname of pod given by kubernetes)
+	ID           int       `json:"id"`    // unique ID (contained in name)
+	ImageGroupID int       `json:"imid"`  // ID of agency image
+	Logger       LogConfig `json:"log"`   // logger configuration
+	Agents       []int     `json:"agents"`
+	Status       Status    `json:"status"`
 }
 
-// AgencySpec contains information about agency
-type AgencySpec struct {
-	MASID  int         `json:"masid"` // ID of MAS
-	Name   string      `json:"name"`  // name of agency (hostname of pod given by kubernetes)
-	ID     int         `json:"id"`    // unique ID (contained in name)
-	Logger LogConfig   `json:"log"`   // logger configuration
-	Agents []AgentInfo `json:"agents"`
+// AgencyInfoFull contains information about agency and full info about agents it conatins (for api)
+type AgencyInfoFull struct {
+	MASID        int         `json:"masid"` // ID of MAS
+	Name         string      `json:"name"`  // name of agency (hostname of pod given by kubernetes)
+	ID           int         `json:"id"`    // unique ID (contained in name)
+	ImageGroupID int         `json:"imid"`  // ID of agency image
+	Logger       LogConfig   `json:"log"`   // logger configuration
+	Agents       []AgentInfo `json:"agents"`
+	Status       Status      `json:"status"`
 }
 
 // MASs contains informaton about how many MASs are running
@@ -142,6 +162,7 @@ type Agents struct {
 type Agencies struct {
 	Counter   int          `json:"counter"`   // counter for agents
 	Instances []AgencyInfo `json:"instances"` // agencies
+
 }
 
 // AgentStatus contains status of agency

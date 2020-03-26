@@ -132,18 +132,18 @@ func dummyClient(s *http.Server, t *testing.T) {
 		Logging:            false,
 		MQTT:               false,
 		DF:                 false,
-		Agents: []schemas.AgentSpec{
-			schemas.AgentSpec{
-				AgencyImage:     "agent",
-				ImagePullSecret: "",
-				Name:            "test1",
-				AType:           "test",
-			},
-			schemas.AgentSpec{
-				AgencyImage:     "agent",
-				ImagePullSecret: "",
-				Name:            "test2",
-				AType:           "test",
+		ImageGroups: schemas.ImageGroupSpec{
+			Image:      "agent",
+			PullSecret: "",
+			Agents: []schemas.AgentSpec{
+				schemas.AgentSpec{
+					Name:  "test1",
+					AType: "test",
+				},
+				schemas.AgentSpec{
+					Name:  "test2",
+					AType: "test",
+				},
 			},
 		},
 	}
@@ -203,7 +203,7 @@ func dummyClient(s *http.Server, t *testing.T) {
 		t.Error("Error GetAgencies " + strconv.Itoa(httpStatus))
 	}
 
-	_, httpStatus, err = amsclient.GetAgencySpec(0, 0)
+	_, httpStatus, err = amsclient.GetAgencyInfoFull(0, 0)
 	if err != nil {
 		t.Error(err)
 	}

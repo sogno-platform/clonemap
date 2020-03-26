@@ -137,11 +137,11 @@ func (agency *Agency) init() (err error) {
 		err = errors.New("incorrect hostname")
 		return
 	}
-	agency.info.Spec.MASID, err = strconv.Atoi(hostname[1])
-	agency.info.Spec.ID, err = strconv.Atoi(hostname[3])
-	agency.info.Spec.Name = temp + ".mas" + hostname[1] + "agencies"
-	agency.logger = newLoggerClient(agency.info.Spec.MASID, agency.logError, agency.logInfo)
-	agency.mqtt = newMQTTClient("mqtt", 1883, agency.info.Spec.Name, agency.logError, agency.logInfo)
+	agency.info.MASID, err = strconv.Atoi(hostname[1])
+	agency.info.ID, err = strconv.Atoi(hostname[3])
+	agency.info.Name = temp + ".mas" + hostname[1] + "agencies"
+	agency.logger = newLoggerClient(agency.info.MASID, agency.logError, agency.logInfo)
+	agency.mqtt = newMQTTClient("mqtt", 1883, agency.info.Name, agency.logError, agency.logInfo)
 	agency.mqtt.init()
 	agency.mutex.Unlock()
 	return
@@ -166,9 +166,9 @@ func (agency *Agency) terminate(gracefulStop chan os.Signal) {
 // startAgents starts all the agents
 func (agency *Agency) startAgents() (err error) {
 	// request configuration
-	var agencySpec schemas.AgencySpec
-	agencySpec, _, err = amsclient.GetAgencySpec(agency.info.Spec.MASID, agency.info.Spec.ID)
-	agency.info.Spec.Logger = agencySpec.Logger
+	var agencyInfoFull schemas.AgencyInfoFull
+	agencyInfoFull, _, err = amsclient.GetAgencyInfoFull(agency.info.MASID, agency.info.ID)
+	agency.info.Logger = agencyInfoFull.Logger
 	if err != nil {
 		agency.info.Status = schemas.Status{
 			Code:       status.Error,
@@ -177,8 +177,8 @@ func (agency *Agency) startAgents() (err error) {
 		return
 	}
 	agency.logInfo.Println("Starting agents")
-	for i := 0; i < len(agencySpec.Agents); i++ {
-		err = agency.createAgent(agencySpec.Agents[i])
+	for i := 0; i < len(agencyInfoFull.Agents); i++ {
+		err = agency.createAgent(agencyInfoFull.Agents[i])
 		if err != nil {
 			agency.mutex.Lock()
 			agency.info.Status = schemas.Status{
@@ -206,7 +206,7 @@ func (agency *Agency) createAgent(agentInfo schemas.AgentInfo) (err error) {
 	agentInfo.Status.Code = status.Starting
 	msgIn := make(chan schemas.ACLMessage, 1000)
 	agency.mutex.Lock()
-	ag := newAgent(agentInfo, msgIn, agency.aclLookup, agency.logger, agency.info.Spec.Logger,
+	ag := newAgent(agentInfo, msgIn, agency.aclLookup, agency.logger, agency.info.Logger,
 		agency.mqtt, agency.logError, agency.logInfo)
 	agency.localAgents[agentInfo.ID] = ag
 	agency.mutex.Unlock()

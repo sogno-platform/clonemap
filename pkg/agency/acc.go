@@ -92,7 +92,7 @@ func (agency *Agency) aclLookup(agentID int) (acl *ACL, err error) {
 	agency.logInfo.Println("Request address of unknown agent")
 	agentInfo := schemas.AgentInfo{}
 	agency.mutex.Lock()
-	agencyName := agency.info.Spec.Name
+	agencyName := agency.info.Name
 	agency.mutex.Unlock()
 	if address.Agency == agencyName {
 		err = errors.New("MassiveError")
@@ -138,7 +138,7 @@ func (agency *Agency) aclLookup(agentID int) (acl *ACL, err error) {
 // requestAgentAddress requests the address of an agent from ams
 func (agency *Agency) requestAgentAddress(agentID int) (address schemas.Address, err error) {
 	agency.mutex.Lock()
-	masID := agency.info.Spec.MASID
+	masID := agency.info.MASID
 	agency.mutex.Unlock()
 	address, _, err = amsclient.GetAgentAddress(masID, agentID)
 	return

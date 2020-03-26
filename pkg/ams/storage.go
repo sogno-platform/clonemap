@@ -86,8 +86,8 @@ type storage interface {
 	// getAgencies returns specs of all agencies in MAS
 	getAgencies(masID int) (ret schemas.Agencies, err error)
 
-	// getAgencySpec returns status of one agency
-	getAgencySpec(masID int, agencyID int) (ret schemas.AgencySpec, err error)
+	// getAgencyInfoFull returns status of one agency
+	getAgencyInfoFull(masID int, agencyID int) (ret schemas.AgencyInfoFull, err error)
 
 	// registerMAS registers a new MAS with the storage and returns its ID
 	registerMAS() (masID int, err error)
@@ -281,9 +281,9 @@ func (stor *localStorage) getAgencies(masID int) (ret schemas.Agencies, err erro
 	return
 }
 
-// getAgencySpec returns status of one agency
-func (stor *localStorage) getAgencySpec(masID int,
-	agencyID int) (ret schemas.AgencySpec, err error) {
+// getAgencyInfoFull returns status of one agency
+func (stor *localStorage) getAgencyInfoFull(masID int,
+	agencyID int) (ret schemas.AgencyInfoFull, err error) {
 	stor.mutex.Lock()
 	if len(stor.mas)-1 < masID {
 		stor.mutex.Unlock()
@@ -295,7 +295,23 @@ func (stor *localStorage) getAgencySpec(masID int,
 		err = errors.New("Agency does not exist")
 		return
 	}
-	ret = stor.mas[masID].agencies[agencyID].Spec
+	ret.MASID = stor.mas[masID].agencies[agencyID].MASID
+	ret.Name = stor.mas[masID].agencies[agencyID].Name
+	ret.ID = stor.mas[masID].agencies[agencyID].ID
+	ret.ImageGroupID = stor.mas[masID].agencies[agencyID].ImageGroupID
+	ret.Logger = stor.mas[masID].agencies[agencyID].Logger
+	ret.Status = stor.mas[masID].agencies[agencyID].Status
+	ret.Agents = make([]schemas.AgentInfo, len(stor.mas[masID].agencies[agencyID].Agents),
+		len(stor.mas[masID].agencies[agencyID].Agents))
+	for i := 0; i < len(ret.Agents); i++ {
+		var temp schemas.AgentInfo
+		temp, err = stor.getAgentInfoNolock(masID, stor.mas[masID].agencies[agencyID].Agents[i])
+		if err != nil {
+			stor.mutex.Unlock()
+			return
+		}
+		ret.Agents[i] = temp
+	}
 	stor.mutex.Unlock()
 	return
 }
@@ -349,8 +365,8 @@ func createMASStorage(masID int, masInfo schemas.MASInfo) (ret masStorage) {
 	ret.agencies = make([]schemas.AgencyInfo, ret.agencyCounter, ret.agencyCounter)
 	for i := 0; i < ret.agencyCounter; i++ {
 		ret.agencies[i] = masInfo.Agencies.Instances[i]
-		ret.agencies[i].Spec.MASID = masID
-		ret.agencies[i].Spec.Name = "mas-" + strconv.Itoa(masID) + "-agency-" + strconv.Itoa(i) +
+		ret.agencies[i].MASID = masID
+		ret.agencies[i].Name = "mas-" + strconv.Itoa(masID) + "-agency-" + strconv.Itoa(i) +
 			".mas" + strconv.Itoa(masID) + "agencies"
 	}
 	return

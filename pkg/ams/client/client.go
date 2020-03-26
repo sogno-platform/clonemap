@@ -190,8 +190,8 @@ func GetAgencies(masID int) (agencies schemas.Agencies, httpStatus int, err erro
 	return
 }
 
-// GetAgencySpec requests agency information
-func GetAgencySpec(masID int, agencyID int) (agency schemas.AgencySpec, httpStatus int,
+// GetAgencyInfoFull requests agency information
+func GetAgencyInfoFull(masID int, agencyID int) (agency schemas.AgencyInfoFull, httpStatus int,
 	err error) {
 	var body []byte
 	body, httpStatus, err = httpretry.Get(httpClient, "http://"+Host+":"+strconv.Itoa(Port)+
@@ -203,7 +203,7 @@ func GetAgencySpec(masID int, agencyID int) (agency schemas.AgencySpec, httpStat
 	//fmt.Println(string(body))
 	err = json.Unmarshal(body, &agency)
 	if err != nil {
-		agency = schemas.AgencySpec{}
+		agency = schemas.AgencyInfoFull{}
 	}
 	return
 }
