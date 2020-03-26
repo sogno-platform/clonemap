@@ -129,7 +129,6 @@ type masStorage struct {
 	agents        []schemas.AgentInfo // configuration of agents
 	agencyCounter int                 // counter for agencies
 	agencies      []schemas.AgencyInfo
-	graph         schemas.Graph
 }
 
 // getCloneMAPInfo returns stored info about clonemap
@@ -170,17 +169,16 @@ func (stor *localStorage) getMASInfo(masID int) (ret schemas.MASInfo, err error)
 	}
 	ret.Spec = stor.mas[masID].spec
 	ret.Status = stor.mas[masID].status
-	ret.Graph = stor.mas[masID].graph
 	ret.Agencies.Instances = make([]schemas.AgencyInfo, len(stor.mas[masID].agencies),
 		len(stor.mas[masID].agencies))
 	for i := 0; i < len(stor.mas[masID].agencies); i++ {
-		ret.Agencies.Instances[i].Spec = stor.mas[masID].agencies[i].Spec
+		ret.Agencies.Instances[i] = stor.mas[masID].agencies[i]
 	}
 	ret.Agencies.Counter = stor.mas[masID].agencyCounter
 	ret.Agents.Instances = make([]schemas.AgentInfo, len(stor.mas[masID].agents),
 		len(stor.mas[masID].agents))
 	for i := 0; i < len(stor.mas[masID].agents); i++ {
-		ret.Agents.Instances[i].Spec = stor.mas[masID].agents[i].Spec
+		ret.Agents.Instances[i] = stor.mas[masID].agents[i]
 	}
 	ret.Agents.Counter = stor.mas[masID].agentCounter
 	stor.mutex.Unlock()
@@ -198,7 +196,7 @@ func (stor *localStorage) getAgents(masID int) (ret schemas.Agents, err error) {
 	ret.Instances = make([]schemas.AgentInfo, len(stor.mas[masID].agents),
 		len(stor.mas[masID].agents))
 	for i := 0; i < len(stor.mas[masID].agents); i++ {
-		ret.Instances[i].Spec = stor.mas[masID].agents[i].Spec
+		ret.Instances[i] = stor.mas[masID].agents[i]
 	}
 	ret.Counter = stor.mas[masID].agentCounter
 	stor.mutex.Unlock()
@@ -276,7 +274,7 @@ func (stor *localStorage) getAgencies(masID int) (ret schemas.Agencies, err erro
 	ret.Instances = make([]schemas.AgencyInfo, len(stor.mas[masID].agencies),
 		len(stor.mas[masID].agencies))
 	for i := 0; i < len(stor.mas[masID].agencies); i++ {
-		ret.Instances[i].Spec = stor.mas[masID].agencies[i].Spec
+		ret.Instances[i] = stor.mas[masID].agencies[i]
 	}
 	ret.Counter = stor.mas[masID].agencyCounter
 	stor.mutex.Unlock()
@@ -298,16 +296,6 @@ func (stor *localStorage) getAgencySpec(masID int,
 		return
 	}
 	ret = stor.mas[masID].agencies[agencyID].Spec
-	// ret.Agents = make([]schemas.AgentInfo, len(ret.Spec.Agents), len(ret.Spec.Agents))
-	// for i := 0; i < len(ret.Spec.Agents); i++ {
-	// 	var temp schemas.AgentInfo
-	// 	temp, err = stor.getAgentInfoNolock(masID, ret.Spec.Agents[i].ID)
-	// 	if err != nil {
-	// 		stor.mutex.Unlock()
-	// 		return
-	// 	}
-	// 	ret.Agents[i] = temp
-	// }
 	stor.mutex.Unlock()
 	return
 }
@@ -349,19 +337,18 @@ func createMASStorage(masID int, masInfo schemas.MASInfo) (ret masStorage) {
 	ret.spec = masInfo.Spec
 	ret.agentCounter = masInfo.Agents.Counter
 	ret.agencyCounter = masInfo.Agencies.Counter
-	ret.graph = masInfo.Graph
 
 	ret.id = masID
 	ret.agents = make([]schemas.AgentInfo, ret.agentCounter, ret.agentCounter)
 	for i := 0; i < ret.agentCounter; i++ {
-		ret.agents[i].Spec = masInfo.Agents.Instances[i].Spec
+		ret.agents[i] = masInfo.Agents.Instances[i]
 		ret.agents[i].MASID = masID
 		ret.agents[i].Address.Agency = "mas-" + strconv.Itoa(masID) + "-agency-" +
 			strconv.Itoa(ret.agents[i].AgencyID) + ".mas" + strconv.Itoa(masID) + "agencies"
 	}
 	ret.agencies = make([]schemas.AgencyInfo, ret.agencyCounter, ret.agencyCounter)
 	for i := 0; i < ret.agencyCounter; i++ {
-		ret.agencies[i].Spec = masInfo.Agencies.Instances[i].Spec
+		ret.agencies[i] = masInfo.Agencies.Instances[i]
 		ret.agencies[i].Spec.MASID = masID
 		ret.agencies[i].Spec.Name = "mas-" + strconv.Itoa(masID) + "-agency-" + strconv.Itoa(i) +
 			".mas" + strconv.Itoa(masID) + "agencies"

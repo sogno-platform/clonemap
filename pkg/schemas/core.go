@@ -63,22 +63,19 @@ type MASInfo struct {
 	Agents   Agents   `json:"agents"`
 	Agencies Agencies `json:"agencies"`
 	Status   Status   `json:"status"`
-	Graph    Graph    `json:"graph"`
 }
 
 // MASSpec contains information about a MAS running in clonemap
 type MASSpec struct {
-	// ID                 int    `json:"id"`                        // unique ID of MAS
-	Name               string `json:"name,omitempty"`            // name/description of MAS
-	NumAgentsPerAgency int    `json:"agentsperagency,omitempty"` // number of agents per agency
-	Logging            bool   `json:"logging"`                   // switch for logging module
-	// Analysis           bool      `json:"analysis"`                  // switch for analysis logging
-	MQTT   bool        `json:"mqtt"` //switch for mqtt
-	DF     bool        `json:"df"`   //switch for df
-	Logger LogConfig   `json:"log"`  // logger configuration
-	Uptime time.Time   `json:"uptime"`
-	Agents []AgentSpec `json:"agents"`
-	Graph  Graph       `json:"graph"`
+	Name               string      `json:"name,omitempty"`            // name/description of MAS
+	NumAgentsPerAgency int         `json:"agentsperagency,omitempty"` // number of agents per agency
+	Logging            bool        `json:"logging"`                   // switch for logging module
+	MQTT               bool        `json:"mqtt"`                      //switch for mqtt
+	DF                 bool        `json:"df"`                        //switch for df
+	Logger             LogConfig   `json:"log"`                       // logger configuration
+	Uptime             time.Time   `json:"uptime"`
+	Agents             []AgentSpec `json:"agents"`
+	Graph              Graph       `json:"graph"`
 }
 
 // AgentInfo contains information about agent spec, address, communication, mqtt and status
@@ -94,10 +91,7 @@ type AgentInfo struct {
 
 // AgentSpec contains information about a agent running in a MAS
 type AgentSpec struct {
-	// MASID           int    `json:"masid"`             // ID of MAS
-	// AgencyID int `json:"agencyid"` // name of the agency
-	NodeID int `json:"nodeid"` // id of the node the agent is attached to
-	// ID              int    `json:"id"`                // unique ID of agent
+	NodeID          int    `json:"nodeid"`            // id of the node the agent is attached to
 	AgencyImage     string `json:"image"`             // docker image to be used for agencies
 	ImagePullSecret string `json:"secret,omitempty"`  // image pull secret
 	Name            string `json:"name,omitempty"`    // name/description of agent

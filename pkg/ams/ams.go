@@ -218,7 +218,7 @@ func (ams *AMS) startMAS(masID int, masInfo schemas.MASInfo, numAgencies int) (e
 	}
 	ams.logInfo.Println("Stored MAS data")
 	if os.Getenv("CLONEMAP_DEPLOYMENT_TYPE") == "local" {
-		_, err = dfcli.PostGraph(masID, masInfo.Graph)
+		_, err = dfcli.PostGraph(masID, masInfo.Spec.Graph)
 		if err != nil {
 			ams.logError.Println(err.Error())
 			return
@@ -256,9 +256,8 @@ func (ams *AMS) configureMAS(masSpec schemas.MASSpec) (masInfo schemas.MASInfo, 
 	}
 	masInfo.Agencies.Counter = numAgencies
 	masInfo.Agencies.Instances = make([]schemas.AgencyInfo, numAgencies, numAgencies)
-	masInfo.Graph = masSpec.Graph
-	if len(masInfo.Graph.Node) == 0 {
-		masInfo.Graph.Node = append(masInfo.Graph.Node, schemas.Node{ID: 0})
+	if len(masInfo.Spec.Graph.Node) == 0 {
+		masInfo.Spec.Graph.Node = append(masInfo.Spec.Graph.Node, schemas.Node{ID: 0})
 	}
 
 	// agent configuration
@@ -266,9 +265,9 @@ func (ams *AMS) configureMAS(masSpec schemas.MASSpec) (masInfo schemas.MASInfo, 
 		masInfo.Agents.Instances[i].Spec = masSpec.Agents[i]
 		masInfo.Agents.Instances[i].ID = i
 		masInfo.Agents.Instances[i].AgencyID = i / masSpec.NumAgentsPerAgency
-		for j := range masInfo.Graph.Node {
-			if masInfo.Graph.Node[j].ID == masInfo.Agents.Instances[i].Spec.NodeID {
-				masInfo.Graph.Node[j].Agent = append(masInfo.Graph.Node[j].Agent,
+		for j := range masInfo.Spec.Graph.Node {
+			if masInfo.Spec.Graph.Node[j].ID == masInfo.Agents.Instances[i].Spec.NodeID {
+				masInfo.Spec.Graph.Node[j].Agent = append(masInfo.Spec.Graph.Node[j].Agent,
 					masInfo.Agents.Instances[i].ID)
 				break
 			}

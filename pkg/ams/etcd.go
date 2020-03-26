@@ -170,7 +170,7 @@ func (stor *etcdStorage) storeMAS(masID int, masInfo schemas.MASInfo) (err error
 		return
 	}
 	err = stor.etcdPutResource("df/graph/"+strconv.Itoa(masID),
-		newMAS.graph)
+		newMAS.spec.Graph)
 	if err != nil {
 		return
 	}
@@ -345,7 +345,7 @@ func (stor *etcdStorage) initCache() (err error) {
 		}
 		// MAS graph
 		stor.verMAS[i].graph, err = stor.etcdGetResource("df/graph/"+strconv.Itoa(i),
-			&stor.mas[i].graph)
+			&stor.mas[i].spec.Graph)
 		if err != nil {
 			return
 		}
@@ -650,7 +650,7 @@ func (stor *etcdStorage) handleGraphEvents() {
 					}
 				}
 				if stor.verMAS[masID].graph < int(event.Kv.Version) {
-					err = json.Unmarshal(event.Kv.Value, &stor.mas[masID].graph)
+					err = json.Unmarshal(event.Kv.Value, &stor.mas[masID].spec.Graph)
 					if err != nil {
 						return
 					}
