@@ -47,6 +47,7 @@ package main
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/agency"
 	// "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
@@ -60,6 +61,7 @@ func main() {
 }
 
 func task(ag *agency.Agent) (err error) {
+	time.Sleep(2 * time.Second)
 	id := ag.GetAgentID()
 	ag.Logger.NewLog("app", "This is agent "+strconv.Itoa(id), "")
 	msg, _ := ag.ACL.NewMessage((id+1)%2, 0, 0, "Message from agent "+strconv.Itoa(id))
