@@ -151,26 +151,26 @@ func (stor *etcdStorage) storeMAS(masID int, masInfo schemas.MASInfo) (err error
 	}
 
 	newMAS := createMASStorage(masID, masInfo)
-	err = stor.etcdPutResource("ams/mas/"+strconv.Itoa(masID)+"/spec", newMAS.spec)
+	err = stor.etcdPutResource("ams/mas/"+strconv.Itoa(masID)+"/spec", newMAS.Spec)
 	if err != nil {
 		return
 	}
-	err = stor.etcdPutResource("ams/mas/"+strconv.Itoa(masID)+"/status", newMAS.status)
+	err = stor.etcdPutResource("ams/mas/"+strconv.Itoa(masID)+"/status", newMAS.Status)
 	if err != nil {
 		return
 	}
 	err = stor.etcdPutResource("ams/mas/"+strconv.Itoa(masID)+"/agentcounter",
-		newMAS.agentCounter)
+		newMAS.Agents.Counter)
 	if err != nil {
 		return
 	}
 	err = stor.etcdPutResource("ams/mas/"+strconv.Itoa(masID)+"/agencycounter",
-		newMAS.agencyCounter)
+		newMAS.Agencies.Counter)
 	if err != nil {
 		return
 	}
 	err = stor.etcdPutResource("df/graph/"+strconv.Itoa(masID),
-		newMAS.spec.Graph)
+		newMAS.Spec.Graph)
 	if err != nil {
 		return
 	}
@@ -188,34 +188,34 @@ func (stor *etcdStorage) storeMAS(masID int, masInfo schemas.MASInfo) (err error
 }
 
 // uploadAgentInfo puts all AgentInfo of a newly created MAS to etcd
-func (stor *etcdStorage) uploadAgentInfo(newMAS masStorage) (err error) {
+func (stor *etcdStorage) uploadAgentInfo(newMAS schemas.MASInfo) (err error) {
 	agentIndex := 0
 	for {
 		numAgInTrans := 100
-		if newMAS.agentCounter-agentIndex < numAgInTrans {
-			numAgInTrans = newMAS.agentCounter - agentIndex
+		if newMAS.Agents.Counter-agentIndex < numAgInTrans {
+			numAgInTrans = newMAS.Agents.Counter - agentIndex
 		}
 		Ops := make([]clientv3.Op, numAgInTrans, numAgInTrans)
 		// put all agent structs together
 		for i := 0; i < numAgInTrans; i++ {
 			var res []byte
-			res, err = json.Marshal(newMAS.agents[agentIndex])
+			res, err = json.Marshal(newMAS.Agents.Instances[agentIndex])
 			if err != nil {
 				return
 			}
-			Ops[i] = clientv3.OpPut("ams/mas/"+strconv.Itoa(newMAS.id)+"/agent/"+
+			Ops[i] = clientv3.OpPut("ams/mas/"+strconv.Itoa(newMAS.ID)+"/agent/"+
 				strconv.Itoa(agentIndex), string(res))
 			agentIndex++
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		cond := clientv3.Compare(clientv3.Version("ams/mas/"+strconv.Itoa(newMAS.id)+
+		cond := clientv3.Compare(clientv3.Version("ams/mas/"+strconv.Itoa(newMAS.ID)+
 			"/agentcounter"), ">", 0)
 		_, err = stor.client.Txn(ctx).If(cond).Then(Ops...).Commit()
 		cancel()
 		if err != nil {
 			return
 		}
-		if agentIndex >= newMAS.agentCounter {
+		if agentIndex >= newMAS.Agents.Counter {
 			break
 		}
 		time.Sleep(50 * time.Millisecond)
@@ -224,34 +224,34 @@ func (stor *etcdStorage) uploadAgentInfo(newMAS masStorage) (err error) {
 }
 
 // uploadAgencyInfo puts all AgencyInfo of a newly created MAS to etcd
-func (stor *etcdStorage) uploadAgencyInfo(newMAS masStorage) (err error) {
+func (stor *etcdStorage) uploadAgencyInfo(newMAS schemas.MASInfo) (err error) {
 	agencyIndex := 0
 	for {
 		numAgInTrans := 100
-		if newMAS.agencyCounter-agencyIndex < numAgInTrans {
-			numAgInTrans = newMAS.agencyCounter - agencyIndex
+		if newMAS.Agencies.Counter-agencyIndex < numAgInTrans {
+			numAgInTrans = newMAS.Agencies.Counter - agencyIndex
 		}
 		Ops := make([]clientv3.Op, numAgInTrans, numAgInTrans)
 		// put all agencies structs together
 		for i := 0; i < numAgInTrans; i++ {
 			var res []byte
-			res, err = json.Marshal(newMAS.agencies[agencyIndex])
+			res, err = json.Marshal(newMAS.Agencies.Instances[agencyIndex])
 			if err != nil {
 				return
 			}
-			Ops[i] = clientv3.OpPut("ams/mas/"+strconv.Itoa(newMAS.id)+"/agency/"+
+			Ops[i] = clientv3.OpPut("ams/mas/"+strconv.Itoa(newMAS.ID)+"/agency/"+
 				strconv.Itoa(agencyIndex), string(res))
 			agencyIndex++
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		cond := clientv3.Compare(clientv3.Version("ams/mas/"+strconv.Itoa(newMAS.id)+
+		cond := clientv3.Compare(clientv3.Version("ams/mas/"+strconv.Itoa(newMAS.ID)+
 			"/agencycounter"), ">", 0)
 		_, err = stor.client.Txn(ctx).If(cond).Then(Ops...).Commit()
 		cancel()
 		if err != nil {
 			return
 		}
-		if agencyIndex >= newMAS.agencyCounter {
+		if agencyIndex >= newMAS.Agencies.Counter {
 			break
 		}
 		time.Sleep(50 * time.Millisecond)
@@ -327,25 +327,25 @@ func (stor *etcdStorage) initCache() (err error) {
 	if err != nil {
 		return
 	}
-	stor.mas = make([]masStorage, stor.masCounter, stor.masCounter)
+	stor.mas = make([]schemas.MASInfo, stor.masCounter, stor.masCounter)
 	stor.verMAS = make([]masVersion, stor.masCounter, stor.masCounter)
 	// get data for each mas
 	for i := 0; i < stor.masCounter; i++ {
 		// MAS spec
 		stor.verMAS[i].spec, err = stor.etcdGetResource("ams/mas/"+strconv.Itoa(i)+"/spec",
-			&stor.mas[i].spec)
+			&stor.mas[i].Spec)
 		if err != nil {
 			return
 		}
 		// MAS status
 		stor.verMAS[i].status, err = stor.etcdGetResource("ams/mas/"+strconv.Itoa(i)+"/status",
-			&stor.mas[i].status)
+			&stor.mas[i].Status)
 		if err != nil {
 			return
 		}
 		// MAS graph
 		stor.verMAS[i].graph, err = stor.etcdGetResource("df/graph/"+strconv.Itoa(i),
-			&stor.mas[i].spec.Graph)
+			&stor.mas[i].Spec.Graph)
 		if err != nil {
 			return
 		}
@@ -367,14 +367,14 @@ func (stor *etcdStorage) initCache() (err error) {
 func (stor *etcdStorage) initMASAgents(masID int) (err error) {
 	// MAS agent counter
 	stor.verMAS[masID].agentCounter, err = stor.etcdGetResource("ams/mas/"+strconv.Itoa(masID)+
-		"/agentcounter", &stor.mas[masID].agentCounter)
+		"/agentcounter", &stor.mas[masID].Agents.Counter)
 	if err != nil {
 		return
 	}
-	stor.mas[masID].agents = make([]schemas.AgentInfo, stor.mas[masID].agentCounter,
-		stor.mas[masID].agentCounter)
-	stor.verMAS[masID].agents = make([]int, stor.mas[masID].agentCounter,
-		stor.mas[masID].agentCounter)
+	stor.mas[masID].Agents.Instances = make([]schemas.AgentInfo, stor.mas[masID].Agents.Counter,
+		stor.mas[masID].Agents.Counter)
+	stor.verMAS[masID].agents = make([]int, stor.mas[masID].Agents.Counter,
+		stor.mas[masID].Agents.Counter)
 
 	// get info of all agents and loop through
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -391,10 +391,10 @@ func (stor *etcdStorage) initMASAgents(masID int) (err error) {
 			if err != nil {
 				continue
 			}
-			if agentID >= stor.mas[masID].agentCounter {
+			if agentID >= stor.mas[masID].Agents.Counter {
 				continue
 			}
-			err = json.Unmarshal(resp.Kvs[i].Value, &stor.mas[masID].agents[agentID])
+			err = json.Unmarshal(resp.Kvs[i].Value, &stor.mas[masID].Agents.Instances[agentID])
 			if err != nil {
 				continue
 			}
@@ -409,14 +409,14 @@ func (stor *etcdStorage) initMASAgents(masID int) (err error) {
 func (stor *etcdStorage) initMASAgencies(masID int) (err error) {
 	// MAS agency counter
 	stor.verMAS[masID].agencyCounter, err = stor.etcdGetResource("ams/mas/"+strconv.Itoa(masID)+
-		"/agencycounter", &stor.mas[masID].agencyCounter)
+		"/agencycounter", &stor.mas[masID].Agencies.Counter)
 	if err != nil {
 		return
 	}
-	stor.mas[masID].agencies = make([]schemas.AgencyInfo, stor.mas[masID].agencyCounter,
-		stor.mas[masID].agencyCounter)
-	stor.verMAS[masID].agencies = make([]int, stor.mas[masID].agencyCounter,
-		stor.mas[masID].agencyCounter)
+	stor.mas[masID].Agencies.Instances = make([]schemas.AgencyInfo, stor.mas[masID].Agencies.Counter,
+		stor.mas[masID].Agencies.Counter)
+	stor.verMAS[masID].agencies = make([]int, stor.mas[masID].Agencies.Counter,
+		stor.mas[masID].Agencies.Counter)
 
 	// get info of all agencies and loop through
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -433,10 +433,10 @@ func (stor *etcdStorage) initMASAgencies(masID int) (err error) {
 			if err != nil {
 				continue
 			}
-			if agencyID >= stor.mas[masID].agencyCounter {
+			if agencyID >= stor.mas[masID].Agencies.Counter {
 				continue
 			}
-			err = json.Unmarshal(resp.Kvs[i].Value, &stor.mas[masID].agencies[agencyID])
+			err = json.Unmarshal(resp.Kvs[i].Value, &stor.mas[masID].Agencies.Instances[agencyID])
 			if err != nil {
 				continue
 			}
@@ -471,7 +471,7 @@ func (stor *etcdStorage) handleAMSEvents() {
 				stor.mutex.Lock()
 				if len(stor.mas) <= masID {
 					for i := 0; i < masID-len(stor.mas)+1; i++ {
-						stor.mas = append(stor.mas, masStorage{})
+						stor.mas = append(stor.mas, schemas.MASInfo{})
 					}
 				}
 				stor.mutex.Unlock()
@@ -530,7 +530,7 @@ func (stor *etcdStorage) handleMASEvents(kv *mvccpb.KeyValue, masID int, key str
 	switch key {
 	case "spec":
 		if stor.verMAS[masID].spec < int(kv.Version) {
-			err = json.Unmarshal(kv.Value, &stor.mas[masID].spec)
+			err = json.Unmarshal(kv.Value, &stor.mas[masID].Spec)
 			if err != nil {
 				return
 			}
@@ -538,7 +538,7 @@ func (stor *etcdStorage) handleMASEvents(kv *mvccpb.KeyValue, masID int, key str
 		}
 	case "status":
 		if stor.verMAS[masID].status < int(kv.Version) {
-			err = json.Unmarshal(kv.Value, &stor.mas[masID].status)
+			err = json.Unmarshal(kv.Value, &stor.mas[masID].Status)
 			if err != nil {
 				return
 			}
@@ -546,7 +546,7 @@ func (stor *etcdStorage) handleMASEvents(kv *mvccpb.KeyValue, masID int, key str
 		}
 	case "agentcounter":
 		if stor.verMAS[masID].agentCounter < int(kv.Version) {
-			err = json.Unmarshal(kv.Value, &stor.mas[masID].agentCounter)
+			err = json.Unmarshal(kv.Value, &stor.mas[masID].Agents.Counter)
 			if err != nil {
 				return
 			}
@@ -554,7 +554,7 @@ func (stor *etcdStorage) handleMASEvents(kv *mvccpb.KeyValue, masID int, key str
 		}
 	case "agencycounter":
 		if stor.verMAS[masID].agencyCounter < int(kv.Version) {
-			err = json.Unmarshal(kv.Value, &stor.mas[masID].agencyCounter)
+			err = json.Unmarshal(kv.Value, &stor.mas[masID].Agencies.Counter)
 			if err != nil {
 				return
 			}
@@ -569,9 +569,9 @@ func (stor *etcdStorage) handleAgentEvents(kv *mvccpb.KeyValue, masID int,
 	agentID int) (err error) {
 	// create agent storage object, if number of stored agents is lower than agentID
 	stor.mutex.Lock()
-	if len(stor.mas[masID].agents) <= agentID {
-		for i := 0; i < agentID-len(stor.mas[masID].agents)+1; i++ {
-			stor.mas[masID].agents = append(stor.mas[masID].agents,
+	if len(stor.mas[masID].Agents.Instances) <= agentID {
+		for i := 0; i < agentID-len(stor.mas[masID].Agents.Instances)+1; i++ {
+			stor.mas[masID].Agents.Instances = append(stor.mas[masID].Agents.Instances,
 				schemas.AgentInfo{})
 		}
 	}
@@ -583,7 +583,7 @@ func (stor *etcdStorage) handleAgentEvents(kv *mvccpb.KeyValue, masID int,
 	}
 
 	if stor.verMAS[masID].agents[agentID] < int(kv.Version) {
-		err = json.Unmarshal(kv.Value, &stor.mas[masID].agents[agentID])
+		err = json.Unmarshal(kv.Value, &stor.mas[masID].Agents.Instances[agentID])
 		if err != nil {
 			return
 		}
@@ -597,9 +597,9 @@ func (stor *etcdStorage) handleAgencyEvents(kv *mvccpb.KeyValue, masID int,
 	agencyID int) (err error) {
 	// create agency storage object, if number of stored agencies is lower than agencyID
 	stor.mutex.Lock()
-	if len(stor.mas[masID].agencies) <= agencyID {
-		for i := 0; i < agencyID-len(stor.mas[masID].agencies)+1; i++ {
-			stor.mas[masID].agencies = append(stor.mas[masID].agencies,
+	if len(stor.mas[masID].Agencies.Instances) <= agencyID {
+		for i := 0; i < agencyID-len(stor.mas[masID].Agencies.Instances)+1; i++ {
+			stor.mas[masID].Agencies.Instances = append(stor.mas[masID].Agencies.Instances,
 				schemas.AgencyInfo{})
 		}
 	}
@@ -611,7 +611,7 @@ func (stor *etcdStorage) handleAgencyEvents(kv *mvccpb.KeyValue, masID int,
 	}
 
 	if stor.verMAS[masID].agencies[agencyID] < int(kv.Version) {
-		err = json.Unmarshal(kv.Value, &stor.mas[masID].agencies[agencyID])
+		err = json.Unmarshal(kv.Value, &stor.mas[masID].Agencies.Instances[agencyID])
 		if err != nil {
 			return
 		}
@@ -640,7 +640,7 @@ func (stor *etcdStorage) handleGraphEvents() {
 				stor.mutex.Lock()
 				if len(stor.mas) <= masID {
 					for i := 0; i < masID-len(stor.mas)+1; i++ {
-						stor.mas = append(stor.mas, masStorage{})
+						stor.mas = append(stor.mas, schemas.MASInfo{})
 					}
 				}
 				stor.mutex.Unlock()
@@ -650,7 +650,7 @@ func (stor *etcdStorage) handleGraphEvents() {
 					}
 				}
 				if stor.verMAS[masID].graph < int(event.Kv.Version) {
-					err = json.Unmarshal(event.Kv.Value, &stor.mas[masID].spec.Graph)
+					err = json.Unmarshal(event.Kv.Value, &stor.mas[masID].Spec.Graph)
 					if err != nil {
 						return
 					}

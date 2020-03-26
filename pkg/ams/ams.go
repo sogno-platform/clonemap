@@ -49,6 +49,7 @@ package ams
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -211,6 +212,7 @@ func (ams *AMS) createMAS(masSpec schemas.MASSpec) (err error) {
 
 // startMAS starts the MAS
 func (ams *AMS) startMAS(masID int, masInfo schemas.MASInfo, numAgencies int) (err error) {
+	fmt.Println(masInfo)
 	err = ams.stor.storeMAS(masID, masInfo)
 	if err != nil {
 		ams.logError.Println(err.Error())
@@ -228,7 +230,7 @@ func (ams *AMS) startMAS(masID int, masInfo schemas.MASInfo, numAgencies int) (e
 	// deploy containers
 	image := ""
 	pullSecret := ""
-	if len(masInfo.Agents.Instances) > 0 {
+	if len(masInfo.ImageGroups) > 0 {
 		image = masInfo.ImageGroups[0].Image
 		pullSecret = masInfo.ImageGroups[0].PullSecret
 	}
