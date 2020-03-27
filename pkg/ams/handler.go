@@ -202,7 +202,7 @@ func (ams *AMS) handleMAS(w http.ResponseWriter, r *http.Request) (cmapErr, http
 				if cmapErr == nil {
 					httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Ressource Created"))
 				} else {
-					httpErr = httpreply.CMAPError(w, httpErr.Error())
+					httpErr = httpreply.CMAPError(w, cmapErr.Error())
 				}
 			} else {
 				httpErr = httpreply.JSONUnmarshalError(w)

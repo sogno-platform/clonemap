@@ -49,7 +49,6 @@ package ams
 
 import (
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -217,7 +216,6 @@ func (ams *AMS) createMAS(masSpec schemas.MASSpec) (err error) {
 
 // startMAS starts the MAS
 func (ams *AMS) startMAS(masID int, masInfo schemas.MASInfo, numAgencies map[int]int) (err error) {
-	fmt.Println(masInfo)
 	err = ams.stor.storeMAS(masID, masInfo)
 	if err != nil {
 		ams.logError.Println(err.Error())
@@ -267,6 +265,7 @@ func (ams *AMS) configureMAS(masSpec schemas.MASSpec) (masInfo schemas.MASInfo, 
 			ID:         i,
 		}
 		masInfo.ImageGroups = append(masInfo.ImageGroups, imGroupInfo)
+		imageTemp[masSpec.ImageGroups[i].Image] = nil
 	}
 
 	// MAS configuration
@@ -336,8 +335,8 @@ func (ams *AMS) configureMAS(masSpec schemas.MASSpec) (masInfo schemas.MASInfo, 
 				agentCounterTot++
 			}
 			masInfo.Agencies.Instances[agencyID] = agencyInfo
-			agencyID++
 			masInfo.ImageGroups[i].Agencies = append(masInfo.ImageGroups[i].Agencies, agencyID)
+			agencyID++
 		}
 	}
 	return
