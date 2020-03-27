@@ -127,22 +127,26 @@ func dummyClient(s *http.Server, t *testing.T) {
 		t.Error("Error GetCloneMAP " + strconv.Itoa(httpStatus))
 	}
 	mas := schemas.MASSpec{
-		Name:               "test",
-		NumAgentsPerAgency: 10,
-		Logging:            false,
-		MQTT:               false,
-		DF:                 false,
-		ImageGroups: schemas.ImageGroupSpec{
-			Image:      "agent",
-			PullSecret: "",
-			Agents: []schemas.AgentSpec{
-				schemas.AgentSpec{
-					Name:  "test1",
-					AType: "test",
-				},
-				schemas.AgentSpec{
-					Name:  "test2",
-					AType: "test",
+		Config: schemas.MASConfig{
+			Name:               "test",
+			NumAgentsPerAgency: 10,
+			Logging:            false,
+			MQTT:               false,
+			DF:                 false,
+		},
+		ImageGroups: []schemas.ImageGroupSpec{
+			schemas.ImageGroupSpec{
+				Image:      "agent",
+				PullSecret: "",
+				Agents: []schemas.AgentSpec{
+					schemas.AgentSpec{
+						Name:  "test1",
+						AType: "test",
+					},
+					schemas.AgentSpec{
+						Name:  "test2",
+						AType: "test",
+					},
 				},
 			},
 		},

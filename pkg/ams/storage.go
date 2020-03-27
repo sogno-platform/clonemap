@@ -139,10 +139,10 @@ func (stor *localStorage) setCloneMAPInfo(cloneMAP schemas.CloneMAP) (err error)
 // getMASs returns specs of all MAS
 func (stor *localStorage) getMASs() (ret schemas.MASs, err error) {
 	stor.mutex.Lock()
-	ret.Instances = make([]schemas.MASSpec, len(stor.mas), len(stor.mas))
+	ret.Instances = make([]schemas.MASInfo, len(stor.mas), len(stor.mas))
 	ret.Counter = stor.masCounter
 	for i := 0; i < len(stor.mas); i++ {
-		ret.Instances[i] = stor.mas[i].Spec
+		ret.Instances[i] = stor.mas[i]
 	}
 	stor.mutex.Unlock()
 	return

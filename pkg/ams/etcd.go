@@ -48,7 +48,7 @@ THE SOFTWARE.
 //
 // ams/data: schemas.CloneMAP
 // ams/mas/counter: int (masCounter)
-// ams/mas/<masID>/spec schemas.MASSpec
+// ams/mas/<masID>/config schemas.MASConfig
 // ams/mas/<masID>/status schemas.Status
 // ams/mas/<masID>/agentcounter int (agentCounter)
 // // ams/mas/<masID>/agents/data schemas.Agents
@@ -90,7 +90,7 @@ type etcdStorage struct {
 // version of mas keys in etcd
 type masVersion struct {
 	status        int
-	spec          int
+	config        int
 	agentCounter  int
 	agents        []int
 	agencyCounter int
@@ -142,8 +142,8 @@ func (stor *etcdStorage) registerMAS() (masID int, err error) {
 
 // storeMAS stores MAS specs
 func (stor *etcdStorage) storeMAS(masID int, masInfo schemas.MASInfo) (err error) {
-	var tempSpec schemas.MASSpec
-	_, err = stor.etcdGetResource("ams/mas/"+strconv.Itoa(masID)+"/spec", &tempSpec)
+	var tempConfig schemas.MASConfig
+	_, err = stor.etcdGetResource("ams/mas/"+strconv.Itoa(masID)+"/config", &tempConfig)
 	if err == nil {
 		// resource already exists
 		err = errors.New("MAS already exists")
@@ -151,7 +151,7 @@ func (stor *etcdStorage) storeMAS(masID int, masInfo schemas.MASInfo) (err error
 	}
 
 	newMAS := createMASStorage(masID, masInfo)
-	err = stor.etcdPutResource("ams/mas/"+strconv.Itoa(masID)+"/spec", newMAS.Spec)
+	err = stor.etcdPutResource("ams/mas/"+strconv.Itoa(masID)+"/config", newMAS.Config)
 	if err != nil {
 		return
 	}
@@ -170,7 +170,7 @@ func (stor *etcdStorage) storeMAS(masID int, masInfo schemas.MASInfo) (err error
 		return
 	}
 	err = stor.etcdPutResource("df/graph/"+strconv.Itoa(masID),
-		newMAS.Spec.Graph)
+		newMAS.Graph)
 	if err != nil {
 		return
 	}
@@ -331,9 +331,9 @@ func (stor *etcdStorage) initCache() (err error) {
 	stor.verMAS = make([]masVersion, stor.masCounter, stor.masCounter)
 	// get data for each mas
 	for i := 0; i < stor.masCounter; i++ {
-		// MAS spec
-		stor.verMAS[i].spec, err = stor.etcdGetResource("ams/mas/"+strconv.Itoa(i)+"/spec",
-			&stor.mas[i].Spec)
+		// MAS config
+		stor.verMAS[i].config, err = stor.etcdGetResource("ams/mas/"+strconv.Itoa(i)+"/config",
+			&stor.mas[i].Config)
 		if err != nil {
 			return
 		}
@@ -345,7 +345,7 @@ func (stor *etcdStorage) initCache() (err error) {
 		}
 		// MAS graph
 		stor.verMAS[i].graph, err = stor.etcdGetResource("df/graph/"+strconv.Itoa(i),
-			&stor.mas[i].Spec.Graph)
+			&stor.mas[i].Graph)
 		if err != nil {
 			return
 		}
@@ -528,13 +528,13 @@ func (stor *etcdStorage) handleMASCounterEvents(kv *mvccpb.KeyValue) (err error)
 // handleMASEvents is the handler function for events of the ams/mas/<id>/... path
 func (stor *etcdStorage) handleMASEvents(kv *mvccpb.KeyValue, masID int, key string) (err error) {
 	switch key {
-	case "spec":
-		if stor.verMAS[masID].spec < int(kv.Version) {
-			err = json.Unmarshal(kv.Value, &stor.mas[masID].Spec)
+	case "config":
+		if stor.verMAS[masID].config < int(kv.Version) {
+			err = json.Unmarshal(kv.Value, &stor.mas[masID].Config)
 			if err != nil {
 				return
 			}
-			stor.verMAS[masID].spec = int(kv.Version)
+			stor.verMAS[masID].config = int(kv.Version)
 		}
 	case "status":
 		if stor.verMAS[masID].status < int(kv.Version) {
@@ -650,7 +650,7 @@ func (stor *etcdStorage) handleGraphEvents() {
 					}
 				}
 				if stor.verMAS[masID].graph < int(event.Kv.Version) {
-					err = json.Unmarshal(event.Kv.Value, &stor.mas[masID].Spec.Graph)
+					err = json.Unmarshal(event.Kv.Value, &stor.mas[masID].Graph)
 					if err != nil {
 						return
 					}

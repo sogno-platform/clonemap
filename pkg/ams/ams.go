@@ -195,7 +195,12 @@ func (ams *AMS) getAgencyInfoFull(masID int, agencyID int) (ret schemas.AgencyIn
 // createMAS creates a new mas according to masconfig
 func (ams *AMS) createMAS(masSpec schemas.MASSpec) (err error) {
 	// fill masInfo
-	masInfo, numAgencies := ams.configureMAS(masSpec)
+	var masInfo schemas.MASInfo
+	var numAgencies map[int]int
+	masInfo, numAgencies, err = ams.configureMAS(masSpec)
+	if err != nil {
+		return
+	}
 
 	// safe mas in storage and get ID
 	var masID int
@@ -211,7 +216,7 @@ func (ams *AMS) createMAS(masSpec schemas.MASSpec) (err error) {
 }
 
 // startMAS starts the MAS
-func (ams *AMS) startMAS(masID int, masInfo schemas.MASInfo, numAgencies int) (err error) {
+func (ams *AMS) startMAS(masID int, masInfo schemas.MASInfo, numAgencies map[int]int) (err error) {
 	fmt.Println(masInfo)
 	err = ams.stor.storeMAS(masID, masInfo)
 	if err != nil {
@@ -220,7 +225,7 @@ func (ams *AMS) startMAS(masID int, masInfo schemas.MASInfo, numAgencies int) (e
 	}
 	ams.logInfo.Println("Stored MAS data")
 	if os.Getenv("CLONEMAP_DEPLOYMENT_TYPE") == "local" {
-		_, err = dfcli.PostGraph(masID, masInfo.Spec.Graph)
+		_, err = dfcli.PostGraph(masID, masInfo.Graph)
 		if err != nil {
 			ams.logError.Println(err.Error())
 			return
@@ -234,8 +239,8 @@ func (ams *AMS) startMAS(masID int, masInfo schemas.MASInfo, numAgencies int) (e
 		image = masInfo.ImageGroups[0].Image
 		pullSecret = masInfo.ImageGroups[0].PullSecret
 	}
-	err = ams.depl.newMAS(masID, image, pullSecret, numAgencies, masInfo.Spec.Logging,
-		masInfo.Spec.MQTT, masInfo.Spec.DF)
+	err = ams.depl.newMAS(masID, image, pullSecret, numAgencies, masInfo.Config.Logging,
+		masInfo.Config.MQTT, masInfo.Config.DF)
 	if err != nil {
 		ams.logError.Println(err.Error())
 		return
@@ -246,60 +251,94 @@ func (ams *AMS) startMAS(masID int, masInfo schemas.MASInfo, numAgencies int) (e
 }
 
 // configureMAS fills the missing configuration as agencies, agent ids and addresses
-func (ams *AMS) configureMAS(masSpec schemas.MASSpec) (masInfo schemas.MASInfo, numAgencies int) {
+func (ams *AMS) configureMAS(masSpec schemas.MASSpec) (masInfo schemas.MASInfo, numAgencies map[int]int,
+	err error) {
 	// extract all image groups
-	groupID := 0
-	imGroupInfo := schemas.ImageGroupInfo{
-		Image:      masSpec.ImageGroups.Image,
-		PullSecret: masSpec.ImageGroups.PullSecret,
-		ID:         groupID,
+	imageTemp := make(map[string]interface{})
+	for i := range masSpec.ImageGroups {
+		if _, ok := imageTemp[masSpec.ImageGroups[i].Image]; ok {
+			// image already exists
+			err = errors.New("invalid masSpec; two or more groups with same image")
+			return
+		}
+		imGroupInfo := schemas.ImageGroupInfo{
+			Image:      masSpec.ImageGroups[i].Image,
+			PullSecret: masSpec.ImageGroups[i].PullSecret,
+			ID:         i,
+		}
+		masInfo.ImageGroups = append(masInfo.ImageGroups, imGroupInfo)
 	}
-	masInfo.ImageGroups = append(masInfo.ImageGroups, imGroupInfo)
 
 	// MAS configuration
-	masInfo.Spec = masSpec
-	masInfo.Agents.Counter = len(masSpec.ImageGroups.Agents)
+	masInfo.Config = masSpec.Config
+	masInfo.Graph = masSpec.Graph
+
+	// total number of agents and total number of agencies
+	masInfo.Agents.Counter = 0
+	numAgencies = make(map[int]int)
+	masInfo.Agencies.Counter = 0
+	for i := range masSpec.ImageGroups {
+		masInfo.Agents.Counter += len(masSpec.ImageGroups[i].Agents)
+		numAgencies[i] = len(masSpec.ImageGroups[i].Agents) / masSpec.Config.NumAgentsPerAgency
+		if len(masSpec.ImageGroups[i].Agents)%masSpec.Config.NumAgentsPerAgency > 0 {
+			numAgencies[i] = numAgencies[i] + 1
+		}
+		masInfo.Agencies.Counter += numAgencies[i]
+	}
 	masInfo.Agents.Instances = make([]schemas.AgentInfo, masInfo.Agents.Counter,
 		masInfo.Agents.Counter)
-	numAgencies = len(masSpec.ImageGroups.Agents) / masSpec.NumAgentsPerAgency
-	if len(masSpec.ImageGroups.Agents)%masSpec.NumAgentsPerAgency > 0 {
-		numAgencies++
-	}
-	masInfo.Agencies.Counter = numAgencies
-	masInfo.Agencies.Instances = make([]schemas.AgencyInfo, numAgencies, numAgencies)
-	if len(masInfo.Spec.Graph.Node) == 0 {
-		masInfo.Spec.Graph.Node = append(masInfo.Spec.Graph.Node, schemas.Node{ID: 0})
+	masInfo.Agencies.Instances = make([]schemas.AgencyInfo, masInfo.Agencies.Counter,
+		masInfo.Agencies.Counter)
+
+	// empty graph?
+	if len(masInfo.Graph.Node) == 0 {
+		masInfo.Graph.Node = append(masInfo.Graph.Node, schemas.Node{ID: 0})
 	}
 
 	// agent configuration
-	for i := 0; i < masInfo.Agents.Counter; i++ {
-		masInfo.Agents.Instances[i].Spec = masSpec.ImageGroups.Agents[i]
-		masInfo.Agents.Instances[i].ID = i
-		masInfo.Agents.Instances[i].AgencyID = i / masSpec.NumAgentsPerAgency
-		for j := range masInfo.Spec.Graph.Node {
-			if masInfo.Spec.Graph.Node[j].ID == masInfo.Agents.Instances[i].Spec.NodeID {
-				masInfo.Spec.Graph.Node[j].Agent = append(masInfo.Spec.Graph.Node[j].Agent,
-					masInfo.Agents.Instances[i].ID)
-				break
+	agentID := 0
+	agencyIDOffset := 0
+	for i := range masSpec.ImageGroups {
+		for j := range masSpec.ImageGroups[i].Agents {
+			masInfo.Agents.Instances[agentID].Spec = masSpec.ImageGroups[i].Agents[j]
+			masInfo.Agents.Instances[agentID].ID = agentID
+			masInfo.Agents.Instances[agentID].AgencyID = agencyIDOffset + j/masSpec.Config.NumAgentsPerAgency
+			masInfo.Agents.Instances[agentID].ImageGroupID = i
+			for j := range masInfo.Graph.Node {
+				if masInfo.Graph.Node[j].ID == masInfo.Agents.Instances[i].Spec.NodeID {
+					masInfo.Graph.Node[j].Agent = append(masInfo.Graph.Node[j].Agent,
+						masInfo.Agents.Instances[i].ID)
+					break
+				}
 			}
+			agentID++
 		}
+		agencyIDOffset += numAgencies[i]
 	}
 
 	// agency configuration
-	agentCounter := 0
-	for i := 0; i < numAgencies; i++ {
-		agencyInfo := schemas.AgencyInfo{
-			ID:     i,
-			Logger: masSpec.Logger,
-		}
-		for j := 0; j < masSpec.NumAgentsPerAgency; j++ {
-			if agentCounter >= masInfo.Agents.Counter {
-				break
+	agencyID := 0
+	agentCounterTot := 0
+	for i := range masSpec.ImageGroups {
+		agentCounter := 0
+		for j := 0; j < numAgencies[i]; j++ {
+			agencyInfo := schemas.AgencyInfo{
+				ImageGroupID: i,
+				ID:           agencyID,
+				Logger:       masSpec.Config.Logger,
 			}
-			agencyInfo.Agents = append(agencyInfo.Agents, agentCounter)
-			agentCounter++
+			for k := 0; k < masSpec.Config.NumAgentsPerAgency; k++ {
+				if agentCounter >= len(masSpec.ImageGroups[i].Agents) {
+					break
+				}
+				agencyInfo.Agents = append(agencyInfo.Agents, agentCounterTot)
+				agentCounter++
+				agentCounterTot++
+			}
+			masInfo.Agencies.Instances[agencyID] = agencyInfo
+			agencyID++
+			masInfo.ImageGroups[i].Agencies = append(masInfo.ImageGroups[i].Agencies, agencyID)
 		}
-		masInfo.Agencies.Instances[i] = agencyInfo
 	}
 	return
 }
