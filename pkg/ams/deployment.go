@@ -61,7 +61,7 @@ import (
 
 // deployment interface for interaction with storage
 type deployment interface {
-	newMAS(masID int, image string, pullSecret string, numAgencies map[int]int, logging bool, mqtt bool,
+	newMAS(masID int, images []schemas.ImageGroupInfo, logging bool, mqtt bool,
 		df bool) (err error)
 	scaleMAS(masID int, deltaAgencies int) (err error)
 	deleteMAS(masID int) (err error)
@@ -73,26 +73,28 @@ type localDeployment struct {
 }
 
 // newMAS triggers the cluster manager to start new agency containers
-func (localdepl *localDeployment) newMAS(masID int, image string, pullSecret string,
-	numAgencies map[int]int, logging bool, mqtt bool, df bool) (err error) {
-	for i := 0; i < numAgencies[0]; i++ {
-		temp := schemas.StubAgencyConfig{
-			MASID:     masID,
-			AgencyID:  i,
-			NumAgents: 10,
-			Image:     image,
-			Logging:   logging,
-			MQTT:      mqtt,
-			DF:        df,
-		}
-		js, _ := json.Marshal(temp)
-		var statusCode int
-		httpClient := &http.Client{Timeout: time.Second * 10}
-		_, statusCode, err = httpretry.Post(httpClient, "http://"+localdepl.hostName+
-			":8000/api/container", " ", js, time.Second*2, 2)
-		if err == nil {
-			if statusCode != http.StatusCreated {
-				err = errors.New("Cannot create agency")
+func (localdepl *localDeployment) newMAS(masID int, images []schemas.ImageGroupInfo,
+	logging bool, mqtt bool, df bool) (err error) {
+	for i := range images {
+		for j := 0; j < len(images[i].Agencies); j++ {
+			temp := schemas.StubAgencyConfig{
+				MASID:        masID,
+				AgencyID:     j,
+				ImageGroupID: i,
+				Image:        images[i].Image,
+				Logging:      logging,
+				MQTT:         mqtt,
+				DF:           df,
+			}
+			js, _ := json.Marshal(temp)
+			var statusCode int
+			httpClient := &http.Client{Timeout: time.Second * 10}
+			_, statusCode, err = httpretry.Post(httpClient, "http://"+localdepl.hostName+
+				":8000/api/container", " ", js, time.Second*2, 2)
+			if err == nil {
+				if statusCode != http.StatusCreated {
+					err = errors.New("Cannot create agency")
+				}
 			}
 		}
 	}

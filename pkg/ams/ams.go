@@ -53,6 +53,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	agcli "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/agency/client"
@@ -195,7 +196,7 @@ func (ams *AMS) getAgencyInfoFull(masID int, agencyID int) (ret schemas.AgencyIn
 func (ams *AMS) createMAS(masSpec schemas.MASSpec) (err error) {
 	// fill masInfo
 	var masInfo schemas.MASInfo
-	var numAgencies map[int]int
+	var numAgencies []int
 	masInfo, numAgencies, err = ams.configureMAS(masSpec)
 	if err != nil {
 		return
@@ -215,7 +216,7 @@ func (ams *AMS) createMAS(masSpec schemas.MASSpec) (err error) {
 }
 
 // startMAS starts the MAS
-func (ams *AMS) startMAS(masID int, masInfo schemas.MASInfo, numAgencies map[int]int) (err error) {
+func (ams *AMS) startMAS(masID int, masInfo schemas.MASInfo, numAgencies []int) (err error) {
 	err = ams.stor.storeMAS(masID, masInfo)
 	if err != nil {
 		ams.logError.Println(err.Error())
@@ -231,13 +232,7 @@ func (ams *AMS) startMAS(masID int, masInfo schemas.MASInfo, numAgencies map[int
 	}
 
 	// deploy containers
-	image := ""
-	pullSecret := ""
-	if len(masInfo.ImageGroups) > 0 {
-		image = masInfo.ImageGroups[0].Image
-		pullSecret = masInfo.ImageGroups[0].PullSecret
-	}
-	err = ams.depl.newMAS(masID, image, pullSecret, numAgencies, masInfo.Config.Logging,
+	err = ams.depl.newMAS(masID, masInfo.ImageGroups, masInfo.Config.Logging,
 		masInfo.Config.MQTT, masInfo.Config.DF)
 	if err != nil {
 		ams.logError.Println(err.Error())
@@ -249,8 +244,8 @@ func (ams *AMS) startMAS(masID int, masInfo schemas.MASInfo, numAgencies map[int
 }
 
 // configureMAS fills the missing configuration as agencies, agent ids and addresses
-func (ams *AMS) configureMAS(masSpec schemas.MASSpec) (masInfo schemas.MASInfo, numAgencies map[int]int,
-	err error) {
+func (ams *AMS) configureMAS(masSpec schemas.MASSpec) (masInfo schemas.MASInfo,
+	numAgencies []int, err error) {
 	// extract all image groups
 	imageTemp := make(map[string]interface{})
 	for i := range masSpec.ImageGroups {
@@ -274,7 +269,7 @@ func (ams *AMS) configureMAS(masSpec schemas.MASSpec) (masInfo schemas.MASInfo, 
 
 	// total number of agents and total number of agencies
 	masInfo.Agents.Counter = 0
-	numAgencies = make(map[int]int)
+	numAgencies = make([]int, len(masSpec.ImageGroups), len(masSpec.ImageGroups))
 	masInfo.Agencies.Counter = 0
 	for i := range masSpec.ImageGroups {
 		masInfo.Agents.Counter += len(masSpec.ImageGroups[i].Agents)
@@ -301,8 +296,11 @@ func (ams *AMS) configureMAS(masSpec schemas.MASSpec) (masInfo schemas.MASInfo, 
 		for j := range masSpec.ImageGroups[i].Agents {
 			masInfo.Agents.Instances[agentID].Spec = masSpec.ImageGroups[i].Agents[j]
 			masInfo.Agents.Instances[agentID].ID = agentID
-			masInfo.Agents.Instances[agentID].AgencyID = agencyIDOffset + j/masSpec.Config.NumAgentsPerAgency
+			masInfo.Agents.Instances[agentID].AgencyID = agencyIDOffset +
+				j/masSpec.Config.NumAgentsPerAgency
 			masInfo.Agents.Instances[agentID].ImageGroupID = i
+			masInfo.Agents.Instances[agentID].Address.Agency = "-im-" + strconv.Itoa(i) + "-agency-" +
+				strconv.Itoa(j/masSpec.Config.NumAgentsPerAgency)
 			for j := range masInfo.Graph.Node {
 				if masInfo.Graph.Node[j].ID == masInfo.Agents.Instances[i].Spec.NodeID {
 					masInfo.Graph.Node[j].Agent = append(masInfo.Graph.Node[j].Agent,
@@ -325,6 +323,7 @@ func (ams *AMS) configureMAS(masSpec schemas.MASSpec) (masInfo schemas.MASInfo, 
 				ImageGroupID: i,
 				ID:           agencyID,
 				Logger:       masSpec.Config.Logger,
+				Name:         "-im-" + strconv.Itoa(i) + "-agency-" + strconv.Itoa(j),
 			}
 			for k := 0; k < masSpec.Config.NumAgentsPerAgency; k++ {
 				if agentCounter >= len(masSpec.ImageGroups[i].Agents) {

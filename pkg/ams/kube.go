@@ -52,6 +52,7 @@ import (
 	"strconv"
 	"time"
 
+	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 	apiappsv1 "k8s.io/api/apps/v1"
 	apicorev1 "k8s.io/api/core/v1"
 	resource "k8s.io/apimachinery/pkg/api/resource"
@@ -70,8 +71,8 @@ type kubeDeplyoment struct {
 }
 
 // newMAS triggers the cluster manager to start new agency containers
-func (kube *kubeDeplyoment) newMAS(masID int, image string, pullSecret string,
-	numAgencies map[int]int, logging bool, mqtt bool, df bool) (err error) {
+func (kube *kubeDeplyoment) newMAS(masID int, images []schemas.ImageGroupInfo, logging bool,
+	mqtt bool, df bool) (err error) {
 	var exist bool
 	exist, err = kube.existStatefulSet(masID)
 	if err == nil {
@@ -93,7 +94,8 @@ func (kube *kubeDeplyoment) newMAS(masID int, image string, pullSecret string,
 				dfEnv = "OFF"
 			}
 
-			err = kube.createStatefulSet(masID, image, pullSecret, numAgencies[0], loggingEnv, mqttEnv,
+			err = kube.createStatefulSet(masID, images[0].Image, images[0].PullSecret,
+				len(images[0].Agencies), loggingEnv, mqttEnv,
 				dfEnv)
 		} else {
 			// error

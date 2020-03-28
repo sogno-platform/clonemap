@@ -186,13 +186,13 @@ type AgencyStatus struct {
 
 // StubAgencyConfig holds configuration of agency to be started or terminated
 type StubAgencyConfig struct {
-	MASID     int    `json:"masid"`
-	AgencyID  int    `json:"agencyid"`
-	NumAgents int    `json:"numagents"`
-	Image     string `json:"image"`
-	Logging   bool   `json:"logging"` // switch for logging module
-	MQTT      bool   `json:"mqtt"`    //switch for mqtt
-	DF        bool   `json:"df"`      //switch for df
+	MASID        int    `json:"masid"`
+	AgencyID     int    `json:"agencyid"`
+	ImageGroupID int    `json:"imid"` // ID of agency image
+	Image        string `json:"image"`
+	Logging      bool   `json:"logging"` // switch for logging module
+	MQTT         bool   `json:"mqtt"`    //switch for mqtt
+	DF           bool   `json:"df"`      //switch for df
 }
 
 // ACLMessage struct representing agent message

@@ -322,13 +322,13 @@ func createMASStorage(masID int, masInfo schemas.MASInfo) (ret schemas.MASInfo) 
 	ret.ID = masID
 	for i := 0; i < ret.Agents.Counter; i++ {
 		ret.Agents.Instances[i].MASID = masID
-		ret.Agents.Instances[i].Address.Agency = "mas-" + strconv.Itoa(masID) + "-agency-" +
-			strconv.Itoa(ret.Agents.Instances[i].AgencyID) + ".mas" + strconv.Itoa(masID) + "agencies"
+		ret.Agents.Instances[i].Address.Agency = "mas-" + ret.Agents.Instances[i].Address.Agency +
+			".mas" + strconv.Itoa(masID) + "agencies"
 	}
 	for i := 0; i < ret.Agencies.Counter; i++ {
 		ret.Agencies.Instances[i].MASID = masID
-		ret.Agencies.Instances[i].Name = "mas-" + strconv.Itoa(masID) + "-agency-" + strconv.Itoa(i) +
-			".mas" + strconv.Itoa(masID) + "agencies"
+		ret.Agencies.Instances[i].Name = "mas-" + strconv.Itoa(masID) +
+			ret.Agencies.Instances[i].Name + ".mas" + strconv.Itoa(masID) + "agencies"
 	}
 	return
 }

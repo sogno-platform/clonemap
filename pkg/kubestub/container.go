@@ -229,12 +229,13 @@ func (stub *LocalStub) deleteMQTT() (err error) {
 }
 
 // createAgency starts a new agency docker image
-func (stub *LocalStub) createAgency(image string, agents int, masID int, agencyID int, logging bool,
+func (stub *LocalStub) createAgency(image string, masID int, imID int, agencyID int, logging bool,
 	mqtt bool, df bool) (err error) {
 	com := "docker run -d"
-	com += " --name=mas-" + strconv.Itoa(masID) + "-agency-" + strconv.Itoa(agencyID) + ".mas" +
-		strconv.Itoa(masID) + "agencies" //.clonemap"
-	com += " --hostname=mas-" + strconv.Itoa(masID) + "-agency-" + strconv.Itoa(agencyID)
+	com += " --name=mas-" + strconv.Itoa(masID) + "-im-" + strconv.Itoa(imID) + "-agency-" +
+		strconv.Itoa(agencyID) + ".mas" + strconv.Itoa(masID) + "agencies"
+	com += " --hostname=mas-" + strconv.Itoa(masID) + "-im-" + strconv.Itoa(imID) + "-agency-" +
+		strconv.Itoa(agencyID)
 	com += " --network=clonemap-net"
 	//com += " -e CLONEMAP_SUFFIX=\".clonemap\" "
 	if logging {
