@@ -63,7 +63,7 @@ import (
 )
 
 // kubeDeployment implements the Cluster interface for a Kubernetes instance of the MAP
-type kubeDeplyoment struct {
+type kubeDeployment struct {
 	deplType  string
 	config    *rest.Config
 	clientset *kubernetes.Clientset
@@ -71,7 +71,7 @@ type kubeDeplyoment struct {
 }
 
 // newMAS triggers the cluster manager to start new agency containers
-func (kube *kubeDeplyoment) newMAS(masID int, images []schemas.ImageGroupInfo, logging bool,
+func (kube *kubeDeployment) newMAS(masID int, images []schemas.ImageGroupInfo, logging bool,
 	mqtt bool, df bool) (err error) {
 	var exist bool
 	exist, err = kube.existStatefulSet(masID)
@@ -94,9 +94,18 @@ func (kube *kubeDeplyoment) newMAS(masID int, images []schemas.ImageGroupInfo, l
 				dfEnv = "OFF"
 			}
 
-			err = kube.createStatefulSet(masID, images[0].Image, images[0].PullSecret,
-				len(images[0].Agencies), loggingEnv, mqttEnv,
-				dfEnv)
+			err = kube.createHeadlessService(masID)
+			if err != nil {
+				return
+			}
+			for i := range images {
+				err = kube.createStatefulSet(masID, i, images[i].Image, images[i].PullSecret,
+					len(images[i].Agencies), loggingEnv, mqttEnv,
+					dfEnv)
+				if err != nil {
+					return
+				}
+			}
 		} else {
 			// error
 		}
@@ -106,7 +115,7 @@ func (kube *kubeDeplyoment) newMAS(masID int, images []schemas.ImageGroupInfo, l
 }
 
 // scaleMAS triggers the cluster manager to start or delete agency containers
-func (kube *kubeDeplyoment) scaleMAS(masID int, deltaAgencies int) (err error) {
+func (kube *kubeDeployment) scaleMAS(masID int, deltaAgencies int) (err error) {
 	var exist bool
 	exist, err = kube.existStatefulSet(masID)
 	if err == nil {
@@ -120,7 +129,7 @@ func (kube *kubeDeplyoment) scaleMAS(masID int, deltaAgencies int) (err error) {
 }
 
 // deleteMAS triggers the cluster manager to delete all agency containers
-func (kube *kubeDeplyoment) deleteMAS(masID int) (err error) {
+func (kube *kubeDeployment) deleteMAS(masID int) (err error) {
 	var exist bool
 	exist, err = kube.existStatefulSet(masID)
 	if err == nil {
@@ -135,7 +144,7 @@ func (kube *kubeDeplyoment) deleteMAS(masID int) (err error) {
 
 // newKubeDeployment returns Deployment interface with Kubernetes type
 func newKubeDeployment(deplType string) (depl deployment, err error) {
-	var temp kubeDeplyoment
+	var temp kubeDeployment
 	temp.deplType = deplType
 	temp.resLimit = false
 	// creates the in-cluster config
@@ -157,7 +166,7 @@ func newKubeDeployment(deplType string) (depl deployment, err error) {
 }
 
 // existStatefulSet checks if stateful set already exists and returns boolean value
-func (kube *kubeDeplyoment) existStatefulSet(masID int) (exist bool, err error) {
+func (kube *kubeDeployment) existStatefulSet(masID int) (exist bool, err error) {
 	exist = false
 	servicesClient := kube.clientset.Core().Services("clonemap")
 	var services *apicorev1.ServiceList
@@ -175,7 +184,7 @@ func (kube *kubeDeplyoment) existStatefulSet(masID int) (exist bool, err error) 
 }
 
 // get CPUCapcity returns the number of available cpus
-func (kube *kubeDeplyoment) getCPUCapacity() (cap int, err error) {
+func (kube *kubeDeployment) getCPUCapacity() (cap int, err error) {
 	// TODO get capacity from k8s cluster
 	if kube.deplType == "minikube" {
 		cap = 2
@@ -185,12 +194,8 @@ func (kube *kubeDeplyoment) getCPUCapacity() (cap int, err error) {
 	return
 }
 
-// createStatefulSet creates a new headless service and a statefulset for agencies if it has not
-// been created yet
-func (kube *kubeDeplyoment) createStatefulSet(masID int, image string, pullSecret string,
-	numAgencies int, loggingEnv string, mqttEnv string,
-	dfEnv string) (err error) {
-	// create service
+// createHeadlessService creates a new headless service for all agencies in a mas
+func (kube *kubeDeployment) createHeadlessService(masID int) (err error) {
 	servicesClient := kube.clientset.Core().Services("clonemap")
 	serv := &apicorev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -210,23 +215,21 @@ func (kube *kubeDeplyoment) createStatefulSet(masID int, image string, pullSecre
 		},
 	}
 	_, err = servicesClient.Create(serv)
-	if err != nil {
-		return
-	}
+	return
+}
 
+// createStatefulSet creates a new headless service and a statefulset for agencies if it has not
+// been created yet
+func (kube *kubeDeployment) createStatefulSet(masID int, imID int, image string, pullSecret string,
+	numAgencies int, loggingEnv string, mqttEnv string,
+	dfEnv string) (err error) {
 	// Pod Spec
-	var pullPolicy apicorev1.PullPolicy
-	if kube.deplType == "minikube" {
-		pullPolicy = "IfNotPresent"
-	} else {
-		pullPolicy = "Always"
-	}
 	podSpec := apicorev1.PodSpec{
 		Containers: []apicorev1.Container{
 			apicorev1.Container{
 				Name:            "mas" + strconv.Itoa(masID) + "agencies",
 				Image:           image,
-				ImagePullPolicy: pullPolicy,
+				ImagePullPolicy: "Always",
 				Ports: []apicorev1.ContainerPort{
 					apicorev1.ContainerPort{
 						ContainerPort: 10000,
@@ -251,7 +254,6 @@ func (kube *kubeDeplyoment) createStatefulSet(masID int, image string, pullSecre
 						Value: os.Getenv("CLONEMAP_LOG_LEVEL"),
 					},
 				},
-
 				LivenessProbe: &apicorev1.Probe{
 					Handler: apicorev1.Handler{
 						HTTPGet: &apicorev1.HTTPGetAction{
@@ -294,8 +296,7 @@ func (kube *kubeDeplyoment) createStatefulSet(masID int, image string, pullSecre
 			},
 		}
 	}
-
-	if kube.deplType != "minikube" && pullSecret != "" {
+	if pullSecret != "" {
 		podSpec.ImagePullSecrets = []apicorev1.LocalObjectReference{
 			apicorev1.LocalObjectReference{
 				Name: pullSecret,
@@ -308,7 +309,7 @@ func (kube *kubeDeplyoment) createStatefulSet(masID int, image string, pullSecre
 		replicas := int32(numAgencies)
 		statefulset := &apiappsv1.StatefulSet{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: "mas-" + strconv.Itoa(masID) + "-agency",
+				Name: "mas-" + strconv.Itoa(masID) + "-im-" + strconv.Itoa(imID) + "-agency",
 			},
 			Spec: apiappsv1.StatefulSetSpec{
 				Replicas: &replicas,
@@ -336,7 +337,7 @@ func (kube *kubeDeplyoment) createStatefulSet(masID int, image string, pullSecre
 }
 
 // scaleStatefulSet updates an existing stateful set with the given number of replicas
-func (kube *kubeDeplyoment) scaleStatefulSet(masID int, replicasDelta int) (err error) {
+func (kube *kubeDeployment) scaleStatefulSet(masID int, replicasDelta int) (err error) {
 	statefulSetClient := kube.clientset.Apps().StatefulSets("clonemap")
 	var statefulSetList *apiappsv1.StatefulSetList
 	statefulSetList, err = statefulSetClient.List(metav1.ListOptions{})
@@ -354,7 +355,7 @@ func (kube *kubeDeplyoment) scaleStatefulSet(masID int, replicasDelta int) (err 
 }
 
 // deleteStatefulSet deletes the statefulset and corresponding headless service
-func (kube *kubeDeplyoment) deleteStatefulSet(masID int) (err error) {
+func (kube *kubeDeployment) deleteStatefulSet(masID int) (err error) {
 	statefulsetclient := kube.clientset.Apps().StatefulSets("clonemap")
 	err = statefulsetclient.Delete("mas-"+strconv.Itoa(masID)+"-agency", &metav1.DeleteOptions{})
 	servicesClient := kube.clientset.Core().Services("clonemap")
