@@ -133,12 +133,13 @@ func (agency *Agency) init() (err error) {
 	agency.logInfo.Println("Starting agency ", temp)
 	hostname := strings.Split(temp, "-")
 	agency.mutex.Lock()
-	if len(hostname) < 4 {
+	if len(hostname) < 6 {
 		err = errors.New("incorrect hostname")
 		return
 	}
 	agency.info.MASID, err = strconv.Atoi(hostname[1])
-	agency.info.ID, err = strconv.Atoi(hostname[3])
+	agency.info.ImageGroupID, err = strconv.Atoi(hostname[3])
+	agency.info.ID, err = strconv.Atoi(hostname[5])
 	agency.info.Name = temp + ".mas" + hostname[1] + "agencies"
 	agency.logger = newLoggerClient(agency.info.MASID, agency.logError, agency.logInfo)
 	agency.mqtt = newMQTTClient("mqtt", 1883, agency.info.Name, agency.logError, agency.logInfo)
@@ -167,8 +168,12 @@ func (agency *Agency) terminate(gracefulStop chan os.Signal) {
 func (agency *Agency) startAgents() (err error) {
 	// request configuration
 	var agencyInfoFull schemas.AgencyInfoFull
-	agencyInfoFull, _, err = amsclient.GetAgencyInfoFull(agency.info.MASID, agency.info.ID)
+	agencyInfoFull, _, err = amsclient.GetContainerAgencyInfoFull(agency.info.MASID,
+		agency.info.ImageGroupID, agency.info.ID)
+	agency.mutex.Lock()
+	agency.info.ID = agencyInfoFull.ID
 	agency.info.Logger = agencyInfoFull.Logger
+	agency.mutex.Unlock()
 	if err != nil {
 		agency.info.Status = schemas.Status{
 			Code:       status.Error,
