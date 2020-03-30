@@ -192,6 +192,12 @@ func (ams *AMS) getAgencyInfoFull(masID int, agencyID int) (ret schemas.AgencyIn
 	return
 }
 
+func (ams *AMS) getContainerAgencyInfoFull(masID int, imID int,
+	agencyID int) (ret schemas.AgencyInfoFull, err error) {
+	ret, err = ams.stor.getContainerAgencyInfoFull(masID, imID, agencyID)
+	return
+}
+
 // createMAS creates a new mas according to masconfig
 func (ams *AMS) createMAS(masSpec schemas.MASSpec) (err error) {
 	// fill masInfo

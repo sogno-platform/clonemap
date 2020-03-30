@@ -89,6 +89,10 @@ type storage interface {
 	// getAgencyInfoFull returns status of one agency
 	getAgencyInfoFull(masID int, agencyID int) (ret schemas.AgencyInfoFull, err error)
 
+	// getContainerAgencyInfoFull returns the agency info for an image id and an agency id
+	getContainerAgencyInfoFull(masID int, imID int, agencyID int) (ret schemas.AgencyInfoFull,
+		err error)
+
 	// registerMAS registers a new MAS with the storage and returns its ID
 	registerMAS() (masID int, err error)
 
@@ -280,6 +284,44 @@ func (stor *localStorage) getAgencyInfoFull(masID int,
 		ret.Agents[i] = temp
 	}
 	stor.mutex.Unlock()
+	return
+}
+
+// getContainerAgencyInfoFull returns info of one agency for imid and agencyID
+func (stor *localStorage) getContainerAgencyInfoFull(masID int, imID int,
+	agencyID int) (ret schemas.AgencyInfoFull, err error) {
+	agencyName := "mas-" + strconv.Itoa(masID) + "-im-" + strconv.Itoa(imID) + "-agency-" +
+		strconv.Itoa(agencyID) + ".mas" + strconv.Itoa(masID) + "agencies"
+	realID := -1
+	stor.mutex.Lock()
+	if len(stor.mas)-1 < masID {
+		stor.mutex.Unlock()
+		err = errors.New("Agency does not exist")
+		return
+	}
+	if len(stor.mas[masID].ImageGroups)-1 < imID {
+		stor.mutex.Unlock()
+		err = errors.New("Agency does not exist")
+		return
+	}
+	for i := range stor.mas[masID].ImageGroups[imID].Agencies {
+		tempID := stor.mas[masID].ImageGroups[imID].Agencies[i]
+		if len(stor.mas[masID].Agencies.Instances)-1 < tempID {
+			stor.mutex.Unlock()
+			err = errors.New("Agency does not exist")
+			return
+		}
+		if stor.mas[masID].Agencies.Instances[tempID].Name == agencyName {
+			realID = tempID
+			break
+		}
+	}
+	stor.mutex.Unlock()
+	if realID == -1 {
+		err = errors.New("Agency does not exist")
+		return
+	}
+	ret, err = stor.getAgencyInfoFull(masID, realID)
 	return
 }
 

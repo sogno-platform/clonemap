@@ -137,20 +137,17 @@ func (ams *AMS) handleAPI(w http.ResponseWriter, r *http.Request) {
 						cmapErr, httpErr = ams.handleAgentAddress(masID, agentID, w, r)
 						resvalid = true
 					}
+				} else if respath[5] == "container" {
+					var imid, agencyID int
+					imid, cmapErr = strconv.Atoi(respath[6])
+					if cmapErr != nil {
+						agencyID, cmapErr = strconv.Atoi(respath[6])
+						if cmapErr == nil {
+							cmapErr, httpErr = ams.handleContainer(masID, imid, agencyID, w, r)
+							resvalid = true
+						}
+					}
 				}
-				// } else if respath[5] == "agencies" {
-				// 	var agencyID int
-				// 	agencyID, cmapErr = strconv.Atoi(respath[6])
-				// 	if cmapErr == nil {
-				// 		// if respath[7] == "status" {
-				// 		// 	cmapErr, httpErr = ams.handleAgencyStatus(masID, agencyID, w, r)
-				// 		// 	resvalid = true
-				// 		// } else
-				// 		if respath[7] == "config" {
-				// 			cmapErr, httpErr = ams.handleAgencyConfig(masID, agencyID, w, r)
-				// 			resvalid = true
-				// 		}
-				// 	}
 			}
 		}
 	default:
@@ -320,7 +317,7 @@ func (ams *AMS) handleAgentAddress(masID int, agentid int, w http.ResponseWriter
 	return
 }
 
-// handleAgent is the handler for requests to path /api/cloumap/mas/{mas-id}/agencies
+// handleAgency is the handler for requests to path /api/cloumap/mas/{mas-id}/agencies
 func (ams *AMS) handleAgency(masID int, w http.ResponseWriter, r *http.Request) (cmapErr,
 	httpErr error) {
 	if r.Method == "GET" {
@@ -336,7 +333,7 @@ func (ams *AMS) handleAgency(masID int, w http.ResponseWriter, r *http.Request) 
 	return
 }
 
-// handleAgentID is the handler for requests to path /api/cloumap/mas/{mas-id}/agencies/{agency-id}
+// handleAgencyID is the handler for requests to path /api/cloumap/mas/{mas-id}/agencies/{agency-id}
 func (ams *AMS) handleAgencyID(masID int, agencyid int, w http.ResponseWriter,
 	r *http.Request) (cmapErr, httpErr error) {
 	if r.Method == "GET" {
@@ -351,22 +348,21 @@ func (ams *AMS) handleAgencyID(masID int, agencyid int, w http.ResponseWriter,
 	return
 }
 
-// // handleAgencyConfig is the handler for requests to path
-// // /api/clonemap/mas/{mas-id}/agencies/{agency-id}/config
-// func (ams *AMS) handleAgencyConfig(masID int, agencyid int, w http.ResponseWriter,
-// 	r *http.Request) (cmapErr, httpErr error) {
-// 	if r.Method == "GET" {
-// 		// return config of specified agency
-// 		var agencyConfig schemas.AgencyConfig
-// 		agencyConfig, cmapErr = ams.getAgencyConfig(masID, agencyid)
-// 		httpErr = httpreply.Resource(w, agencyConfig, cmapErr)
-// 	} else {
-// 		httpErr = httpreply.MethodNotAllowed(w)
-// 		cmapErr = errors.New("Error: Method not allowed on path /api/clonemap/mas/{mas-id}/" +
-// 			"agencies/{agency-id}/config")
-// 	}
-// 	return
-// }
+// handleContainer is the handler for requests to path /api/cloumap/mas/{mas-id}/container/{imid}/
+// {agency-id}
+func (ams *AMS) handleContainer(masID int, imID int, agencyid int, w http.ResponseWriter,
+	r *http.Request) (cmapErr, httpErr error) {
+	if r.Method == "GET" {
+		var agencySpec schemas.AgencyInfoFull
+		agencySpec, cmapErr = ams.getContainerAgencyInfoFull(masID, imID, agencyid)
+		httpErr = httpreply.Resource(w, agencySpec, cmapErr)
+	} else {
+		httpErr = httpreply.MethodNotAllowed(w)
+		cmapErr = errors.New("Error: Method not allowed on path /api/clonemap/mas/{mas-id}/" +
+			"agencies/{agency-id}")
+	}
+	return
+}
 
 // listen opens a http server listening and serving request
 func (ams *AMS) listen() (err error) {
