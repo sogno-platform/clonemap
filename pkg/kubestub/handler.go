@@ -89,7 +89,8 @@ func (stub *LocalStub) handleAPI(w http.ResponseWriter, r *http.Request) {
 						agexist := false
 						for i := range stub.agencies {
 							if stub.agencies[i].AgencyID == agconfig.AgencyID &&
-								stub.agencies[i].MASID == agconfig.MASID {
+								stub.agencies[i].MASID == agconfig.MASID &&
+								stub.agencies[i].ImageGroupID == agconfig.ImageGroupID {
 								agexist = true
 							}
 						}
@@ -135,7 +136,7 @@ func (stub *LocalStub) handleAPI(w http.ResponseWriter, r *http.Request) {
 				if err == nil {
 					for i := range stub.agencies {
 						if stub.agencies[i].MASID == masID {
-							err = stub.deleteAgency(masID, stub.agencies[i].AgencyID)
+							err = stub.deleteAgency(masID, stub.agencies[i].ImageGroupID, stub.agencies[i].AgencyID)
 						}
 					}
 				}

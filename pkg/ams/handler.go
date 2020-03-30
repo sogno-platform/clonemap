@@ -137,15 +137,15 @@ func (ams *AMS) handleAPI(w http.ResponseWriter, r *http.Request) {
 						cmapErr, httpErr = ams.handleAgentAddress(masID, agentID, w, r)
 						resvalid = true
 					}
-				} else if respath[5] == "container" {
-					var imid, agencyID int
-					imid, cmapErr = strconv.Atoi(respath[6])
-					if cmapErr != nil {
-						agencyID, cmapErr = strconv.Atoi(respath[6])
-						if cmapErr == nil {
-							cmapErr, httpErr = ams.handleContainer(masID, imid, agencyID, w, r)
-							resvalid = true
-						}
+				}
+			} else if respath[5] == "container" {
+				var imid, agencyID int
+				imid, cmapErr = strconv.Atoi(respath[6])
+				if cmapErr == nil {
+					agencyID, cmapErr = strconv.Atoi(respath[7])
+					if cmapErr == nil {
+						cmapErr, httpErr = ams.handleContainer(masID, imid, agencyID, w, r)
+						resvalid = true
 					}
 				}
 			}

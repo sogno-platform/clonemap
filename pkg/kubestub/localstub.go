@@ -124,10 +124,12 @@ func (stub *LocalStub) terminate(gracefulStop chan os.Signal) {
 	sig := <-gracefulStop
 	fmt.Printf("Caught sig: %+v\n", sig)
 	for i := range stub.agencies {
-		agencyName := "mas-" + strconv.Itoa(stub.agencies[i].MASID) + "-agency-" +
+		agencyName := "mas-" + strconv.Itoa(stub.agencies[i].MASID) + "-im-" +
+			strconv.Itoa(stub.agencies[i].ImageGroupID) + "-agency-" +
 			strconv.Itoa(stub.agencies[i].AgencyID)
 		fmt.Println("Stop Agency Container " + agencyName)
-		err = stub.deleteAgency(stub.agencies[i].MASID, stub.agencies[i].AgencyID)
+		err = stub.deleteAgency(stub.agencies[i].MASID, stub.agencies[i].ImageGroupID,
+			stub.agencies[i].AgencyID)
 		if err != nil {
 			fmt.Println(err)
 			// os.Exit(0)

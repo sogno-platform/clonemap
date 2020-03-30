@@ -364,8 +364,8 @@ func createMASStorage(masID int, masInfo schemas.MASInfo) (ret schemas.MASInfo) 
 	ret.ID = masID
 	for i := 0; i < ret.Agents.Counter; i++ {
 		ret.Agents.Instances[i].MASID = masID
-		ret.Agents.Instances[i].Address.Agency = "mas-" + ret.Agents.Instances[i].Address.Agency +
-			".mas" + strconv.Itoa(masID) + "agencies"
+		ret.Agents.Instances[i].Address.Agency = "mas-" + strconv.Itoa(masID) +
+			ret.Agents.Instances[i].Address.Agency + ".mas" + strconv.Itoa(masID) + "agencies"
 	}
 	for i := 0; i < ret.Agencies.Counter; i++ {
 		ret.Agencies.Instances[i].MASID = masID

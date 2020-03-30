@@ -265,10 +265,10 @@ func (stub *LocalStub) createAgency(image string, masID int, imID int, agencyID 
 }
 
 // deleteAgency stops and removes agency docker image
-func (stub *LocalStub) deleteAgency(masID int, agencyID int) (err error) {
+func (stub *LocalStub) deleteAgency(masID int, imID int, agencyID int) (err error) {
 	com := "docker stop "
-	com += "mas-" + strconv.Itoa(masID) + "-agency-" + strconv.Itoa(agencyID) + ".mas" +
-		strconv.Itoa(masID) + "agencies" //.clonemap"
+	com += "mas-" + strconv.Itoa(masID) + "-im-" + strconv.Itoa(imID) + "-agency-" +
+		strconv.Itoa(agencyID) + ".mas" + strconv.Itoa(masID) + "agencies"
 	cmd := exec.Command("bash", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
@@ -276,8 +276,8 @@ func (stub *LocalStub) deleteAgency(masID int, agencyID int) (err error) {
 		return
 	}
 	com = "docker rm "
-	com += "mas-" + strconv.Itoa(masID) + "-agency-" + strconv.Itoa(agencyID) + ".mas" +
-		strconv.Itoa(masID) + "agencies" //.clonemap"
+	com += "mas-" + strconv.Itoa(masID) + "-im-" + strconv.Itoa(imID) + "-agency-" +
+		strconv.Itoa(agencyID) + ".mas" + strconv.Itoa(masID) + "agencies"
 	cmd = exec.Command("bash", "-c", com)
 	cmdOut, err = cmd.Output()
 	if err != nil {
