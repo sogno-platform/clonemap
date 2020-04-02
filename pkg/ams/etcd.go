@@ -50,8 +50,8 @@ THE SOFTWARE.
 // ams/mas/counter: int (masCounter)
 // ams/mas/<masID>/config schemas.MASConfig
 // ams/mas/<masID>/status schemas.Status
+// ams/mas/<masID>/groups []schemas.ImageGroupInfo
 // ams/mas/<masID>/agentcounter int (agentCounter)
-// // ams/mas/<masID>/agents/data schemas.Agents
 // ams/mas/<masID>/agents/<agentID>: schemas.AgentInfo
 // ams/mas/<masID>/agencycounter: int (agencyCounter)
 // ams/mas/<masID>/agencies/<agencyID>: AgencyInfo
@@ -91,6 +91,7 @@ type etcdStorage struct {
 type masVersion struct {
 	status        int
 	config        int
+	groups        int
 	agentCounter  int
 	agents        []int
 	agencyCounter int
@@ -156,6 +157,10 @@ func (stor *etcdStorage) storeMAS(masID int, masInfo schemas.MASInfo) (err error
 		return
 	}
 	err = stor.etcdPutResource("ams/mas/"+strconv.Itoa(masID)+"/status", newMAS.Status)
+	if err != nil {
+		return
+	}
+	err = stor.etcdPutResource("ams/mas/"+strconv.Itoa(masID)+"/groups", newMAS.ImageGroups)
 	if err != nil {
 		return
 	}
@@ -340,6 +345,12 @@ func (stor *etcdStorage) initCache() (err error) {
 		// MAS status
 		stor.verMAS[i].status, err = stor.etcdGetResource("ams/mas/"+strconv.Itoa(i)+"/status",
 			&stor.mas[i].Status)
+		if err != nil {
+			return
+		}
+		// MAS groups
+		stor.verMAS[i].status, err = stor.etcdGetResource("ams/mas/"+strconv.Itoa(i)+"/groups",
+			&stor.mas[i].ImageGroups)
 		if err != nil {
 			return
 		}
@@ -543,6 +554,14 @@ func (stor *etcdStorage) handleMASEvents(kv *mvccpb.KeyValue, masID int, key str
 				return
 			}
 			stor.verMAS[masID].status = int(kv.Version)
+		}
+	case "groups":
+		if stor.verMAS[masID].groups < int(kv.Version) {
+			err = json.Unmarshal(kv.Value, &stor.mas[masID].ImageGroups)
+			if err != nil {
+				return
+			}
+			stor.verMAS[masID].groups = int(kv.Version)
 		}
 	case "agentcounter":
 		if stor.verMAS[masID].agentCounter < int(kv.Version) {
