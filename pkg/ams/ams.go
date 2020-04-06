@@ -357,8 +357,18 @@ func (ams *AMS) removeMAS(masID int) (err error) {
 	return
 }
 
+// createAgents creates new agents and adds them to an existing mas
+func (ams *AMS) createAgents(masID int, groupSpecs []schemas.ImageGroupSpec) (err error) {
+	return
+}
+
 // createAgent creates a new agent and adds it to an existing mas
 func (ams *AMS) createAgent(masID int, agentSpec schemas.AgentSpec) (err error) {
+	return
+}
+
+// removeAgent removes an agent from the MAS
+func (ams *AMS) removeAgent(masID int, agentID int) (err error) {
 	return
 }
 

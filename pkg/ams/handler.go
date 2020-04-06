@@ -197,7 +197,8 @@ func (ams *AMS) handleMAS(w http.ResponseWriter, r *http.Request) (cmapErr, http
 			if cmapErr == nil {
 				cmapErr = ams.createMAS(masSpec)
 				if cmapErr == nil {
-					httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Ressource Created"))
+					httpErr = httpreply.Created(w, cmapErr, "text/plain",
+						[]byte("Ressource Created"))
 				} else {
 					httpErr = httpreply.CMAPError(w, cmapErr.Error())
 				}
@@ -241,22 +242,22 @@ func (ams *AMS) handleAgent(masID int, w http.ResponseWriter, r *http.Request) (
 		var agents schemas.Agents
 		agents, cmapErr = ams.getAgents(masID)
 		httpErr = httpreply.Resource(w, agents, cmapErr)
-		// } else if r.Method == "POST" {
-		// 	// create new agent in MAS
-		// 	var body []byte
-		// 	body, err = ioutil.ReadAll(r.Body)
-		// 	if err == nil {
-		// 		var agentConfig schemas.AgentConfig
-		// 		err = json.Unmarshal(body, &agentConfig)
-		// 		if err == nil {
-		// 			err = ams.createAgent(masID, agentConfig)
-		// 			err = httpreply.Created(w, err)
-		// 		} else {
-		// 			err = httpreply.JSONUnmarshalError(w)
-		// 		}
-		// 	} else {
-		// 		err = httpreply.InvalidBodyError(w)
-		// 	}
+	} else if r.Method == "POST" {
+		// create new agent in MAS
+		var body []byte
+		body, cmapErr = ioutil.ReadAll(r.Body)
+		if cmapErr == nil {
+			var groupSpecs []schemas.ImageGroupSpec
+			cmapErr = json.Unmarshal(body, &groupSpecs)
+			if cmapErr == nil {
+				cmapErr = ams.createAgents(masID, groupSpecs)
+				httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Ressource Created"))
+			} else {
+				httpErr = httpreply.JSONUnmarshalError(w)
+			}
+		} else {
+			httpErr = httpreply.InvalidBodyError(w)
+		}
 	} else {
 		httpErr = httpreply.MethodNotAllowed(w)
 		cmapErr = errors.New("Error: Method not allowed on path /api/clonemap/mas/{mas-id}/agent")
@@ -272,10 +273,11 @@ func (ams *AMS) handleAgentID(masID int, agentid int, w http.ResponseWriter,
 		var agentInfo schemas.AgentInfo
 		agentInfo, cmapErr = ams.getAgentInfo(masID, agentid)
 		httpErr = httpreply.Resource(w, agentInfo, cmapErr)
-		// } else if r.Method == "DELETE" {
-		// 	// delete specified agent
-		// 	err = ams.removeAgent(masID, agentid)
-		// 	err = httpreply.Deleted(w, cmapErr)
+	} else if r.Method == "DELETE" {
+		// delete specified agent
+		cmapErr = ams.removeAgent(masID, agentid)
+		httpErr = httpreply.Deleted(w, cmapErr)
+
 	} else {
 		httpErr = httpreply.MethodNotAllowed(w)
 		cmapErr = errors.New("Error: Method not allowed on path /api/clonemap/mas/{mas-id}/agent/" +
