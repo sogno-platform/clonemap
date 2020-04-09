@@ -521,19 +521,7 @@ func (stor *etcdStorage) handleAMSEvents() {
 					stor.logError.Println(err)
 					continue
 				}
-				// create masStorage object, if number of stored mas is lower than masID
-				stor.mutex.Lock()
-				if len(stor.mas) <= masID {
-					for i := 0; i < masID-len(stor.mas)+1; i++ {
-						stor.mas = append(stor.mas, schemas.MASInfo{})
-					}
-				}
-				if len(stor.verMAS) <= masID {
-					for i := 0; i < masID-len(stor.verMAS)+1; i++ {
-						stor.verMAS = append(stor.verMAS, masVersion{})
-					}
-				}
-				stor.mutex.Unlock()
+
 				if len(path) == 4 {
 					err = stor.handleMASEvents(event.Kv, masID, path[3])
 				} else if len(path) == 5 && path[3] == "agent" {
@@ -551,21 +539,6 @@ func (stor *etcdStorage) handleAMSEvents() {
 						stor.logError.Println(err)
 						continue
 					}
-					// create imGroup storage object, if number of stored im groups is lower than imID
-					stor.mutex.Lock()
-					if len(stor.mas[masID].ImageGroups.Inst) <= imID {
-						for i := 0; i < imID-len(stor.mas[masID].ImageGroups.Inst)+1; i++ {
-							stor.mas[masID].ImageGroups.Inst = append(stor.mas[masID].ImageGroups.Inst,
-								schemas.ImageGroupInfo{})
-						}
-					}
-					if len(stor.verMAS[masID].imGroups) <= imID {
-						for i := 0; i < imID-len(stor.verMAS[masID].imGroups)+1; i++ {
-							stor.verMAS[masID].imGroups = append(stor.verMAS[masID].imGroups, imGroupVersion{})
-						}
-					}
-					stor.mutex.Unlock()
-
 					if len(path) == 6 {
 						err = stor.handleImGroupEvents(event.Kv, masID, imID, path[5])
 					} else if len(path) == 8 {
@@ -604,6 +577,8 @@ func (stor *etcdStorage) handleMASCounterEvents(kv *mvccpb.KeyValue) (err error)
 
 // handleMASEvents is the handler function for events of the ams/mas/<id>/... path
 func (stor *etcdStorage) handleMASEvents(kv *mvccpb.KeyValue, masID int, key string) (err error) {
+	stor.adjustMASStorage(masID)
+
 	switch key {
 	case "config":
 		stor.mutex.Lock()
@@ -657,19 +632,9 @@ func (stor *etcdStorage) handleMASEvents(kv *mvccpb.KeyValue, masID int, key str
 func (stor *etcdStorage) handleAgentEvents(kv *mvccpb.KeyValue, masID int,
 	agentID int) (err error) {
 	// create agent storage object, if number of stored agents is lower than agentID
-	stor.mutex.Lock()
-	if len(stor.mas[masID].Agents.Inst) <= agentID {
-		for i := 0; i < agentID-len(stor.mas[masID].Agents.Inst)+1; i++ {
-			stor.mas[masID].Agents.Inst = append(stor.mas[masID].Agents.Inst,
-				schemas.AgentInfo{})
-		}
-	}
-	if len(stor.verMAS[masID].agents) <= agentID {
-		for i := 0; i < agentID-len(stor.verMAS[masID].agents)+1; i++ {
-			stor.verMAS[masID].agents = append(stor.verMAS[masID].agents, 0)
-		}
-	}
+	stor.adjustAgentStorage(masID, agentID)
 
+	stor.mutex.Lock()
 	if stor.verMAS[masID].agents[agentID] < int(kv.Version) {
 		err = json.Unmarshal(kv.Value, &stor.mas[masID].Agents.Inst[agentID])
 		if err != nil {
@@ -677,6 +642,16 @@ func (stor *etcdStorage) handleAgentEvents(kv *mvccpb.KeyValue, masID int,
 			return
 		}
 		stor.verMAS[masID].agents[agentID] = int(kv.Version)
+		if stor.verMAS[masID].agents[agentID] == 1 {
+			// add agent to agency's list of agents
+			imID := stor.mas[masID].Agents.Inst[agentID].ImageGroupID
+			agencyID := stor.mas[masID].Agents.Inst[agentID].AgencyID
+			stor.mutex.Unlock()
+			stor.adjustAgencyStorage(masID, imID, agencyID)
+			stor.mutex.Lock()
+			stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Agents =
+				append(stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Agents, agentID)
+		}
 	}
 	stor.mutex.Unlock()
 	return
@@ -685,6 +660,8 @@ func (stor *etcdStorage) handleAgentEvents(kv *mvccpb.KeyValue, masID int,
 // handleImGroupEvents is the handler function for events of the ams/mas/<id>/im/... path
 func (stor *etcdStorage) handleImGroupEvents(kv *mvccpb.KeyValue, masID int,
 	imID int, key string) (err error) {
+	stor.adjustImGroupStorage(masID, imID)
+
 	switch key {
 	case "config":
 		stor.mutex.Lock()
@@ -716,21 +693,9 @@ func (stor *etcdStorage) handleImGroupEvents(kv *mvccpb.KeyValue, masID int,
 func (stor *etcdStorage) handleAgencyEvents(kv *mvccpb.KeyValue, masID int, imID int,
 	agencyID int) (err error) {
 	// create agency storage object, if number of stored agencies is lower than agencyID
-	stor.mutex.Lock()
-	if len(stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst) <= agencyID {
-		for i := 0; i < agencyID-len(stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst)+1; i++ {
-			stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst = append(
-				stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst,
-				schemas.AgencyInfo{})
-		}
-	}
-	if len(stor.verMAS[masID].imGroups[imID].agencies) <= agencyID {
-		for i := 0; i < agencyID-len(stor.verMAS[masID].imGroups[imID].agencies)+1; i++ {
-			stor.verMAS[masID].imGroups[imID].agencies = append(
-				stor.verMAS[masID].imGroups[imID].agencies, 0)
-		}
-	}
+	stor.adjustAgencyStorage(masID, imID, agencyID)
 
+	stor.mutex.Lock()
 	if stor.verMAS[masID].imGroups[imID].agencies[agencyID] < int(kv.Version) {
 		err = json.Unmarshal(kv.Value,
 			&stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Status)
@@ -795,6 +760,86 @@ func (stor *etcdStorage) handleGraphEvents() {
 			}
 		}
 	}
+}
+
+// adjustMASStorage adjusts the size of the MAS storage to the masID
+func (stor *etcdStorage) adjustMASStorage(masID int) {
+	// create masStorage object, if number of stored mas is lower than masID
+	stor.mutex.Lock()
+	if len(stor.mas) <= masID {
+		for i := 0; i < masID-len(stor.mas)+1; i++ {
+			stor.mas = append(stor.mas, schemas.MASInfo{})
+		}
+	}
+	if len(stor.verMAS) <= masID {
+		for i := 0; i < masID-len(stor.verMAS)+1; i++ {
+			stor.verMAS = append(stor.verMAS, masVersion{})
+		}
+	}
+	stor.mutex.Unlock()
+	return
+}
+
+// adjustImGroupStorage adjusts the size of the image group storage to the imID
+func (stor *etcdStorage) adjustImGroupStorage(masID int, imID int) {
+	stor.adjustMASStorage(masID)
+	// create imGroup storage object, if number of stored im groups is lower than imID
+	stor.mutex.Lock()
+	if len(stor.mas[masID].ImageGroups.Inst) <= imID {
+		for i := 0; i < imID-len(stor.mas[masID].ImageGroups.Inst)+1; i++ {
+			stor.mas[masID].ImageGroups.Inst = append(stor.mas[masID].ImageGroups.Inst,
+				schemas.ImageGroupInfo{})
+		}
+	}
+	if len(stor.verMAS[masID].imGroups) <= imID {
+		for i := 0; i < imID-len(stor.verMAS[masID].imGroups)+1; i++ {
+			stor.verMAS[masID].imGroups = append(stor.verMAS[masID].imGroups, imGroupVersion{})
+		}
+	}
+	stor.mutex.Unlock()
+	return
+}
+
+// adjustAgencyStorage adjusts the size of the agency storage to the agencyID
+func (stor *etcdStorage) adjustAgencyStorage(masID int, imID int, agencyID int) {
+	stor.adjustImGroupStorage(masID, imID)
+	// create agency storage object, if number of stored agencies is lower than agencyID
+	stor.mutex.Lock()
+	if len(stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst) <= agencyID {
+		for i := 0; i < agencyID-len(stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst)+1; i++ {
+			stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst = append(
+				stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst,
+				schemas.AgencyInfo{})
+		}
+	}
+	if len(stor.verMAS[masID].imGroups[imID].agencies) <= agencyID {
+		for i := 0; i < agencyID-len(stor.verMAS[masID].imGroups[imID].agencies)+1; i++ {
+			stor.verMAS[masID].imGroups[imID].agencies = append(
+				stor.verMAS[masID].imGroups[imID].agencies, 0)
+		}
+	}
+	stor.mutex.Unlock()
+	return
+}
+
+// adjustAgentStorage adjusts the size of the agent storage to the agentID
+func (stor *etcdStorage) adjustAgentStorage(masID int, agentID int) {
+	stor.adjustMASStorage(masID)
+	// create agent storage object, if number of stored agents is lower than agentID
+	stor.mutex.Lock()
+	if len(stor.mas[masID].Agents.Inst) <= agentID {
+		for i := 0; i < agentID-len(stor.mas[masID].Agents.Inst)+1; i++ {
+			stor.mas[masID].Agents.Inst = append(stor.mas[masID].Agents.Inst,
+				schemas.AgentInfo{})
+		}
+	}
+	if len(stor.verMAS[masID].agents) <= agentID {
+		for i := 0; i < agentID-len(stor.verMAS[masID].agents)+1; i++ {
+			stor.verMAS[masID].agents = append(stor.verMAS[masID].agents, 0)
+		}
+	}
+	stor.mutex.Unlock()
+	return
 }
 
 // etcdGetResource requests resourcefrom etcd and unmarshalls it
