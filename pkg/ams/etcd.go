@@ -65,7 +65,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"strconv"
 	"strings"
@@ -429,7 +428,6 @@ func (stor *etcdStorage) initMASImGroups(masID int) (err error) {
 		for j := range resp.Kvs {
 			temp := strings.Split(string(resp.Kvs[j].Key), "/")
 			if len(temp) != 8 {
-				fmt.Println(temp)
 				continue
 			}
 			var agencyID int
@@ -439,7 +437,6 @@ func (stor *etcdStorage) initMASImGroups(masID int) (err error) {
 				return
 			}
 			if agencyID >= stor.mas[masID].ImageGroups.Inst[i].Agencies.Counter {
-				fmt.Println(agencyID)
 				continue
 			}
 			err = json.Unmarshal(resp.Kvs[j].Value,
