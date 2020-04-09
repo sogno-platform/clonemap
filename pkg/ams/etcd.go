@@ -421,37 +421,41 @@ func (stor *etcdStorage) initMASImGroups(masID int) (err error) {
 		resp := &clientv3.GetResponse{}
 		resp, err = stor.client.Get(ctx, "ams/mas/"+strconv.Itoa(masID)+"/im/"+strconv.Itoa(i)+
 			"/agency")
-		if err == nil {
-			for j := range resp.Kvs {
-				temp := strings.Split(string(resp.Kvs[j].Key), "/")
-				if len(temp) != 7 {
-					continue
-				}
-				var agencyID int
-				agencyID, err = strconv.Atoi(temp[6])
-				if err != nil {
-					continue
-				}
-				if agencyID >= stor.mas[masID].ImageGroups.Inst[i].Agencies.Counter {
-					continue
-				}
-				err = json.Unmarshal(resp.Kvs[j].Value,
-					&stor.mas[masID].ImageGroups.Inst[i].Agencies.Inst[agencyID].Status)
-				if err != nil {
-					continue
-				}
-				stor.verMAS[masID].imGroups[i].agencies[agencyID] = int(resp.Kvs[j].Version)
-				stor.mas[masID].ImageGroups.Inst[i].Agencies.Inst[agencyID].MASID = masID
-				stor.mas[masID].ImageGroups.Inst[i].Agencies.Inst[agencyID].ID = agencyID
-				stor.mas[masID].ImageGroups.Inst[i].Agencies.Inst[agencyID].ImageGroupID =
-					i
-				stor.mas[masID].ImageGroups.Inst[i].Agencies.Inst[agencyID].Logger =
-					stor.mas[masID].Config.Logger
-				stor.mas[masID].ImageGroups.Inst[i].Agencies.Inst[agencyID].Name =
-					"mas-" + strconv.Itoa(masID) + "-im-" + strconv.Itoa(i) +
-						"-agency-" + strconv.Itoa(agencyID) + ".mas" + strconv.Itoa(masID) +
-						"agencies"
+		if err != nil {
+			cancel()
+			return
+		}
+		for j := range resp.Kvs {
+			temp := strings.Split(string(resp.Kvs[j].Key), "/")
+			if len(temp) != 8 {
+				continue
 			}
+			var agencyID int
+			agencyID, err = strconv.Atoi(temp[6])
+			if err != nil {
+				cancel()
+				return
+			}
+			if agencyID >= stor.mas[masID].ImageGroups.Inst[i].Agencies.Counter {
+				continue
+			}
+			err = json.Unmarshal(resp.Kvs[j].Value,
+				&stor.mas[masID].ImageGroups.Inst[i].Agencies.Inst[agencyID].Status)
+			if err != nil {
+				cancel()
+				return
+			}
+			stor.verMAS[masID].imGroups[i].agencies[agencyID] = int(resp.Kvs[j].Version)
+			stor.mas[masID].ImageGroups.Inst[i].Agencies.Inst[agencyID].MASID = masID
+			stor.mas[masID].ImageGroups.Inst[i].Agencies.Inst[agencyID].ID = agencyID
+			stor.mas[masID].ImageGroups.Inst[i].Agencies.Inst[agencyID].ImageGroupID =
+				i
+			stor.mas[masID].ImageGroups.Inst[i].Agencies.Inst[agencyID].Logger =
+				stor.mas[masID].Config.Logger
+			stor.mas[masID].ImageGroups.Inst[i].Agencies.Inst[agencyID].Name =
+				"mas-" + strconv.Itoa(masID) + "-im-" + strconv.Itoa(i) +
+					"-agency-" + strconv.Itoa(agencyID) + ".mas" + strconv.Itoa(masID) +
+					"agencies"
 		}
 		cancel()
 	}
@@ -475,31 +479,35 @@ func (stor *etcdStorage) initMASAgents(masID int) (err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	resp := &clientv3.GetResponse{}
 	resp, err = stor.client.Get(ctx, "ams/mas/"+strconv.Itoa(masID)+"/agent")
-	if err == nil {
-		for i := range resp.Kvs {
-			temp := strings.Split(string(resp.Kvs[i].Key), "/")
-			if len(temp) != 5 {
-				continue
-			}
-			var agentID int
-			agentID, err = strconv.Atoi(temp[4])
-			if err != nil {
-				continue
-			}
-			if agentID >= stor.mas[masID].Agents.Counter {
-				continue
-			}
-			err = json.Unmarshal(resp.Kvs[i].Value, &stor.mas[masID].Agents.Inst[agentID])
-			if err != nil {
-				continue
-			}
-			stor.verMAS[masID].agents[agentID] = int(resp.Kvs[i].Version)
-			imID := stor.mas[masID].Agents.Inst[agentID].ImageGroupID
-			agencyID := stor.mas[masID].Agents.Inst[agentID].AgencyID
-			stor.adjustAgencyStorage(masID, imID, agencyID)
-			stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Agents =
-				append(stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Agents, agentID)
+	if err != nil {
+		cancel()
+		return
+	}
+	for i := range resp.Kvs {
+		temp := strings.Split(string(resp.Kvs[i].Key), "/")
+		if len(temp) != 5 {
+			continue
 		}
+		var agentID int
+		agentID, err = strconv.Atoi(temp[4])
+		if err != nil {
+			cancel()
+			return
+		}
+		if agentID >= stor.mas[masID].Agents.Counter {
+			continue
+		}
+		err = json.Unmarshal(resp.Kvs[i].Value, &stor.mas[masID].Agents.Inst[agentID])
+		if err != nil {
+			cancel()
+			return
+		}
+		stor.verMAS[masID].agents[agentID] = int(resp.Kvs[i].Version)
+		imID := stor.mas[masID].Agents.Inst[agentID].ImageGroupID
+		agencyID := stor.mas[masID].Agents.Inst[agentID].AgencyID
+		stor.adjustAgencyStorage(masID, imID, agencyID)
+		stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Agents =
+			append(stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Agents, agentID)
 	}
 	cancel()
 	return
