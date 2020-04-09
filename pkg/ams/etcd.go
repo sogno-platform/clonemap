@@ -167,7 +167,7 @@ func (stor *etcdStorage) storeMAS(masID int, masInfo schemas.MASInfo) (err error
 	if err != nil {
 		return
 	}
-	err = stor.etcdPutResource("ams/mas/"+strconv.Itoa(masID)+"/imcount",
+	err = stor.etcdPutResource("ams/mas/"+strconv.Itoa(masID)+"/imcounter",
 		newMAS.ImageGroups.Counter)
 	if err != nil {
 		return
@@ -428,7 +428,7 @@ func (stor *etcdStorage) initMASAgents(masID int) (err error) {
 // initMASImGroups retrieves data of agencies in a mas from etcd
 func (stor *etcdStorage) initMASImGroups(masID int) (err error) {
 	// MAS im group counter
-	stor.verMAS[masID].groupCounter, err = stor.etcdGetResource("ams/mas/"+strconv.Itoa(masID)+"/imCount",
+	stor.verMAS[masID].groupCounter, err = stor.etcdGetResource("ams/mas/"+strconv.Itoa(masID)+"/imcounter",
 		&stor.mas[masID].ImageGroups.Counter)
 	if err != nil {
 		return
