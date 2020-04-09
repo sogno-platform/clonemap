@@ -195,7 +195,7 @@ func GetAgencyInfo(masID int, imID int, agencyID int) (agency schemas.AgencyInfo
 	httpStatus int, err error) {
 	var body []byte
 	body, httpStatus, err = httpretry.Get(httpClient, "http://"+Host+":"+strconv.Itoa(Port)+
-		"/api/clonemap/mas/"+strconv.Itoa(masID)+"/imgroup/"+strconv.Itoa(imID)+"/"+
+		"/api/clonemap/mas/"+strconv.Itoa(masID)+"/imgroup/"+strconv.Itoa(imID)+"/agency/"+
 		strconv.Itoa(agencyID), time.Second*2, 2)
 	if err != nil {
 		return

@@ -47,6 +47,7 @@ package kubestub
 
 import (
 	"errors"
+	"fmt"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -231,11 +232,12 @@ func (stub *LocalStub) deleteMQTT() (err error) {
 // createAgency starts a new agency docker image
 func (stub *LocalStub) createAgency(image string, masID int, imID int, agencyID int, logging bool,
 	mqtt bool, df bool) (err error) {
-	com := "docker run -d"
-	com += " --name=mas-" + strconv.Itoa(masID) + "-im-" + strconv.Itoa(imID) + "-agency-" +
-		strconv.Itoa(agencyID) + ".mas" + strconv.Itoa(masID) + "agencies"
-	com += " --hostname=mas-" + strconv.Itoa(masID) + "-im-" + strconv.Itoa(imID) + "-agency-" +
+	agencyName := "mas-" + strconv.Itoa(masID) + "-im-" + strconv.Itoa(imID) + "-agency-" +
 		strconv.Itoa(agencyID)
+	fmt.Println("Create agency " + agencyName + " from image " + image)
+	com := "docker run -d"
+	com += " --name=" + agencyName + ".mas" + strconv.Itoa(masID) + "agencies"
+	com += " --hostname=" + agencyName
 	com += " --network=clonemap-net"
 	//com += " -e CLONEMAP_SUFFIX=\".clonemap\" "
 	if logging {

@@ -270,6 +270,7 @@ func (ams *AMS) configureMAS(masSpec schemas.MASSpec) (masInfo schemas.MASInfo,
 
 	// total number of agents and total number of agencies
 	masInfo.Agents.Counter = 0
+	numAgencies = make([]int, masInfo.ImageGroups.Counter, masInfo.ImageGroups.Counter)
 	for i := range masSpec.ImageGroups {
 		masInfo.Agents.Counter += len(masSpec.ImageGroups[i].Agents)
 		num := len(masSpec.ImageGroups[i].Agents) / masSpec.Config.NumAgentsPerAgency

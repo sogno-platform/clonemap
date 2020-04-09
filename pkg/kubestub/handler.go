@@ -95,9 +95,6 @@ func (stub *LocalStub) handleAPI(w http.ResponseWriter, r *http.Request) {
 							}
 						}
 						if !agexist {
-							agname := "mas-" + strconv.Itoa(agconfig.MASID) + "-agency-" +
-								strconv.Itoa(agconfig.AgencyID)
-							fmt.Println("Create Agency Container " + agname)
 							err = stub.createAgency(agconfig.Image, agconfig.MASID, agconfig.ImageGroupID,
 								agconfig.AgencyID, agconfig.Logging, agconfig.MQTT, agconfig.DF)
 							if err == nil {
