@@ -190,30 +190,12 @@ func GetAgencies(masID int) (agencies schemas.Agencies, httpStatus int, err erro
 	return
 }
 
-// GetAgencyInfoFull requests agency information
-func GetAgencyInfoFull(masID int, agencyID int) (agency schemas.AgencyInfoFull, httpStatus int,
-	err error) {
-	var body []byte
-	body, httpStatus, err = httpretry.Get(httpClient, "http://"+Host+":"+strconv.Itoa(Port)+
-		"/api/clonemap/mas/"+strconv.Itoa(masID)+"/agencies/"+strconv.Itoa(agencyID),
-		time.Second*2, 2)
-	if err != nil {
-		return
-	}
-	//fmt.Println(string(body))
-	err = json.Unmarshal(body, &agency)
-	if err != nil {
-		agency = schemas.AgencyInfoFull{}
-	}
-	return
-}
-
-// GetContainerAgencyInfoFull requests agency information
-func GetContainerAgencyInfoFull(masID int, imID int, agencyID int) (agency schemas.AgencyInfoFull,
+// GetAgencyInfo requests agency information
+func GetAgencyInfo(masID int, imID int, agencyID int) (agency schemas.AgencyInfoFull,
 	httpStatus int, err error) {
 	var body []byte
 	body, httpStatus, err = httpretry.Get(httpClient, "http://"+Host+":"+strconv.Itoa(Port)+
-		"/api/clonemap/mas/"+strconv.Itoa(masID)+"/container/"+strconv.Itoa(imID)+"/"+
+		"/api/clonemap/mas/"+strconv.Itoa(masID)+"/imgroup/"+strconv.Itoa(imID)+"/"+
 		strconv.Itoa(agencyID), time.Second*2, 2)
 	if err != nil {
 		return

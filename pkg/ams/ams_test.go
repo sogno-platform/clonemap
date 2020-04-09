@@ -136,8 +136,10 @@ func dummyClient(s *http.Server, t *testing.T) {
 		},
 		ImageGroups: []schemas.ImageGroupSpec{
 			schemas.ImageGroupSpec{
-				Image:      "agent",
-				PullSecret: "",
+				Config: schemas.ImageGroupConfig{
+					Image:      "agent",
+					PullSecret: "",
+				},
 				Agents: []schemas.AgentSpec{
 					schemas.AgentSpec{
 						Name:  "test1",
@@ -207,7 +209,7 @@ func dummyClient(s *http.Server, t *testing.T) {
 		t.Error("Error GetAgencies " + strconv.Itoa(httpStatus))
 	}
 
-	_, httpStatus, err = amsclient.GetAgencyInfoFull(0, 0)
+	_, httpStatus, err = amsclient.GetAgencyInfo(0, 0, 0)
 	if err != nil {
 		t.Error(err)
 	}

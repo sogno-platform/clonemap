@@ -87,11 +87,7 @@ type storage interface {
 	getAgencies(masID int) (ret schemas.Agencies, err error)
 
 	// getAgencyInfoFull returns status of one agency
-	getAgencyInfoFull(masID int, agencyID int) (ret schemas.AgencyInfoFull, err error)
-
-	// getContainerAgencyInfoFull returns the agency info for an image id and an agency id
-	getContainerAgencyInfoFull(masID int, imID int, agencyID int) (ret schemas.AgencyInfoFull,
-		err error)
+	getAgencyInfoFull(masID int, imID int, agencyID int) (ret schemas.AgencyInfoFull, err error)
 
 	// registerMAS registers a new MAS with the storage and returns its ID
 	registerMAS() (masID int, err error)
@@ -246,13 +242,18 @@ func (stor *localStorage) getAgencies(masID int) (ret schemas.Agencies, err erro
 		err = errors.New("Agency does not exist")
 		return
 	}
-	ret = stor.mas[masID].Agencies
+	ret.Counter = 0
+	for i := range stor.mas[masID].ImageGroups.Instances {
+		ret.Instances = append(ret.Instances,
+			stor.mas[masID].ImageGroups.Instances[i].Agencies.Instances...)
+		ret.Counter += len(stor.mas[masID].ImageGroups.Instances[i].Agencies.Instances)
+	}
 	stor.mutex.Unlock()
 	return
 }
 
 // getAgencyInfoFull returns status of one agency
-func (stor *localStorage) getAgencyInfoFull(masID int,
+func (stor *localStorage) getAgencyInfoFull(masID int, imID int,
 	agencyID int) (ret schemas.AgencyInfoFull, err error) {
 	stor.mutex.Lock()
 	if len(stor.mas)-1 < masID {
@@ -260,23 +261,29 @@ func (stor *localStorage) getAgencyInfoFull(masID int,
 		err = errors.New("Agency does not exist")
 		return
 	}
-	if len(stor.mas[masID].Agencies.Instances)-1 < agencyID {
+	if len(stor.mas[masID].ImageGroups.Instances)-1 < imID {
 		stor.mutex.Unlock()
 		err = errors.New("Agency does not exist")
 		return
 	}
-	ret.MASID = stor.mas[masID].Agencies.Instances[agencyID].MASID
-	ret.Name = stor.mas[masID].Agencies.Instances[agencyID].Name
-	ret.ID = stor.mas[masID].Agencies.Instances[agencyID].ID
-	ret.ImageGroupID = stor.mas[masID].Agencies.Instances[agencyID].ImageGroupID
-	ret.Logger = stor.mas[masID].Agencies.Instances[agencyID].Logger
-	ret.Status = stor.mas[masID].Agencies.Instances[agencyID].Status
-	ret.Agents = make([]schemas.AgentInfo, len(stor.mas[masID].Agencies.Instances[agencyID].Agents),
-		len(stor.mas[masID].Agencies.Instances[agencyID].Agents))
+	if len(stor.mas[masID].ImageGroups.Instances[imID].Agencies.Instances)-1 < agencyID {
+		stor.mutex.Unlock()
+		err = errors.New("Agency does not exist")
+		return
+	}
+	ret.MASID = masID
+	ret.Name = stor.mas[masID].ImageGroups.Instances[imID].Agencies.Instances[agencyID].Name
+	ret.ID = agencyID
+	ret.ImageGroupID = imID
+	ret.Logger = stor.mas[masID].ImageGroups.Instances[imID].Agencies.Instances[agencyID].Logger
+	ret.Status = stor.mas[masID].ImageGroups.Instances[imID].Agencies.Instances[agencyID].Status
+	ret.Agents = make([]schemas.AgentInfo,
+		len(stor.mas[masID].ImageGroups.Instances[imID].Agencies.Instances[agencyID].Agents),
+		len(stor.mas[masID].ImageGroups.Instances[imID].Agencies.Instances[agencyID].Agents))
 	for i := 0; i < len(ret.Agents); i++ {
 		var temp schemas.AgentInfo
 		temp, err = stor.getAgentInfoNolock(masID,
-			stor.mas[masID].Agencies.Instances[agencyID].Agents[i])
+			stor.mas[masID].ImageGroups.Instances[imID].Agencies.Instances[agencyID].Agents[i])
 		if err != nil {
 			stor.mutex.Unlock()
 			return
@@ -284,44 +291,6 @@ func (stor *localStorage) getAgencyInfoFull(masID int,
 		ret.Agents[i] = temp
 	}
 	stor.mutex.Unlock()
-	return
-}
-
-// getContainerAgencyInfoFull returns info of one agency for imid and agencyID
-func (stor *localStorage) getContainerAgencyInfoFull(masID int, imID int,
-	agencyID int) (ret schemas.AgencyInfoFull, err error) {
-	agencyName := "mas-" + strconv.Itoa(masID) + "-im-" + strconv.Itoa(imID) + "-agency-" +
-		strconv.Itoa(agencyID) + ".mas" + strconv.Itoa(masID) + "agencies"
-	realID := -1
-	stor.mutex.Lock()
-	if len(stor.mas)-1 < masID {
-		stor.mutex.Unlock()
-		err = errors.New("Agency does not exist")
-		return
-	}
-	if len(stor.mas[masID].ImageGroups)-1 < imID {
-		stor.mutex.Unlock()
-		err = errors.New("Agency does not exist")
-		return
-	}
-	for i := range stor.mas[masID].ImageGroups[imID].Agencies {
-		tempID := stor.mas[masID].ImageGroups[imID].Agencies[i]
-		if len(stor.mas[masID].Agencies.Instances)-1 < tempID {
-			stor.mutex.Unlock()
-			err = errors.New("Agency does not exist")
-			return
-		}
-		if stor.mas[masID].Agencies.Instances[tempID].Name == agencyName {
-			realID = tempID
-			break
-		}
-	}
-	stor.mutex.Unlock()
-	if realID == -1 {
-		err = errors.New("Agency does not exist")
-		return
-	}
-	ret, err = stor.getAgencyInfoFull(masID, realID)
 	return
 }
 
@@ -367,10 +336,13 @@ func createMASStorage(masID int, masInfo schemas.MASInfo) (ret schemas.MASInfo) 
 		ret.Agents.Instances[i].Address.Agency = "mas-" + strconv.Itoa(masID) +
 			ret.Agents.Instances[i].Address.Agency + ".mas" + strconv.Itoa(masID) + "agencies"
 	}
-	for i := 0; i < ret.Agencies.Counter; i++ {
-		ret.Agencies.Instances[i].MASID = masID
-		ret.Agencies.Instances[i].Name = "mas-" + strconv.Itoa(masID) +
-			ret.Agencies.Instances[i].Name + ".mas" + strconv.Itoa(masID) + "agencies"
+	for i := 0; i < ret.ImageGroups.Counter; i++ {
+		for j := 0; j < ret.ImageGroups.Instances[i].Agencies.Counter; j++ {
+			ret.ImageGroups.Instances[i].Agencies.Instances[j].MASID = masID
+			ret.ImageGroups.Instances[i].Agencies.Instances[j].Name = "mas-" + strconv.Itoa(masID) +
+				ret.ImageGroups.Instances[i].Agencies.Instances[j].Name + ".mas" +
+				strconv.Itoa(masID) + "agencies"
+		}
 	}
 	return
 }

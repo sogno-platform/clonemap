@@ -71,7 +71,7 @@ type kubeDeployment struct {
 }
 
 // newMAS triggers the cluster manager to start new agency containers
-func (kube *kubeDeployment) newMAS(masID int, images []schemas.ImageGroupInfo, logging bool,
+func (kube *kubeDeployment) newMAS(masID int, images schemas.ImageGroups, logging bool,
 	mqtt bool, df bool) (err error) {
 	var exist bool
 	exist, err = kube.existStatefulSet(masID)
@@ -98,10 +98,10 @@ func (kube *kubeDeployment) newMAS(masID int, images []schemas.ImageGroupInfo, l
 			if err != nil {
 				return
 			}
-			for i := range images {
-				err = kube.createStatefulSet(masID, i, images[i].Image, images[i].PullSecret,
-					len(images[i].Agencies), loggingEnv, mqttEnv,
-					dfEnv)
+			for i := range images.Instances {
+				err = kube.createStatefulSet(masID, i, images.Instances[i].Config.Image,
+					images.Instances[i].Config.PullSecret,
+					len(images.Instances[i].Agencies.Instances), loggingEnv, mqttEnv, dfEnv)
 				if err != nil {
 					return
 				}

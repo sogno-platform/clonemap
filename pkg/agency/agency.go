@@ -168,8 +168,8 @@ func (agency *Agency) terminate(gracefulStop chan os.Signal) {
 func (agency *Agency) startAgents() (err error) {
 	// request configuration
 	var agencyInfoFull schemas.AgencyInfoFull
-	agencyInfoFull, _, err = amsclient.GetContainerAgencyInfoFull(agency.info.MASID,
-		agency.info.ImageGroupID, agency.info.ID)
+	agencyInfoFull, _, err = amsclient.GetAgencyInfo(agency.info.MASID, agency.info.ImageGroupID,
+		agency.info.ID)
 	agency.mutex.Lock()
 	agency.info.ID = agencyInfoFull.ID
 	agency.info.Logger = agencyInfoFull.Logger

@@ -107,18 +107,6 @@ func (ams *AMS) handleAPI(w http.ResponseWriter, r *http.Request) {
 					cmapErr, httpErr = ams.handleAgentID(masID, agentID, w, r)
 					resvalid = true
 				}
-			} else if respath[5] == "agencies" {
-				// if respath[6] == "long" {
-				// 	cmapErr, httpErr = ams.handleAgencyLong(masID, w, r)
-				// 	resvalid = true
-				// } else {
-				var agencyID int
-				agencyID, cmapErr = strconv.Atoi(respath[6])
-				if cmapErr == nil {
-					cmapErr, httpErr = ams.handleAgencyID(masID, agencyID, w, r)
-					resvalid = true
-				}
-				// }
 			}
 		}
 	case 8:
@@ -138,13 +126,19 @@ func (ams *AMS) handleAPI(w http.ResponseWriter, r *http.Request) {
 						resvalid = true
 					}
 				}
-			} else if respath[5] == "container" {
-				var imid, agencyID int
-				imid, cmapErr = strconv.Atoi(respath[6])
+			}
+		}
+	case 9:
+		var masID int
+		masID, cmapErr = strconv.Atoi(respath[4])
+		if respath[2] == "clonemap" && respath[3] == "mas" && cmapErr == nil {
+			if respath[5] == "imgroup" && respath[7] == "agency" {
+				var imID, agencyID int
+				imID, cmapErr = strconv.Atoi(respath[6])
 				if cmapErr == nil {
-					agencyID, cmapErr = strconv.Atoi(respath[7])
+					agencyID, cmapErr = strconv.Atoi(respath[8])
 					if cmapErr == nil {
-						cmapErr, httpErr = ams.handleContainer(masID, imid, agencyID, w, r)
+						cmapErr, httpErr = ams.handleAgencyID(masID, imID, agencyID, w, r)
 						resvalid = true
 					}
 				}
@@ -335,28 +329,12 @@ func (ams *AMS) handleAgency(masID int, w http.ResponseWriter, r *http.Request) 
 	return
 }
 
-// handleAgencyID is the handler for requests to path /api/cloumap/mas/{mas-id}/agencies/{agency-id}
-func (ams *AMS) handleAgencyID(masID int, agencyid int, w http.ResponseWriter,
+// handleAgencyID is the handler for requests to path /api/clonemap/mas/{mas-id}/imgroup/{imID}/agencies/{agency-id}
+func (ams *AMS) handleAgencyID(masID int, imID int, agencyid int, w http.ResponseWriter,
 	r *http.Request) (cmapErr, httpErr error) {
 	if r.Method == "GET" {
 		var agencySpec schemas.AgencyInfoFull
-		agencySpec, cmapErr = ams.getAgencyInfoFull(masID, agencyid)
-		httpErr = httpreply.Resource(w, agencySpec, cmapErr)
-	} else {
-		httpErr = httpreply.MethodNotAllowed(w)
-		cmapErr = errors.New("Error: Method not allowed on path /api/clonemap/mas/{mas-id}/" +
-			"agencies/{agency-id}")
-	}
-	return
-}
-
-// handleContainer is the handler for requests to path /api/cloumap/mas/{mas-id}/container/{imid}/
-// {agency-id}
-func (ams *AMS) handleContainer(masID int, imID int, agencyid int, w http.ResponseWriter,
-	r *http.Request) (cmapErr, httpErr error) {
-	if r.Method == "GET" {
-		var agencySpec schemas.AgencyInfoFull
-		agencySpec, cmapErr = ams.getContainerAgencyInfoFull(masID, imID, agencyid)
+		agencySpec, cmapErr = ams.getAgencyInfoFull(masID, imID, agencyid)
 		httpErr = httpreply.Resource(w, agencySpec, cmapErr)
 	} else {
 		httpErr = httpreply.MethodNotAllowed(w)

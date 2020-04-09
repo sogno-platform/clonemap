@@ -59,14 +59,13 @@ type CloneMAP struct {
 // MASInfo contains info about MAS spec, agents and agencies in MAS
 type MASInfo struct {
 	// Spec        MASSpec          `json:"spec"`
-	ID          int              `json:"id"`
-	Config      MASConfig        `json:"config"`
-	Graph       Graph            `json:"graph"`
-	ImageGroups []ImageGroupInfo `json:"groups"`
-	Agents      Agents           `json:"agents"`
-	Agencies    Agencies         `json:"agencies"`
-	Uptime      time.Time        `json:"uptime"`
-	Status      Status           `json:"status"`
+	ID          int         `json:"id"`
+	Config      MASConfig   `json:"config"`
+	Graph       Graph       `json:"graph"`
+	ImageGroups ImageGroups `json:"groups"`
+	Agents      Agents      `json:"agents"`
+	Uptime      time.Time   `json:"uptime"`
+	Status      Status      `json:"status"`
 }
 
 // MASSpec contains information about a MAS running in clonemap
@@ -88,17 +87,21 @@ type MASConfig struct {
 
 // ImageGroupInfo contains information about all agents that have the same image
 type ImageGroupInfo struct {
-	Image      string `json:"image"`            // docker image to be used for agencies
-	PullSecret string `json:"secret,omitempty"` // image pull secret
-	ID         int    `json:"id"`
-	Agencies   []int  `json:"agencies"`
+	Config   ImageGroupConfig `json:"config"`
+	ID       int              `json:"id"`
+	Agencies Agencies         `json:"agencies"`
 }
 
 // ImageGroupSpec contains information about all agents that have the same image
 type ImageGroupSpec struct {
-	Image      string      `json:"image"`            // docker image to be used for agencies
-	PullSecret string      `json:"secret,omitempty"` // image pull secret
-	Agents     []AgentSpec `json:"agents"`
+	Config ImageGroupConfig `json:"config"`
+	Agents []AgentSpec      `json:"agents"`
+}
+
+// ImageGroupConfig contains information about the image group
+type ImageGroupConfig struct {
+	Image      string `json:"image"`            // docker image to be used for agencies
+	PullSecret string `json:"secret,omitempty"` // image pull secret
 }
 
 // AgentInfo contains information about agent spec, address, communication, mqtt and status
@@ -136,8 +139,8 @@ type Status struct {
 type AgencyInfo struct {
 	MASID        int       `json:"masid"` // ID of MAS
 	Name         string    `json:"name"`  // name of agency (hostname of pod given by kubernetes)
-	ID           int       `json:"id"`    // unique ID (contained in name)
-	ImageGroupID int       `json:"imid"`  // ID of agency image
+	ID           int       `json:"id"`    // within image group unique ID (contained in name)
+	ImageGroupID int       `json:"imid"`  // ID of agency image group
 	Logger       LogConfig `json:"log"`   // logger configuration
 	Agents       []int     `json:"agents"`
 	Status       Status    `json:"status"`
@@ -147,8 +150,8 @@ type AgencyInfo struct {
 type AgencyInfoFull struct {
 	MASID        int         `json:"masid"` // ID of MAS
 	Name         string      `json:"name"`  // name of agency (hostname of pod given by kubernetes)
-	ID           int         `json:"id"`    // unique ID (contained in name)
-	ImageGroupID int         `json:"imid"`  // ID of agency image
+	ID           int         `json:"id"`    // within image group unique ID (contained in name)
+	ImageGroupID int         `json:"imid"`  // ID of agency image group
 	Logger       LogConfig   `json:"log"`   // logger configuration
 	Agents       []AgentInfo `json:"agents"`
 	Status       Status      `json:"status"`
@@ -164,6 +167,12 @@ type MASs struct {
 type Agents struct {
 	Counter   int         `json:"counter"`   // counter for agents
 	Instances []AgentInfo `json:"instances"` // agent ids
+}
+
+// ImageGroups contains information about how many image groups are running
+type ImageGroups struct {
+	Counter   int              `json:"counter"`   // counter for agents
+	Instances []ImageGroupInfo `json:"instances"` // image groups
 }
 
 // Agencies contains information about how many agencies are running
