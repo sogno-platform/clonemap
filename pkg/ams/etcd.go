@@ -369,59 +369,17 @@ func (stor *etcdStorage) initCache() (err error) {
 		if err != nil {
 			return
 		}
-		// MAS agents
-		err = stor.initMASAgents(i)
-		if err != nil {
-			return
-		}
 		// MAS agencies
 		err = stor.initMASImGroups(i)
 		if err != nil {
 			return
 		}
-	}
-	return
-}
-
-// initMASAgents retrieves data of agents in a mas from etcd
-func (stor *etcdStorage) initMASAgents(masID int) (err error) {
-	// MAS agent counter
-	stor.verMAS[masID].agentCounter, err = stor.etcdGetResource("ams/mas/"+strconv.Itoa(masID)+
-		"/agentcounter", &stor.mas[masID].Agents.Counter)
-	if err != nil {
-		return
-	}
-	stor.mas[masID].Agents.Inst = make([]schemas.AgentInfo, stor.mas[masID].Agents.Counter,
-		stor.mas[masID].Agents.Counter)
-	stor.verMAS[masID].agents = make([]int, stor.mas[masID].Agents.Counter,
-		stor.mas[masID].Agents.Counter)
-
-	// get info of all agents and loop through
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	resp := &clientv3.GetResponse{}
-	resp, err = stor.client.Get(ctx, "ams/mas/"+strconv.Itoa(masID)+"/agent")
-	if err == nil {
-		for i := range resp.Kvs {
-			temp := strings.Split(string(resp.Kvs[i].Key), "/")
-			if len(temp) != 5 {
-				continue
-			}
-			var agentID int
-			agentID, err = strconv.Atoi(temp[4])
-			if err != nil {
-				continue
-			}
-			if agentID >= stor.mas[masID].Agents.Counter {
-				continue
-			}
-			err = json.Unmarshal(resp.Kvs[i].Value, &stor.mas[masID].Agents.Inst[agentID])
-			if err != nil {
-				continue
-			}
-			stor.verMAS[masID].agents[agentID] = int(resp.Kvs[i].Version)
+		// MAS agents
+		err = stor.initMASAgents(i)
+		if err != nil {
+			return
 		}
 	}
-	cancel()
 	return
 }
 
@@ -497,7 +455,53 @@ func (stor *etcdStorage) initMASImGroups(masID int) (err error) {
 		}
 		cancel()
 	}
+	return
+}
 
+// initMASAgents retrieves data of agents in a mas from etcd
+func (stor *etcdStorage) initMASAgents(masID int) (err error) {
+	// MAS agent counter
+	stor.verMAS[masID].agentCounter, err = stor.etcdGetResource("ams/mas/"+strconv.Itoa(masID)+
+		"/agentcounter", &stor.mas[masID].Agents.Counter)
+	if err != nil {
+		return
+	}
+	stor.mas[masID].Agents.Inst = make([]schemas.AgentInfo, stor.mas[masID].Agents.Counter,
+		stor.mas[masID].Agents.Counter)
+	stor.verMAS[masID].agents = make([]int, stor.mas[masID].Agents.Counter,
+		stor.mas[masID].Agents.Counter)
+
+	// get info of all agents and loop through
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	resp := &clientv3.GetResponse{}
+	resp, err = stor.client.Get(ctx, "ams/mas/"+strconv.Itoa(masID)+"/agent")
+	if err == nil {
+		for i := range resp.Kvs {
+			temp := strings.Split(string(resp.Kvs[i].Key), "/")
+			if len(temp) != 5 {
+				continue
+			}
+			var agentID int
+			agentID, err = strconv.Atoi(temp[4])
+			if err != nil {
+				continue
+			}
+			if agentID >= stor.mas[masID].Agents.Counter {
+				continue
+			}
+			err = json.Unmarshal(resp.Kvs[i].Value, &stor.mas[masID].Agents.Inst[agentID])
+			if err != nil {
+				continue
+			}
+			stor.verMAS[masID].agents[agentID] = int(resp.Kvs[i].Version)
+			imID := stor.mas[masID].Agents.Inst[agentID].ImageGroupID
+			agencyID := stor.mas[masID].Agents.Inst[agentID].AgencyID
+			stor.adjustAgencyStorage(masID, imID, agencyID)
+			stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Agents =
+				append(stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Agents, agentID)
+		}
+	}
+	cancel()
 	return
 }
 
