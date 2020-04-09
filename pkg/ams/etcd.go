@@ -421,7 +421,7 @@ func (stor *etcdStorage) initMASImGroups(masID int) (err error) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		resp := &clientv3.GetResponse{}
 		resp, err = stor.client.Get(ctx, "ams/mas/"+strconv.Itoa(masID)+"/im/"+strconv.Itoa(i)+
-			"/agency")
+			"/agency", clientv3.WithPrefix())
 		if err != nil {
 			cancel()
 			return
@@ -481,7 +481,7 @@ func (stor *etcdStorage) initMASAgents(masID int) (err error) {
 	// get info of all agents and loop through
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	resp := &clientv3.GetResponse{}
-	resp, err = stor.client.Get(ctx, "ams/mas/"+strconv.Itoa(masID)+"/agent")
+	resp, err = stor.client.Get(ctx, "ams/mas/"+strconv.Itoa(masID)+"/agent", clientv3.WithPrefix())
 	if err != nil {
 		cancel()
 		return
