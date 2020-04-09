@@ -159,26 +159,26 @@ type AgencyInfoFull struct {
 
 // MASs contains informaton about how many MASs are running
 type MASs struct {
-	Counter   int       `json:"counter"`   // number of running mas
-	Instances []MASInfo `json:"instances"` // mas ids
+	Counter int       `json:"counter"`   // number of running mas
+	Inst    []MASInfo `json:"instances"` // mas ids
 }
 
 // Agents contains information about how many agents are running
 type Agents struct {
-	Counter   int         `json:"counter"`   // counter for agents
-	Instances []AgentInfo `json:"instances"` // agent ids
+	Counter int         `json:"counter"`   // counter for agents
+	Inst    []AgentInfo `json:"instances"` // agent ids
 }
 
 // ImageGroups contains information about how many image groups are running
 type ImageGroups struct {
-	Counter   int              `json:"counter"`   // counter for agents
-	Instances []ImageGroupInfo `json:"instances"` // image groups
+	Counter int              `json:"counter"`   // counter for agents
+	Inst    []ImageGroupInfo `json:"instances"` // image groups
 }
 
 // Agencies contains information about how many agencies are running
 type Agencies struct {
-	Counter   int          `json:"counter"`   // counter for agents
-	Instances []AgencyInfo `json:"instances"` // agencies
+	Counter int          `json:"counter"`   // counter for agents
+	Inst    []AgencyInfo `json:"instances"` // agencies
 }
 
 // AgentStatus contains status of agency

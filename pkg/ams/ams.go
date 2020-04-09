@@ -259,7 +259,7 @@ func (ams *AMS) configureMAS(masSpec schemas.MASSpec) (masInfo schemas.MASInfo,
 			Config: masSpec.ImageGroups[i].Config,
 			ID:     i,
 		}
-		masInfo.ImageGroups.Instances = append(masInfo.ImageGroups.Instances, imGroupInfo)
+		masInfo.ImageGroups.Inst = append(masInfo.ImageGroups.Inst, imGroupInfo)
 		masInfo.ImageGroups.Counter++
 		imageTemp[masSpec.ImageGroups[i].Config.Image] = nil
 	}
@@ -276,12 +276,12 @@ func (ams *AMS) configureMAS(masSpec schemas.MASSpec) (masInfo schemas.MASInfo,
 		if len(masSpec.ImageGroups[i].Agents)%masSpec.Config.NumAgentsPerAgency > 0 {
 			num++
 		}
-		masInfo.ImageGroups.Instances[i].Agencies.Instances = make([]schemas.AgencyInfo, num,
+		masInfo.ImageGroups.Inst[i].Agencies.Inst = make([]schemas.AgencyInfo, num,
 			num)
-		masInfo.ImageGroups.Instances[i].Agencies.Counter = num
+		masInfo.ImageGroups.Inst[i].Agencies.Counter = num
 		numAgencies[i] = num
 	}
-	masInfo.Agents.Instances = make([]schemas.AgentInfo, masInfo.Agents.Counter,
+	masInfo.Agents.Inst = make([]schemas.AgentInfo, masInfo.Agents.Counter,
 		masInfo.Agents.Counter)
 
 	// empty graph?
@@ -293,16 +293,16 @@ func (ams *AMS) configureMAS(masSpec schemas.MASSpec) (masInfo schemas.MASInfo,
 	agentID := 0
 	for i := range masSpec.ImageGroups {
 		for j := range masSpec.ImageGroups[i].Agents {
-			masInfo.Agents.Instances[agentID].Spec = masSpec.ImageGroups[i].Agents[j]
-			masInfo.Agents.Instances[agentID].ID = agentID
-			masInfo.Agents.Instances[agentID].AgencyID = j / masSpec.Config.NumAgentsPerAgency
-			masInfo.Agents.Instances[agentID].ImageGroupID = i
-			masInfo.Agents.Instances[agentID].Address.Agency = "-im-" + strconv.Itoa(i) + "-agency-" +
+			masInfo.Agents.Inst[agentID].Spec = masSpec.ImageGroups[i].Agents[j]
+			masInfo.Agents.Inst[agentID].ID = agentID
+			masInfo.Agents.Inst[agentID].AgencyID = j / masSpec.Config.NumAgentsPerAgency
+			masInfo.Agents.Inst[agentID].ImageGroupID = i
+			masInfo.Agents.Inst[agentID].Address.Agency = "-im-" + strconv.Itoa(i) + "-agency-" +
 				strconv.Itoa(j/masSpec.Config.NumAgentsPerAgency)
 			for j := range masInfo.Graph.Node {
-				if masInfo.Graph.Node[j].ID == masInfo.Agents.Instances[i].Spec.NodeID {
+				if masInfo.Graph.Node[j].ID == masInfo.Agents.Inst[i].Spec.NodeID {
 					masInfo.Graph.Node[j].Agent = append(masInfo.Graph.Node[j].Agent,
-						masInfo.Agents.Instances[i].ID)
+						masInfo.Agents.Inst[i].ID)
 					break
 				}
 			}
@@ -329,7 +329,7 @@ func (ams *AMS) configureMAS(masSpec schemas.MASSpec) (masInfo schemas.MASInfo,
 				agentCounter++
 				agentCounterTot++
 			}
-			masInfo.ImageGroups.Instances[i].Agencies.Instances[j] = agencyInfo
+			masInfo.ImageGroups.Inst[i].Agencies.Inst[j] = agencyInfo
 		}
 	}
 	return

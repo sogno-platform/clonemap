@@ -98,10 +98,10 @@ func (kube *kubeDeployment) newMAS(masID int, images schemas.ImageGroups, loggin
 			if err != nil {
 				return
 			}
-			for i := range images.Instances {
-				err = kube.createStatefulSet(masID, i, images.Instances[i].Config.Image,
-					images.Instances[i].Config.PullSecret,
-					len(images.Instances[i].Agencies.Instances), loggingEnv, mqttEnv, dfEnv)
+			for i := range images.Inst {
+				err = kube.createStatefulSet(masID, i, images.Inst[i].Config.Image,
+					images.Inst[i].Config.PullSecret,
+					len(images.Inst[i].Agencies.Inst), loggingEnv, mqttEnv, dfEnv)
 				if err != nil {
 					return
 				}

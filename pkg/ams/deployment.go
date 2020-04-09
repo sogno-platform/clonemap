@@ -75,13 +75,13 @@ type localDeployment struct {
 // newMAS triggers the cluster manager to start new agency containers
 func (localdepl *localDeployment) newMAS(masID int, images schemas.ImageGroups,
 	logging bool, mqtt bool, df bool) (err error) {
-	for i := range images.Instances {
-		for j := 0; j < len(images.Instances[i].Agencies.Instances); j++ {
+	for i := range images.Inst {
+		for j := 0; j < len(images.Inst[i].Agencies.Inst); j++ {
 			temp := schemas.StubAgencyConfig{
 				MASID:        masID,
 				AgencyID:     j,
 				ImageGroupID: i,
-				Image:        images.Instances[i].Config.Image,
+				Image:        images.Inst[i].Config.Image,
 				Logging:      logging,
 				MQTT:         mqtt,
 				DF:           df,
