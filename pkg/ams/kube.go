@@ -134,7 +134,26 @@ func (kube *kubeDeployment) deleteMAS(masID int) (err error) {
 	exist, err = kube.existStatefulSet(masID)
 	if err == nil {
 		if exist {
-			err = kube.deleteStatefulSet(masID)
+			statefulSetClient := kube.clientset.Apps().StatefulSets("clonemap")
+			var statefulSetList *apiappsv1.StatefulSetList
+			statefulSetList, err = statefulSetClient.List(metav1.ListOptions{})
+			var statefulSet apiappsv1.StatefulSet
+			for i := range statefulSetList.Items {
+				l, ok := statefulSetList.Items[i].Spec.Template.ObjectMeta.Labels["app"]
+				if !ok {
+					continue
+				}
+				if l == "mas"+strconv.Itoa(masID)+"agencies" {
+					statefulSet = statefulSetList.Items[i]
+					err = statefulSetClient.Delete(statefulSet.GetName(), &metav1.DeleteOptions{})
+					if err != nil {
+						return
+					}
+				}
+
+			}
+
+			err = kube.deleteHeadlessService(masID)
 		} else {
 			err = errors.New("StatefulSet does not exist")
 		}
@@ -354,11 +373,16 @@ func (kube *kubeDeployment) scaleStatefulSet(masID int, replicasDelta int) (err 
 	return
 }
 
+// deleteHeadlessService deletes the headless service for a mas
+func (kube *kubeDeployment) deleteHeadlessService(masID int) (err error) {
+	servicesClient := kube.clientset.Core().Services("clonemap")
+	err = servicesClient.Delete("mas"+strconv.Itoa(masID)+"agencies", &metav1.DeleteOptions{})
+	return
+}
+
 // deleteStatefulSet deletes the statefulset and corresponding headless service
 func (kube *kubeDeployment) deleteStatefulSet(masID int) (err error) {
 	statefulsetclient := kube.clientset.Apps().StatefulSets("clonemap")
 	err = statefulsetclient.Delete("mas-"+strconv.Itoa(masID)+"-agency", &metav1.DeleteOptions{})
-	servicesClient := kube.clientset.Core().Services("clonemap")
-	err = servicesClient.Delete("mas"+strconv.Itoa(masID)+"agencies", &metav1.DeleteOptions{})
 	return
 }
