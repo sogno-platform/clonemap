@@ -74,7 +74,7 @@ type kubeDeployment struct {
 func (kube *kubeDeployment) newMAS(masID int, images schemas.ImageGroups, logging bool,
 	mqtt bool, df bool) (err error) {
 	var exist bool
-	exist, err = kube.existStatefulSet(masID)
+	exist, err = kube.existHeadlessService(masID)
 	if err == nil {
 		if !exist {
 			var loggingEnv, mqttEnv, dfEnv string
@@ -115,12 +115,12 @@ func (kube *kubeDeployment) newMAS(masID int, images schemas.ImageGroups, loggin
 }
 
 // scaleMAS triggers the cluster manager to start or delete agency containers
-func (kube *kubeDeployment) scaleMAS(masID int, deltaAgencies int) (err error) {
+func (kube *kubeDeployment) scaleMAS(masID int, imID int, deltaAgencies int) (err error) {
 	var exist bool
-	exist, err = kube.existStatefulSet(masID)
+	exist, err = kube.existHeadlessService(masID)
 	if err == nil {
 		if exist {
-			err = kube.scaleStatefulSet(masID, deltaAgencies)
+			err = kube.scaleStatefulSet(masID, imID, deltaAgencies)
 		} else {
 			// error
 		}
@@ -131,7 +131,7 @@ func (kube *kubeDeployment) scaleMAS(masID int, deltaAgencies int) (err error) {
 // deleteMAS triggers the cluster manager to delete all agency containers
 func (kube *kubeDeployment) deleteMAS(masID int) (err error) {
 	var exist bool
-	exist, err = kube.existStatefulSet(masID)
+	exist, err = kube.existHeadlessService(masID)
 	if err == nil {
 		if exist {
 			statefulSetClient := kube.clientset.Apps().StatefulSets("clonemap")
@@ -184,8 +184,8 @@ func newKubeDeployment(deplType string) (depl deployment, err error) {
 	return
 }
 
-// existStatefulSet checks if stateful set already exists and returns boolean value
-func (kube *kubeDeployment) existStatefulSet(masID int) (exist bool, err error) {
+// existHeadlessService checks if stateful set already exists and returns boolean value
+func (kube *kubeDeployment) existHeadlessService(masID int) (exist bool, err error) {
 	exist = false
 	servicesClient := kube.clientset.Core().Services("clonemap")
 	var services *apicorev1.ServiceList
@@ -356,13 +356,14 @@ func (kube *kubeDeployment) createStatefulSet(masID int, imID int, image string,
 }
 
 // scaleStatefulSet updates an existing stateful set with the given number of replicas
-func (kube *kubeDeployment) scaleStatefulSet(masID int, replicasDelta int) (err error) {
+func (kube *kubeDeployment) scaleStatefulSet(masID int, imID int, replicasDelta int) (err error) {
 	statefulSetClient := kube.clientset.Apps().StatefulSets("clonemap")
 	var statefulSetList *apiappsv1.StatefulSetList
 	statefulSetList, err = statefulSetClient.List(metav1.ListOptions{})
 	var statefulSet apiappsv1.StatefulSet
 	for i := range statefulSetList.Items {
-		if statefulSetList.Items[i].GetName() == "mas-"+strconv.Itoa(masID)+"-agency" {
+		if statefulSetList.Items[i].GetName() == "mas-"+strconv.Itoa(masID)+"-im-"+
+			strconv.Itoa(imID)+"-agency" {
 			statefulSet = statefulSetList.Items[i]
 			replicas := *statefulSet.Spec.Replicas + int32(replicasDelta)
 			statefulSet.Spec.Replicas = &replicas

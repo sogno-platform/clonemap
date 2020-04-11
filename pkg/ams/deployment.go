@@ -63,18 +63,24 @@ import (
 type deployment interface {
 	newMAS(masID int, images schemas.ImageGroups, logging bool, mqtt bool,
 		df bool) (err error)
-	scaleMAS(masID int, deltaAgencies int) (err error)
+	scaleMAS(masID int, imID int, deltaAgencies int) (err error)
 	deleteMAS(masID int) (err error)
 }
 
 // localDeployment implements the Cluster interface for a local instance of the MAP
 type localDeployment struct {
-	hostName string
+	hostName   string
+	containers []map[string]schemas.StubAgencyConfig
 }
 
 // newMAS triggers the cluster manager to start new agency containers
 func (localdepl *localDeployment) newMAS(masID int, images schemas.ImageGroups,
 	logging bool, mqtt bool, df bool) (err error) {
+	if len(localdepl.containers) <= masID {
+		for i := 0; i < masID-len(localdepl.containers)+1; i++ {
+			localdepl.containers = append(localdepl.containers, make(map[string]schemas.StubAgencyConfig))
+		}
+	}
 	for i := range images.Inst {
 		for j := 0; j < len(images.Inst[i].Agencies.Inst); j++ {
 			temp := schemas.StubAgencyConfig{
@@ -94,16 +100,33 @@ func (localdepl *localDeployment) newMAS(masID int, images schemas.ImageGroups,
 			if err == nil {
 				if statusCode != http.StatusCreated {
 					err = errors.New("Cannot create agency")
+					return
 				}
 			}
+			localdepl.containers[masID]["mas-"+strconv.Itoa(masID)+"-im-"+strconv.Itoa(i)] = temp
 		}
 	}
 	return
 }
 
 // scaleMAS triggers the cluster manager to start or delete agency containers
-func (localdepl *localDeployment) scaleMAS(masID int, deltaAgencies int) (err error) {
-	// ToDo
+func (localdepl *localDeployment) scaleMAS(masID int, imID int, deltaAgencies int) (err error) {
+	temp := localdepl.containers[masID]["mas-"+strconv.Itoa(masID)+"-im-"+strconv.Itoa(imID)]
+	for i := 0; i < deltaAgencies; i++ {
+		temp.AgencyID++
+		js, _ := json.Marshal(temp)
+		var statusCode int
+		httpClient := &http.Client{Timeout: time.Second * 10}
+		_, statusCode, err = httpretry.Post(httpClient, "http://"+localdepl.hostName+
+			":8000/api/container", " ", js, time.Second*2, 2)
+		if err == nil {
+			if statusCode != http.StatusCreated {
+				err = errors.New("Cannot create agency")
+				return
+			}
+		}
+	}
+	localdepl.containers[masID]["mas-"+strconv.Itoa(masID)+"-im-"+strconv.Itoa(imID)] = temp
 	return
 }
 
