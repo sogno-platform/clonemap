@@ -99,14 +99,15 @@ type storage interface {
 	deleteMAS(masID int) (err error)
 
 	// registerImageGroup registers a new image group with the storage and returns its ID
-	registerImageGroup(masID int, config schemas.ImageGroupConfig) (imID int, err error)
-
-	// registerAgent registers a new agent with the storage and returns its ID
-	registerAgent(masID int, imID int, agencyID int, spec schemas.AgentSpec) (agentID int,
+	registerImageGroup(masID int, config schemas.ImageGroupConfig) (newGroup bool, imID int,
 		err error)
 
+	// registerAgent registers a new agent with the storage and returns its ID
+	registerAgent(masID int, imID int, spec schemas.AgentSpec) (agentID int, err error)
+
 	// addAgent adds an agent to an existing MAS
-	addAgent(masID int, agentSpec schemas.AgentSpec) (err error)
+	addAgent(masID int, imID int, agentSpec schemas.AgentSpec) (newAgency bool, agentID int,
+		agencyID int, err error)
 }
 
 // CommData helper struct for communication data
@@ -372,8 +373,8 @@ func (stor *localStorage) deleteMAS(masID int) (err error) {
 }
 
 // registerImageGroup registers a new image group with the storage and returns its ID
-func (stor *localStorage) registerImageGroup(masID int, config schemas.ImageGroupConfig) (imID int,
-	err error) {
+func (stor *localStorage) registerImageGroup(masID int,
+	config schemas.ImageGroupConfig) (newGroup bool, imID int, err error) {
 	stor.mutex.Lock()
 	if len(stor.mas)-1 < masID {
 		stor.mutex.Unlock()
@@ -384,10 +385,12 @@ func (stor *localStorage) registerImageGroup(masID int, config schemas.ImageGrou
 	for i := range stor.mas[masID].ImageGroups.Inst {
 		if stor.mas[masID].ImageGroups.Inst[i].Config.Image == config.Image {
 			stor.mutex.Unlock()
-			err = errors.New("ImageGroup already exists")
+			imID = i
+			newGroup = false
 			return
 		}
 	}
+	newGroup = true
 
 	info := schemas.ImageGroupInfo{
 		Config: config,
@@ -402,12 +405,72 @@ func (stor *localStorage) registerImageGroup(masID int, config schemas.ImageGrou
 }
 
 // addAgent adds an agent to an existing MAS
-func (stor *localStorage) addAgent(masID int, agentSpec schemas.AgentSpec) (err error) {
+func (stor *localStorage) addAgent(masID int, imID int,
+	agentSpec schemas.AgentSpec) (newAgency bool, agentID int, agencyID int, err error) {
+	stor.mutex.Lock()
+	if len(stor.mas)-1 < masID {
+		stor.mutex.Unlock()
+		err = errors.New("MAS does not exist")
+		return
+	}
+
+	if len(stor.mas[masID].ImageGroups.Inst)-1 < imID {
+		stor.mutex.Unlock()
+		err = errors.New("ImageGroup does not exist")
+		return
+	}
+	stor.mutex.Unlock()
+
+	// register agent
+	agentID, err = stor.registerAgent(masID, imID, agentSpec)
+	if err != nil {
+		return
+	}
+
+	// schedule agent to agency
+	newAgency = true
+	stor.mutex.Lock()
+	agentInfo := stor.mas[masID].Agents.Inst[agentID]
+	numAgentsPerAgency := stor.mas[masID].Config.NumAgentsPerAgency
+	for i := range stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst {
+		if len(stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[i].Agents) < numAgentsPerAgency {
+			// there exists an agency with space left
+			stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[i].Agents =
+				append(stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[i].Agents, agentID)
+			agencyID = i
+			newAgency = false
+			break
+		}
+	}
+	if newAgency {
+		// new agency has to be created
+		agencyID = stor.mas[masID].ImageGroups.Inst[imID].Agencies.Counter
+		stor.mas[masID].ImageGroups.Inst[imID].Agencies.Counter++
+		agencyInfo := schemas.AgencyInfo{
+			MASID:        masID,
+			ImageGroupID: imID,
+			ID:           agencyID,
+			Name: "mas-" + strconv.Itoa(masID) + "-im-" + strconv.Itoa(imID) +
+				"-agency-" + strconv.Itoa(agencyID) + ".mas" + strconv.Itoa(masID) + "agencies",
+			Logger: stor.mas[masID].Config.Logger,
+			Agents: []int{agentID},
+		}
+		stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst =
+			append(stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst, agencyInfo)
+	}
+
+	// store info about agency in agent
+	agentInfo.AgencyID = agencyID
+	agentInfo.Address.Agency = "mas-" + strconv.Itoa(masID) + "-im-" + strconv.Itoa(imID) +
+		"-agency-" + strconv.Itoa(agencyID) + ".mas" + strconv.Itoa(masID) + "agencies"
+	stor.mas[masID].Agents.Inst[agentID] = agentInfo
+	stor.mutex.Unlock()
+
 	return
 }
 
 // registerAgent registers a new agent with the storage and returns its ID
-func (stor *localStorage) registerAgent(masID int, imID int, agencyID int,
+func (stor *localStorage) registerAgent(masID int, imID int,
 	spec schemas.AgentSpec) (agentID int, err error) {
 	stor.mutex.Lock()
 	if len(stor.mas)-1 < masID {
@@ -423,12 +486,7 @@ func (stor *localStorage) registerAgent(masID int, imID int, agencyID int,
 		Spec:         spec,
 		MASID:        masID,
 		ImageGroupID: imID,
-		AgencyID:     agencyID,
 		ID:           agentID,
-		Address: schemas.Address{
-			Agency: "mas-" + strconv.Itoa(masID) + "-im-" + strconv.Itoa(imID) + "-agency-" +
-				strconv.Itoa(agencyID) + ".mas" + strconv.Itoa(masID) + "agencies",
-		},
 	}
 
 	stor.mas[masID].Agents.Inst = append(stor.mas[masID].Agents.Inst, info)

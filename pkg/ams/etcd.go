@@ -290,8 +290,8 @@ func (stor *etcdStorage) deleteMAS(masID int) (err error) {
 }
 
 // registerImageGroup registers a new image group with the storage and returns its ID
-func (stor *etcdStorage) registerImageGroup(masID int, config schemas.ImageGroupConfig) (imID int,
-	err error) {
+func (stor *etcdStorage) registerImageGroup(masID int,
+	config schemas.ImageGroupConfig) (newGroup bool, imID int, err error) {
 	stor.mutex.Lock()
 	if len(stor.mas)-1 < masID {
 		stor.mutex.Unlock()
@@ -309,11 +309,14 @@ func (stor *etcdStorage) registerImageGroup(masID int, config schemas.ImageGroup
 		for i := range stor.mas[masID].ImageGroups.Inst {
 			if stor.mas[masID].ImageGroups.Inst[i].Config.Image == config.Image {
 				stor.mutex.Unlock()
-				err = errors.New("ImageGroup already exists")
+				imID = i
+				newGroup = false
 				cancel()
+				return err
 			}
 		}
 		stor.mutex.Unlock()
+		newGroup = true
 
 		var imCounter int
 		err = json.Unmarshal([]byte(s.Get("ams/mas/"+strconv.Itoa(masID)+"/imcounter")), &imCounter)
@@ -348,13 +351,118 @@ func (stor *etcdStorage) registerImageGroup(masID int, config schemas.ImageGroup
 }
 
 // addAgent adds an agent to an existing MAS
-func (stor *etcdStorage) addAgent(masID int, agentSpec schemas.AgentSpec) (err error) {
+func (stor *etcdStorage) addAgent(masID int, imID int,
+	agentSpec schemas.AgentSpec) (newAgency bool, agentID int, agencyID int, err error) {
+	stor.mutex.Lock()
+	if len(stor.mas)-1 < masID {
+		stor.mutex.Unlock()
+		err = errors.New("MAS does not exist")
+		return
+	}
+
+	if len(stor.mas[masID].ImageGroups.Inst)-1 < imID {
+		stor.mutex.Unlock()
+		err = errors.New("ImageGroup does not exist")
+		return
+	}
+	numAgentsPerAgency := stor.mas[masID].Config.NumAgentsPerAgency
+	stor.mutex.Unlock()
+
+	// register agent
+	agentID, err = stor.registerAgent(masID, imID, agentSpec)
+	if err != nil {
+		return
+	}
+	// store new image group and determine ID
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	// use STM for atomic puts and retry in case values have been altered during function execution
+	_, err = concurrency.NewSTMRepeatable(ctx, stor.client, func(s concurrency.STM) error {
+		newAgency = true
+		var agencyCounter int
+		err = json.Unmarshal([]byte(s.Get("ams/mas/"+strconv.Itoa(masID)+"/im/agencycounter")),
+			&agencyCounter)
+		if err != nil {
+			return err
+		}
+		for i := 0; i < agencyCounter; i++ {
+			var agencyInfo schemas.AgencyInfo
+			err = json.Unmarshal([]byte(s.Get("ams/mas/"+strconv.Itoa(masID)+"/im/"+
+				strconv.Itoa(imID)+"/agency/"+strconv.Itoa(i))), &agencyInfo)
+			if err != nil {
+				return err
+			}
+			if len(agencyInfo.Agents) < numAgentsPerAgency {
+				// there exists an agency with space left
+				agencyInfo.Agents = append(agencyInfo.Agents, agentID)
+				var res []byte
+				res, err = json.Marshal(agencyInfo)
+				if err != nil {
+					return err
+				}
+				s.Put("ams/mas/"+strconv.Itoa(masID)+"/im/"+strconv.Itoa(imID)+"/agency/"+
+					strconv.Itoa(i), string(res))
+				agencyID = i
+				newAgency = false
+				break
+			}
+		}
+		if newAgency {
+			// new agency has to be created
+			agencyID = agencyCounter
+			agencyCounter++
+			// update mas counter in etcd
+			var res []byte
+			res, err = json.Marshal(agencyCounter)
+			if err != nil {
+				return err
+			}
+			s.Put("ams/mas/"+strconv.Itoa(masID)+"/im/agencycounter", string(res))
+
+			agencyInfo := schemas.AgencyInfo{
+				MASID:        masID,
+				ImageGroupID: imID,
+				ID:           agencyID,
+				Name: "mas-" + strconv.Itoa(masID) + "-im-" + strconv.Itoa(imID) +
+					"-agency-" + strconv.Itoa(agencyID) + ".mas" + strconv.Itoa(masID) + "agencies",
+				Logger: stor.mas[masID].Config.Logger,
+				Agents: []int{agentID},
+			}
+
+			res, err = json.Marshal(agencyInfo)
+			if err != nil {
+				return err
+			}
+			s.Put("ams/mas/"+strconv.Itoa(masID)+"/im/"+strconv.Itoa(imID)+"/agency/"+
+				strconv.Itoa(agencyID), string(res))
+		}
+
+		return err
+	})
+	cancel()
+
+	info := schemas.AgentInfo{
+		Spec:         agentSpec,
+		MASID:        masID,
+		ImageGroupID: imID,
+		AgencyID:     agencyID,
+		ID:           agentID,
+		Address: schemas.Address{
+			Agency: "mas-" + strconv.Itoa(masID) + "-im-" + strconv.Itoa(imID) + "-agency-" +
+				strconv.Itoa(agencyID) + ".mas" + strconv.Itoa(masID) + "agencies",
+		},
+	}
+
+	err = stor.etcdPutResource("ams/mas/"+strconv.Itoa(masID)+"/agent/"+strconv.Itoa(agentID), info)
+	if err != nil {
+		return
+	}
+
 	return
 }
 
 // registerAgent registers a new agent with the storage and returns its ID
-func (stor *etcdStorage) registerAgent(masID int, imID int, agencyID int,
-	spec schemas.AgentSpec) (agentID int, err error) {
+func (stor *etcdStorage) registerAgent(masID int, imID int, spec schemas.AgentSpec) (agentID int,
+	err error) {
 	stor.mutex.Lock()
 	if len(stor.mas)-1 < masID {
 		stor.mutex.Unlock()
@@ -386,23 +494,6 @@ func (stor *etcdStorage) registerAgent(masID int, imID int, agencyID int,
 		return err
 	})
 	cancel()
-
-	info := schemas.AgentInfo{
-		Spec:         spec,
-		MASID:        masID,
-		ImageGroupID: imID,
-		AgencyID:     agencyID,
-		ID:           agentID,
-		Address: schemas.Address{
-			Agency: "mas-" + strconv.Itoa(masID) + "-im-" + strconv.Itoa(imID) + "-agency-" +
-				strconv.Itoa(agencyID) + ".mas" + strconv.Itoa(masID) + "agencies",
-		},
-	}
-
-	err = stor.etcdPutResource("ams/mas/"+strconv.Itoa(masID)+"/agent/"+strconv.Itoa(agentID), info)
-	if err != nil {
-		return
-	}
 
 	return
 }
