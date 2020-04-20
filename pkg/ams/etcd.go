@@ -289,6 +289,64 @@ func (stor *etcdStorage) deleteMAS(masID int) (err error) {
 	return
 }
 
+// registerImageGroup registers a new image group with the storage and returns its ID
+func (stor *etcdStorage) registerImageGroup(masID int, config schemas.ImageGroupConfig) (imID int,
+	err error) {
+	stor.mutex.Lock()
+	if len(stor.mas)-1 < masID {
+		stor.mutex.Unlock()
+		err = errors.New("MAS does not exist")
+		return
+	}
+	stor.mutex.Unlock()
+
+	// store new image group and determine ID
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	// use STM for atomic puts and retry in case values have been altered during function execution
+	_, err = concurrency.NewSTMRepeatable(ctx, stor.client, func(s concurrency.STM) error {
+		// get info about number of running mas
+		stor.mutex.Lock()
+		for i := range stor.mas[masID].ImageGroups.Inst {
+			if stor.mas[masID].ImageGroups.Inst[i].Config.Image == config.Image {
+				stor.mutex.Unlock()
+				err = errors.New("ImageGroup already exists")
+				cancel()
+			}
+		}
+		stor.mutex.Unlock()
+
+		var imCounter int
+		err = json.Unmarshal([]byte(s.Get("ams/mas/"+strconv.Itoa(masID)+"/imcounter")), &imCounter)
+		if err != nil {
+			return err
+		}
+		imID = imCounter
+		imCounter++
+		// update mas counter in etcd
+		var res []byte
+		res, err = json.Marshal(imCounter)
+		if err != nil {
+			return err
+		}
+		s.Put("ams/mas/"+strconv.Itoa(masID)+"/imcounter", string(res))
+		return err
+	})
+	cancel()
+
+	err = stor.etcdPutResource("ams/mas/"+strconv.Itoa(masID)+"/im/"+strconv.Itoa(imID)+
+		"/config", config)
+	if err != nil {
+		return
+	}
+	err = stor.etcdPutResource("ams/mas/"+strconv.Itoa(masID)+"/im/"+strconv.Itoa(imID)+
+		"/agencycounter", 0)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 // addAgent adds an agent to an existing MAS
 func (stor *etcdStorage) addAgent(masID int, agentSpec schemas.AgentSpec) (err error) {
 	return

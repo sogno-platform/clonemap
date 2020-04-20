@@ -98,6 +98,9 @@ type storage interface {
 	// deleteMAS deletes MAS with specified ID
 	deleteMAS(masID int) (err error)
 
+	// registerImageGroup registers a new image group with the storage and returns its ID
+	registerImageGroup(masID int, config schemas.ImageGroupConfig) (imID int, err error)
+
 	// addAgent adds an agent to an existing MAS
 	addAgent(masID int, agentSpec schemas.AgentSpec) (err error)
 }
@@ -361,6 +364,36 @@ func (stor *localStorage) deleteMAS(masID int) (err error) {
 	// stor.mas[len(stor.mas)-1] = masStorage{}
 	// stor.mas = stor.mas[:len(stor.mas)-1]
 	stor.mutex.Unlock()
+	return
+}
+
+// registerImageGroup registers a new image group with the storage and returns its ID
+func (stor *localStorage) registerImageGroup(masID int, config schemas.ImageGroupConfig) (imID int,
+	err error) {
+	stor.mutex.Lock()
+	if len(stor.mas)-1 < masID {
+		stor.mutex.Unlock()
+		err = errors.New("MAS does not exist")
+		return
+	}
+
+	for i := range stor.mas[masID].ImageGroups.Inst {
+		if stor.mas[masID].ImageGroups.Inst[i].Config.Image == config.Image {
+			stor.mutex.Unlock()
+			err = errors.New("ImageGroup already exists")
+			return
+		}
+	}
+
+	info := schemas.ImageGroupInfo{
+		Config: config,
+		ID:     stor.mas[masID].ImageGroups.Counter,
+	}
+	stor.mas[masID].ImageGroups.Counter++
+	stor.mas[masID].ImageGroups.Inst = append(stor.mas[masID].ImageGroups.Inst,
+		info)
+	stor.mutex.Unlock()
+	imID = info.ID
 	return
 }
 
