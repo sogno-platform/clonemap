@@ -55,7 +55,7 @@ THE SOFTWARE.
 // ams/mas/<masID>/im/<imID>/agencycounter int(agencyCounter)
 // ams/mas/<masID>/im/<imID>/agency/<agency>/status
 // ams/mas/<masID>/agentcounter int (agentCounter)
-// ams/mas/<masID>/agents/<agentID>: schemas.AgentInfo
+// ams/mas/<masID>/agent/<agentID>: schemas.AgentInfo
 //
 // df/graph/<masID>: schemas.Graph
 
@@ -115,7 +115,7 @@ func (stor *etcdStorage) setCloneMAPInfo(cloneMAP schemas.CloneMAP) (err error) 
 // setAgentAddress sets address of agent
 func (stor *etcdStorage) setAgentAddress(masID int, agentID int,
 	address schemas.Address) (err error) {
-	err = stor.etcdPutResource("ams/mas/"+strconv.Itoa(masID)+"/agents/"+strconv.Itoa(agentID)+
+	err = stor.etcdPutResource("ams/mas/"+strconv.Itoa(masID)+"/agent/"+strconv.Itoa(agentID)+
 		"/address", address)
 	return
 }
@@ -349,6 +349,61 @@ func (stor *etcdStorage) registerImageGroup(masID int, config schemas.ImageGroup
 
 // addAgent adds an agent to an existing MAS
 func (stor *etcdStorage) addAgent(masID int, agentSpec schemas.AgentSpec) (err error) {
+	return
+}
+
+// registerAgent registers a new agent with the storage and returns its ID
+func (stor *etcdStorage) registerAgent(masID int, imID int, agencyID int,
+	spec schemas.AgentSpec) (agentID int, err error) {
+	stor.mutex.Lock()
+	if len(stor.mas)-1 < masID {
+		stor.mutex.Unlock()
+		err = errors.New("MAS does not exist")
+		return
+	}
+	stor.mutex.Unlock()
+
+	// store new agent and determine ID
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	// use STM for atomic puts and retry in case values have been altered during function execution
+	_, err = concurrency.NewSTMRepeatable(ctx, stor.client, func(s concurrency.STM) error {
+		// get info about number of running agents
+
+		var agentCounter int
+		err = json.Unmarshal([]byte(s.Get("ams/mas/"+strconv.Itoa(masID)+"/agentcounter")), &agentCounter)
+		if err != nil {
+			return err
+		}
+		agentID = agentCounter
+		agentCounter++
+		// update mas counter in etcd
+		var res []byte
+		res, err = json.Marshal(agentCounter)
+		if err != nil {
+			return err
+		}
+		s.Put("ams/mas/"+strconv.Itoa(masID)+"/agentcounter", string(res))
+		return err
+	})
+	cancel()
+
+	info := schemas.AgentInfo{
+		Spec:         spec,
+		MASID:        masID,
+		ImageGroupID: imID,
+		AgencyID:     agencyID,
+		ID:           agentID,
+		Address: schemas.Address{
+			Agency: "mas-" + strconv.Itoa(masID) + "-im-" + strconv.Itoa(imID) + "-agency-" +
+				strconv.Itoa(agencyID) + ".mas" + strconv.Itoa(masID) + "agencies",
+		},
+	}
+
+	err = stor.etcdPutResource("ams/mas/"+strconv.Itoa(masID)+"/agent/"+strconv.Itoa(agentID), info)
+	if err != nil {
+		return
+	}
+
 	return
 }
 

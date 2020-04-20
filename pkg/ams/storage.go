@@ -101,6 +101,10 @@ type storage interface {
 	// registerImageGroup registers a new image group with the storage and returns its ID
 	registerImageGroup(masID int, config schemas.ImageGroupConfig) (imID int, err error)
 
+	// registerAgent registers a new agent with the storage and returns its ID
+	registerAgent(masID int, imID int, agencyID int, spec schemas.AgentSpec) (agentID int,
+		err error)
+
 	// addAgent adds an agent to an existing MAS
 	addAgent(masID int, agentSpec schemas.AgentSpec) (err error)
 }
@@ -399,6 +403,36 @@ func (stor *localStorage) registerImageGroup(masID int, config schemas.ImageGrou
 
 // addAgent adds an agent to an existing MAS
 func (stor *localStorage) addAgent(masID int, agentSpec schemas.AgentSpec) (err error) {
+	return
+}
+
+// registerAgent registers a new agent with the storage and returns its ID
+func (stor *localStorage) registerAgent(masID int, imID int, agencyID int,
+	spec schemas.AgentSpec) (agentID int, err error) {
+	stor.mutex.Lock()
+	if len(stor.mas)-1 < masID {
+		stor.mutex.Unlock()
+		err = errors.New("MAS does not exist")
+		return
+	}
+
+	agentID = stor.mas[masID].Agents.Counter
+	stor.mas[masID].Agents.Counter++
+
+	info := schemas.AgentInfo{
+		Spec:         spec,
+		MASID:        masID,
+		ImageGroupID: imID,
+		AgencyID:     agencyID,
+		ID:           agentID,
+		Address: schemas.Address{
+			Agency: "mas-" + strconv.Itoa(masID) + "-im-" + strconv.Itoa(imID) + "-agency-" +
+				strconv.Itoa(agencyID) + ".mas" + strconv.Itoa(masID) + "agencies",
+		},
+	}
+
+	stor.mas[masID].Agents.Inst = append(stor.mas[masID].Agents.Inst, info)
+	stor.mutex.Unlock()
 	return
 }
 
