@@ -348,6 +348,36 @@ func (ams *AMS) removeMAS(masID int) (err error) {
 
 // createAgents creates new agents and adds them to an existing mas
 func (ams *AMS) createAgents(masID int, groupSpecs []schemas.ImageGroupSpec) (err error) {
+	for i := range groupSpecs {
+		var newGroup bool
+		var imID int
+		newGroup, imID, err = ams.stor.registerImageGroup(masID, groupSpecs[i].Config)
+		if err != nil {
+			return
+		}
+		for j := range groupSpecs[i].Agents {
+			var newAgency bool
+			var agentID int
+			newAgency, agentID, _, err = ams.stor.addAgent(masID, imID,
+				groupSpecs[i].Agents[j])
+			if err != nil {
+				return
+			}
+			if newGroup {
+				// scale mas; create new statefulset for image
+				newGroup = false
+			} else if newAgency {
+				// scale mas; scale existing statefulset
+			} else {
+				// post agent to running agency
+				agentInfo, err := ams.stor.getAgentInfo(masID, agentID)
+				if err != nil {
+					return
+				}
+				err = ams.postAgentToAgency(agentInfo)
+			}
+		}
+	}
 	return
 }
 
