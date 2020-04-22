@@ -63,7 +63,8 @@ import (
 type deployment interface {
 	newMAS(masID int, images schemas.ImageGroups, logging bool, mqtt bool,
 		df bool) (err error)
-	newImageGroup(masID int, imGroup schemas.ImageGroupInfo) (err error)
+	newImageGroup(masID int, imGroup schemas.ImageGroupInfo, logging bool, mqtt bool,
+		df bool) (err error)
 	scaleImageGroup(masID int, imID int, deltaAgencies int) (err error)
 	deleteMAS(masID int) (err error)
 }
@@ -112,7 +113,31 @@ func (localdepl *localDeployment) newMAS(masID int, images schemas.ImageGroups,
 
 // newImageGroup starts a new image group in an existing mas
 func (localdepl *localDeployment) newImageGroup(masID int,
-	imGroup schemas.ImageGroupInfo) (err error) {
+	imGroup schemas.ImageGroupInfo, logging bool, mqtt bool, df bool) (err error) {
+	for j := 0; j < len(imGroup.Agencies.Inst); j++ {
+		temp := schemas.StubAgencyConfig{
+			MASID:        masID,
+			AgencyID:     j,
+			ImageGroupID: imGroup.ID,
+			Image:        imGroup.Config.Image,
+			Logging:      logging,
+			MQTT:         mqtt,
+			DF:           df,
+		}
+		js, _ := json.Marshal(temp)
+		var statusCode int
+		httpClient := &http.Client{Timeout: time.Second * 10}
+		_, statusCode, err = httpretry.Post(httpClient, "http://"+localdepl.hostName+
+			":8000/api/container", " ", js, time.Second*2, 2)
+		if err == nil {
+			if statusCode != http.StatusCreated {
+				err = errors.New("Cannot create agency")
+				return
+			}
+		}
+		localdepl.containers[masID]["mas-"+strconv.Itoa(masID)+"-im-"+strconv.Itoa(imGroup.ID)] =
+			temp
+	}
 	return
 }
 

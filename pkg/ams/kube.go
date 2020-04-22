@@ -115,7 +115,26 @@ func (kube *kubeDeployment) newMAS(masID int, images schemas.ImageGroups, loggin
 }
 
 // newImageGroup starts a new image group in an existing mas
-func (kube *kubeDeployment) newImageGroup(masID int, imGroup schemas.ImageGroupInfo) (err error) {
+func (kube *kubeDeployment) newImageGroup(masID int, imGroup schemas.ImageGroupInfo, logging bool,
+	mqtt bool, df bool) (err error) {
+	var loggingEnv, mqttEnv, dfEnv string
+	if logging {
+		loggingEnv = "ON"
+	} else {
+		loggingEnv = "OFF"
+	}
+	if mqtt {
+		mqttEnv = "ON"
+	} else {
+		mqttEnv = "OFF"
+	}
+	if df {
+		dfEnv = "ON"
+	} else {
+		dfEnv = "OFF"
+	}
+	err = kube.createStatefulSet(masID, imGroup.ID, imGroup.Config.Image,
+		imGroup.Config.PullSecret, len(imGroup.Agencies.Inst), loggingEnv, mqttEnv, dfEnv)
 	return
 }
 

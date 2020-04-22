@@ -398,7 +398,13 @@ func (ams *AMS) createAgents(masID int, groupSpecs []schemas.ImageGroupSpec) (er
 			if err != nil {
 				return
 			}
-			err = ams.depl.newImageGroup(masID, groupInfo)
+			var masInfo schemas.MASInfo
+			masInfo, err = ams.stor.getMASInfo(masID)
+			if err != nil {
+				return
+			}
+			err = ams.depl.newImageGroup(masID, groupInfo, masInfo.Config.Logging,
+				masInfo.Config.MQTT, masInfo.Config.DF)
 			if err != nil {
 				return
 			}
