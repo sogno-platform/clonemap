@@ -370,7 +370,8 @@ func (ams *AMS) createAgents(masID int, groupSpecs []schemas.ImageGroupSpec) (er
 				// scale mas; scale existing statefulset
 			} else {
 				// post agent to running agency
-				agentInfo, err := ams.stor.getAgentInfo(masID, agentID)
+				var agentInfo schemas.AgentInfo
+				agentInfo, err = ams.stor.getAgentInfo(masID, agentID)
 				if err != nil {
 					return
 				}
