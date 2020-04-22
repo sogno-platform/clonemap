@@ -71,6 +71,9 @@ type storage interface {
 	// getMASInfo returns info of one MAS
 	getMASInfo(masID int) (ret schemas.MASInfo, err error)
 
+	// getGroupInfo returns info of one image group
+	getGroupInfo(masID int, imID int) (ret schemas.ImageGroupInfo, err error)
+
 	// getAgents returns specs of all agents in MAS
 	getAgents(masID int) (ret schemas.Agents, err error)
 
@@ -165,6 +168,25 @@ func (stor *localStorage) getMASInfo(masID int) (ret schemas.MASInfo, err error)
 		return
 	}
 	ret = stor.mas[masID]
+	stor.mutex.Unlock()
+	return
+}
+
+// getGroupInfo returns info of one image group
+func (stor *localStorage) getGroupInfo(masID int, imID int) (ret schemas.ImageGroupInfo,
+	err error) {
+	stor.mutex.Lock()
+	if len(stor.mas)-1 < masID {
+		stor.mutex.Unlock()
+		err = errors.New("MAS does not exist")
+		return
+	}
+	if len(stor.mas[masID].ImageGroups.Inst)-1 < imID {
+		stor.mutex.Unlock()
+		err = errors.New("ImageGroup does not exist")
+		return
+	}
+	ret = stor.mas[masID].ImageGroups.Inst[imID]
 	stor.mutex.Unlock()
 	return
 }

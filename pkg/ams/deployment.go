@@ -63,7 +63,8 @@ import (
 type deployment interface {
 	newMAS(masID int, images schemas.ImageGroups, logging bool, mqtt bool,
 		df bool) (err error)
-	scaleMAS(masID int, imID int, deltaAgencies int) (err error)
+	newImageGroup(masID int, imGroup schemas.ImageGroupInfo) (err error)
+	scaleImageGroup(masID int, imID int, deltaAgencies int) (err error)
 	deleteMAS(masID int) (err error)
 }
 
@@ -109,8 +110,15 @@ func (localdepl *localDeployment) newMAS(masID int, images schemas.ImageGroups,
 	return
 }
 
-// scaleMAS triggers the cluster manager to start or delete agency containers
-func (localdepl *localDeployment) scaleMAS(masID int, imID int, deltaAgencies int) (err error) {
+// newImageGroup starts a new image group in an existing mas
+func (localdepl *localDeployment) newImageGroup(masID int,
+	imGroup schemas.ImageGroupInfo) (err error) {
+	return
+}
+
+// scaleImageGroup triggers the cluster manager to start or delete agency containers
+func (localdepl *localDeployment) scaleImageGroup(masID int, imID int,
+	deltaAgencies int) (err error) {
 	temp := localdepl.containers[masID]["mas-"+strconv.Itoa(masID)+"-im-"+strconv.Itoa(imID)]
 	for i := 0; i < deltaAgencies; i++ {
 		temp.AgencyID++

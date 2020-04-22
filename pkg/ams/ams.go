@@ -355,27 +355,58 @@ func (ams *AMS) createAgents(masID int, groupSpecs []schemas.ImageGroupSpec) (er
 		if err != nil {
 			return
 		}
+		var newAgencies []int
 		for j := range groupSpecs[i].Agents {
 			var newAgency bool
 			var agentID int
-			newAgency, agentID, _, err = ams.stor.addAgent(masID, imID,
+			var agencyID int
+			newAgency, agentID, agencyID, err = ams.stor.addAgent(masID, imID,
 				groupSpecs[i].Agents[j])
 			if err != nil {
 				return
 			}
 			if newGroup {
-				// scale mas; create new statefulset for image
-				newGroup = false
+				// continue if group is new group
+				continue
 			} else if newAgency {
-				// scale mas; scale existing statefulset
+				newAgencies = append(newAgencies, agencyID)
 			} else {
-				// post agent to running agency
+				// post agent to running agency if agency is not new
 				var agentInfo schemas.AgentInfo
 				agentInfo, err = ams.stor.getAgentInfo(masID, agentID)
 				if err != nil {
 					return
 				}
+				for k := range newAgencies {
+					if agentInfo.AgencyID == newAgencies[k] {
+						newAgency = true
+					}
+				}
+				if newAgency {
+					// continue if agency is new agency
+					continue
+				}
 				err = ams.postAgentToAgency(agentInfo)
+				if err != nil {
+					return
+				}
+			}
+		}
+		if newGroup {
+			var groupInfo schemas.ImageGroupInfo
+			groupInfo, err = ams.stor.getGroupInfo(masID, imID)
+			if err != nil {
+				return
+			}
+			err = ams.depl.newImageGroup(masID, groupInfo)
+			if err != nil {
+				return
+			}
+		} else {
+			numNewAgencies := len(newAgencies)
+			err = ams.depl.scaleImageGroup(masID, imID, numNewAgencies)
+			if err != nil {
+				return
 			}
 		}
 	}

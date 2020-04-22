@@ -114,8 +114,13 @@ func (kube *kubeDeployment) newMAS(masID int, images schemas.ImageGroups, loggin
 	return
 }
 
-// scaleMAS triggers the cluster manager to start or delete agency containers
-func (kube *kubeDeployment) scaleMAS(masID int, imID int, deltaAgencies int) (err error) {
+// newImageGroup starts a new image group in an existing mas
+func (kube *kubeDeployment) newImageGroup(masID int, imGroup schemas.ImageGroupInfo) (err error) {
+	return
+}
+
+// scaleImageGroup triggers the cluster manager to start or delete agency containers
+func (kube *kubeDeployment) scaleImageGroup(masID int, imID int, deltaAgencies int) (err error) {
 	var exist bool
 	exist, err = kube.existHeadlessService(masID)
 	if err == nil {
