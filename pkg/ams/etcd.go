@@ -336,15 +336,17 @@ func (stor *etcdStorage) registerImageGroup(masID int,
 	})
 	cancel()
 
-	err = stor.etcdPutResource("ams/mas/"+strconv.Itoa(masID)+"/im/"+strconv.Itoa(imID)+
-		"/config", config)
-	if err != nil {
-		return
-	}
-	err = stor.etcdPutResource("ams/mas/"+strconv.Itoa(masID)+"/im/"+strconv.Itoa(imID)+
-		"/agencycounter", 0)
-	if err != nil {
-		return
+	if newGroup {
+		err = stor.etcdPutResource("ams/mas/"+strconv.Itoa(masID)+"/im/"+strconv.Itoa(imID)+
+			"/config", config)
+		if err != nil {
+			return
+		}
+		err = stor.etcdPutResource("ams/mas/"+strconv.Itoa(masID)+"/im/"+strconv.Itoa(imID)+
+			"/agencycounter", 0)
+		if err != nil {
+			return
+		}
 	}
 
 	return
