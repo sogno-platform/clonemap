@@ -1011,10 +1011,11 @@ func (stor *etcdStorage) adjustImGroupStorage(masID int, imID int) {
 	stor.adjustMASStorage(masID)
 	// create imGroup storage object, if number of stored im groups is lower than imID
 	stor.mutex.Lock()
-	if len(stor.mas[masID].ImageGroups.Inst) <= imID {
-		for i := 0; i < imID-len(stor.mas[masID].ImageGroups.Inst)+1; i++ {
+	numImGroups := len(stor.mas[masID].ImageGroups.Inst)
+	if numImGroups <= imID {
+		for i := 0; i < imID-numImGroups+1; i++ {
 			stor.mas[masID].ImageGroups.Inst = append(stor.mas[masID].ImageGroups.Inst,
-				schemas.ImageGroupInfo{})
+				schemas.ImageGroupInfo{ID: numImGroups + i})
 		}
 	}
 	if len(stor.verMAS[masID].imGroups) <= imID {
