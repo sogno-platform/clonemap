@@ -53,7 +53,7 @@ THE SOFTWARE.
 // ams/mas/<masID>/imcounter int (imCounter)
 // ams/mas/<masID>/im/<imID>/config ImageGroupConfig
 // ams/mas/<masID>/im/<imID>/agencycounter int(agencyCounter)
-// ams/mas/<masID>/im/<imID>/agency/<agency>/status
+// ams/mas/<masID>/im/<imID>/agency/<agencyID>: schemas.AgencyInfo
 // ams/mas/<masID>/agentcounter int (agentCounter)
 // ams/mas/<masID>/agent/<agentID>: schemas.AgentInfo
 //
@@ -254,12 +254,12 @@ func (stor *etcdStorage) uploadImGroupInfo(newMAS schemas.MASInfo) (err error) {
 			// put all agencies structs together
 			for j := 0; j < numAgInTrans; j++ {
 				var res []byte
-				res, err = json.Marshal(newMAS.ImageGroups.Inst[i].Agencies.Inst[agencyIndex].Status)
+				res, err = json.Marshal(newMAS.ImageGroups.Inst[i].Agencies.Inst[agencyIndex])
 				if err != nil {
 					return
 				}
 				Ops[j] = clientv3.OpPut("ams/mas/"+strconv.Itoa(newMAS.ID)+"/im/"+strconv.Itoa(i)+"/agency/"+
-					strconv.Itoa(agencyIndex)+"/status", string(res))
+					strconv.Itoa(agencyIndex), string(res))
 				agencyIndex++
 			}
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -425,7 +425,8 @@ func (stor *etcdStorage) addAgent(masID int, imID int,
 			if err != nil {
 				return err
 			}
-			s.Put("ams/mas/"+strconv.Itoa(masID)+"/im/agencycounter", string(res))
+			s.Put("ams/mas/"+strconv.Itoa(masID)+"/im/"+strconv.Itoa(imID)+"/agencycounter",
+				string(res))
 
 			agencyInfo := schemas.AgencyInfo{
 				MASID:        masID,
@@ -640,7 +641,7 @@ func (stor *etcdStorage) initMASImGroups(masID int) (err error) {
 		}
 		for j := range resp.Kvs {
 			temp := strings.Split(string(resp.Kvs[j].Key), "/")
-			if len(temp) != 8 {
+			if len(temp) != 7 {
 				continue
 			}
 			var agencyID int
@@ -653,22 +654,22 @@ func (stor *etcdStorage) initMASImGroups(masID int) (err error) {
 				continue
 			}
 			err = json.Unmarshal(resp.Kvs[j].Value,
-				&stor.mas[masID].ImageGroups.Inst[i].Agencies.Inst[agencyID].Status)
+				&stor.mas[masID].ImageGroups.Inst[i].Agencies.Inst[agencyID])
 			if err != nil {
 				cancel()
 				return
 			}
 			stor.verMAS[masID].imGroups[i].agencies[agencyID] = int(resp.Kvs[j].Version)
-			stor.mas[masID].ImageGroups.Inst[i].Agencies.Inst[agencyID].MASID = masID
-			stor.mas[masID].ImageGroups.Inst[i].Agencies.Inst[agencyID].ID = agencyID
-			stor.mas[masID].ImageGroups.Inst[i].Agencies.Inst[agencyID].ImageGroupID =
-				i
-			stor.mas[masID].ImageGroups.Inst[i].Agencies.Inst[agencyID].Logger =
-				stor.mas[masID].Config.Logger
-			stor.mas[masID].ImageGroups.Inst[i].Agencies.Inst[agencyID].Name =
-				"mas-" + strconv.Itoa(masID) + "-im-" + strconv.Itoa(i) +
-					"-agency-" + strconv.Itoa(agencyID) + ".mas" + strconv.Itoa(masID) +
-					"agencies"
+			// stor.mas[masID].ImageGroups.Inst[i].Agencies.Inst[agencyID].MASID = masID
+			// stor.mas[masID].ImageGroups.Inst[i].Agencies.Inst[agencyID].ID = agencyID
+			// stor.mas[masID].ImageGroups.Inst[i].Agencies.Inst[agencyID].ImageGroupID =
+			// 	i
+			// stor.mas[masID].ImageGroups.Inst[i].Agencies.Inst[agencyID].Logger =
+			// 	stor.mas[masID].Config.Logger
+			// stor.mas[masID].ImageGroups.Inst[i].Agencies.Inst[agencyID].Name =
+			// 	"mas-" + strconv.Itoa(masID) + "-im-" + strconv.Itoa(i) +
+			// 		"-agency-" + strconv.Itoa(agencyID) + ".mas" + strconv.Itoa(masID) +
+			// 		"agencies"
 		}
 		cancel()
 	}
@@ -719,8 +720,8 @@ func (stor *etcdStorage) initMASAgents(masID int) (err error) {
 		imID := stor.mas[masID].Agents.Inst[agentID].ImageGroupID
 		agencyID := stor.mas[masID].Agents.Inst[agentID].AgencyID
 		stor.adjustAgencyStorage(masID, imID, agencyID)
-		stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Agents =
-			append(stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Agents, agentID)
+		// stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Agents =
+		// 	append(stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Agents, agentID)
 	}
 	cancel()
 	return
@@ -766,7 +767,7 @@ func (stor *etcdStorage) handleAMSEvents() {
 					}
 					if len(path) == 6 {
 						err = stor.handleImGroupEvents(event.Kv, masID, imID, path[5])
-					} else if len(path) == 8 {
+					} else if len(path) == 7 {
 						var agencyID int
 						agencyID, err = strconv.Atoi(path[6])
 						if err != nil {
@@ -874,8 +875,8 @@ func (stor *etcdStorage) handleAgentEvents(kv *mvccpb.KeyValue, masID int,
 			stor.mutex.Unlock()
 			stor.adjustAgencyStorage(masID, imID, agencyID)
 			stor.mutex.Lock()
-			stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Agents =
-				append(stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Agents, agentID)
+			// stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Agents =
+			// 	append(stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Agents, agentID)
 		}
 	}
 	stor.mutex.Unlock()
@@ -923,24 +924,24 @@ func (stor *etcdStorage) handleAgencyEvents(kv *mvccpb.KeyValue, masID int, imID
 	stor.mutex.Lock()
 	if stor.verMAS[masID].imGroups[imID].agencies[agencyID] < int(kv.Version) {
 		err = json.Unmarshal(kv.Value,
-			&stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Status)
+			&stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID])
 		if err != nil {
 			stor.mutex.Unlock()
 			return
 		}
 		stor.verMAS[masID].imGroups[imID].agencies[agencyID] = int(kv.Version)
-		if stor.verMAS[masID].imGroups[imID].agencies[agencyID] == 1 {
-			// agency is new -> fill agency info fields
-			stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].MASID = masID
-			stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].ID = agencyID
-			stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].ImageGroupID =
-				imID
-			stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Logger =
-				stor.mas[masID].Config.Logger
-			stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Name =
-				"mas-" + strconv.Itoa(masID) + "-im-" + strconv.Itoa(imID) + "-agency-" +
-					strconv.Itoa(agencyID) + ".mas" + strconv.Itoa(masID) + "agencies"
-		}
+		// if stor.verMAS[masID].imGroups[imID].agencies[agencyID] == 1 {
+		// 	// agency is new -> fill agency info fields
+		// 	stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].MASID = masID
+		// 	stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].ID = agencyID
+		// 	stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].ImageGroupID =
+		// 		imID
+		// 	stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Logger =
+		// 		stor.mas[masID].Config.Logger
+		// 	stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Name =
+		// 		"mas-" + strconv.Itoa(masID) + "-im-" + strconv.Itoa(imID) + "-agency-" +
+		// 			strconv.Itoa(agencyID) + ".mas" + strconv.Itoa(masID) + "agencies"
+		// }
 	}
 	stor.mutex.Unlock()
 	return
