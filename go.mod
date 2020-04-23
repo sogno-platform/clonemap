@@ -1,6 +1,7 @@
 module git.rwth-aachen.de/acs/public/cloud/mas/clonemap
 
 require (
+	git.rwth-aachen.de/acs/public/cloud/fiware/gofiware v0.0.0-20200318111355-26136d7f7ea7
 	github.com/bitly/go-hostpool v0.0.0-20171023180738-a3a6125de932 // indirect
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869 // indirect
 	github.com/coreos/go-systemd v0.0.0-20181031085051-9002847aa142 // indirect
