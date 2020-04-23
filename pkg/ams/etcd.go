@@ -311,6 +311,7 @@ func (stor *etcdStorage) registerImageGroup(masID int,
 				stor.mutex.Unlock()
 				imID = i
 				newGroup = false
+				ctx.Done()
 				cancel()
 				return err
 			}
@@ -335,6 +336,12 @@ func (stor *etcdStorage) registerImageGroup(masID int,
 		return err
 	})
 	cancel()
+
+	if err != nil {
+		if err.Error() == "context canceled" {
+			err = nil
+		}
+	}
 
 	if newGroup {
 		err = stor.etcdPutResource("ams/mas/"+strconv.Itoa(masID)+"/im/"+strconv.Itoa(imID)+
