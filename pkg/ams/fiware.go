@@ -119,9 +119,12 @@ func (stor *fiwareStorage) getMASs() (ret schemas.MASs, err error) {
 // getMASInfo returns info of one MAS
 func (stor *fiwareStorage) getMASInfo(masID int) (ret schemas.MASInfo, err error) {
 	// check if mas exists
-	var masCounter int
-	masCounter, err = stor.getMasCounter()
-	if masID >= masCounter {
+	var masExist bool
+	masExist, err = stor.masExists(masID)
+	if err != nil {
+		return
+	}
+	if !masExist {
 		err = errors.New("MAS does not exist")
 		return
 	}
@@ -187,12 +190,16 @@ func (stor *fiwareStorage) getMASInfo(masID int) (ret schemas.MASInfo, err error
 // getGroups returns specs of all agents in MAS
 func (stor *fiwareStorage) getGroups(masID int) (ret schemas.ImageGroups, err error) {
 	// check if mas exists
-	var masCounter int
-	masCounter, err = stor.getMasCounter()
-	if masID >= masCounter {
+	var masExist bool
+	masExist, err = stor.masExists(masID)
+	if err != nil {
+		return
+	}
+	if !masExist {
 		err = errors.New("MAS does not exist")
 		return
 	}
+
 	// get all im entities
 	imEntities, err := stor.cli.GetAllEntitiesPattern("^mas"+strconv.Itoa(masID)+"im",
 		"clonemap")
@@ -225,6 +232,17 @@ func (stor *fiwareStorage) getGroups(masID int) (ret schemas.ImageGroups, err er
 // getGroupInfo returns info of one image group
 func (stor *fiwareStorage) getGroupInfo(masID int, imID int) (ret schemas.ImageGroupInfo,
 	err error) {
+	// check if im exists
+	var imExist bool
+	imExist, err = stor.imExists(masID, imID)
+	if err != nil {
+		return
+	}
+	if !imExist {
+		err = errors.New("im does not exist")
+		return
+	}
+
 	// get im entity
 	var imEnt orion.Entity
 	imEnt, err = stor.cli.GetEntity("mas"+strconv.Itoa(masID)+"im"+strconv.Itoa(imID), "clonemap")
@@ -251,12 +269,16 @@ func (stor *fiwareStorage) getGroupInfo(masID int, imID int) (ret schemas.ImageG
 // getAgents returns specs of all agents in MAS
 func (stor *fiwareStorage) getAgents(masID int) (ret schemas.Agents, err error) {
 	// check if mas exists
-	var masCounter int
-	masCounter, err = stor.getMasCounter()
-	if masID >= masCounter {
+	var masExist bool
+	masExist, err = stor.masExists(masID)
+	if err != nil {
+		return
+	}
+	if !masExist {
 		err = errors.New("MAS does not exist")
 		return
 	}
+
 	// get all agent entities
 	agentEntities, err := stor.cli.GetAllEntitiesPattern("^mas"+strconv.Itoa(masID)+"agent",
 		"clonemap")
@@ -281,14 +303,16 @@ func (stor *fiwareStorage) getAgents(masID int) (ret schemas.Agents, err error) 
 // getAgentInfo returns info of one agent
 func (stor *fiwareStorage) getAgentInfo(masID int, agentID int) (ret schemas.AgentInfo, err error) {
 	// check if agent exists
-	ok, err := stor.agentExists(masID, agentID)
+	var agentExist bool
+	agentExist, err = stor.agentExists(masID, agentID)
 	if err != nil {
 		return
 	}
-	if !ok {
-		err = errors.New("agent does not exist")
+	if !agentExist {
+		err = errors.New("Agent does not exist")
 		return
 	}
+
 	attr, err := stor.cli.GetAttribute("mas"+strconv.Itoa(masID)+"agent"+strconv.Itoa(agentID),
 		"info", "clonemap")
 	if err != nil {
@@ -321,12 +345,16 @@ func (stor *fiwareStorage) setAgentAddress(masID int, agentID int,
 // getAgencies returns specs of all agencies in MAS
 func (stor *fiwareStorage) getAgencies(masID int) (ret schemas.Agencies, err error) {
 	// check if mas exists
-	var masCounter int
-	masCounter, err = stor.getMasCounter()
-	if masID >= masCounter {
+	var masExist bool
+	masExist, err = stor.masExists(masID)
+	if err != nil {
+		return
+	}
+	if !masExist {
 		err = errors.New("MAS does not exist")
 		return
 	}
+
 	var groups schemas.ImageGroups
 	groups, err = stor.getGroups(masID)
 	if err != nil {
@@ -342,13 +370,17 @@ func (stor *fiwareStorage) getAgencies(masID int) (ret schemas.Agencies, err err
 
 // getAgenciesGroup returns specs of all agencies in a group of MAS
 func (stor *fiwareStorage) getAgenciesGroup(masID int, imID int) (ret schemas.Agencies, err error) {
-	// check if mas exists
-	var masCounter int
-	masCounter, err = stor.getMasCounter()
-	if masID >= masCounter {
-		err = errors.New("MAS does not exist")
+	// check if group exists
+	var imExist bool
+	imExist, err = stor.imExists(masID, imID)
+	if err != nil {
 		return
 	}
+	if !imExist {
+		err = errors.New("Group does not exist")
+		return
+	}
+
 	// get all agency entities
 	agencyEntities, err := stor.cli.GetAllEntitiesPattern("^mas"+strconv.Itoa(masID)+"im"+
 		strconv.Itoa(imID)+"agency", "clonemap")
@@ -372,6 +404,41 @@ func (stor *fiwareStorage) getAgenciesGroup(masID int, imID int) (ret schemas.Ag
 // getAgencyInfoFull returns status of one agency
 func (stor *fiwareStorage) getAgencyInfoFull(masID int, imID int,
 	agencyID int) (ret schemas.AgencyInfoFull, err error) {
+	// check if agency exists
+	var agencyExist bool
+	agencyExist, err = stor.agencyExists(masID, imID, agencyID)
+	if err != nil {
+		return
+	}
+	if !agencyExist {
+		err = errors.New("Agency does not exist")
+		return
+	}
+
+	var agencyInfo schemas.AgencyInfo
+	attr, err := stor.cli.GetAttribute("mas"+strconv.Itoa(masID)+"im"+strconv.Itoa(imID)+"agency"+
+		strconv.Itoa(agencyID), "info", "clonemap")
+	if err != nil {
+		return
+	}
+	err = extractAttributeValue(attr, &agencyInfo)
+
+	ret.MASID = masID
+	ret.Name = agencyInfo.Name
+	ret.ID = agencyID
+	ret.ImageGroupID = imID
+	ret.Logger = agencyInfo.Logger
+	ret.Status = agencyInfo.Status
+	ret.Agents = make([]schemas.AgentInfo, len(agencyInfo.Agents), len(agencyInfo.Agents))
+	for i := 0; i < len(ret.Agents); i++ {
+		var temp schemas.AgentInfo
+		temp, err = stor.getAgentInfo(masID, agencyInfo.Agents[i])
+		if err != nil {
+			return
+		}
+		ret.Agents[i] = temp
+	}
+
 	return
 }
 
@@ -411,13 +478,68 @@ func (stor *fiwareStorage) addAgent(masID int, imID int,
 	return
 }
 
-func (stor *fiwareStorage) agentExists(masID int, agentID int) (exists bool, err error) {
-
+func (stor *fiwareStorage) masExists(masID int) (exists bool, err error) {
+	exists = false
+	var masCounter int
+	masCounter, err = stor.getMasCounter()
+	if err != nil {
+		return
+	}
+	if masID >= masCounter {
+		return
+	}
+	exists = true
 	return
 }
 
-func (stor *fiwareStorage) agencyExists(masID int, agencyID int) (exists bool, err error) {
+func (stor *fiwareStorage) agentExists(masID int, agentID int) (exists bool, err error) {
+	exists = false
+	var agentCounter int
+	agentCounter, err = stor.getAgentCounter(masID)
+	if err != nil {
+		if err.Error() == "notexist" {
+			err = nil
+		}
+		return
+	}
+	if agentID >= agentCounter {
+		return
+	}
+	exists = true
+	return
+}
 
+func (stor *fiwareStorage) imExists(masID int, imID int) (exists bool, err error) {
+	exists = false
+	var imCounter int
+	imCounter, err = stor.getImCounter(masID)
+	if err != nil {
+		if err.Error() == "notexist" {
+			err = nil
+		}
+		return
+	}
+	if imID >= imCounter {
+		return
+	}
+	exists = true
+	return
+}
+
+func (stor *fiwareStorage) agencyExists(masID int, imID int, agencyID int) (exists bool, err error) {
+	exists = false
+	var agencyCounter int
+	agencyCounter, err = stor.getAgencyCounter(masID, imID)
+	if err != nil {
+		if err.Error() == "notexist" {
+			err = nil
+		}
+		return
+	}
+	if agencyID >= agencyCounter {
+		return
+	}
+	exists = true
 	return
 }
 
@@ -438,6 +560,94 @@ func (stor *fiwareStorage) getMasCounter() (counter int, err error) {
 		// mascounter = int(temp)
 	}
 	counter = mascounter
+
+	return
+}
+
+// getAgentCounter returns the agent counter
+func (stor *fiwareStorage) getAgentCounter(masID int) (counter int, err error) {
+	// check if mas exists
+	var masExist bool
+	masExist, err = stor.masExists(masID)
+	if err != nil {
+		return
+	}
+	if !masExist {
+		err = errors.New("notexist")
+		return
+	}
+
+	var attr orion.Attribute
+	attr, err = stor.cli.GetAttribute("mas"+strconv.Itoa(masID), "agentcounter", "clonemap")
+	if err != nil {
+		return
+	}
+	var agentCounter int
+	agentCounter, ok := attr.Value.(int)
+	if !ok {
+		err = errors.New("unknown attribute value")
+		return
+	}
+	counter = agentCounter
+
+	return
+}
+
+// getImCounter returns the im counter
+func (stor *fiwareStorage) getImCounter(masID int) (counter int, err error) {
+	// check if mas exists
+	var masExist bool
+	masExist, err = stor.masExists(masID)
+	if err != nil {
+		return
+	}
+	if !masExist {
+		err = errors.New("notexist")
+		return
+	}
+
+	var attr orion.Attribute
+	attr, err = stor.cli.GetAttribute("mas"+strconv.Itoa(masID), "imcounter", "clonemap")
+	if err != nil {
+		return
+	}
+	var imCounter int
+	imCounter, ok := attr.Value.(int)
+	if !ok {
+		err = errors.New("unknown attribute value")
+		return
+	}
+	counter = imCounter
+
+	return
+}
+
+// getAgencyCounter returns the agency counter
+func (stor *fiwareStorage) getAgencyCounter(masID int, imID int) (counter int, err error) {
+	// check if im and mas exists
+	var imExist bool
+	imExist, err = stor.imExists(masID, imID)
+	if err != nil {
+		return
+	}
+	if !imExist {
+		err = errors.New("notexist")
+		return
+	}
+
+	var attr orion.Attribute
+	attr, err = stor.cli.GetAttribute("mas"+strconv.Itoa(masID)+"im"+strconv.Itoa(imID),
+		"agencycounter", "clonemap")
+	if err != nil {
+		return
+	}
+	var agencyCounter int
+	agencyCounter, ok := attr.Value.(int)
+	if !ok {
+		err = errors.New("unknown attribute value")
+		return
+	}
+	counter = agencyCounter
 
 	return
 }
