@@ -388,8 +388,8 @@ func (stor *etcdStorage) addAgent(masID int, imID int,
 	_, err = concurrency.NewSTMRepeatable(ctx, stor.client, func(s concurrency.STM) error {
 		newAgency = true
 		var agencyCounter int
-		err = json.Unmarshal([]byte(s.Get("ams/mas/"+strconv.Itoa(masID)+"/im/agencycounter")),
-			&agencyCounter)
+		err = json.Unmarshal([]byte(s.Get("ams/mas/"+strconv.Itoa(masID)+"/im/"+strconv.Itoa(imID)+
+			"/agencycounter")), &agencyCounter)
 		if err != nil {
 			return err
 		}
