@@ -132,6 +132,9 @@ func (ams *AMS) init() (err error) {
 		}
 		ams.logInfo.Println("ectd storage")
 		ams.stor, err = newEtcdStorage(ams.logError)
+	case "fiware":
+		ams.logInfo.Println("FiWare storage")
+		ams.stor, err = newFiwareStorage(ams.logError)
 	default:
 		err = errors.New("Wrong storage type: " + storType)
 	}

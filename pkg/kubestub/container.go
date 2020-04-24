@@ -51,6 +51,7 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // createBridge creates a new docker bridge network for MAP parts to connect to
@@ -75,6 +76,63 @@ func (stub *LocalStub) deleteBridge() (err error) {
 	return
 }
 
+// createFiware starts orion and mongodb
+func (stub *LocalStub) createFiware() (err error) {
+	com := "docker run -d -p 27017:27017 --name=mongodb --hostname=mongodb --network=clonemap-net " +
+		"-e ALLOW_EMPTY_PASSWORD=yes -e MONGODB_SYSTEM_LOG_VERBOSITY=3 -e MONGO_DATA_DIR=/data/db " +
+		"-e MONGO_LOG_DIR=/dev/null mongo:4.2 --bind_ip_all --quiet"
+	cmd := exec.Command("bash", "-c", com)
+	cmdOut, err := cmd.Output()
+	if err != nil {
+		err = errors.New(err.Error() + " " + string(cmdOut))
+		return
+	}
+
+	com = "docker run -d -p 1026:1026 --name=orion --hostname=orion --network=clonemap-net " +
+		"fiware/orion-ld -dbhost mongodb -logForHumans"
+	// fmt.Println(com)
+	cmd = exec.Command("bash", "-c", com)
+	cmdOut, err = cmd.Output()
+	if err != nil {
+		err = errors.New(err.Error() + " " + string(cmdOut))
+		return
+	}
+	time.Sleep(time.Second * 10)
+	return
+}
+
+// deleteFiware stops amd removes orion and mongodb
+func (stub *LocalStub) deleteFiware() (err error) {
+	com := "docker stop orion"
+	cmd := exec.Command("bash", "-c", com)
+	cmdOut, err := cmd.Output()
+	if err != nil {
+		err = errors.New(err.Error() + " " + string(cmdOut))
+		return
+	}
+	com = "docker rm orion"
+	cmd = exec.Command("bash", "-c", com)
+	cmdOut, err = cmd.Output()
+	if err != nil {
+		err = errors.New(err.Error() + " " + string(cmdOut))
+		return
+	}
+	com = "docker stop mongodb"
+	cmd = exec.Command("bash", "-c", com)
+	cmdOut, err = cmd.Output()
+	if err != nil {
+		err = errors.New(err.Error() + " " + string(cmdOut))
+		return
+	}
+	com = "docker rm mongodb"
+	cmd = exec.Command("bash", "-c", com)
+	cmdOut, err = cmd.Output()
+	if err != nil {
+		err = errors.New(err.Error() + " " + string(cmdOut))
+	}
+	return
+}
+
 // createAMS starts a new AMS docker image
 func (stub *LocalStub) createAMS() (err error) {
 	com := "ip route show | grep docker0 | awk '{print $9}'"
@@ -91,7 +149,11 @@ func (stub *LocalStub) createAMS() (err error) {
 		com += " --hostname=ams"
 		com += " --network=clonemap-net"
 		com += " -e CLONEMAP_DEPLOYMENT_TYPE=\"local\""
-		com += " -e CLONEMAP_STORAGE_TYPE=\"local\""
+		if stub.fiware {
+			com += " -e CLONEMAP_STORAGE_TYPE=\"fiware\""
+		} else {
+			com += " -e CLONEMAP_STORAGE_TYPE=\"local\""
+		}
 		com += " -e CLONEMAP_SUFFIX=\".clonemap\""
 		com += " -e CLONEMAP_LOG_LEVEL=\"error\""
 		com += " ams"

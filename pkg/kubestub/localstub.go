@@ -64,19 +64,28 @@ type LocalStub struct {
 	// list of all agencies; necessary in order to prevent from starting agencies with same name
 	// and to stop all agencies upon termination
 	agencies []schemas.StubAgencyConfig
+	fiware   bool
 }
 
 // StartLocalStub starts the local stub. The AMS is started and a server for AMS interaction is
 // created
-func StartLocalStub() {
+func StartLocalStub(fiware bool) {
 	var err error
 	// initialization
-	cntxt := &LocalStub{}
+	cntxt := &LocalStub{fiware: fiware}
 	fmt.Println("Create Bridge Network")
 	err = cntxt.createBridge()
 	if err != nil {
 		fmt.Println(err)
 		return
+	}
+	if fiware {
+		fmt.Println("Ceate Fiware Containers")
+		err = cntxt.createFiware()
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 	}
 	fmt.Println("Create AMS Container")
 	err = cntxt.createAMS()
@@ -159,6 +168,15 @@ func (stub *LocalStub) terminate(gracefulStop chan os.Signal) {
 		fmt.Println(err)
 		os.Exit(0)
 	}
+	if stub.fiware {
+		fmt.Println("Stop FIWARE Containers")
+		err = stub.deleteFiware()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(0)
+		}
+	}
+
 	fmt.Println("Delete Bridge Network")
 	err = stub.deleteBridge()
 	if err != nil {

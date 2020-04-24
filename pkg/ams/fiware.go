@@ -201,26 +201,18 @@ func (stor *fiwareStorage) getGroups(masID int) (ret schemas.ImageGroups, err er
 		return
 	}
 
-	// get all im entities
-	imEntities, err := stor.cli.GetAllEntitiesPattern("^mas"+strconv.Itoa(masID)+"im",
-		"clonemap")
-	for i := range imEntities {
-		ret.Counter++
-		imInfo := schemas.ImageGroupInfo{
-			ID: i,
-		}
-		attr, ok := imEntities[i].Attributes["config"]
-		if !ok {
-			err = errors.New("missing config attribute")
-			return
-		}
-		var conf schemas.ImageGroupConfig
-		err = extractAttributeValue(attr, &conf)
-		if err != nil {
-			return
-		}
-		imInfo.Config = conf
-		imInfo.Agencies, err = stor.getAgenciesGroup(masID, i)
+	// im counter
+	var imCounter int
+	imCounter, err = stor.getImCounter(masID)
+	if err != nil {
+		return
+	}
+	ret.Counter = imCounter
+
+	// im instances
+	for i := 0; i < imCounter; i++ {
+		var imInfo schemas.ImageGroupInfo
+		imInfo, err = stor.getGroupInfo(masID, i)
 		if err != nil {
 			return
 		}
@@ -243,6 +235,7 @@ func (stor *fiwareStorage) getGroupInfo(masID int, imID int) (ret schemas.ImageG
 		err = errors.New("im does not exist")
 		return
 	}
+	ret.ID = imID
 
 	// get im entity
 	var imEnt orion.Entity

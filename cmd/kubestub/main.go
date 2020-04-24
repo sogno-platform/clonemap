@@ -46,9 +46,18 @@ THE SOFTWARE.
 package main
 
 import (
+	"os"
+
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/kubestub"
 )
 
 func main() {
-	kubestub.StartLocalStub()
+	fiware := false
+	if len(os.Args) > 1 {
+		if os.Args[1] == "-fiware" {
+			fiware = true
+		}
+	}
+
+	kubestub.StartLocalStub(fiware)
 }
