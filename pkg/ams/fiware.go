@@ -71,6 +71,7 @@ import (
 
 	"git.rwth-aachen.de/acs/public/cloud/fiware/gofiware/pkg/orion"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
+	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/status"
 )
 
 // fiwareStorage
@@ -444,12 +445,88 @@ func (stor *fiwareStorage) getAgencyInfoFull(masID int, imID int,
 
 // registerMAS registers a new MAS with the storage and returns its ID
 func (stor *fiwareStorage) registerMAS() (masID int, err error) {
+	// get mascounter
+	mascounter, err := stor.getMasCounter()
+	if err != nil {
+		return
+	}
+	masID = mascounter
+	mascounter++
+	attrList := orion.AttributeList{Attributes: make(map[string]orion.Attribute)}
+	attrList.Attributes["mascounter"] = orion.Attribute{Value: mascounter, Type: "Integer"}
+	err = stor.cli.UpdateAttributes("clonemap", attrList, "clonemap")
 
 	return
 }
 
 // storeMAS stores MAS specs
 func (stor *fiwareStorage) storeMAS(masID int, masInfo schemas.MASInfo) (err error) {
+	masInfo = createMASStorage(masID, masInfo)
+	// mas entity
+	masEntity := orion.Entity{
+		ID:         "mas" + strconv.Itoa(masID),
+		Type:       "MAS",
+		Attributes: make(map[string]orion.Attribute),
+	}
+	masConfig := masInfo.Config
+	masStatus := schemas.Status{Code: status.Running, LastUpdate: time.Now()}
+	masEntity.Attributes["config"] = orion.Attribute{Value: masConfig, Type: "MASConfig"}
+	masEntity.Attributes["status"] = orion.Attribute{Value: masStatus, Type: "Status"}
+	masEntity.Attributes["agentcounter"] = orion.Attribute{Value: masInfo.Agents.Counter,
+		Type: "Integer"}
+	masEntity.Attributes["imcounter"] = orion.Attribute{Value: masInfo.ImageGroups.Counter,
+		Type: "Integer"}
+	err = stor.cli.PostEntity(masEntity, "clonemap")
+	if err != nil {
+		return
+	}
+
+	// im entities
+	for i := range masInfo.ImageGroups.Inst {
+		imEntity := orion.Entity{
+			ID:         "mas" + strconv.Itoa(masID) + "im" + strconv.Itoa(i),
+			Type:       "ImageGroup",
+			Attributes: make(map[string]orion.Attribute),
+		}
+		imEntity.Attributes["config"] = orion.Attribute{Value: masInfo.ImageGroups.Inst[i].Config,
+			Type: "ImageGroupConfig"}
+		imEntity.Attributes["agencycounter"] =
+			orion.Attribute{Value: masInfo.ImageGroups.Inst[i].Agencies.Counter, Type: "Integer"}
+		err = stor.cli.PostEntity(imEntity, "clonemap")
+		if err != nil {
+			return
+		}
+		// agency entities
+		for j := range masInfo.ImageGroups.Inst[i].Agencies.Inst {
+			agencyEntity := orion.Entity{
+				ID: "mas" + strconv.Itoa(masID) + "im" + strconv.Itoa(i) + "agency" +
+					strconv.Itoa(j),
+				Type:       "Agency",
+				Attributes: make(map[string]orion.Attribute),
+			}
+			agencyEntity.Attributes["info"] = orion.Attribute{
+				Value: masInfo.ImageGroups.Inst[i].Agencies.Inst[j], Type: "AgencyInfo"}
+			err = stor.cli.PostEntity(agencyEntity, "clonemap")
+			if err != nil {
+				return
+			}
+		}
+	}
+
+	// agent entities
+	for i := range masInfo.Agents.Inst {
+		agentEntity := orion.Entity{
+			ID:         "mas" + strconv.Itoa(masID) + "agent" + strconv.Itoa(i),
+			Type:       "Agent",
+			Attributes: make(map[string]orion.Attribute),
+		}
+		agentEntity.Attributes["info"] = orion.Attribute{Value: masInfo.Agents.Inst[i],
+			Type: "AgentInfo"}
+		err = stor.cli.PostEntity(agentEntity, "clonemap")
+		if err != nil {
+			return
+		}
+	}
 
 	return
 }
@@ -463,18 +540,209 @@ func (stor *fiwareStorage) deleteMAS(masID int) (err error) {
 // registerImageGroup registers a new image group with the storage and returns its ID
 func (stor *fiwareStorage) registerImageGroup(masID int,
 	config schemas.ImageGroupConfig) (newGroup bool, imID int, err error) {
+	// check if mas exists
+	var masExist bool
+	masExist, err = stor.masExists(masID)
+	if err != nil {
+		return
+	}
+	if !masExist {
+		err = errors.New("MAS does not exist")
+		return
+	}
+	newGroup = true
+
+	var groups schemas.ImageGroups
+	groups, err = stor.getGroups(masID)
+	if err != nil {
+		return
+	}
+
+	for i := range groups.Inst {
+		if groups.Inst[i].Config.Image == config.Image {
+			newGroup = false
+			imID = groups.Inst[i].ID
+			break
+		}
+	}
+
+	if !newGroup {
+		return
+	}
+
+	var imCounter int
+	imCounter, err = stor.getImCounter(masID)
+	if err != nil {
+		return
+	}
+	info := schemas.ImageGroupInfo{
+		Config: config,
+		ID:     imCounter,
+	}
+	imCounter++
+	attrList := orion.AttributeList{Attributes: make(map[string]orion.Attribute)}
+	attrList.Attributes["imcounter"] = orion.Attribute{Value: imCounter, Type: "Integer"}
+	err = stor.cli.UpdateAttributes("mas"+strconv.Itoa(masID), attrList, "clonemap")
+	if err != nil {
+		return
+	}
+	imEntity := orion.Entity{
+		ID:         "mas" + strconv.Itoa(masID) + "im" + strconv.Itoa(info.ID),
+		Type:       "ImageGroup",
+		Attributes: make(map[string]orion.Attribute),
+	}
+	imEntity.Attributes["config"] = orion.Attribute{Value: info.Config, Type: "ImageGroupConfig"}
+	imEntity.Attributes["agencycounter"] = orion.Attribute{Value: 0, Type: "Integer"}
+	err = stor.cli.PostEntity(imEntity, "clonemap")
+	if err != nil {
+		return
+	}
+
+	imID = info.ID
 	return
 }
 
 // registerAgent registers a new agent with the storage and returns its ID
 func (stor *fiwareStorage) registerAgent(masID int, imID int, spec schemas.AgentSpec) (agentID int,
 	err error) {
+	// check if mas exists
+	var masExist bool
+	masExist, err = stor.masExists(masID)
+	if err != nil {
+		return
+	}
+	if !masExist {
+		err = errors.New("MAS does not exist")
+		return
+	}
+
+	var agentCounter int
+	agentCounter, err = stor.getAgentCounter(masID)
+	if err != nil {
+		return
+	}
+	agentID = agentCounter
+
+	agentCounter++
+	attrList := orion.AttributeList{Attributes: make(map[string]orion.Attribute)}
+	attrList.Attributes["agentcounter"] = orion.Attribute{Value: agentCounter, Type: "Integer"}
+	err = stor.cli.UpdateAttributes("mas"+strconv.Itoa(masID), attrList, "clonemap")
+
 	return
 }
 
 // addAgent adds an agent to an exsiting MAS
 func (stor *fiwareStorage) addAgent(masID int, imID int,
 	agentSpec schemas.AgentSpec) (newAgency bool, agentID int, agencyID int, err error) {
+	// check if group exists
+	var imExist bool
+	imExist, err = stor.imExists(masID, imID)
+	if err != nil {
+		return
+	}
+	if !imExist {
+		err = errors.New("Group does not exist")
+		return
+	}
+
+	// register agent
+	agentID, err = stor.registerAgent(masID, imID, agentSpec)
+	if err != nil {
+		return
+	}
+
+	// schedule agent to agency
+	var masConfig schemas.MASConfig
+	var attr orion.Attribute
+	attr, err = stor.cli.GetAttribute("mas"+strconv.Itoa(masID), "config", "clonemap")
+	if err != nil {
+		return
+	}
+	err = extractAttributeValue(attr, &masConfig)
+	if err != nil {
+		return
+	}
+	newAgency = true
+	var im schemas.ImageGroupInfo
+	im, err = stor.getGroupInfo(masID, imID)
+	if err != nil {
+		return
+	}
+	for i := range im.Agencies.Inst {
+		if len(im.Agencies.Inst[i].Agents) < masConfig.NumAgentsPerAgency {
+			im.Agencies.Inst[i].Agents = append(im.Agencies.Inst[i].Agents, agentID)
+			agencyID = i
+			newAgency = false
+			attrList := orion.AttributeList{Attributes: make(map[string]orion.Attribute)}
+			attrList.Attributes["agencycounter"] = orion.Attribute{Value: im.Agencies.Inst[i],
+				Type: "AgencyInfo"}
+			err = stor.cli.UpdateAttributes("mas"+strconv.Itoa(masID)+"im"+strconv.Itoa(imID)+
+				"agency"+strconv.Itoa(agencyID), attrList, "clonemap")
+			if err != nil {
+				return
+			}
+			break
+		}
+	}
+	if newAgency {
+		// new agency has to be created
+		var agencyCounter int
+		agencyCounter, err = stor.getAgencyCounter(masID, imID)
+		if err != nil {
+			return
+		}
+		agencyID = agencyCounter
+		agencyCounter++
+		attrList := orion.AttributeList{Attributes: make(map[string]orion.Attribute)}
+		attrList.Attributes["agencycounter"] = orion.Attribute{Value: agencyCounter,
+			Type: "Integer"}
+		err = stor.cli.UpdateAttributes("mas"+strconv.Itoa(masID)+"im"+strconv.Itoa(imID), attrList,
+			"clonemap")
+		if err != nil {
+			return
+		}
+		agencyInfo := schemas.AgencyInfo{
+			MASID:        masID,
+			ImageGroupID: imID,
+			ID:           agencyID,
+			Name: "mas-" + strconv.Itoa(masID) + "-im-" + strconv.Itoa(imID) +
+				"-agency-" + strconv.Itoa(agencyID) + ".mas" + strconv.Itoa(masID) + "agencies",
+			Logger: masConfig.Logger,
+			Agents: []int{agentID},
+		}
+		agencyEntity := orion.Entity{
+			ID: "mas" + strconv.Itoa(masID) + "im" + strconv.Itoa(imID) + "agency" +
+				strconv.Itoa(agencyID),
+			Type:       "Agency",
+			Attributes: make(map[string]orion.Attribute),
+		}
+		agencyEntity.Attributes["info"] = orion.Attribute{Value: agencyInfo, Type: "AgencyInfo"}
+		err = stor.cli.PostEntity(agencyEntity, "clonemap")
+		if err != nil {
+			return
+		}
+	}
+
+	// store agent info
+	info := schemas.AgentInfo{
+		Spec:         agentSpec,
+		MASID:        masID,
+		ImageGroupID: imID,
+		AgencyID:     agencyID,
+		ID:           agentID,
+		Address: schemas.Address{
+			Agency: "mas-" + strconv.Itoa(masID) + "-im-" + strconv.Itoa(imID) + "-agency-" +
+				strconv.Itoa(agencyID) + ".mas" + strconv.Itoa(masID) + "agencies",
+		},
+	}
+	agentEntity := orion.Entity{
+		ID:         "mas" + strconv.Itoa(masID) + "agent" + strconv.Itoa(agentID),
+		Type:       "Agent",
+		Attributes: make(map[string]orion.Attribute),
+	}
+	agentEntity.Attributes["info"] = orion.Attribute{Value: info, Type: "AgentInfo"}
+	err = stor.cli.PostEntity(agentEntity, "clonemap")
+
 	return
 }
 
