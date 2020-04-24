@@ -47,6 +47,7 @@ package agency
 import (
 	"errors"
 	"log"
+	"os"
 	"sync"
 	"time"
 
@@ -61,12 +62,19 @@ type DF struct {
 	nodeID             int
 	mutex              *sync.Mutex
 	registeredServices map[string]schemas.Service
+	active             bool // indicates if df is active (switch via env)
 	logError           *log.Logger
 	logInfo            *log.Logger
 }
 
 // RegisterService registers a new service with the DF
 func (df *DF) RegisterService(svc schemas.Service) (id string, err error) {
+	df.mutex.Lock()
+	if !df.active {
+		df.mutex.Unlock()
+		return
+	}
+	df.mutex.Unlock()
 	id = "-1"
 	if svc.Desc == "" {
 		err = errors.New("Empty description not allowed")
@@ -103,6 +111,10 @@ func (df *DF) RegisterService(svc schemas.Service) (id string, err error) {
 // SearchForService search for a service with given description
 func (df *DF) SearchForService(desc string) (svc []schemas.Service, err error) {
 	df.mutex.Lock()
+	if !df.active {
+		df.mutex.Unlock()
+		return
+	}
 	masID := df.masID
 	df.mutex.Unlock()
 	var temp []schemas.Service
@@ -121,6 +133,10 @@ func (df *DF) SearchForService(desc string) (svc []schemas.Service, err error) {
 // SearchForLocalService search for a service with given description
 func (df *DF) SearchForLocalService(desc string, dist float64) (svc []schemas.Service, err error) {
 	df.mutex.Lock()
+	if !df.active {
+		df.mutex.Unlock()
+		return
+	}
 	masID := df.masID
 	nodeID := df.nodeID
 	df.mutex.Unlock()
@@ -139,6 +155,12 @@ func (df *DF) SearchForLocalService(desc string, dist float64) (svc []schemas.Se
 
 // DeregisterService registers a new service with the DF
 func (df *DF) DeregisterService(svcID string) (err error) {
+	df.mutex.Lock()
+	if !df.active {
+		df.mutex.Unlock()
+		return
+	}
+	df.mutex.Unlock()
 	desc := ""
 	df.mutex.Lock()
 	masID := df.masID
@@ -167,8 +189,13 @@ func newDF(masID int, agentID int, nodeID int, logErr *log.Logger, logInf *log.L
 		masID:    masID,
 		nodeID:   nodeID,
 		mutex:    &sync.Mutex{},
+		active:   false,
 		logError: logErr,
 		logInfo:  logInf,
+	}
+	act := os.Getenv("CLONEMAP_DF")
+	if act == "ON" {
+		df.active = true
 	}
 	df.registeredServices = make(map[string]schemas.Service)
 	return

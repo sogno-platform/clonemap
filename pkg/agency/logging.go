@@ -46,6 +46,7 @@ package agency
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"sync"
@@ -139,6 +140,10 @@ func (log *loggerClient) storeLogs() (err error) {
 				}
 			}
 		}
+	} else {
+		// print messages to stdout if logger is turned off
+		logMsg := <-log.logIn
+		fmt.Println(logMsg)
 	}
 	return
 }

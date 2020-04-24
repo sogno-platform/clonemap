@@ -317,7 +317,7 @@ func (stub *LocalStub) createAgency(image string, masID int, imID int, agencyID 
 	} else {
 		com += " -e CLONEMAP_DF=\"OFF\" "
 	}
-	com += " -e CLONEMAP_LOG_LEVEL=\"error\" "
+	com += " -e CLONEMAP_LOG_LEVEL=\"info\" "
 
 	com += image
 	cmd := exec.Command("bash", "-c", com)
