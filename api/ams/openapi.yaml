@@ -74,7 +74,7 @@ paths:
         content:
           applications/json:
             schema:
-              $ref: '#/components/schemas/MASConfig'
+              $ref: '#/components/schemas/MASSpec'
         required: true
       responses:
         '201':
@@ -108,18 +108,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Agents'
-    # post:
-    #   description: create new agent ressource
-    #   requestBody:
-    #     description: configuration of new agent
-    #     content:
-    #       applications/json:
-    #         schema:
-    #           $ref: '#/components/schemas/AgentSpec'
-    #     required: true
-    #   responses:
-    #     '201':
-    #       description: Created
+    post:
+      description: create new agent ressources
+      requestBody:
+        description: configuration of new agent
+        content:
+          applications/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/ImageGroupSpec'
+        required: true
+      responses:
+        '201':
+          description: Created
   /api/clonemap/mas/{mas-id}/agents/{agent-id}:
     parameters:
     - $ref: '#/components/parameters/masID'
@@ -174,9 +176,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Agencies'
-  /api/clonemap/mas/{mas-id}/agencies/{agency-id}:
+  /api/clonemap/mas/{mas-id}/imgroup/{im-id}/agencies/{agency-id}:
     parameters:
     - $ref: '#/components/parameters/masID'
+    - $ref: '#/components/parameters/imID'
     - $ref: '#/components/parameters/agencyID'
     get:
       description: information about agency
@@ -186,7 +189,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AgencyConfig'
+                $ref: '#/components/schemas/AgencyInfoFull'
 components:
   parameters:
     masID:
@@ -200,6 +203,13 @@ components:
       name: agent-id
       in: path
       description: ID of agent
+      required: true
+      schema:
+        type: integer
+    imID:
+      name: im-id
+      in: path
+      description: ID of image group
       required: true
       schema:
         type: integer
@@ -220,24 +230,247 @@ components:
         uptime:
           description: uptime of clonemap
           type: date-time
-    MASSpec:
-      description: contains information about a MAS running in clonemap
+    MASInfo:
+      description: detailed information about MAS
       properties:
+        config:
+          description: configuration of MAS
+          $ref: '#/components/schemas/MASConfig'
         id:
           description: unique ID of MAS
           type: integer
+        graph:
+          description: graph of MAS
+          $ref: '#/components/schemas/Graph'
+        groups:
+          description: image groups of MAS
+          $ref: '#/components/schemas/ImageGroups'
+        agents:
+          description: spec of agents
+          $ref: '#/components/schemas/Agents'
+        status:
+          description: status of MAS
+          $ref: '#/components/schemas/Status'
+    MASSpec:
+      description: contains information about a MAS running in clonemap
+      properties:
+        config:
+          description: configuration of MAS
+          $ref: '#/components/schemas/MASConfig'
+        groups:
+          description: image groups in MAS
+          type: array
+          items:
+            $ref: '#/components/schemas/ImageGroupSpec'
+        graph:
+          description: graph of MAS
+          $ref: '#/components/schemas/Graph'
+    MASConfig:
+      description: contains information about mas to be started
+      properties:
         name:
-          description: name/description of MAS
+          description: name of MAS
           type: string
         agentsperagency:
           description: number of agents per agency
           type: integer
+        logging:
+          description: switch for logging and state module
+          type: boolean
+        mqtt:
+          description: switch for iot module
+          type: boolean
+        df:
+          description: switch for df module
+          type: boolean
         log:
-          description: configuration of logging
+          description: configuration of logging module
           $ref: '#/components/schemas/LogConfig'
-        uptime:
-          description: uptime
+    ImageGroupInfo:
+      description: information about an image groups
+      properties:
+        config:
+          description: configuration of image groups
+          $ref: '#/components/schemas/ImageGroupConfig'
+        id:
+          description: unique id of image groups
+          type: integer
+        agencies:
+          description: agencies within image groups
+          $ref: '#/components/schemas/Agencies'
+    ImageGroupSpec:
+      description: specification of an image groups
+      properties:
+        config:
+          description: configuration of image groups
+          $ref: '#/components/schemas/ImageGroupConfig'
+        agents:
+          description: spec of all agents in image groups
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentSpec'
+    ImageGroupConfig:
+      description: configuration of image groups
+      properties:
+        image:
+          description: name of the docker image
+          type: string
+        secret:
+          description: pull secret to be used for image
+          type: string
+    AgentInfo:
+      description: detailed information about agent
+      properties:
+        spec:
+          description: spec of Agent
+          $ref: '#/components/schemas/AgentSpec'
+        address:
+          description: address of agent
+          $ref: '#/components/schemas/Address'
+        status:
+          description: status of agent
+          $ref: '#/components/schemas/Status'
+        id:
+          description: unique ID of agent
+          type: integer
+        masid:
+          description: ID of MAS
+          type: integer
+        agencyid:
+          description: ID of agency
+          type: integer
+        imid:
+          description: id of image group
+          type: integer
+    AgentSpec:
+      description: contains information about a agent running in a MAS
+      properties:
+        nodeid:
+          description: ID of node
+          type: integer
+        name:
+          description: name/description of agent
+          type: string
+        type:
+          description: type of agent (application dependent)
+          type: string
+        subtype:
+          description: subtype of agent (application dependent)
+          type: string
+        custom:
+          description: custom agent specification
+          type: string
+    Address:
+      description: holds the address information of an agent
+      properties:
+        agency:
+          description: name of the agency
+          type: string
+    Status:
+      description: information about an agent's or agency's status
+      properties:
+        code:
+          description: status code
+          type: integer
+        lastupdate:
+          description: time of last update
           type: date-time
+    AgencyInfo:
+      description: information about agency
+      properties:
+        masid:
+          description: ID of MAS
+          type: integer
+        id:
+          description: ID of agency
+          type: integer
+        name:
+          description: name of agency (corresponds to pod name)
+          type: string
+        imid:
+          description: id of image group
+          type: integer
+        log:
+          description: configuration of logging module
+          $ref: '#/components/schemas/LogConfig'
+        status:
+          description: status of agent
+          $ref: '#/components/schemas/Status'
+        agents:
+          description: list of agents in agency
+          type: array
+          items:
+            type: integer
+    AgencyInfoFull:
+      description: information about agency
+      properties:
+        masid:
+          description: ID of MAS
+          type: integer
+        id:
+          description: ID of agency
+          type: integer
+        name:
+          description: name of agency (corresponds to pod name)
+          type: string
+        imid:
+          description: id of image group
+          type: integer
+        log:
+          description: configuration of logging module
+          $ref: '#/components/schemas/LogConfig'
+        status:
+          description: status of agent
+          $ref: '#/components/schemas/Status'
+        agents:
+          description: list of agents in agency
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentInfo'
+    MASs:
+      description: contains informaton about how many MASs are running
+      properties:
+        counter:
+          description: number of running mas
+          type: integer
+        instances:
+          description: all mas running in clonemap
+          type: array
+          items:
+            $ref: '#/components/schemas/MASInfo'
+    Agents:
+      description: contains informaton about how many agents are running
+      properties:
+        counter:
+          description: number of running agents
+          type: integer
+        instances:
+          description: all agents in mas
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentInfo'
+    Agencies:
+      description: contains informaton about how many agencies are running
+      properties:
+        counter:
+          description: number of running agencies
+          type: integer
+        instances:
+          description: agencies
+          type: array
+          items:
+            $ref: '#/components/schemas/AgencyInfo'
+    ImageGroups:
+      description: contains informaton about all image groups of a mas
+      properties:
+        counter:
+          description: number of image groups
+          type: integer
+        instances:
+          description: image groups
+          type: array
+          items:
+            $ref: '#/components/schemas/ImageGroupInfo'
     LogConfig:
       description: contains information about agency
       properties:
@@ -253,164 +486,6 @@ components:
         debug:
           description: activation of debug log topic
           type: boolean
-    AgentSpec:
-      description: contains information about a agent running in a MAS
-      properties:
-        masid:
-          description: ID of MAS
-          type: integer
-        agencyid:
-          description: ID of agency
-          type: integer
-        nodeid:
-          description: ID of node
-          type: integer
-        id:
-          description: unique ID of agent
-          type: integer
-        image:
-          description: docker image to be used for agencies
-          type: string
-        secret:
-          description: image pull secret
-          type: string
-        name:
-          description: name/description of agent
-          type: string
-        type:
-          description: type of agent (application dependent)
-          type: string
-        subtype:
-          description: subtype of agent (application dependent)
-          type: string
-        custom:
-          description: custom agent specification
-          type: array
-          items:
-            type: byte
-    Address:
-      description: holds the address information of an agent
-      properties:
-        agency:
-          description: name of the agency
-          type: string
-    AgencySpec:
-      description: contains information about agency
-      properties:
-        masid:
-          description: ID of MAS
-          type: integer
-        name:
-          description: name of agency (hostname of pod given by Kubernetes)
-          type: string
-        id:
-          description: unique ID of agency
-          type: integer
-        log:
-          description: configuration of logging
-          $ref: '#/components/schemas/LogConfig'
-        agents:
-          description: list of all agents in agency
-          type: array
-          items:
-            type: integer
-    MASs:
-      description: contains informaton about how many MASs are running
-      properties:
-        counter:
-          description: number of running mas
-          type: integer
-        instances:
-          description: mass
-          type: array
-          items:
-            $ref: '#/components/schemas/MASSpec'
-    Agents:
-      description: contains informaton about how many agents are running
-      properties:
-        counter:
-          description: number of running agents
-          type: integer
-        instances:
-          description: agents
-          type: array
-          items:
-            $ref: '#/components/schemas/AgentSpec'
-    Agencies:
-      description: contains informaton about how many agencies are running
-      properties:
-        counter:
-          description: number of running agencies
-          type: integer
-        instances:
-          description: agencies
-          type: array
-          items:
-            $ref: '#/components/schemas/AgencySpec'
-    MASInfo:
-      description: detailed information about MAS
-      properties:
-        spec:
-          description: spec of MAS
-          $ref: '#/components/schemas/MASSpec'
-        agents:
-          description: spec of agents
-          $ref: '#/components/schemas/Agents'
-        agencies:
-          description: spec of agencies
-          $ref: '#/components/schemas/Agencies'
-        status:
-          description: status of MAS
-          $ref: '#/components/schemas/Status'
-        graph:
-          description: graph of MAS
-          $ref: '#/components/schemas/Graph'
-    MASConfig:
-      description: contains information about mas to be started
-      properties:
-        spec:
-          description: spec of MAS
-          $ref: '#/components/schemas/MASSpec'
-        agents:
-          description: config of agents
-          type: array
-          items:
-            $ref: '#/components/schemas/AgentSpec'
-        graph:
-          description: graph of MAS
-          $ref: '#/components/schemas/Graph'
-    AgentInfo:
-      description: detailed information about agent
-      properties:
-        spec:
-          description: spec of Agent
-          $ref: '#/components/schemas/AgentSpec'
-        address:
-          description: address of agent
-          $ref: '#/components/schemas/Address'
-        status:
-          description: status of agent
-          $ref: '#/components/schemas/Status'
-    AgencyConfig:
-      description: information about agency
-      properties:
-        spec:
-          description: spec of Agency
-          $ref: '#/components/schemas/AgencySpec'
-        agents:
-          description: all agents in agency
-          type: array
-          items:
-            $ref: '#/components/schemas/AgentInfo'
-    Status:
-      description: information about an agent's or agency's status
-      properties:
-        code:
-          description: status code
-          type: integer
-        lastupdate:
-          description: time of last update
-          type: date-time
     Graph:
       description: stores one mas graph for topological search
       properties:
