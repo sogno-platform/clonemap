@@ -357,6 +357,8 @@ spec:
             value: "etcd"
           - name: CLONEMAP_LOG_LEVEL
             value: "error"
+          - name: CLONEMAP_NAMESPACE
+            value: "clonemap"
         resources:
           requests:
             memory: "128Mi"
