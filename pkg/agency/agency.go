@@ -151,9 +151,9 @@ func (agency *Agency) init() (err error) {
 // terminate takes care of terminating all parts of the MAP before exiting. It is to be called as a
 // goroutine and waits until an OS signal is inserted into the channel gracefulStop
 func (agency *Agency) terminate(gracefulStop chan os.Signal) {
-	agency.logInfo.Println("Terminating agency")
 	// var err error
 	_ = <-gracefulStop
+	agency.logInfo.Println("Terminating agency")
 	agency.mutex.Lock()
 	for i := range agency.localAgents {
 		agency.localAgents[i].Terminate()
