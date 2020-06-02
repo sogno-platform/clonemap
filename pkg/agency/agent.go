@@ -135,4 +135,6 @@ func (agent *Agent) GetCustomData() (ret string) {
 func (agent *Agent) Terminate() {
 	agent.logInfo.Println("Terminating agent ", agent.GetAgentID())
 	agent.ACL.close()
+	agent.Logger.close()
+	agent.MQTT.close()
 }

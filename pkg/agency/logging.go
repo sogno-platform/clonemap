@@ -64,10 +64,17 @@ type Logger struct {
 	config   schemas.LogConfig
 	logError *log.Logger
 	logInfo  *log.Logger
+	active   bool
 }
 
 // NewLog sends a new logging message to the logging service
 func (log *Logger) NewLog(logType string, message string, data string) (err error) {
+	log.mutex.Lock()
+	if !log.active {
+		log.mutex.Unlock()
+		return errors.New("log not active")
+	}
+	log.mutex.Unlock()
 	if logType != "error" && logType != "debug" && logType != "status" && logType != "msg" &&
 		logType != "app" {
 		err = errors.New("UnknownLogType")
@@ -95,6 +102,12 @@ func (log *Logger) NewLog(logType string, message string, data string) (err erro
 
 // UpdateState overrides the state stored in database
 func (log *Logger) UpdateState(state string) (err error) {
+	log.mutex.Lock()
+	if !log.active {
+		log.mutex.Unlock()
+		return errors.New("log not active")
+	}
+	log.mutex.Unlock()
 	agState := schemas.State{
 		MASID:     log.client.masID,
 		AgentID:   log.agentID,
@@ -106,10 +119,50 @@ func (log *Logger) UpdateState(state string) (err error) {
 
 // RestoreState loads state saved in database and return it
 func (log *Logger) RestoreState() (state string, err error) {
+	log.mutex.Lock()
+	if !log.active {
+		log.mutex.Unlock()
+		err = errors.New("log not active")
+		return
+	}
+	log.mutex.Unlock()
 	var agState schemas.State
 	agState, _, err = client.GetState(log.client.masID, log.agentID)
 	state = agState.State
 	return
+}
+
+// newLogger craetes a new object of type Logger
+func newLogger(agentID int, client *loggerClient, config schemas.LogConfig, logErr *log.Logger,
+	logInf *log.Logger) (log *Logger) {
+	log = &Logger{
+		agentID:  agentID,
+		client:   client,
+		mutex:    &sync.Mutex{},
+		config:   config,
+		logError: logErr,
+		logInfo:  logInf,
+		active:   true,
+	}
+	return
+}
+
+// close closes the logger
+func (log *Logger) close() {
+	log.mutex.Lock()
+	log.logInfo.Println("Closing Logger of agent ", log.agentID)
+	log.active = false
+	log.mutex.Unlock()
+	return
+}
+
+// loggerClient is the agency client for the logger
+type loggerClient struct {
+	masID    int
+	logIn    chan schemas.LogMessage // logging inbox
+	active   bool                    // indicates if logging is active (switch via env)
+	logError *log.Logger
+	logInfo  *log.Logger
 }
 
 // storeLogs periodically requests the logging service to store log messages
@@ -147,30 +200,6 @@ func (log *loggerClient) storeLogs() (err error) {
 			fmt.Println(logMsg)
 		}
 	}
-	return
-}
-
-// newLogger craetes a new object of type Logger
-func newLogger(agentID int, client *loggerClient, config schemas.LogConfig, logErr *log.Logger,
-	logInf *log.Logger) (log *Logger) {
-	log = &Logger{
-		agentID:  agentID,
-		client:   client,
-		mutex:    &sync.Mutex{},
-		config:   config,
-		logError: logErr,
-		logInfo:  logInf,
-	}
-	return
-}
-
-// loggerClient is the agency client for the logger
-type loggerClient struct {
-	masID    int
-	logIn    chan schemas.LogMessage // logging inbox
-	active   bool                    // indicates if logging is active (switch via env)
-	logError *log.Logger
-	logInfo  *log.Logger
 }
 
 // newLoggerClient creates an agency logger client

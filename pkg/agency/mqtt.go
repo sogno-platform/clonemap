@@ -65,6 +65,7 @@ type MQTT struct {
 	cmapLogger *Logger
 	logError   *log.Logger
 	logInfo    *log.Logger
+	active     bool
 }
 
 // newMQTT returns a new pubsub connector of type mqtt
@@ -77,20 +78,44 @@ func newMQTT(agentID int, cli *mqttClient, cmaplog *Logger, logErr *log.Logger,
 		cmapLogger: cmaplog,
 		logError:   logErr,
 		logInfo:    logInf,
+		active:     true,
 	}
 	mq.msgInTopic = make(map[string]chan schemas.MQTTMessage)
 	mq.msgIn = make(chan schemas.MQTTMessage)
 	return
 }
 
+// close closes the mqtt
+func (mq *MQTT) close() {
+	mq.mutex.Lock()
+	mq.logInfo.Println("Closing Logger of agent ", mq.agentID)
+	mq.active = false
+	mq.mutex.Unlock()
+	return
+}
+
 // Subscribe subscribes to a topic
 func (mq *MQTT) Subscribe(topic string, qos int) (err error) {
+	mq.mutex.Lock()
+	if !mq.active {
+		mq.mutex.Unlock()
+		err = errors.New("mqtt not active")
+		return
+	}
+	mq.mutex.Unlock()
 	err = mq.client.subscribe(mq, topic, qos)
 	return
 }
 
 // SendMessage sends a message
 func (mq *MQTT) SendMessage(msg schemas.MQTTMessage, qos int) (err error) {
+	mq.mutex.Lock()
+	if !mq.active {
+		mq.mutex.Unlock()
+		err = errors.New("mqtt not active")
+		return
+	}
+	mq.mutex.Unlock()
 	err = mq.client.publish(msg, qos)
 	if err != nil {
 		return
@@ -109,6 +134,13 @@ func (mq *MQTT) NewMessage(topic string, content []byte) (msg schemas.MQTTMessag
 
 // RecvMessages retrieves all messages since last call of this function
 func (mq *MQTT) RecvMessages() (num int, msgs []schemas.MQTTMessage, err error) {
+	mq.mutex.Lock()
+	if !mq.active {
+		mq.mutex.Unlock()
+		err = errors.New("mqtt not active")
+		return
+	}
+	mq.mutex.Unlock()
 	num = 0
 	err = nil
 	for {
@@ -124,6 +156,13 @@ func (mq *MQTT) RecvMessages() (num int, msgs []schemas.MQTTMessage, err error) 
 
 // RecvMessageWait retrieves next message and blocks if no message is available
 func (mq *MQTT) RecvMessageWait() (msg schemas.MQTTMessage, err error) {
+	mq.mutex.Lock()
+	if !mq.active {
+		mq.mutex.Unlock()
+		err = errors.New("mqtt not active")
+		return
+	}
+	mq.mutex.Unlock()
 	err = nil
 	msg = <-mq.msgIn
 	return
@@ -131,6 +170,12 @@ func (mq *MQTT) RecvMessageWait() (msg schemas.MQTTMessage, err error) {
 
 // newIncomingMQTTMessage adds message to channel for incoming messages
 func (mq *MQTT) newIncomingMQTTMessage(msg schemas.MQTTMessage) {
+	mq.mutex.Lock()
+	if !mq.active {
+		mq.mutex.Unlock()
+		return
+	}
+	mq.mutex.Unlock()
 	mq.cmapLogger.NewLog("msg", "Received MQTT message: "+string(msg.Content), string(msg.Content))
 	mq.mutex.Lock()
 	inbox, ok := mq.msgInTopic[msg.Topic]
@@ -145,6 +190,12 @@ func (mq *MQTT) newIncomingMQTTMessage(msg schemas.MQTTMessage) {
 
 func (mq *MQTT) registerTopicChannel(topic string, topicChan chan schemas.MQTTMessage) (err error) {
 	mq.mutex.Lock()
+	if !mq.active {
+		mq.mutex.Unlock()
+		err = errors.New("mqtt not active")
+		return
+	}
+
 	if _, ok := mq.msgInTopic[topic]; !ok {
 		mq.msgInTopic[topic] = topicChan
 	} else {
@@ -156,6 +207,12 @@ func (mq *MQTT) registerTopicChannel(topic string, topicChan chan schemas.MQTTMe
 
 func (mq *MQTT) deregisterTopicChannel(topic string) (err error) {
 	mq.mutex.Lock()
+	if !mq.active {
+		mq.mutex.Unlock()
+		err = errors.New("mqtt not active")
+		return
+	}
+
 	if _, ok := mq.msgInTopic[topic]; ok {
 		delete(mq.msgInTopic, topic)
 	} else {

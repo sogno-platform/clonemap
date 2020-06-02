@@ -105,8 +105,10 @@ func newACL(agentID int, msgIn chan schemas.ACLMessage,
 
 // close closes the acl
 func (acl *ACL) close() {
+	acl.mutex.Lock()
 	acl.logInfo.Println("Closing ACL of agent ", acl.agentID)
 	acl.active = false
+	acl.mutex.Unlock()
 	return
 }
 
@@ -127,6 +129,13 @@ func (acl *ACL) NewMessage(receiver int, prot int, perf int,
 
 // RecvMessages retrieves all messages since last call of this function
 func (acl *ACL) RecvMessages() (num int, msgs []schemas.ACLMessage, err error) {
+	acl.mutex.Lock()
+	if !acl.active {
+		acl.mutex.Unlock()
+		err = errors.New("acl not active")
+		return
+	}
+	acl.mutex.Unlock()
 	num = 0
 	err = nil
 	for {
@@ -142,6 +151,13 @@ func (acl *ACL) RecvMessages() (num int, msgs []schemas.ACLMessage, err error) {
 
 // RecvMessageWait retrieves next message and blocks if no message is available
 func (acl *ACL) RecvMessageWait() (msg schemas.ACLMessage, err error) {
+	acl.mutex.Lock()
+	if !acl.active {
+		acl.mutex.Unlock()
+		err = errors.New("acl not active")
+		return
+	}
+	acl.mutex.Unlock()
 	err = nil
 	msg = <-acl.msgIn
 	return
@@ -152,7 +168,13 @@ func (acl *ACL) SendMessage(msg schemas.ACLMessage) (err error) {
 	var aclRecv *ACL
 	var ok bool
 	msg.Timestamp = time.Now()
+
 	acl.mutex.Lock()
+	if !acl.active {
+		acl.mutex.Unlock()
+		return errors.New("acl not active")
+	}
+
 	msg.Sender = acl.agentID
 	aclRecv, ok = acl.addrBook[msg.Receiver]
 	acl.mutex.Unlock()
@@ -191,9 +213,12 @@ func (acl *ACL) SendMessage(msg schemas.ACLMessage) (err error) {
 
 // newIncomingMessage adds message to channel for incoming messages
 func (acl *ACL) newIncomingMessage(msg schemas.ACLMessage) (err error) {
+	acl.mutex.Lock()
 	if !acl.active {
+		acl.mutex.Unlock()
 		return errors.New("acl not active")
 	}
+	acl.mutex.Unlock()
 	acl.logInfo.Println("New message for agent ", msg.Receiver)
 	acl.mutex.Lock()
 	inbox, ok := acl.msgInProtocol[msg.Protocol]
@@ -216,6 +241,10 @@ func (acl *ACL) newIncomingMessage(msg schemas.ACLMessage) (err error) {
 func (acl *ACL) registerProtocolChannel(prot int,
 	protChannel chan schemas.ACLMessage) (err error) {
 	acl.mutex.Lock()
+	if !acl.active {
+		acl.mutex.Unlock()
+		return errors.New("acl not active")
+	}
 	_, ok := acl.msgInProtocol[prot]
 	acl.mutex.Unlock()
 	if !ok {
@@ -229,6 +258,10 @@ func (acl *ACL) registerProtocolChannel(prot int,
 // deregisterProtocolChannel deregisters the protocol channel with the messaging service
 func (acl *ACL) deregisterProtocolChannel(prot int) (err error) {
 	acl.mutex.Lock()
+	if !acl.active {
+		acl.mutex.Unlock()
+		return errors.New("acl not active")
+	}
 	_, ok := acl.msgInProtocol[prot]
 	acl.mutex.Unlock()
 	if ok {

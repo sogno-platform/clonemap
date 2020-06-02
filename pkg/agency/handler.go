@@ -209,8 +209,8 @@ func (agency *Agency) handleAgentID(agid int, w http.ResponseWriter, r *http.Req
 	httpErr error) {
 	if r.Method == "DELETE" {
 		// delete specified agent
-		go agency.removeAgent(agid)
-		httpErr = httpreply.Deleted(w, nil)
+		cmapErr = agency.removeAgent(agid)
+		httpErr = httpreply.Deleted(w, cmapErr)
 
 	} else {
 		httpErr = httpreply.MethodNotAllowed(w)
