@@ -239,12 +239,6 @@ func (mq *MQTT) registerTopicChannel(topic string, topicChan chan schemas.MQTTMe
 
 func (mq *MQTT) deregisterTopicChannel(topic string) (err error) {
 	mq.mutex.Lock()
-	if !mq.active {
-		mq.mutex.Unlock()
-		err = errors.New("mqtt not active")
-		return
-	}
-
 	if _, ok := mq.msgInTopic[topic]; ok {
 		delete(mq.msgInTopic, topic)
 	} else {

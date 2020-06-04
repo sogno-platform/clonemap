@@ -103,6 +103,12 @@ func (protBehavior *aclProtocolBehavior) task() {
 	protBehavior.logInfo.Println("Starting acl behavior for agent ", protBehavior.ag.GetAgentID(),
 		" and protocol ", protBehavior.protocol)
 	for {
+		protBehavior.ag.mutex.Lock()
+		act := protBehavior.ag.active
+		protBehavior.ag.mutex.Unlock()
+		if !act {
+			protBehavior.Stop()
+		}
 		select {
 		case msg := <-protBehavior.msgIn:
 			if handle, ok := protBehavior.handlePerformative[msg.Performative]; ok {
@@ -170,6 +176,12 @@ func (mqttBehavior *mqttTopicBehavior) Start() {
 func (mqttBehavior *mqttTopicBehavior) task() {
 	mqttBehavior.logInfo.Println("Starting mqtt behavior for agent ", mqttBehavior.ag.GetAgentID())
 	for {
+		mqttBehavior.ag.mutex.Lock()
+		act := mqttBehavior.ag.active
+		mqttBehavior.ag.mutex.Unlock()
+		if !act {
+			mqttBehavior.Stop()
+		}
 		select {
 		case msg := <-mqttBehavior.msgIn:
 			mqttBehavior.handle(msg)
@@ -230,6 +242,12 @@ func (periodBehavior *periodicBehavior) task() {
 	periodBehavior.logInfo.Println("Starting periodoc behavior for agent ",
 		periodBehavior.ag.GetAgentID(), " and period ", periodBehavior.period)
 	for {
+		periodBehavior.ag.mutex.Lock()
+		act := periodBehavior.ag.active
+		periodBehavior.ag.mutex.Unlock()
+		if !act {
+			periodBehavior.Stop()
+		}
 		time.Sleep(periodBehavior.period)
 		select {
 		case command := <-periodBehavior.ctrl:

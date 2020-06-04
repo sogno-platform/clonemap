@@ -72,6 +72,7 @@ type Agent struct {
 	DF       *DF
 	logError *log.Logger
 	logInfo  *log.Logger
+	active   bool
 }
 
 // newAgent creates a new agent
@@ -90,6 +91,7 @@ func newAgent(info schemas.AgentInfo, msgIn chan schemas.ACLMessage,
 		ACL:      newACL(info.ID, msgIn, aclLookup, logErr, logInf),
 		logError: logErr,
 		logInfo:  logInf,
+		active:   true,
 	}
 	// in, out := ag.ACL.getCommDataChannels()
 	ag.Logger = newLogger(ag.id, log, logConfig, ag.logError, ag.logInfo)
@@ -142,6 +144,9 @@ func (agent *Agent) GetCustomData() (ret string) {
 // Terminate terminates the agent
 func (agent *Agent) Terminate() {
 	agent.logInfo.Println("Terminating agent ", agent.GetAgentID())
+	agent.mutex.Lock()
+	agent.active = false
+	agent.mutex.Unlock()
 	agent.ACL.close()
 	agent.Logger.close()
 	agent.MQTT.close()

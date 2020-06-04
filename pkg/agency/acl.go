@@ -258,10 +258,6 @@ func (acl *ACL) registerProtocolChannel(prot int,
 // deregisterProtocolChannel deregisters the protocol channel with the messaging service
 func (acl *ACL) deregisterProtocolChannel(prot int) (err error) {
 	acl.mutex.Lock()
-	if !acl.active {
-		acl.mutex.Unlock()
-		return errors.New("acl not active")
-	}
 	_, ok := acl.msgInProtocol[prot]
 	acl.mutex.Unlock()
 	if ok {
