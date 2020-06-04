@@ -111,6 +111,9 @@ type storage interface {
 	// addAgent adds an agent to an existing MAS
 	addAgent(masID int, imID int, agentSpec schemas.AgentSpec) (newAgency bool, agentID int,
 		agencyID int, err error)
+
+	// deleteAgent deletes an agent
+	deleteAgent(masID int, agentID int) (err error)
 }
 
 // CommData helper struct for communication data
@@ -260,6 +263,25 @@ func (stor *localStorage) setAgentAddress(masID int, agentID int,
 		return
 	}
 	stor.mas[masID].Agents.Inst[agentID].Address = address
+	stor.mutex.Unlock()
+	return
+}
+
+// setAgentStatus sets status of agent
+func (stor *localStorage) setAgentStatus(masID int, agentID int,
+	status schemas.Status) (err error) {
+	stor.mutex.Lock()
+	if len(stor.mas)-1 < masID {
+		stor.mutex.Unlock()
+		err = errors.New("Agent does not exist")
+		return
+	}
+	if len(stor.mas[masID].Agents.Inst)-1 < agentID {
+		stor.mutex.Unlock()
+		err = errors.New("Agent does not exist")
+		return
+	}
+	stor.mas[masID].Agents.Inst[agentID].Status = status
 	stor.mutex.Unlock()
 	return
 }
@@ -513,6 +535,17 @@ func (stor *localStorage) registerAgent(masID int, imID int,
 
 	stor.mas[masID].Agents.Inst = append(stor.mas[masID].Agents.Inst, info)
 	stor.mutex.Unlock()
+	return
+}
+
+// deleteAgent deletes an agent
+func (stor *localStorage) deleteAgent(masID int, agentID int) (err error) {
+	err = stor.setAgentAddress(masID, agentID, schemas.Address{Agency: ""})
+	if err != nil {
+		return
+	}
+	err = stor.setAgentStatus(masID, agentID, schemas.Status{Code: status.Terminated,
+		LastUpdate: time.Now()})
 	return
 }
 

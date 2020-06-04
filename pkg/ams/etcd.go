@@ -508,6 +508,22 @@ func (stor *etcdStorage) registerAgent(masID int, imID int, spec schemas.AgentSp
 	return
 }
 
+// deleteAgent deletes an agent
+func (stor *etcdStorage) deleteAgent(masID int, agentID int) (err error) {
+	var info schemas.AgentInfo
+	info, err = stor.getAgentInfo(masID, agentID)
+	if err != nil {
+		return
+	}
+	info.Address.Agency = ""
+	info.Status.Code = status.Terminated
+	info.Status.LastUpdate = time.Now()
+
+	err = stor.etcdPutResource("ams/mas/"+strconv.Itoa(masID)+"/agent/"+strconv.Itoa(agentID), info)
+
+	return
+}
+
 // newEtcdStorage returns Storage interface with etcdStorage type
 func newEtcdStorage(logErr *log.Logger) (stor storage, err error) {
 	temp := etcdStorage{logError: logErr}

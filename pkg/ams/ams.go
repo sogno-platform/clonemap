@@ -429,6 +429,11 @@ func (ams *AMS) createAgent(masID int, agentSpec schemas.AgentSpec) (err error) 
 
 // removeAgent removes an agent from the MAS
 func (ams *AMS) removeAgent(masID int, agentID int) (err error) {
+	err = ams.stor.deleteAgent(masID, agentID)
+	if err != nil {
+		return
+	}
+	// TODO delete agent in agency
 	return
 }
 

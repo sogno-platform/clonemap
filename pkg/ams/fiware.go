@@ -739,6 +739,31 @@ func (stor *fiwareStorage) addAgent(masID int, imID int,
 	return
 }
 
+// deleteAgent deletes an agent
+func (stor *fiwareStorage) deleteAgent(masID int, agentID int) (err error) {
+	var agentExist bool
+	agentExist, err = stor.agentExists(masID, agentID)
+	if err != nil {
+		return
+	}
+	if !agentExist {
+		err = errors.New("Agent does not exist")
+		return
+	}
+	var info schemas.AgentInfo
+	info, err = stor.getAgentInfo(masID, agentID)
+	info.Address.Agency = ""
+	info.Status.Code = status.Terminated
+	info.Status.LastUpdate = time.Now()
+
+	attrList := orion.AttributeList{Attributes: make(map[string]orion.Attribute)}
+	attrList.Attributes["info"] = orion.Attribute{Value: info, Type: "AgentInfo"}
+	err = stor.cli.UpdateAttributes("mas"+strconv.Itoa(masID)+"agent"+strconv.Itoa(agentID),
+		attrList, "clonemap")
+
+	return
+}
+
 func (stor *fiwareStorage) masExists(masID int) (exists bool, err error) {
 	exists = false
 	var masCounter int
