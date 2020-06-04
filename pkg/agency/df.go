@@ -200,3 +200,16 @@ func newDF(masID int, agentID int, nodeID int, logErr *log.Logger, logInf *log.L
 	df.registeredServices = make(map[string]schemas.Service)
 	return
 }
+
+// close closes the DF module
+func (df *DF) close() {
+	for d := range df.registeredServices {
+		svc := df.registeredServices[d]
+		df.DeregisterService(svc.GUID)
+	}
+	df.mutex.Lock()
+	df.logInfo.Println("Closing DF of agent ", df.agentID)
+	df.active = false
+	df.mutex.Unlock()
+	return
+}

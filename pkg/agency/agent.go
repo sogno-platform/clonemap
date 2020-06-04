@@ -145,4 +145,5 @@ func (agent *Agent) Terminate() {
 	agent.ACL.close()
 	agent.Logger.close()
 	agent.MQTT.close()
+	agent.DF.close()
 }

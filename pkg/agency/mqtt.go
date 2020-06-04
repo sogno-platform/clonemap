@@ -59,6 +59,7 @@ import (
 type MQTT struct {
 	client     *mqttClient
 	mutex      *sync.Mutex                         // mutex for message inbox map
+	subTopic   map[string]interface{}              // subscribed topics
 	msgInTopic map[string]chan schemas.MQTTMessage // message inbox for messages with specified topic
 	msgIn      chan schemas.MQTTMessage            // mqtt message inbox
 	agentID    int
@@ -80,6 +81,7 @@ func newMQTT(agentID int, cli *mqttClient, cmaplog *Logger, logErr *log.Logger,
 		logInfo:    logInf,
 		active:     true,
 	}
+	mq.subTopic = make(map[string]interface{})
 	mq.msgInTopic = make(map[string]chan schemas.MQTTMessage)
 	mq.msgIn = make(chan schemas.MQTTMessage)
 	return
@@ -87,8 +89,11 @@ func newMQTT(agentID int, cli *mqttClient, cmaplog *Logger, logErr *log.Logger,
 
 // close closes the mqtt
 func (mq *MQTT) close() {
+	for t := range mq.subTopic {
+		mq.Unsubscribe(t)
+	}
 	mq.mutex.Lock()
-	mq.logInfo.Println("Closing Logger of agent ", mq.agentID)
+	mq.logInfo.Println("Closing MQTT of agent ", mq.agentID)
 	mq.active = false
 	mq.mutex.Unlock()
 	return
@@ -102,6 +107,13 @@ func (mq *MQTT) Subscribe(topic string, qos int) (err error) {
 		err = errors.New("mqtt not active")
 		return
 	}
+	_, ok := mq.subTopic[topic]
+	mq.mutex.Unlock()
+	if ok {
+		return
+	}
+	mq.mutex.Lock()
+	mq.subTopic[topic] = nil
 	mq.mutex.Unlock()
 	err = mq.client.subscribe(mq, topic, qos)
 	return
@@ -115,6 +127,13 @@ func (mq *MQTT) Unsubscribe(topic string) (err error) {
 		err = errors.New("mqtt not active")
 		return
 	}
+	_, ok := mq.subTopic[topic]
+	mq.mutex.Unlock()
+	if !ok {
+		return
+	}
+	mq.mutex.Lock()
+	delete(mq.subTopic, topic)
 	mq.mutex.Unlock()
 	err = mq.client.unsubscribe(mq, topic)
 	return
