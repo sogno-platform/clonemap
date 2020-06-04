@@ -98,6 +98,10 @@ func (agency *Agency) aclLookup(agentID int) (acl *ACL, err error) {
 		err = errors.New("MassiveError")
 		return
 	}
+	if address.Agency == "" {
+		err = errors.New("Receiver is not active")
+		return
+	}
 	var remAgency *remoteAgency
 	agency.mutex.Lock()
 	remAgency, ok = agency.remoteAgencies[address.Agency]
@@ -221,6 +225,12 @@ func (agency *Agency) receiveMsgs() {
 						agency.logError.Println(err)
 						return
 					}
+				}
+			} else {
+				_, err := agencyclient.ReturnMsg(msgs[i].AgencySender, msgs[i])
+				if err != nil {
+					agency.logError.Println(err)
+					return
 				}
 			}
 		}

@@ -80,7 +80,7 @@ func (agency *Agency) handleAPI(w http.ResponseWriter, r *http.Request) {
 			cmapErr, httpErr = agency.handleMsgs(w, r)
 			resvalid = true
 		} else if respath[2] == "agency" && respath[3] == "msgundeliv" {
-			cmapErr, httpErr = agency.handleMsgs(w, r)
+			cmapErr, httpErr = agency.handleUndeliverableMsg(w, r)
 			resvalid = true
 		}
 	case 5:
