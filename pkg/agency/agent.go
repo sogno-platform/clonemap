@@ -108,26 +108,34 @@ func (agent *Agent) startAgent(task func(*Agent) error) (err error) {
 
 // GetAgentID returns the agent ID
 func (agent *Agent) GetAgentID() (ret int) {
+	agent.mutex.Lock()
 	ret = agent.id
+	agent.mutex.Unlock()
 	return
 }
 
 // GetAgentType returns the agent type and subtype
 func (agent *Agent) GetAgentType() (aType string, aSubtype string) {
+	agent.mutex.Lock()
 	aType = agent.aType
 	aSubtype = agent.aSubtype
+	agent.mutex.Unlock()
 	return
 }
 
 // GetAgentName returns the agent name
 func (agent *Agent) GetAgentName() (ret string) {
+	agent.mutex.Lock()
 	ret = agent.name
+	agent.mutex.Unlock()
 	return
 }
 
 // GetCustomData returns custom data
 func (agent *Agent) GetCustomData() (ret string) {
+	agent.mutex.Lock()
 	ret = agent.custom
+	agent.mutex.Unlock()
 	return
 }
 
