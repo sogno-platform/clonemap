@@ -429,11 +429,17 @@ func (ams *AMS) createAgent(masID int, agentSpec schemas.AgentSpec) (err error) 
 
 // removeAgent removes an agent from the MAS
 func (ams *AMS) removeAgent(masID int, agentID int) (err error) {
+	var addr schemas.Address
+	addr, err = ams.stor.getAgentAddress(masID, agentID)
+	if err != nil {
+		return
+	}
 	err = ams.stor.deleteAgent(masID, agentID)
 	if err != nil {
 		return
 	}
-	// TODO delete agent in agency
+	_, err = agcli.DeleteAgent(addr.Agency, agentID)
+
 	return
 }
 

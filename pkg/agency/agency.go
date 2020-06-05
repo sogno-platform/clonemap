@@ -237,17 +237,14 @@ func (agency *Agency) removeAgent(agentID int) (err error) {
 	agency.mutex.Lock()
 	delete(agency.localAgents, agentID)
 	agency.mutex.Unlock()
-
 	return
 }
 
 // getAgencyInfo returns configuration of agency
 func (agency *Agency) getAgencyInfo() (agencyInfo schemas.AgencyInfo, err error) {
-	// fmt.Println(fmt.Sprintf("Start %v", time.Now()))
 	agency.mutex.Lock()
 	agencyInfo = agency.info
 	agency.mutex.Unlock()
-	// fmt.Println(fmt.Sprintf("Stop %v", time.Now()))
 	err = nil
 	return
 }
