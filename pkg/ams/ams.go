@@ -89,7 +89,7 @@ func StartAMS() (err error) {
 }
 
 // init initializes deployment and storage. The deployment type is read from an environment
-// variable. It also determines the address suffix that is used to reach other clonemap apps.
+// variable.
 func (ams *AMS) init() (err error) {
 	//fmt.Println("Getting deployment type")
 	// ams.addrSuffix = os.Getenv("CLONEMAP_SUFFIX")
