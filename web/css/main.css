@@ -47,9 +47,18 @@ body {
 }
 
 .contentheader {
+    /* display: block; */
+    position: fixed;
+    top: 0;
+    width: calc(100% - 5cm);
+    background-color: rgb(255,255,255);
+}
+
+.contentmenu {
+    width: 90%;
     display: flex;
     justify-content: space-between;
-    margin: 1em 1em;
+    margin: 0.5em 1em;
 }
 
 .modules {
@@ -57,7 +66,7 @@ body {
 }
 
 .contenttitle {
-    margin: 1em 0em;
+    margin: 3em 0em 1em 0em;
 }
 
 .content {
