@@ -254,7 +254,7 @@ func (ams *AMS) handleAgent(masID int, w http.ResponseWriter, r *http.Request) (
 		}
 	} else {
 		httpErr = httpreply.MethodNotAllowed(w)
-		cmapErr = errors.New("Error: Method not allowed on path /api/clonemap/mas/{mas-id}/agent")
+		cmapErr = errors.New("Error: Method not allowed on path /api/clonemap/mas/{mas-id}/agents")
 	}
 	return
 }
@@ -274,7 +274,7 @@ func (ams *AMS) handleAgentID(masID int, agentid int, w http.ResponseWriter,
 
 	} else {
 		httpErr = httpreply.MethodNotAllowed(w)
-		cmapErr = errors.New("Error: Method not allowed on path /api/clonemap/mas/{mas-id}/agent/" +
+		cmapErr = errors.New("Error: Method not allowed on path /api/clonemap/mas/{mas-id}/agents/" +
 			"{agent-id}")
 	}
 	return

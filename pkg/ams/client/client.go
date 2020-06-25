@@ -143,6 +143,15 @@ func GetAgents(masID int) (agents schemas.Agents, httpStatus int, err error) {
 	return
 }
 
+// PostAgents post agents to mas
+func PostAgents(masID int, ags []schemas.ImageGroupSpec) (httpStatus int, err error) {
+	js, _ := json.Marshal(ags)
+	_, httpStatus, err = httpretry.Post(httpClient, "http://"+Host+":"+strconv.Itoa(Port)+
+		"/api/clonemap/mas/"+strconv.Itoa(masID)+"/agents", "application/json", js, time.Second*2,
+		2)
+	return
+}
+
 // GetAgent requests agent information
 func GetAgent(masID int, agentID int) (agent schemas.AgentInfo, httpStatus int, err error) {
 	var body []byte

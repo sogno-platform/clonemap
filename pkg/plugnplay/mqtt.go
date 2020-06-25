@@ -51,6 +51,7 @@ import (
 	"strconv"
 	"sync"
 
+	amsclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/ams/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
@@ -103,7 +104,14 @@ func (cli *mqttClient) close() (err error) {
 // newIncomingMQTTMessage adds message to channel for incoming messages
 func (cli *mqttClient) newIncomingMQTTMessage(client mqtt.Client, msg mqtt.Message) {
 	var imSpec schemas.ImageGroupSpec
-	json.Unmarshal(msg.Payload(), &imSpec)
+	var err error
+	err = json.Unmarshal(msg.Payload(), &imSpec)
+	if err != nil {
+		cli.logError.Println(err)
+		return
+	}
+	ags := []schemas.ImageGroupSpec{imSpec}
+	_, err = amsclient.PostAgents(0, ags)
 	return
 }
 
