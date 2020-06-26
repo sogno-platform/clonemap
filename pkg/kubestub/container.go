@@ -256,6 +256,41 @@ func (stub *LocalStub) deleteDF() (err error) {
 	return
 }
 
+// createPnP starts a new PnP docker image
+func (stub *LocalStub) createPnP() (err error) {
+	com := "docker run -d"
+	com += " --name=pnp"
+	com += " --hostname=pnp"
+	com += " --network=clonemap-net"
+	com += " -e CLONEMAP_DEPLOYMENT_TYPE=\"local\""
+	com += " -e CLONEMAP_LOG_LEVEL=\"info\""
+	com += " plugnplay"
+	cmd := exec.Command("bash", "-c", com)
+	cmdOut, err := cmd.Output()
+	if err != nil {
+		err = errors.New(err.Error() + " " + string(cmdOut))
+	}
+	return
+}
+
+// deletePnP stops amd removes PnP docker image
+func (stub *LocalStub) deletePnP() (err error) {
+	com := "docker stop pnp"
+	cmd := exec.Command("bash", "-c", com)
+	cmdOut, err := cmd.Output()
+	if err != nil {
+		err = errors.New(err.Error() + " " + string(cmdOut))
+		return
+	}
+	com = "docker rm pnp"
+	cmd = exec.Command("bash", "-c", com)
+	cmdOut, err = cmd.Output()
+	if err != nil {
+		err = errors.New(err.Error() + " " + string(cmdOut))
+	}
+	return
+}
+
 // createMQTT starts a new MQTT Broker docker image
 func (stub *LocalStub) createMQTT() (err error) {
 	com := "docker run -d"

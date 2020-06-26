@@ -111,6 +111,12 @@ func StartLocalStub(fiware bool) {
 		fmt.Println(err)
 		return
 	}
+	fmt.Println("Create Plugnplay Container")
+	err = cntxt.createPnP()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 	fmt.Println("Ready")
 
 	// catch kill signal in order to terminate MAP parts before exiting
@@ -158,6 +164,12 @@ func (stub *LocalStub) terminate(gracefulStop chan os.Signal) {
 	}
 	fmt.Println("Stop DF Container")
 	err = stub.deleteDF()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(0)
+	}
+	fmt.Println("Stop Plugnplay Container")
+	err = stub.deletePnP()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(0)

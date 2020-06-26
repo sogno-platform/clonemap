@@ -52,6 +52,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"time"
 )
 
 // PnP implements the plug and play mechanism
@@ -71,7 +72,9 @@ func StartPnP() (err error) {
 	}
 	// start to listen and serve requests
 	// err = pnp.listen()
-	return
+	for {
+		time.Sleep(time.Millisecond * 10)
+	}
 }
 
 // init initializes the storage.
@@ -89,7 +92,10 @@ func (pnp *PnP) init() (err error) {
 	pnp.logInfo.Println("Starting Plug&Play")
 
 	pnp.mqttCli = newMQTTClient("mqtt", 1883, "pnp", pnp.logError, pnp.logInfo)
-	pnp.mqttCli.init()
+	err = pnp.mqttCli.init()
+	if err != nil {
+		return
+	}
 	err = pnp.mqttCli.subscribe("register", 0)
 
 	// storType := os.Getenv("CLONEMAP_STORAGE_TYPE")

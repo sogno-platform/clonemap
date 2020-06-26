@@ -45,9 +45,14 @@ THE SOFTWARE.
 package main
 
 import (
+	"fmt"
+
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/plugnplay"
 )
 
 func main() {
-	plugnplay.StartPnP()
+	err := plugnplay.StartPnP()
+	if err != nil {
+		fmt.Println(err)
+	}
 }
