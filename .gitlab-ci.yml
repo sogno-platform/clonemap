@@ -32,7 +32,13 @@ dfbuild:
   script:
     - export GOPATH=$HOME/go
     - docker build -f build/docker/df/Dockerfile -t df .
-    
+
+pnpbuild:
+  stage: build
+  script:
+    - export GOPATH=$HOME/go
+    - docker build -f build/docker/plugnplay/Dockerfile -t plugnplay .
+
 stubbuild:
   stage: build
   script:
@@ -109,3 +115,13 @@ dfdeploy:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.git.rwth-aachen.de
     - docker tag df registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/df
     - docker push registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/df
+
+pnpdeploy:
+  stage: deploy
+  only:
+    - master
+    - develop
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.git.rwth-aachen.de
+    - docker tag plugnplay registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/plugnplay
+    - docker push registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/plugnplay
