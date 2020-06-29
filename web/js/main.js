@@ -9,16 +9,17 @@ $(document).ready(function(){
 });
 
 function sideoverview(){
-    $(".modules").hide()
-    $("#headertitle").text("Overview")
+    $(".modules").hide();
+    $("#headertitle").text("Overview");
+    fetch('/api/ams').then(response => response.json()).then(data => console.log(data));
 }
 
 function sideplatform(){
-    $(".modules").hide()
-    $("#headertitle").text("Platform")
+    $(".modules").hide();
+    $("#headertitle").text("Platform");
 }
 
 function sidemas(){
-    $(".modules").show()
-    $("#headertitle").text(this.id)
+    $(".modules").show();
+    $("#headertitle").text(this.id);
 }
