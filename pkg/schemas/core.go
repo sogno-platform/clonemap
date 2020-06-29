@@ -56,6 +56,15 @@ type CloneMAP struct {
 	Uptime  time.Time `json:"uptime,omitempty"`  // uptime of clonemap instance
 }
 
+// MASInfoShort contains info about MAS spec, agents in MAS
+type MASInfoShort struct {
+	ID          int         `json:"id"`
+	Config      MASConfig   `json:"config"`
+	NumAgents   int         `json:"numags"`
+	Uptime      time.Time   `json:"uptime"`
+	Status      Status      `json:"status"`
+}
+
 // MASInfo contains info about MAS spec, agents and agencies in MAS
 type MASInfo struct {
 	// Spec        MASSpec          `json:"spec"`
