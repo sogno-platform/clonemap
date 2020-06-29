@@ -79,6 +79,12 @@ func StartLocalStub(fiware bool) {
 		fmt.Println(err)
 		return
 	}
+	fmt.Println("Create MQTT Broker Container")
+	err = cntxt.createMQTT()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 	if fiware {
 		fmt.Println("Ceate Fiware Containers")
 		err = cntxt.createFiware()
@@ -105,14 +111,14 @@ func StartLocalStub(fiware bool) {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println("Create MQTT Broker Container")
-	err = cntxt.createMQTT()
+	fmt.Println("Create Plugnplay Container")
+	err = cntxt.createPnP()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println("Create Plugnplay Container")
-	err = cntxt.createPnP()
+	fmt.Println("Create Frontend Container")
+	err = cntxt.createFrontend()
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -170,6 +176,12 @@ func (stub *LocalStub) terminate(gracefulStop chan os.Signal) {
 	}
 	fmt.Println("Stop Plugnplay Container")
 	err = stub.deletePnP()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(0)
+	}
+	fmt.Println("Stop Frontend Container")
+	err = stub.deleteFrontend()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(0)

@@ -39,6 +39,12 @@ pnpbuild:
     - export GOPATH=$HOME/go
     - docker build -f build/docker/plugnplay/Dockerfile -t plugnplay .
 
+frontendbuild:
+  stage: build
+  script:
+    - export GOPATH=$HOME/go
+    - docker build -f build/docker/frontend/Dockerfile -t frontend .
+
 stubbuild:
   stage: build
   script:

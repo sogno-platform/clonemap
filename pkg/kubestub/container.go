@@ -291,6 +291,42 @@ func (stub *LocalStub) deletePnP() (err error) {
 	return
 }
 
+// createFrontend starts a new Frontend docker image
+func (stub *LocalStub) createFrontend() (err error) {
+	com := "docker run -d"
+	com += " --name=fe"
+	com += " -p 30013:13000"
+	com += " --hostname=fe"
+	com += " --network=clonemap-net"
+	com += " -e CLONEMAP_DEPLOYMENT_TYPE=\"local\""
+	com += " -e CLONEMAP_LOG_LEVEL=\"info\""
+	com += " frontend"
+	cmd := exec.Command("bash", "-c", com)
+	cmdOut, err := cmd.Output()
+	if err != nil {
+		err = errors.New(err.Error() + " " + string(cmdOut))
+	}
+	return
+}
+
+// deleteFrontend stops amd removes Frontend docker image
+func (stub *LocalStub) deleteFrontend() (err error) {
+	com := "docker stop fe"
+	cmd := exec.Command("bash", "-c", com)
+	cmdOut, err := cmd.Output()
+	if err != nil {
+		err = errors.New(err.Error() + " " + string(cmdOut))
+		return
+	}
+	com = "docker rm fe"
+	cmd = exec.Command("bash", "-c", com)
+	cmdOut, err = cmd.Output()
+	if err != nil {
+		err = errors.New(err.Error() + " " + string(cmdOut))
+	}
+	return
+}
+
 // createMQTT starts a new MQTT Broker docker image
 func (stub *LocalStub) createMQTT() (err error) {
 	com := "docker run -d"
