@@ -44,13 +44,69 @@ THE SOFTWARE.
 
 package frontend
 
-// Frontend frontend
-type Frontend struct {
+import (
+	"errors"
+	"net/http"
+	"strings"
+
+	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/common/httpreply"
+	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
+)
+
+// handleAPI is the global handler for requests to path /api
+func (fe *Frontend) handleAPI(w http.ResponseWriter, r *http.Request) {
+	var cmapErr, httpErr error
+	// ams.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
+	// determine which ressource is requested and call corresponding handler
+	respath := strings.Split(r.URL.EscapedPath(), "/")
+	resvalid := false
+
+	if len(respath) > 2 {
+		switch respath[2] {
+		case "ams":
+			cmapErr, httpErr = fe.handleAMS(w, r, respath)
+			resvalid = true
+		case "df":
+		case "logger":
+		default:
+			cmapErr = errors.New("Resource not found")
+		}
+	}
+
+	if !resvalid {
+		httpErr = httpreply.NotFoundError(w)
+		cmapErr = errors.New("Resource not found")
+	}
+	if cmapErr != nil {
+		// ams.logError.Println(respath, cmapErr)
+	}
+	if httpErr != nil {
+		// ams.logError.Println(respath, httpErr)
+	}
 }
 
-// StartFrontend start
-func StartFrontend() (err error) {
-	fe := &Frontend{}
-	fe.listen()
+// handleAMS handles requests to /api/ams/...
+func (fe *Frontend) handleAMS(w http.ResponseWriter, r *http.Request, respath []string) (cmapErr,
+	httpErr error) {
+	switch len(respath) {
+	case 3:
+		var temp schemas.MASInfo
+		httpErr = httpreply.Resource(w, temp, cmapErr)
+	default:
+		cmapErr = errors.New("Resource not found")
+	}
+	return
+}
+
+// listen opens a http server listening and serving request
+func (fe *Frontend) listen() (err error) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/", fe.handleAPI)
+	mux.HandleFunc("/", http.FileServer(http.Dir("../../web")).ServeHTTP)
+	s := &http.Server{
+		Addr:    ":13000",
+		Handler: mux,
+	}
+	err = s.ListenAndServe()
 	return
 }
