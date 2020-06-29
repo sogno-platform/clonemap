@@ -82,8 +82,8 @@ func GetCloneMAP() (cmap schemas.CloneMAP, httpStatus int, err error) {
 	return
 }
 
-// GetMASs requests mas information
-func GetMASs() (mass schemas.MASs, httpStatus int, err error) {
+// GetMASsShort requests mas information
+func GetMASsShort() (mass []schemas.MASInfoShort, httpStatus int, err error) {
 	var body []byte
 	body, httpStatus, err = httpretry.Get(httpClient, "http://"+Host+":"+strconv.Itoa(Port)+
 		"/api/clonemap/mas", time.Second*2, 2)
@@ -92,7 +92,7 @@ func GetMASs() (mass schemas.MASs, httpStatus int, err error) {
 	}
 	err = json.Unmarshal(body, &mass)
 	if err != nil {
-		mass = schemas.MASs{}
+		mass = []schemas.MASInfoShort{}
 	}
 	return
 }

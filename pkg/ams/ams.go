@@ -147,6 +147,12 @@ func (ams *AMS) getCloneMAPInfo() (ret schemas.CloneMAP, err error) {
 	return
 }
 
+// getMASsShort returns specs of all MAS
+func (ams *AMS) getMASsShort() (ret []schemas.MASInfoShort, err error) {
+	ret, err = ams.stor.getMASsShort()
+	return
+}
+
 // getMASs returns specs of all MAS
 func (ams *AMS) getMASs() (ret schemas.MASs, err error) {
 	ret, err = ams.stor.getMASs()

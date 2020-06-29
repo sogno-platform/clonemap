@@ -103,6 +103,21 @@ func (stor *fiwareStorage) setCloneMAPInfo(cloneMAP schemas.CloneMAP) (err error
 	return
 }
 
+// getMASsShort returns specs of all MAS
+func (stor *fiwareStorage) getMASsShort() (ret []schemas.MASInfoShort, err error) {
+	var mascounter int
+	mascounter, err = stor.getMasCounter()
+	for i := 0; i < mascounter; i++ {
+		var masInfo schemas.MASInfoShort
+		masInfo, err = stor.getMASInfoShort(i)
+		if err != nil {
+			return
+		}
+		ret = append(ret, masInfo)
+	}
+	return
+}
+
 // getMASs returns specs of all MAS
 func (stor *fiwareStorage) getMASs() (ret schemas.MASs, err error) {
 	ret.Counter, err = stor.getMasCounter()
@@ -114,6 +129,61 @@ func (stor *fiwareStorage) getMASs() (ret schemas.MASs, err error) {
 		}
 		ret.Inst = append(ret.Inst, masInfo)
 	}
+	return
+}
+
+// getMASInfoShort returns info of one MAS
+func (stor *fiwareStorage) getMASInfoShort(masID int) (ret schemas.MASInfoShort, err error) {
+	// check if mas exists
+	var masExist bool
+	masExist, err = stor.masExists(masID)
+	if err != nil {
+		return
+	}
+	if !masExist {
+		err = errors.New("MAS does not exist")
+		return
+	}
+	ret.ID = masID
+	// get mas entity
+	var masEnt orion.Entity
+	masEnt, err = stor.cli.GetEntity("mas"+strconv.Itoa(masID), "clonemap")
+	if err != nil {
+		return
+	}
+	// config
+	configAttr, ok := masEnt.Attributes["config"]
+	if !ok {
+		err = errors.New("missing config attribute")
+		return
+	}
+	var masConfig schemas.MASConfig
+	err = extractAttributeValue(configAttr, &masConfig)
+	if err != nil {
+		return
+	}
+	ret.Config = masConfig
+	// status
+	statusAttr, ok := masEnt.Attributes["status"]
+	if !ok {
+		err = errors.New("missing status attribute")
+		return
+	}
+	var masStatus schemas.Status
+	err = extractAttributeValue(statusAttr, &masStatus)
+	if err != nil {
+		return
+	}
+	ret.Status = masStatus
+
+	// agents
+	var agents schemas.Agents
+	agents, err = stor.getAgents(masID)
+	if err != nil {
+		return
+	}
+	ret.NumAgents = agents.Counter
+
 	return
 }
 

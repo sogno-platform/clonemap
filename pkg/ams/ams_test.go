@@ -161,7 +161,7 @@ func dummyClient(s *http.Server, t *testing.T) {
 		t.Error("Error PostMAS " + strconv.Itoa(httpStatus))
 	}
 
-	_, httpStatus, err = amsclient.GetMASs()
+	_, httpStatus, err = amsclient.GetMASsShort()
 	if err != nil {
 		t.Error(err)
 	}

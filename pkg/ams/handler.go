@@ -178,8 +178,8 @@ func (ams *AMS) handleCloneMAP(w http.ResponseWriter, r *http.Request) (cmapErr,
 func (ams *AMS) handleMAS(w http.ResponseWriter, r *http.Request) (cmapErr, httpErr error) {
 	if r.Method == "GET" {
 		// return short info of all MAS
-		var mass schemas.MASs
-		mass, cmapErr = ams.getMASs()
+		var mass []schemas.MASInfoShort
+		mass, cmapErr = ams.getMASsShort()
 		httpErr = httpreply.Resource(w, mass, cmapErr)
 	} else if r.Method == "POST" {
 		// create new MAS

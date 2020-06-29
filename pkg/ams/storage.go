@@ -65,8 +65,14 @@ type storage interface {
 	// setCloneMAPInfo sets info specific to running clonemap instance
 	setCloneMAPInfo(cloneMAP schemas.CloneMAP) (err error)
 
+	// getMASsShort returns short specs of all MAS
+	getMASsShort() (ret []schemas.MASInfoShort, err error)
+
 	// getMASs returns specs of all MAS
 	getMASs() (ret schemas.MASs, err error)
+
+	// getMASInfoShort returns info of one MAS
+	getMASInfoShort(masID int) (ret schemas.MASInfoShort, err error)
 
 	// getMASInfo returns info of one MAS
 	getMASInfo(masID int) (ret schemas.MASInfo, err error)
@@ -150,6 +156,22 @@ func (stor *localStorage) setCloneMAPInfo(cloneMAP schemas.CloneMAP) (err error)
 	return
 }
 
+// getMASsShort returns specs of all MAS
+func (stor *localStorage) getMASsShort() (ret []schemas.MASInfoShort, err error) {
+	stor.mutex.Lock()
+	for i := 0; i < len(stor.mas); i++ {
+		var masshort schemas.MASInfoShort
+		masshort.ID = stor.mas[i].ID
+		masshort.Config = stor.mas[i].Config
+		masshort.NumAgents = stor.mas[i].Agents.Counter
+		masshort.Uptime = stor.mas[i].Uptime
+		masshort.Status = stor.mas[i].Status
+		ret = append(ret, masshort)
+	}
+	stor.mutex.Unlock()
+	return
+}
+
 // getMASs returns specs of all MAS
 func (stor *localStorage) getMASs() (ret schemas.MASs, err error) {
 	stor.mutex.Lock()
@@ -158,6 +180,23 @@ func (stor *localStorage) getMASs() (ret schemas.MASs, err error) {
 	for i := 0; i < len(stor.mas); i++ {
 		ret.Inst[i] = stor.mas[i]
 	}
+	stor.mutex.Unlock()
+	return
+}
+
+// getMASInfoShort returns info of one MAS
+func (stor *localStorage) getMASInfoShort(masID int) (ret schemas.MASInfoShort, err error) {
+	stor.mutex.Lock()
+	if len(stor.mas)-1 < masID {
+		stor.mutex.Unlock()
+		err = errors.New("MAS does not exist")
+		return
+	}
+	ret.ID = stor.mas[masID].ID
+	ret.Config = stor.mas[masID].Config
+	ret.NumAgents = stor.mas[masID].Agents.Counter
+	ret.Uptime = stor.mas[masID].Uptime
+	ret.Status = stor.mas[masID].Status
 	stor.mutex.Unlock()
 	return
 }
