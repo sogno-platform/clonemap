@@ -65,8 +65,8 @@ func (fe *Frontend) handleAPI(w http.ResponseWriter, r *http.Request) {
 	if len(respath) > 2 {
 		switch respath[2] {
 		case "ams":
-			cmapErr, httpErr = fe.handleAMS(w, r, respath)
-			resvalid = true
+			resvalid, cmapErr, httpErr = fe.handleAMS(w, r, respath)
+			// resvalid = true
 		case "df":
 		case "logger":
 		default:
@@ -88,11 +88,11 @@ func (fe *Frontend) handleAPI(w http.ResponseWriter, r *http.Request) {
 
 // handleAMS handles requests to /api/ams/...
 func (fe *Frontend) handleAMS(w http.ResponseWriter, r *http.Request,
-	respath []string) (resvalid bool, cmapErr, httpErr error) {
+	respath []string) (resvalid bool, cmapErr error, httpErr error) {
 	resvalid = false
 	switch len(respath) {
-	case 3:
-		if respath[2] == "mas" {
+	case 4:
+		if respath[3] == "mas" {
 			resvalid = true
 			cmapErr, httpErr = fe.handleMAS(w, r)
 		}
@@ -108,7 +108,7 @@ func (fe *Frontend) handleMAS(w http.ResponseWriter, r *http.Request) (cmapErr, 
 		// return short info of all MAS
 		var mass []schemas.MASInfoShort
 		mass, _, cmapErr = amsclient.GetMASsShort()
-		if cmapErr != nil {
+		if cmapErr == nil {
 			httpErr = httpreply.Resource(w, mass, cmapErr)
 		} else {
 			httpErr = httpreply.CMAPError(w, cmapErr.Error())
@@ -126,7 +126,7 @@ func (fe *Frontend) handleMAS(w http.ResponseWriter, r *http.Request) (cmapErr, 
 func (fe *Frontend) listen() (err error) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/", fe.handleAPI)
-	mux.HandleFunc("/", http.FileServer(http.Dir("../../web")).ServeHTTP)
+	mux.HandleFunc("/", http.FileServer(http.Dir("./web")).ServeHTTP)
 	s := &http.Server{
 		Addr:    ":13000",
 		Handler: mux,
