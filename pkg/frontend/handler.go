@@ -49,6 +49,7 @@ import (
 	"net/http"
 	"strings"
 
+	amsclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/ams/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/common/httpreply"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 )
@@ -86,14 +87,37 @@ func (fe *Frontend) handleAPI(w http.ResponseWriter, r *http.Request) {
 }
 
 // handleAMS handles requests to /api/ams/...
-func (fe *Frontend) handleAMS(w http.ResponseWriter, r *http.Request, respath []string) (cmapErr,
-	httpErr error) {
+func (fe *Frontend) handleAMS(w http.ResponseWriter, r *http.Request,
+	respath []string) (resvalid bool, cmapErr, httpErr error) {
+	resvalid = false
 	switch len(respath) {
 	case 3:
-		var temp schemas.MASInfo
-		httpErr = httpreply.Resource(w, temp, cmapErr)
+		if respath[2] == "mas" {
+			resvalid = true
+			cmapErr, httpErr = fe.handleMAS(w, r)
+		}
 	default:
 		cmapErr = errors.New("Resource not found")
+	}
+	return
+}
+
+// handleMAS is the handler for requests to path /api/ams/mas
+func (fe *Frontend) handleMAS(w http.ResponseWriter, r *http.Request) (cmapErr, httpErr error) {
+	if r.Method == "GET" {
+		// return short info of all MAS
+		var mass []schemas.MASInfoShort
+		mass, _, cmapErr = amsclient.GetMASsShort()
+		if cmapErr != nil {
+			httpErr = httpreply.Resource(w, mass, cmapErr)
+		} else {
+			httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		}
+	} else if r.Method == "POST" {
+
+	} else {
+		httpErr = httpreply.MethodNotAllowed(w)
+		cmapErr = errors.New("Error: Method not allowed on path /api/clonemap/mas")
 	}
 	return
 }
