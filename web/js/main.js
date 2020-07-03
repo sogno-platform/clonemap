@@ -24,8 +24,8 @@ function sideplatform(){
 
 function sidemas(){
     $(".modules").show();
-    $("#headertitle").text(this.id);
     masID = this.id.split("sidemas")
+    $("#headertitle").text("MAS"+masID[1]);
     contentAMS(parseInt(masID[1]))
 }
 
@@ -68,24 +68,29 @@ function clearContent() {
 
 function contentMasInfo(masInfo) {
     clearContent();
-    $(".content").append("<table id=\"masinfotable\"></table>");
-    $("#masinfotable").append("<tr><th>ID:</th><th>"+masInfo.id.toString()+"</th></tr>");
-    $("#masinfotable").append("<tr><th>Config</th></tr>");
-    $("#masinfotable").append("<tr><th></th><th>Name:</th><th>"+masInfo.config.name+"</th></tr>");
-    $("#masinfotable").append("<tr><th></th><th>Agents per agency:</th><th>"+masInfo.config.agentsperagency.toString()+"</th></tr>");
-    $("#masinfotable").append("<tr><th></th><th>DF:</th><th>"+masInfo.config.df.toString()+"</th></tr>");
-    $("#masinfotable").append("<tr><th></th><th>Logging:</th><th>"+masInfo.config.logging.toString()+"</th></tr>");
-    $("#masinfotable").append("<tr><th></th><th>MQTT:</th><th>"+masInfo.config.mqtt.toString()+"</th></tr>");
-    $("#masinfotable").append("<tr><th>Containers</th></tr>");
+    $(".content").append("<table id=\"masinfoid\"></table>");
+    $("#masinfoid").append("<tr><th>ID:</th><th>"+masInfo.id.toString()+"</th></tr>");
+    $(".content").append("<hr>");
+    $(".content").append("<table id=\"masinfoconfig\"></table>");
+    $("#masinfoconfig").append("<tr><th>Config</th></tr>");
+    $("#masinfoconfig").append("<tr><th></th><th>Name:</th><th>"+masInfo.config.name+"</th></tr>");
+    $("#masinfoconfig").append("<tr><th></th><th>Agents per agency:</th><th>"+masInfo.config.agentsperagency.toString()+"</th></tr>");
+    $("#masinfoconfig").append("<tr><th></th><th>DF:</th><th>"+masInfo.config.df.toString()+"</th></tr>");
+    $("#masinfoconfig").append("<tr><th></th><th>Logging:</th><th>"+masInfo.config.logging.toString()+"</th></tr>");
+    $("#masinfoconfig").append("<tr><th></th><th>MQTT:</th><th>"+masInfo.config.mqtt.toString()+"</th></tr>");
+    $(".content").append("<hr>");
+    $(".content").append("<table id=\"masinfocontainer\"></table>");
+    $("#masinfocontainer").append("<tr><th>Containers</th></tr>");
     for (let i of masInfo.groups.instances) {
-        $("#masinfotable").append("<tr><th></th><th>"+i.id.toString()+":</th><th>"+i.config.image+"</th></tr>");
-        $("#masinfotable").append("<tr><th></th><th></th><th>Agencies:</th><th>"+i.agencies.counter.toString()+"</th></tr>");
+        $("#masinfocontainer").append("<tr><th></th><th>"+i.id.toString()+":</th><th>"+i.config.image+"</th></tr>");
+        $("#masinfocontainer").append("<tr><th></th><th></th><th>Agencies:</th><th>"+i.agencies.counter.toString()+"</th></tr>");
     }
-    $("#masinfotable").append("<tr><th>Agents</th></tr>");
+    $(".content").append("<hr>");
+    $(".content").append("<table id=\"masinfoagents\"></table>");
+    $("#masinfoagents").append("<tr><th>Agents</th></tr>");
     for (let i of masInfo.agents.instances) {
-        $("#masinfotable").append("<tr><th></th><th>"+i.id.toString()+":</th></tr>");
-        $("#masinfotable").append("<tr><th></th><th></th><th>Name:</th><th>"+i.spec.name+"</th></tr>");
-        $("#masinfotable").append("<tr><th></th><th></th><th>Type:</th><th>"+i.spec.type+"</th></tr>");
-        $("#masinfotable").append("<tr><th></th><th></th><th>Address:</th><th>"+i.address.agency+"</th></tr>");
+        $("#masinfoagents").append("<tr><th></th><th>"+i.id.toString()+":</th><th>Name:</th><th>"+i.spec.name+"</th></tr>");
+        $("#masinfoagents").append("<tr><th></th><th></th><th>Type:</th><th>"+i.spec.type+"</th></tr>");
+        $("#masinfoagents").append("<tr><th></th><th></th><th>Address:</th><th>"+i.address.agency+"</th></tr>");
     }
 }

@@ -184,6 +184,14 @@ func GetAgentAddress(masID int, agentID int) (address schemas.Address, httpStatu
 	return
 }
 
+// DeleteAgent deletes an agent
+func DeleteAgent(masID int, agentID int) (httpStatus int, err error) {
+	httpStatus, err = httpretry.Delete(httpClient, "http://"+Host+":"+strconv.Itoa(Port)+
+		"/api/clonemap/mas/"+strconv.Itoa(masID)+"/agents/"+strconv.Itoa(agentID), nil,
+		time.Second*2, 2)
+	return
+}
+
 // GetAgencies requests agency information
 func GetAgencies(masID int) (agencies schemas.Agencies, httpStatus int, err error) {
 	var body []byte

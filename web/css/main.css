@@ -12,13 +12,13 @@ body {
     height: 100%;
     position: fixed;
     overflow-y: scroll;
-    top: 0;
+    top: 1;
     left: 0;
-    background: rgb(220,220,220);
+    background: rgb(230,230,230);
 }
 
 .sidebar p {
-    padding: 1em 0em 0em 1em;
+    padding: 2em 0em 0em 1em;
 }
 
 .sidebar ul {
@@ -33,11 +33,15 @@ body {
     text-decoration: none;
     display: block;
     padding: 1em 0em 1em 1em;
-    background: rgb(210,210,210);
+    background: rgb(222,222,222);
+}
+
+.sidebarcur {
+    background: rgb(215,215,215);
 }
 
 .sidebar ul li a:hover {
-    background-color: rgb(170,170,170);
+    background-color: rgb(200,200,200);
 }
 
 .contentcontainer {
@@ -50,8 +54,10 @@ body {
     /* display: block; */
     position: fixed;
     top: 0;
-    width: calc(100% - 5cm);
-    background-color: rgb(255,255,255);
+    left: 0;
+    width: 100%;
+    background-color: rgb(75,0,130);
+    color: rgb(255,255,255);
 }
 
 .contentmenu {
@@ -63,6 +69,7 @@ body {
 
 .modules {
     display: none;
+    color: rgb(255,255,255);
 }
 
 .contenttitle {
@@ -85,4 +92,18 @@ body {
 
 hr {
     margin: 0em 1em;
+}
+
+table {
+    width: 100%;
+}
+
+th, td {
+    text-align: left;
+    padding: 0em 2em;
+    font-weight: normal;
+}
+
+.tablehead {
+    padding: 1em 5em;
 }

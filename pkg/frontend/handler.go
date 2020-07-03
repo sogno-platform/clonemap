@@ -50,9 +50,7 @@ import (
 	"strconv"
 	"strings"
 
-	amsclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/ams/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/common/httpreply"
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 )
 
 // handleAPI is the global handler for requests to path /api
@@ -104,50 +102,30 @@ func (fe *Frontend) handleAMS(w http.ResponseWriter, r *http.Request,
 			resvalid = true
 			cmapErr, httpErr = fe.handlemasID(masID, w, r)
 		}
+	case 6:
+		var masID int
+		masID, cmapErr = strconv.Atoi(respath[4])
+		if respath[2] == "clonemap" && respath[3] == "mas" && cmapErr == nil {
+			if respath[5] == "agents" {
+				cmapErr, httpErr = fe.handleAgent(masID, w, r)
+				resvalid = true
+			}
+		}
+	case 7:
+		var masID int
+		masID, cmapErr = strconv.Atoi(respath[4])
+		if respath[2] == "clonemap" && respath[3] == "mas" && cmapErr == nil {
+			if respath[5] == "agents" {
+				var agentID int
+				agentID, cmapErr = strconv.Atoi(respath[6])
+				if cmapErr == nil {
+					cmapErr, httpErr = fe.handleAgentID(masID, agentID, w, r)
+					resvalid = true
+				}
+			}
+		}
 	default:
 		cmapErr = errors.New("Resource not found")
-	}
-	return
-}
-
-// handleMAS is the handler for requests to path /api/ams/mas
-func (fe *Frontend) handleMAS(w http.ResponseWriter, r *http.Request) (cmapErr, httpErr error) {
-	if r.Method == "GET" {
-		// return short info of all MAS
-		var mass []schemas.MASInfoShort
-		mass, _, cmapErr = amsclient.GetMASsShort()
-		if cmapErr == nil {
-			httpErr = httpreply.Resource(w, mass, cmapErr)
-		} else {
-			httpErr = httpreply.CMAPError(w, cmapErr.Error())
-		}
-	} else if r.Method == "POST" {
-
-	} else {
-		httpErr = httpreply.MethodNotAllowed(w)
-		cmapErr = errors.New("Error: Method not allowed on path /api/ams/mas")
-	}
-	return
-}
-
-// handlemasID is the handler for requests to path /api/ams/mas/{mas-id}
-func (fe *Frontend) handlemasID(masID int, w http.ResponseWriter, r *http.Request) (cmapErr,
-	httpErr error) {
-	if r.Method == "GET" {
-		// return long information about specified MAS
-		var masInfo schemas.MASInfo
-		masInfo, _, cmapErr = amsclient.GetMAS(masID)
-		if cmapErr == nil {
-			httpErr = httpreply.Resource(w, masInfo, cmapErr)
-		} else {
-			httpErr = httpreply.CMAPError(w, cmapErr.Error())
-		}
-	} else if r.Method == "DELETE" {
-		// delete specified MAS
-
-	} else {
-		httpErr = httpreply.MethodNotAllowed(w)
-		cmapErr = errors.New("Error: Method not allowed on path /api/ams/mas/{mas-id}")
 	}
 	return
 }
