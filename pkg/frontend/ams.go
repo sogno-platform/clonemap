@@ -49,11 +49,57 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 
 	amsclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/ams/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/common/httpreply"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 )
+
+// handleAMS handles requests to /api/ams/...
+func (fe *Frontend) handleAMS(w http.ResponseWriter, r *http.Request,
+	respath []string) (resvalid bool, cmapErr error, httpErr error) {
+	resvalid = false
+	switch len(respath) {
+	case 4:
+		if respath[3] == "mas" {
+			resvalid = true
+			cmapErr, httpErr = fe.handleMAS(w, r)
+		}
+	case 5:
+		var masID int
+		masID, cmapErr = strconv.Atoi(respath[4])
+		if respath[3] == "mas" && cmapErr == nil {
+			resvalid = true
+			cmapErr, httpErr = fe.handlemasID(masID, w, r)
+		}
+	case 6:
+		var masID int
+		masID, cmapErr = strconv.Atoi(respath[4])
+		if respath[2] == "clonemap" && respath[3] == "mas" && cmapErr == nil {
+			if respath[5] == "agents" {
+				cmapErr, httpErr = fe.handleAgent(masID, w, r)
+				resvalid = true
+			}
+		}
+	case 7:
+		var masID int
+		masID, cmapErr = strconv.Atoi(respath[4])
+		if respath[2] == "clonemap" && respath[3] == "mas" && cmapErr == nil {
+			if respath[5] == "agents" {
+				var agentID int
+				agentID, cmapErr = strconv.Atoi(respath[6])
+				if cmapErr == nil {
+					cmapErr, httpErr = fe.handleAgentID(masID, agentID, w, r)
+					resvalid = true
+				}
+			}
+		}
+	default:
+		cmapErr = errors.New("Resource not found")
+	}
+	return
+}
 
 // handleMAS is the handler for requests to path /api/ams/mas
 func (fe *Frontend) handleMAS(w http.ResponseWriter, r *http.Request) (cmapErr, httpErr error) {

@@ -47,55 +47,19 @@ package frontend
 import (
 	"errors"
 	"net/http"
-	"strings"
-
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/common/httpreply"
 )
 
-// handleAPI is the global handler for requests to path /api
-func (fe *Frontend) handleAPI(w http.ResponseWriter, r *http.Request) {
-	var cmapErr, httpErr error
-	// ams.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
-	// determine which ressource is requested and call corresponding handler
-	respath := strings.Split(r.URL.EscapedPath(), "/")
-	resvalid := false
-
-	if len(respath) > 2 {
-		switch respath[2] {
-		case "pf":
-			resvalid, cmapErr, httpErr = fe.handlePlatform(w, r, respath)
-		case "ams":
-			resvalid, cmapErr, httpErr = fe.handleAMS(w, r, respath)
-		case "df":
-			resvalid, cmapErr, httpErr = fe.handleDF(w, r, respath)
-		case "logger":
-			resvalid, cmapErr, httpErr = fe.handleLogging(w, r, respath)
-		default:
-			cmapErr = errors.New("Resource not found")
+// handlePlatform handles requests to /api/pf/...
+func (fe *Frontend) handlePlatform(w http.ResponseWriter, r *http.Request,
+	respath []string) (resvalid bool, cmapErr error, httpErr error) {
+	resvalid = false
+	switch len(respath) {
+	case 4:
+		if respath[3] == "modules" {
+			resvalid = true
 		}
-	}
-
-	if !resvalid {
-		httpErr = httpreply.NotFoundError(w)
+	default:
 		cmapErr = errors.New("Resource not found")
 	}
-	if cmapErr != nil {
-		// ams.logError.Println(respath, cmapErr)
-	}
-	if httpErr != nil {
-		// ams.logError.Println(respath, httpErr)
-	}
-}
-
-// listen opens a http server listening and serving request
-func (fe *Frontend) listen() (err error) {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/api/", fe.handleAPI)
-	mux.HandleFunc("/", http.FileServer(http.Dir("./web")).ServeHTTP)
-	s := &http.Server{
-		Addr:    ":13000",
-		Handler: mux,
-	}
-	err = s.ListenAndServe()
 	return
 }
