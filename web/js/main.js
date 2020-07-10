@@ -1,3 +1,5 @@
+import * as request from "./request.js";
+
 $(document).ready(function(){
 
     $("#sideoverview").click(sideoverview);
@@ -24,7 +26,7 @@ function sideplatform(){
 
 function sidemas(){
     $(".modules").show();
-    masID = this.id.split("sidemas")
+    var masID = this.id.split("sidemas")
     $("#headertitle").text("MAS"+masID[1]);
     contentAMS(parseInt(masID[1]))
 }
@@ -53,13 +55,20 @@ function contentPlatform() {
 }
 
 function contentAMS(masID){
-    fetch('/api/ams/mas/'+masID.toString())
-    .then(response => response.json())
-    .then(masInfo => {
-        $(".contenttitle").replaceWith("<h2 class=\"contenttitle\">MAS"+masID.toString()+"</h2>");
-        contentMasInfo(masInfo);
-        console.log(masInfo);
-    })
+//     fetch('/api/ams/mas/'+masID.toString())
+//     .then(response => response.json())
+//     .then(masInfo => {
+//         $(".contenttitle").replaceWith("<h2 class=\"contenttitle\">MAS"+masID.toString()+"</h2>");
+//         contentMasInfo(masInfo);
+//         console.log(masInfo);
+//     })
+    request.get('/api/ams/mas/'+masID.toString(),showAMSContent)
+}
+
+function showAMSContent(masInfo) {
+    $(".contenttitle").replaceWith("<h2 class=\"contenttitle\">MAS"+masInfo.id.toString()+"</h2>");
+    contentMasInfo(masInfo);
+    console.log(masInfo);
 }
 
 function clearContent() {
