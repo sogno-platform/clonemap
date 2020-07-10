@@ -68,6 +68,11 @@ func (logger *Logger) handleAPI(w http.ResponseWriter, r *http.Request) {
 	resvalid := false
 
 	switch len(respath) {
+	case 3:
+		if respath[2] == "alive" {
+			cmapErr, httpErr = logger.handleAlive(w, r)
+			resvalid = true
+		}
 	case 5:
 		if respath[2] == "logging" {
 			var masID int
@@ -160,6 +165,17 @@ func (logger *Logger) handleAPI(w http.ResponseWriter, r *http.Request) {
 	if httpErr != nil {
 		logger.logError.Println(respath, httpErr)
 	}
+}
+
+// handleAlive is the handler for requests to path /api/alive
+func (logger *Logger) handleAlive(w http.ResponseWriter, r *http.Request) (cmapErr, httpErr error) {
+	if r.Method == "GET" {
+		httpErr = httpreply.Alive(w, nil)
+	} else {
+		httpErr = httpreply.MethodNotAllowed(w)
+		cmapErr = errors.New("Error: Method not allowed on path /api/alive")
+	}
+	return
 }
 
 // handleLoggerNew is the handler for requests to path /api/logger/{mas-id}/{agent-id}/{logtype}

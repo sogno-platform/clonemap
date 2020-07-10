@@ -47,6 +47,12 @@ package frontend
 import (
 	"errors"
 	"net/http"
+
+	amsclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/ams/client"
+	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/common/httpreply"
+	dfclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/df/client"
+	logclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/logger/client"
+	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 )
 
 // handlePlatform handles requests to /api/pf/...
@@ -56,10 +62,37 @@ func (fe *Frontend) handlePlatform(w http.ResponseWriter, r *http.Request,
 	switch len(respath) {
 	case 4:
 		if respath[3] == "modules" {
+			cmapErr, httpErr = fe.handleModules(w, r)
 			resvalid = true
 		}
 	default:
 		cmapErr = errors.New("Resource not found")
 	}
+	return
+}
+
+// handleModules is the handler for requests to path /api/pf/modules
+func (fe *Frontend) handleModules(w http.ResponseWriter, r *http.Request) (cmapErr, httpErr error) {
+	if r.Method == "GET" {
+		// return short info of all MAS
+		var mods schemas.ModuleStatus
+		mods, cmapErr = getModuleStatus()
+		if cmapErr == nil {
+			httpErr = httpreply.Resource(w, mods, cmapErr)
+		} else {
+			httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		}
+	} else {
+		httpErr = httpreply.MethodNotAllowed(w)
+		cmapErr = errors.New("Error: Method not allowed on path /api/pf/modules")
+	}
+	return
+}
+
+// getModuleStatus returns the on/off status of all modules
+func getModuleStatus() (mods schemas.ModuleStatus, err error) {
+	mods.Logging = logclient.Alive()
+	mods.Core = amsclient.Alive()
+	mods.DF = dfclient.Alive()
 	return
 }

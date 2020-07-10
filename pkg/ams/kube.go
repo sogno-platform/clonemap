@@ -252,7 +252,7 @@ func (kube *kubeDeployment) createHeadlessService(masID int) (err error) {
 				"app": "mas" + strconv.Itoa(masID) + "agencies",
 			},
 			Ports: []apicorev1.ServicePort{
-				apicorev1.ServicePort{
+				{
 					Port: 10000,
 					Name: "mas" + strconv.Itoa(masID) + "agencies",
 				},
@@ -271,30 +271,30 @@ func (kube *kubeDeployment) createStatefulSet(masID int, imID int, image string,
 	// Pod Spec
 	podSpec := apicorev1.PodSpec{
 		Containers: []apicorev1.Container{
-			apicorev1.Container{
+			{
 				Name:            "mas" + strconv.Itoa(masID) + "agencies",
 				Image:           image,
 				ImagePullPolicy: "Always",
 				Ports: []apicorev1.ContainerPort{
-					apicorev1.ContainerPort{
+					{
 						ContainerPort: 10000,
 						Name:          "mas" + strconv.Itoa(masID) + "agencies",
 					},
 				},
 				Env: []apicorev1.EnvVar{
-					apicorev1.EnvVar{
+					{
 						Name:  "CLONEMAP_LOGGING",
 						Value: loggingEnv,
 					},
-					apicorev1.EnvVar{
+					{
 						Name:  "CLONEMAP_MQTT",
 						Value: mqttEnv,
 					},
-					apicorev1.EnvVar{
+					{
 						Name:  "CLONEMAP_DF",
 						Value: dfEnv,
 					},
-					apicorev1.EnvVar{
+					{
 						Name:  "CLONEMAP_LOG_LEVEL",
 						Value: os.Getenv("CLONEMAP_LOG_LEVEL"),
 					},
@@ -343,7 +343,7 @@ func (kube *kubeDeployment) createStatefulSet(masID int, imID int, image string,
 	}
 	if pullSecret != "" {
 		podSpec.ImagePullSecrets = []apicorev1.LocalObjectReference{
-			apicorev1.LocalObjectReference{
+			{
 				Name: pullSecret,
 			},
 		}

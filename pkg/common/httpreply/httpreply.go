@@ -112,6 +112,18 @@ func Resource(w http.ResponseWriter, v interface{}, cmaperr error) (err error) {
 	return
 }
 
+// Alive is standard response for liveness probe
+func Alive(w http.ResponseWriter, cmaperr error) (err error) {
+	if cmaperr == nil {
+		w.Header().Set("Content-Type", "text/plain")
+		w.WriteHeader(http.StatusOK)
+		_, err = w.Write([]byte("I am alive"))
+	} else {
+		err = CMAPError(w, cmaperr.Error())
+	}
+	return
+}
+
 // JSONMarshalError writes standard response for JSON Marshal Error
 func JSONMarshalError(w http.ResponseWriter) (err error) {
 	w.Header().Set("Content-Type", "text/plain")

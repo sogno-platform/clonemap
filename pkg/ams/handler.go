@@ -71,6 +71,9 @@ func (ams *AMS) handleAPI(w http.ResponseWriter, r *http.Request) {
 		if respath[2] == "clonemap" {
 			cmapErr, httpErr = ams.handleCloneMAP(w, r)
 			resvalid = true
+		} else if respath[2] == "alive" {
+			cmapErr, httpErr = ams.handleAlive(w, r)
+			resvalid = true
 		}
 	case 4:
 		if respath[2] == "clonemap" && respath[3] == "mas" {
@@ -158,6 +161,17 @@ func (ams *AMS) handleAPI(w http.ResponseWriter, r *http.Request) {
 	if httpErr != nil {
 		ams.logError.Println(respath, httpErr)
 	}
+}
+
+// handleAlive is the handler for requests to path /api/alive
+func (ams *AMS) handleAlive(w http.ResponseWriter, r *http.Request) (cmapErr, httpErr error) {
+	if r.Method == "GET" {
+		httpErr = httpreply.Alive(w, nil)
+	} else {
+		httpErr = httpreply.MethodNotAllowed(w)
+		cmapErr = errors.New("Error: Method not allowed on path /api/alive")
+	}
+	return
 }
 
 // handleCloneMAP is the handler for requests to path /api/clonemap

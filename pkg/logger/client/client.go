@@ -65,11 +65,39 @@ var httpClient = &http.Client{Timeout: time.Second * 60}
 var delay = time.Second * 1
 var numRetries = 4
 
+// Alive tests if alive
+func Alive() (alive bool) {
+	alive = false
+	_, httpStatus, err := httpretry.Get(httpClient, "http://"+Host+":"+strconv.Itoa(Port)+
+		"/api/alive", time.Second*2, 2)
+	if err == nil && httpStatus == http.StatusOK {
+		alive = true
+	}
+	return
+}
+
 // PostLogs posts new log messages to logger
 func PostLogs(masID int, logs []schemas.LogMessage) (httpStatus int, err error) {
 	js, _ := json.Marshal(logs)
 	_, httpStatus, err = httpretry.Post(httpClient, "http://"+Host+":"+strconv.Itoa(Port)+
 		"/api/logging/"+strconv.Itoa(masID)+"/list", "application/json", js, time.Second*2, 4)
+	return
+}
+
+// GetLatestLogs gets log messages
+func GetLatestLogs(masID int, agentID int, topic string, num int) (msgs []schemas.LogMessage,
+	httpStatus int, err error) {
+	var body []byte
+	body, httpStatus, err = httpretry.Get(httpClient, "http://"+Host+":"+strconv.Itoa(Port)+
+		"/api/logging/"+strconv.Itoa(masID)+"/"+strconv.Itoa(agentID)+"/"+topic+"/latest/"+
+		strconv.Itoa(num), time.Second*2, 4)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(body, &msgs)
+	if err != nil {
+		msgs = []schemas.LogMessage{}
+	}
 	return
 }
 

@@ -135,17 +135,17 @@ func dummyClient(s *http.Server, t *testing.T) {
 			DF:                 false,
 		},
 		ImageGroups: []schemas.ImageGroupSpec{
-			schemas.ImageGroupSpec{
+			{
 				Config: schemas.ImageGroupConfig{
 					Image:      "agent",
 					PullSecret: "",
 				},
 				Agents: []schemas.AgentSpec{
-					schemas.AgentSpec{
+					{
 						Name:  "test1",
 						AType: "test",
 					},
-					schemas.AgentSpec{
+					{
 						Name:  "test2",
 						AType: "test",
 					},

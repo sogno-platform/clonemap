@@ -56,13 +56,20 @@ type CloneMAP struct {
 	Uptime  time.Time `json:"uptime,omitempty"`  // uptime of clonemap instance
 }
 
+// ModuleStatus shows the status of clonemaps modules
+type ModuleStatus struct {
+	Core    bool `json:"core"`    // Core module
+	DF      bool `json:"df"`      // DF module
+	Logging bool `json:"logging"` // Logging module
+}
+
 // MASInfoShort contains info about MAS spec, agents in MAS
 type MASInfoShort struct {
-	ID          int         `json:"id"`
-	Config      MASConfig   `json:"config"`
-	NumAgents   int         `json:"numags"`
-	Uptime      time.Time   `json:"uptime"`
-	Status      Status      `json:"status"`
+	ID        int       `json:"id"`
+	Config    MASConfig `json:"config"`
+	NumAgents int       `json:"numags"`
+	Uptime    time.Time `json:"uptime"`
+	Status    Status    `json:"status"`
 }
 
 // MASInfo contains info about MAS spec, agents and agencies in MAS

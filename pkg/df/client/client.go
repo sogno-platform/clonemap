@@ -69,6 +69,17 @@ var httpClient = &http.Client{Timeout: time.Second * 60}
 var delay = time.Second * 1
 var numRetries = 4
 
+// Alive tests if alive
+func Alive() (alive bool) {
+	alive = false
+	_, httpStatus, err := httpretry.Get(httpClient, "http://"+Host+":"+strconv.Itoa(Port)+
+		"/api/alive", time.Second*2, 2)
+	if err == nil && httpStatus == http.StatusOK {
+		alive = true
+	}
+	return
+}
+
 // PostSvc post an mas
 func PostSvc(masID int, svc schemas.Service) (retSvc schemas.Service, httpStatus int, err error) {
 	var body []byte
@@ -120,6 +131,18 @@ func PostGraph(masID int, gr schemas.Graph) (httpStatus int, err error) {
 	js, _ := json.Marshal(gr)
 	_, httpStatus, err = httpretry.Post(httpClient, "http://"+Host+":"+strconv.Itoa(Port)+
 		"/api/df/"+strconv.Itoa(masID)+"/graph", "application/json", js, time.Second*2, 2)
+	return
+}
+
+// GetGraph returns graph of mas
+func GetGraph(masID int) (graph schemas.Graph, httpStatus int, err error) {
+	var body []byte
+	body, httpStatus, err = httpretry.Get(httpClient, "http://"+Host+":"+strconv.Itoa(Port)+
+		"/api/df/"+strconv.Itoa(masID)+"/graph", time.Second*2, 2)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(body, &graph)
 	return
 }
 
