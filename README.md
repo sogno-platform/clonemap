@@ -1,5 +1,7 @@
 # cloneMAP: cloud-native Multi-Agent Platform
 
+<img src="docs/logo_tp.png" width="200">
+
 cloneMAP is a multi-agent platform (MAP) that is designed to run in a cloud environment based on [Kubernetes](https://kubernetes.io/).
 The aim of this project is to combine the advantages of cloud computing and a distributed computing paradigm such as multi-agent systems.
 
