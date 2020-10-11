@@ -4,4 +4,19 @@ function get(url, callback) {
     .then(json => {callback(json)})
 }
 
-export {get};
+function post(url, data) {
+    fetch(url, {
+    	method: 'post',
+    	headers: {'Content-Type' : 'application/json'},
+    	body: data
+    })
+    .then ( (text) => {
+        // log response text 
+        console.log (text);
+    })
+    .catch ((error) => {
+        console.log ("Error: ", error)
+    })
+}
+
+export {get, post};

@@ -113,7 +113,19 @@ func (fe *Frontend) handleMAS(w http.ResponseWriter, r *http.Request) (cmapErr, 
 			httpErr = httpreply.CMAPError(w, cmapErr.Error())
 		}
 	} else if r.Method == "POST" {
-
+		var body []byte
+		body, cmapErr = ioutil.ReadAll(r.Body)
+		if cmapErr == nil {
+			var masSpec schemas.MASSpec
+			cmapErr = json.Unmarshal(body, &masSpec)
+			if cmapErr == nil {
+				_, httpErr = amsclient.PostMAS(masSpec)
+			} else {
+				httpErr = httpreply.JSONUnmarshalError(w)
+			}
+		} else {
+			httpErr = httpreply.InvalidBodyError(w)
+		}
 	} else {
 		httpErr = httpreply.MethodNotAllowed(w)
 		cmapErr = errors.New("Error: Method not allowed on path /api/ams/mas")

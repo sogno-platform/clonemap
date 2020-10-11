@@ -70,6 +70,9 @@ func (fe *Frontend) handleAPI(w http.ResponseWriter, r *http.Request) {
 			resvalid, cmapErr, httpErr = fe.handleDF(w, r, respath)
 		case "logger":
 			resvalid, cmapErr, httpErr = fe.handleLogging(w, r, respath)
+		case "overview":
+			resvalid = true
+			cmapErr, httpErr = fe.handleOverview(w, r)
 		default:
 			cmapErr = errors.New("Resource not found")
 		}
@@ -85,6 +88,17 @@ func (fe *Frontend) handleAPI(w http.ResponseWriter, r *http.Request) {
 	if httpErr != nil {
 		// ams.logError.Println(respath, httpErr)
 	}
+}
+
+// handleOverview is the handler for requests to path /api/overview
+func (fe *Frontend) handleOverview(w http.ResponseWriter, r *http.Request) (cmapErr, httpErr error) {
+	if r.Method == "GET" {
+		cmapErr, httpErr = fe.handleMAS(w, r)
+	} else {
+		httpErr = httpreply.MethodNotAllowed(w)
+		cmapErr = errors.New("Error: Method not allowed on path /api/overview")
+	}
+	return
 }
 
 // listen opens a http server listening and serving request

@@ -87,6 +87,15 @@ body {
     margin: 1em 0em 5em 0em;
 }
 
+.contentbox {
+    margin: 0em 0em 5em 0em;
+}
+
+textarea {
+    width: 100%;
+    height: 20em;
+}
+
 .footer {
     display: none;
     position: fixed;
@@ -98,7 +107,7 @@ body {
 }
 
 hr {
-    margin: 0em 1em;
+    margin: 0em 1em 1em 1em;
 }
 
 table {

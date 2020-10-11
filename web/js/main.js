@@ -42,12 +42,21 @@ function updateSidebar(){
 function contentOverview(mass) {
     $(".contenttitle").replaceWith("<h2 class=\"contenttitle\">Overview</h2>");
     clearContent();
-    $(".content").append("<table id=\"mass\"></table>");
-    $("#mass").append("<tr><th>MASs:</th><th>"+mass.length.toString()+"</th></tr>");
-    $(".content").append("<hr>");
+    $(".content").append("<div class=\"contentbox\" id=\"startbox\"></div>")
+    $("#startbox").append("<table id=\"startmas\"></table>");
+    $("#startmas").append("<tr><th><h3>Start new MAS:</h3></th></tr>")
+    $("#startbox").append("<hr>");
+    $("#startbox").append("<tr><th><input type=\"file\" id=\"inputMAS\" value=\"Import\" accept=\".json\"/></th><th><button id=\"uploadMAS\">Upload</button></th></tr>")
+    $("#inputMAS").change(inputMAS);
+    $("#uploadMAS").click(uploadMAS);
+    $("#startbox").append("<tr><th><textarea id=\"newMAS\"></textarea></th></tr>")
+    $(".content").append("<div class=\"contentbox\" id=\"massbox\"></div>")
+    $("#massbox").append("<table id=\"mass\"></table>");
+    $("#mass").append("<tr><th><h3>MASs:</h3></th><th>"+mass.length.toString()+"</th></tr>");
+    $("#massbox").append("<hr>");
     for (let i of mass) {
         let masID = "MAS"+i.id.toString()
-        $(".content").append("<table id=\""+masID+"\"></table>");
+        $("#massbox").append("<table id=\""+masID+"\"></table>");
         $("#"+masID).append("<tr><th>"+masID+"</th></tr>");
         $("#"+masID).append("<tr><th></th><th>Name:</th><th>"+i.config.name+"</th></tr>");
         $("#"+masID).append("<tr><th></th><th>Agents per agency:</th><th>"+i.config.agentsperagency.toString()+"</th></tr>");
@@ -58,15 +67,32 @@ function contentOverview(mass) {
     }
 }
 
+// callback for inputMAS input button
+function inputMAS() {
+    let files = this.files;
+    if (files.length <= 0) {
+        return false;
+    }
+
+    let fr = new FileReader();
+    fr.onload = function(e) { 
+        var result = JSON.parse(e.target.result);
+        var formatted = JSON.stringify(result, null, 2);
+            $("#newMAS").val(formatted);
+    }
+
+    fr.readAsText(files.item(0));
+}
+
+// callback for uploadMAS button
+function uploadMAS() {
+    let masconfig = $("#newMAS").val();
+    request.post("/api/ams/mas", masconfig)
+    sideoverview()
+}
+
 // request info about mas and call function to show content
 function contentAMS(masID){
-//     fetch('/api/ams/mas/'+masID.toString())
-//     .then(response => response.json())
-//     .then(masInfo => {
-//         $(".contenttitle").replaceWith("<h2 class=\"contenttitle\">MAS"+masID.toString()+"</h2>");
-//         contentMasInfo(masInfo);
-//         console.log(masInfo);
-//     })
     request.get('/api/ams/mas/'+masID.toString(),showAMSContent)
 }
 
