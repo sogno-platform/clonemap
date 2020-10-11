@@ -1,15 +1,13 @@
 import * as request from "./request.js";
 
+// initial website present
 $(document).ready(function(){
-
     $("#sideoverview").click(sideoverview);
-
-    $("#sideplatform").click(sideplatform);
-
     updateSidebar();
-
+    sideoverview();
 });
 
+// callback for Overview button
 function sideoverview(){
     $(".modules").hide();
     $("#headertitle").text("Overview");
@@ -18,12 +16,7 @@ function sideoverview(){
     // fetch('/api/ams/mas').then(response => response.json()).then(data => console.log(data));
 }
 
-function sideplatform(){
-    $(".modules").hide();
-    $("#headertitle").text("Platform");
-    contentPlatform();
-}
-
+// callback for mas buttons
 function sidemas(){
     $(".modules").show();
     var masID = this.id.split("sidemas")
@@ -31,6 +24,7 @@ function sidemas(){
     contentAMS(parseInt(masID[1]))
 }
 
+// show sidebar and register callbacks for mas buttons
 function updateSidebar(){
     fetch('/api/ams/mas')
     .then(response => response.json())
@@ -44,16 +38,13 @@ function updateSidebar(){
     })
 }
 
+// show content field for overview view
 function contentOverview() {
     $(".contenttitle").replaceWith("<h2 class=\"contenttitle\">Overview</h2>");
     clearContent();
 }
 
-function contentPlatform() {
-    $(".contenttitle").replaceWith("<h2 class=\"contenttitle\">Platform</h2>");
-    clearContent();
-}
-
+// request info about mas and call function to show content
 function contentAMS(masID){
 //     fetch('/api/ams/mas/'+masID.toString())
 //     .then(response => response.json())
@@ -65,16 +56,19 @@ function contentAMS(masID){
     request.get('/api/ams/mas/'+masID.toString(),showAMSContent)
 }
 
+// show content field for ams and specified mas
 function showAMSContent(masInfo) {
     $(".contenttitle").replaceWith("<h2 class=\"contenttitle\">MAS"+masInfo.id.toString()+"</h2>");
     contentMasInfo(masInfo);
     console.log(masInfo);
 }
 
+// clear content field
 function clearContent() {
     $(".content").empty();
 }
 
+// show content field for mas info
 function contentMasInfo(masInfo) {
     clearContent();
     $(".content").append("<table id=\"masinfoid\"></table>");

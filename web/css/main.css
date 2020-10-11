@@ -44,6 +44,13 @@ body {
     background-color: rgb(200,200,200);
 }
 
+.sidebar img {
+    padding-top: 2em;
+    padding-left: 20%;
+    max-width: 60%;
+    height: auto;
+}
+
 .contentcontainer {
     margin-left: 5cm;
     height: 100%;
@@ -56,8 +63,8 @@ body {
     top: 0;
     left: 0;
     width: 100%;
-    background-color: rgb(75,0,130);
-    color: rgb(255,255,255);
+    background-color: rgb(102,102,255);
+    color: rgb(0,0,0);
 }
 
 .contentmenu {

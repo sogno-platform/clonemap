@@ -50,6 +50,7 @@ package ams
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -99,11 +100,12 @@ func (localdepl *localDeployment) newMAS(masID int, images schemas.ImageGroups,
 			httpClient := &http.Client{Timeout: time.Second * 10}
 			_, statusCode, err = httpretry.Post(httpClient, "http://"+localdepl.hostName+
 				":8000/api/container", " ", js, time.Second*2, 2)
-			if err == nil {
-				if statusCode != http.StatusCreated {
-					err = errors.New("Cannot create agency")
-					return
-				}
+			if err != nil {
+				return
+			}
+			if statusCode != http.StatusCreated {
+				err = errors.New("Cannot create agency " + fmt.Sprint(temp))
+				return
 			}
 			localdepl.containers[masID]["mas-"+strconv.Itoa(masID)+"-im-"+strconv.Itoa(i)] = temp
 		}
