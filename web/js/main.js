@@ -12,7 +12,7 @@ function sideoverview(){
     $(".modules").hide();
     $("#headertitle").text("Overview");
     updateSidebar();
-    contentOverview();
+    request.get('/api/overview',contentOverview)
     // fetch('/api/ams/mas').then(response => response.json()).then(data => console.log(data));
 }
 
@@ -39,9 +39,23 @@ function updateSidebar(){
 }
 
 // show content field for overview view
-function contentOverview() {
+function contentOverview(mass) {
     $(".contenttitle").replaceWith("<h2 class=\"contenttitle\">Overview</h2>");
     clearContent();
+    $(".content").append("<table id=\"mass\"></table>");
+    $("#mass").append("<tr><th>MASs:</th><th>"+mass.length.toString()+"</th></tr>");
+    $(".content").append("<hr>");
+    for (let i of mass) {
+        let masID = "MAS"+i.id.toString()
+        $(".content").append("<table id=\""+masID+"\"></table>");
+        $("#"+masID).append("<tr><th>"+masID+"</th></tr>");
+        $("#"+masID).append("<tr><th></th><th>Name:</th><th>"+i.config.name+"</th></tr>");
+        $("#"+masID).append("<tr><th></th><th>Agents per agency:</th><th>"+i.config.agentsperagency.toString()+"</th></tr>");
+        $("#"+masID).append("<tr><th></th><th>DF:</th><th>"+i.config.df.toString()+"</th></tr>");
+        $("#"+masID).append("<tr><th></th><th>Logging:</th><th>"+i.config.logging.toString()+"</th></tr>");
+        $("#"+masID).append("<tr><th></th><th>MQTT:</th><th>"+i.config.mqtt.toString()+"</th></tr>");
+        $("#"+masID).append("<tr><th></th><th>Agents:</th><th>"+i.numags.toString()+"</th></tr>");
+    }
 }
 
 // request info about mas and call function to show content
