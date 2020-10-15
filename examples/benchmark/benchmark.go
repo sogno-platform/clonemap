@@ -83,6 +83,8 @@ func Task(ag *agency.Agent) (err error) {
 		err = dfBench(ag, config)
 	case 3:
 		err = stateTest(ag, config)
+	case 4:
+		err = pingPongft(ag, config)
 	default:
 		fmt.Println("unknown task function")
 	}
@@ -168,6 +170,124 @@ func pingPong(ag *agency.Agent, config CustomAgentData) (err error) {
 			msg.Receiver = config.PeerID
 			msg.Sender = ag.GetAgentID()
 			err = ag.ACL.SendMessage(msg)
+			if err != nil {
+				fmt.Println(err)
+			}
+			msg, err = ag.ACL.RecvMessageWait()
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
+	} else {
+		// wait for messages and reply
+		var msg schemas.ACLMessage
+		for {
+			msg, err = ag.ACL.RecvMessageWait()
+			if err != nil {
+				fmt.Println(err)
+			}
+			msg.Receiver = msg.Sender
+			msg.Sender = ag.GetAgentID()
+			err = ag.ACL.SendMessage(msg)
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
+	}
+	return
+}
+
+// pingPong fault tolerance Task function
+func pingPongft(ag *agency.Agent, config CustomAgentData) (err error) {
+	// d := time.Until(config.StartTime)
+	err = ag.Logger.NewLog("status", "Starting fault-tolerant PingPong Behavior; Peer: "+
+		strconv.Itoa(config.PeerID)+", Start: "+strconv.FormatBool(config.Start), "")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	// time.Sleep(d)
+	time.Sleep(time.Second * 40)
+	if config.Start {
+		state := 0
+		var rtts []int
+		var msg schemas.ACLMessage
+		msg, err = ag.ACL.NewMessage(config.PeerID, schemas.FIPAProtQuery, schemas.FIPAPerfInform,
+			"test msg")
+		if err != nil {
+			fmt.Println(err)
+		}
+		// send 1000 messages during start up time
+		for i := 0; i < 1000; i++ {
+			msg.Receiver = config.PeerID
+			msg.Sender = ag.GetAgentID()
+			err = ag.ACL.SendMessage(msg)
+			if err != nil {
+				fmt.Println(err)
+			}
+			state++
+			err = ag.Logger.UpdateState(strconv.Itoa(state))
+			if err != nil {
+				fmt.Println(err)
+			}
+			msg, err = ag.ACL.RecvMessageWait()
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
+		// send 1000 messages during benchmark time
+		for i := 0; i < 1000; i++ {
+			msg.Receiver = config.PeerID
+			msg.Sender = ag.GetAgentID()
+			t := time.Now()
+			err = ag.ACL.SendMessage(msg)
+			if err != nil {
+				fmt.Println(err)
+			}
+			state++
+			err = ag.Logger.UpdateState(strconv.Itoa(state))
+			if err != nil {
+				fmt.Println(err)
+			}
+			msg, err = ag.ACL.RecvMessageWait()
+			rtt := time.Since(t).Nanoseconds()
+			if err != nil {
+				fmt.Println(err)
+			}
+			rtts = append(rtts, int(rtt/1000))
+		}
+		// store rtts
+		max := 0
+		min := 1000000
+		sum := 0
+		avg := 0
+		for i := 0; i < len(rtts); i++ {
+			if max < rtts[i] {
+				max = rtts[i]
+			}
+			if min > rtts[i] {
+				min = rtts[i]
+			}
+			sum += rtts[i]
+		}
+		avg = sum / len(rtts)
+		js, _ := json.Marshal(rtts)
+		err = ag.Logger.NewLog("status", "RTT in µs: min: "+strconv.Itoa(min)+", max: "+
+			strconv.Itoa(max)+", avg: "+strconv.Itoa(avg), string(js))
+		if err != nil {
+			fmt.Println(err)
+		}
+		// send 8000 messages during end time
+		for i := 0; i < 8000; i++ {
+			// for {
+			msg.Receiver = config.PeerID
+			msg.Sender = ag.GetAgentID()
+			err = ag.ACL.SendMessage(msg)
+			if err != nil {
+				fmt.Println(err)
+			}
+			state++
+			err = ag.Logger.UpdateState(strconv.Itoa(state))
 			if err != nil {
 				fmt.Println(err)
 			}
