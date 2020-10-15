@@ -185,15 +185,13 @@ func (logger *Logger) getCommunication(masID int, agentID int) (comm []schemas.C
 }
 
 // getAgentState returns the latest agent state
-func (logger *Logger) getAgentState(masID int, agentID int) (agState schemas.State,
-	err error) {
+func (logger *Logger) getAgentState(masID int, agentID int) (agState []byte, err error) {
 	agState, err = logger.stor.getAgentState(masID, agentID)
 	return
 }
 
 // updateAgentState updates agent state
-func (logger *Logger) updateAgentState(masID int, agentID int,
-	agState schemas.State) (err error) {
+func (logger *Logger) updateAgentState(masID int, agentID int, agState []byte) (err error) {
 	err = logger.stor.updateAgentState(masID, agentID, agState)
 	return
 }

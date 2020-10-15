@@ -76,10 +76,10 @@ type storage interface {
 	getCommunication(masID int, agentID int) (commData []schemas.Communication, err error)
 
 	// updateAgentState updates the agent status
-	updateAgentState(masID int, agentID int, state schemas.State) (err error)
+	updateAgentState(masID int, agentID int, satte []byte) (err error)
 
 	// getAgentState return the latest agent status
-	getAgentState(masID int, agentID int) (state schemas.State, err error)
+	getAgentState(masID int, agentID int) (state []byte, err error)
 
 	// deleteAgentState deletes the status of an agent
 	deleteAgentState(masID int, agentID int) (err error)
@@ -108,7 +108,7 @@ type agentStorage struct {
 	msgLogs  []LogMessage
 	statLogs []LogMessage
 	appLogs  []LogMessage
-	state    schemas.State
+	state    []byte
 	commData []schemas.Communication
 }
 
@@ -350,7 +350,7 @@ func (stor *localStorage) getCommunication(masID int,
 }
 
 // updateAgentState updates the agent status
-func (stor *localStorage) updateAgentState(masID int, agentID int, state schemas.State) (err error) {
+func (stor *localStorage) updateAgentState(masID int, agentID int, state []byte) (err error) {
 	stor.mutex.Lock()
 	numMAS := len(stor.mas)
 	if numMAS <= masID {
@@ -370,7 +370,7 @@ func (stor *localStorage) updateAgentState(masID int, agentID int, state schemas
 }
 
 // getAgentState return the latest agent status
-func (stor *localStorage) getAgentState(masID int, agentID int) (state schemas.State, err error) {
+func (stor *localStorage) getAgentState(masID int, agentID int) (state []byte, err error) {
 	stor.mutex.Lock()
 	if masID < len(stor.mas) {
 		if agentID < len(stor.mas[masID].agents) {
@@ -386,7 +386,7 @@ func (stor *localStorage) deleteAgentState(masID int, agentID int) (err error) {
 	stor.mutex.Lock()
 	if masID < len(stor.mas) {
 		if agentID < len(stor.mas[masID].agents) {
-			stor.mas[masID].agents[agentID].state.State = ""
+			stor.mas[masID].agents[agentID].state = nil
 		}
 	}
 	stor.mutex.Unlock()

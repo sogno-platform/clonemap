@@ -210,6 +210,7 @@ func pingPongft(ag *agency.Agent, config CustomAgentData) (err error) {
 	time.Sleep(time.Second * 40)
 	if config.Start {
 		state := 0
+		count := 0
 		var rtts []int
 		var msg schemas.ACLMessage
 		msg, err = ag.ACL.NewMessage(config.PeerID, schemas.FIPAProtQuery, schemas.FIPAPerfInform,
@@ -225,10 +226,14 @@ func pingPongft(ag *agency.Agent, config CustomAgentData) (err error) {
 			if err != nil {
 				fmt.Println(err)
 			}
-			state++
-			err = ag.Logger.UpdateState(strconv.Itoa(state))
-			if err != nil {
-				fmt.Println(err)
+			count++
+			if count == 10 {
+				state++
+				err = ag.Logger.UpdateState(strconv.Itoa(state))
+				if err != nil {
+					fmt.Println(err)
+				}
+				count = 0
 			}
 			msg, err = ag.ACL.RecvMessageWait()
 			if err != nil {
@@ -244,10 +249,14 @@ func pingPongft(ag *agency.Agent, config CustomAgentData) (err error) {
 			if err != nil {
 				fmt.Println(err)
 			}
-			state++
-			err = ag.Logger.UpdateState(strconv.Itoa(state))
-			if err != nil {
-				fmt.Println(err)
+			count++
+			if count == 10 {
+				state++
+				err = ag.Logger.UpdateState(strconv.Itoa(state))
+				if err != nil {
+					fmt.Println(err)
+				}
+				count = 0
 			}
 			msg, err = ag.ACL.RecvMessageWait()
 			rtt := time.Since(t).Nanoseconds()
@@ -286,10 +295,14 @@ func pingPongft(ag *agency.Agent, config CustomAgentData) (err error) {
 			if err != nil {
 				fmt.Println(err)
 			}
-			state++
-			err = ag.Logger.UpdateState(strconv.Itoa(state))
-			if err != nil {
-				fmt.Println(err)
+			count++
+			if count == 10 {
+				state++
+				err = ag.Logger.UpdateState(strconv.Itoa(state))
+				if err != nil {
+					fmt.Println(err)
+				}
+				count = 0
 			}
 			msg, err = ag.ACL.RecvMessageWait()
 			if err != nil {

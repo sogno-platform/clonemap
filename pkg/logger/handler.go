@@ -298,21 +298,17 @@ func (logger *Logger) handleLogsTime(masID int, agentid int, logType string, sta
 func (logger *Logger) handleState(masID int, agentid int, w http.ResponseWriter,
 	r *http.Request) (cmapErr, httpErr error) {
 	if r.Method == "GET" {
-		var state schemas.State
+		var state []byte
 		state, cmapErr = logger.getAgentState(masID, agentid)
-		httpErr = httpreply.Resource(w, state, cmapErr)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, httpErr = w.Write(state)
 	} else if r.Method == "PUT" {
 		var body []byte
 		body, cmapErr = ioutil.ReadAll(r.Body)
 		if cmapErr == nil {
-			var state schemas.State
-			cmapErr = json.Unmarshal(body, &state)
-			if cmapErr == nil {
-				go logger.updateAgentState(masID, agentid, state)
-				httpErr = httpreply.Updated(w, nil)
-			} else {
-				httpErr = httpreply.JSONUnmarshalError(w)
-			}
+			go logger.updateAgentState(masID, agentid, body)
+			httpErr = httpreply.Updated(w, nil)
 		} else {
 			httpErr = httpreply.InvalidBodyError(w)
 		}

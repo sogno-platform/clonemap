@@ -47,9 +47,10 @@ package logger
 import (
 	"encoding/json"
 	"errors"
+	"time"
+
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 	"github.com/gocql/gocql"
-	"time"
 )
 
 // cassStorage stores information regarding connection to cassandra cluster
@@ -197,26 +198,19 @@ func (stor *cassStorage) getCommunication(masID int,
 }
 
 // updateAgentState updates the agent status
-func (stor *cassStorage) updateAgentState(masID int, agentID int, state schemas.State) (err error) {
-	var js []byte
-	js, err = json.Marshal(state)
-	if err != nil {
-		return
-	}
+func (stor *cassStorage) updateAgentState(masID int, agentID int, state []byte) (err error) {
 	err = stor.session.Query("INSERT INTO state (masid, agentid, state) "+
-		"VALUES (?, ?, ?)", masID, agentID, js).Exec()
+		"VALUES (?, ?, ?)", masID, agentID, state).Exec()
 	return
 }
 
 // getAgentState return the latest agent status
-func (stor *cassStorage) getAgentState(masID int, agentID int) (state schemas.State, err error) {
+func (stor *cassStorage) getAgentState(masID int, agentID int) (state []byte, err error) {
 	var iter *gocql.Iter
-	var js []byte
 	iter = stor.session.Query("SELECT state FROM state WHERE masid = ? AND agentid = ?", masID,
 		agentID).Iter()
 	if iter.NumRows() == 1 {
-		iter.Scan(&js)
-		err = json.Unmarshal(js, &state)
+		iter.Scan(&state)
 	}
 	iter.Close()
 	return
