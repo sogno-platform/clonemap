@@ -227,9 +227,9 @@ func (stor *cassStorage) disconnect() {
 }
 
 // newCassandraStorage returns Storage interface with cassStorage type
-func newCassandraStorage(ip string, user string, pass string) (stor storage, err error) {
+func newCassandraStorage(ip []string, user string, pass string) (stor storage, err error) {
 	var temp cassStorage
-	temp.cluster = gocql.NewCluster(ip)
+	temp.cluster = gocql.NewCluster(ip...)
 	temp.cluster.Authenticator = gocql.PasswordAuthenticator{
 		Username: user,
 		Password: pass,
