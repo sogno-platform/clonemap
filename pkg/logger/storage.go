@@ -56,15 +56,15 @@ import (
 // storage is the interface for logging and state storage (either local or in db)
 type storage interface {
 	// addAgentLogMessage adds an entry to specified logging entry
-	addAgentLogMessage(masID int, agentID int, logType string, log LogMessage) (err error)
+	addAgentLogMessage(log schemas.LogMessage) (err error)
 
 	// getLatestAgentLogMessages return the latest num log messages
 	getLatestAgentLogMessages(masID int, agentID int, logtype string,
-		num int) (logs []LogMessage, err error)
+		num int) (logs []schemas.LogMessage, err error)
 
 	// getAgentLogMessagesInRange return the log messages in the specified time range
 	getAgentLogMessagesInRange(masID int, agentID int, logtype string, start time.Time,
-		end time.Time) (logs []LogMessage, err error)
+		end time.Time) (logs []schemas.LogMessage, err error)
 
 	// deleteAgentLogMessages deletes all log messages og an agent
 	deleteAgentLogMessages(masID int, agentID int) (err error)
@@ -76,21 +76,21 @@ type storage interface {
 	getCommunication(masID int, agentID int) (commData []schemas.Communication, err error)
 
 	// updateAgentState updates the agent status
-	updateAgentState(masID int, agentID int, satte []byte) (err error)
+	updateAgentState(masID int, agentID int, state schemas.State) (err error)
 
 	// getAgentState return the latest agent status
-	getAgentState(masID int, agentID int) (state []byte, err error)
+	getAgentState(masID int, agentID int) (state schemas.State, err error)
 
 	// deleteAgentState deletes the status of an agent
 	deleteAgentState(masID int, agentID int) (err error)
 }
 
 // LogMessage contains the content of a single log message
-type LogMessage struct {
-	Timestamp time.Time
-	Message   string
-	Data      string
-}
+// type LogMessage struct {
+// 	Timestamp time.Time
+// 	Message   string
+// 	Data      string
+// }
 
 // IDs of agents and mas correspond to index in slices!
 type localStorage struct {
@@ -103,46 +103,45 @@ type masStorage struct {
 }
 
 type agentStorage struct {
-	errLogs  []LogMessage
-	dbgLogs  []LogMessage
-	msgLogs  []LogMessage
-	statLogs []LogMessage
-	appLogs  []LogMessage
-	state    []byte
+	errLogs  []schemas.LogMessage
+	dbgLogs  []schemas.LogMessage
+	msgLogs  []schemas.LogMessage
+	statLogs []schemas.LogMessage
+	appLogs  []schemas.LogMessage
+	state    schemas.State
 	commData []schemas.Communication
 }
 
 // addAgentLogMessage adds an entry to specified logging entry
-func (stor *localStorage) addAgentLogMessage(masID int, agentID int, logType string,
-	log LogMessage) (err error) {
+func (stor *localStorage) addAgentLogMessage(log schemas.LogMessage) (err error) {
 	stor.mutex.Lock()
 	numMAS := len(stor.mas)
-	if numMAS <= masID {
-		for i := 0; i < masID-numMAS+1; i++ {
+	if numMAS <= log.MASID {
+		for i := 0; i < log.MASID-numMAS+1; i++ {
 			stor.mas = append(stor.mas, masStorage{})
 		}
 	}
-	numAgents := len(stor.mas[masID].agents)
-	if numAgents <= agentID {
-		for i := 0; i < agentID-numAgents+1; i++ {
-			stor.mas[masID].agents = append(stor.mas[masID].agents, agentStorage{})
+	numAgents := len(stor.mas[log.MASID].agents)
+	if numAgents <= log.AgentID {
+		for i := 0; i < log.AgentID-numAgents+1; i++ {
+			stor.mas[log.MASID].agents = append(stor.mas[log.MASID].agents, agentStorage{})
 		}
 	}
-	switch logType {
+	switch log.LogType {
 	case "error":
-		stor.mas[masID].agents[agentID].errLogs = append(stor.mas[masID].agents[agentID].errLogs,
+		stor.mas[log.MASID].agents[log.AgentID].errLogs = append(stor.mas[log.MASID].agents[log.AgentID].errLogs,
 			log)
 	case "debug":
-		stor.mas[masID].agents[agentID].dbgLogs = append(stor.mas[masID].agents[agentID].dbgLogs,
+		stor.mas[log.MASID].agents[log.AgentID].dbgLogs = append(stor.mas[log.MASID].agents[log.AgentID].dbgLogs,
 			log)
 	case "msg":
-		stor.mas[masID].agents[agentID].msgLogs = append(stor.mas[masID].agents[agentID].msgLogs,
+		stor.mas[log.MASID].agents[log.AgentID].msgLogs = append(stor.mas[log.MASID].agents[log.AgentID].msgLogs,
 			log)
 	case "status":
-		stor.mas[masID].agents[agentID].statLogs = append(stor.mas[masID].agents[agentID].statLogs,
+		stor.mas[log.MASID].agents[log.AgentID].statLogs = append(stor.mas[log.MASID].agents[log.AgentID].statLogs,
 			log)
 	case "app":
-		stor.mas[masID].agents[agentID].appLogs = append(stor.mas[masID].agents[agentID].appLogs,
+		stor.mas[log.MASID].agents[log.AgentID].appLogs = append(stor.mas[log.MASID].agents[log.AgentID].appLogs,
 			log)
 	default:
 		err = errors.New("WrongLogType")
@@ -153,7 +152,7 @@ func (stor *localStorage) addAgentLogMessage(masID int, agentID int, logType str
 
 // getLatestAgentLogMessages return the latest num log messages
 func (stor *localStorage) getLatestAgentLogMessages(masID int, agentID int, logtype string,
-	num int) (logs []LogMessage, err error) {
+	num int) (logs []schemas.LogMessage, err error) {
 	stor.mutex.Lock()
 	if masID < len(stor.mas) {
 		if agentID < len(stor.mas[masID].agents) {
@@ -163,35 +162,35 @@ func (stor *localStorage) getLatestAgentLogMessages(masID int, agentID int, logt
 				if length < num {
 					num = length
 				}
-				logs = make([]LogMessage, num, num)
+				logs = make([]schemas.LogMessage, num, num)
 				copy(logs, stor.mas[masID].agents[agentID].errLogs[length-num:length])
 			case "debug":
 				length := len(stor.mas[masID].agents[agentID].dbgLogs)
 				if length < num {
 					num = length
 				}
-				logs = make([]LogMessage, num, num)
+				logs = make([]schemas.LogMessage, num, num)
 				copy(logs, stor.mas[masID].agents[agentID].dbgLogs[length-num:length])
 			case "msg":
 				length := len(stor.mas[masID].agents[agentID].msgLogs)
 				if length < num {
 					num = length
 				}
-				logs = make([]LogMessage, num, num)
+				logs = make([]schemas.LogMessage, num, num)
 				copy(logs, stor.mas[masID].agents[agentID].msgLogs[length-num:length])
 			case "status":
 				length := len(stor.mas[masID].agents[agentID].statLogs)
 				if length < num {
 					num = length
 				}
-				logs = make([]LogMessage, num, num)
+				logs = make([]schemas.LogMessage, num, num)
 				copy(logs, stor.mas[masID].agents[agentID].statLogs[length-num:length])
 			case "app":
 				length := len(stor.mas[masID].agents[agentID].appLogs)
 				if length < num {
 					num = length
 				}
-				logs = make([]LogMessage, num, num)
+				logs = make([]schemas.LogMessage, num, num)
 				copy(logs, stor.mas[masID].agents[agentID].appLogs[length-num:length])
 			default:
 				err = errors.New("WrongLogType")
@@ -204,7 +203,7 @@ func (stor *localStorage) getLatestAgentLogMessages(masID int, agentID int, logt
 
 // getAgentLogMessagesInRange return the log messages in the specified time range
 func (stor *localStorage) getAgentLogMessagesInRange(masID int, agentID int, logtype string,
-	start time.Time, end time.Time) (logs []LogMessage, err error) {
+	start time.Time, end time.Time) (logs []schemas.LogMessage, err error) {
 	stor.mutex.Lock()
 	if masID < len(stor.mas) {
 		if agentID < len(stor.mas[masID].agents) {
@@ -221,7 +220,7 @@ func (stor *localStorage) getAgentLogMessagesInRange(masID int, agentID int, log
 							return end.After(stor.mas[masID].agents[agentID].errLogs[i].Timestamp)
 						})
 					if endIndex >= 0 {
-						logs = make([]LogMessage, endIndex-startIndex, endIndex-startIndex)
+						logs = make([]schemas.LogMessage, endIndex-startIndex, endIndex-startIndex)
 						copy(logs, stor.mas[masID].agents[agentID].errLogs[startIndex:endIndex])
 					}
 				}
@@ -237,7 +236,7 @@ func (stor *localStorage) getAgentLogMessagesInRange(masID int, agentID int, log
 							return end.After(stor.mas[masID].agents[agentID].dbgLogs[i].Timestamp)
 						})
 					if endIndex >= 0 {
-						logs = make([]LogMessage, endIndex-startIndex, endIndex-startIndex)
+						logs = make([]schemas.LogMessage, endIndex-startIndex, endIndex-startIndex)
 						copy(logs, stor.mas[masID].agents[agentID].dbgLogs[startIndex:endIndex])
 					}
 				}
@@ -253,7 +252,7 @@ func (stor *localStorage) getAgentLogMessagesInRange(masID int, agentID int, log
 							return end.After(stor.mas[masID].agents[agentID].msgLogs[i].Timestamp)
 						})
 					if endIndex >= 0 {
-						logs = make([]LogMessage, endIndex-startIndex, endIndex-startIndex)
+						logs = make([]schemas.LogMessage, endIndex-startIndex, endIndex-startIndex)
 						copy(logs, stor.mas[masID].agents[agentID].msgLogs[startIndex:endIndex])
 					}
 				}
@@ -270,7 +269,7 @@ func (stor *localStorage) getAgentLogMessagesInRange(masID int, agentID int, log
 							return end.After(stor.mas[masID].agents[agentID].statLogs[i].Timestamp)
 						})
 					if endIndex >= 0 {
-						logs = make([]LogMessage, endIndex-startIndex, endIndex-startIndex)
+						logs = make([]schemas.LogMessage, endIndex-startIndex, endIndex-startIndex)
 						copy(logs, stor.mas[masID].agents[agentID].statLogs[startIndex:endIndex])
 					}
 				}
@@ -286,7 +285,7 @@ func (stor *localStorage) getAgentLogMessagesInRange(masID int, agentID int, log
 							return stor.mas[masID].agents[agentID].appLogs[i].Timestamp.After(end)
 						})
 					if endIndex >= 0 {
-						logs = make([]LogMessage, endIndex-startIndex, endIndex-startIndex)
+						logs = make([]schemas.LogMessage, endIndex-startIndex, endIndex-startIndex)
 						copy(logs, stor.mas[masID].agents[agentID].appLogs[startIndex:endIndex])
 					}
 				}
@@ -350,7 +349,7 @@ func (stor *localStorage) getCommunication(masID int,
 }
 
 // updateAgentState updates the agent status
-func (stor *localStorage) updateAgentState(masID int, agentID int, state []byte) (err error) {
+func (stor *localStorage) updateAgentState(masID int, agentID int, state schemas.State) (err error) {
 	stor.mutex.Lock()
 	numMAS := len(stor.mas)
 	if numMAS <= masID {
@@ -370,7 +369,7 @@ func (stor *localStorage) updateAgentState(masID int, agentID int, state []byte)
 }
 
 // getAgentState return the latest agent status
-func (stor *localStorage) getAgentState(masID int, agentID int) (state []byte, err error) {
+func (stor *localStorage) getAgentState(masID int, agentID int) (state schemas.State, err error) {
 	stor.mutex.Lock()
 	if masID < len(stor.mas) {
 		if agentID < len(stor.mas[masID].agents) {
@@ -386,7 +385,7 @@ func (stor *localStorage) deleteAgentState(masID int, agentID int) (err error) {
 	stor.mutex.Lock()
 	if masID < len(stor.mas) {
 		if agentID < len(stor.mas[masID].agents) {
-			stor.mas[masID].agents[agentID].state = nil
+			stor.mas[masID].agents[agentID].state = schemas.State{}
 		}
 	}
 	stor.mutex.Unlock()

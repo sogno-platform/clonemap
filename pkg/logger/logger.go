@@ -110,11 +110,7 @@ func (logger *Logger) init() (err error) {
 
 // addAgentLogMessage adds an entry to specified logging entry
 func (logger *Logger) addAgentLogMessage(logmsg schemas.LogMessage) (err error) {
-	log := LogMessage{
-		Timestamp: logmsg.Timestamp,
-		Message:   logmsg.Message,
-		Data:      logmsg.AdditionalData}
-	err = logger.stor.addAgentLogMessage(logmsg.MASID, logmsg.AgentID, logmsg.LogType, log)
+	err = logger.stor.addAgentLogMessage(logmsg)
 	return
 }
 
@@ -132,42 +128,14 @@ func (logger *Logger) addAgentLogMessageList(logmsg []schemas.LogMessage) (err e
 // getLatestAgentLogMessages return the latest num log messages
 func (logger *Logger) getLatestAgentLogMessages(masID int, agentID int, logtype string,
 	num int) (logs []schemas.LogMessage, err error) {
-	var storLogs []LogMessage
-	storLogs, err = logger.stor.getLatestAgentLogMessages(masID, agentID, logtype, num)
-	if err != nil {
-		return
-	}
-	for i := range storLogs {
-		logtemp := schemas.LogMessage{
-			MASID:          masID,
-			AgentID:        agentID,
-			Timestamp:      storLogs[i].Timestamp,
-			LogType:        logtype,
-			Message:        storLogs[i].Message,
-			AdditionalData: storLogs[i].Data}
-		logs = append(logs, logtemp)
-	}
+	logs, err = logger.stor.getLatestAgentLogMessages(masID, agentID, logtype, num)
 	return
 }
 
 // getAgentLogMessagesInRange return the log messages in the specified time range
 func (logger *Logger) getAgentLogMessagesInRange(masID int, agentID int, logtype string,
 	start time.Time, end time.Time) (logs []schemas.LogMessage, err error) {
-	var storLogs []LogMessage
-	storLogs, err = logger.stor.getAgentLogMessagesInRange(masID, agentID, logtype, start, end)
-	if err != nil {
-		return
-	}
-	for i := range storLogs {
-		logtemp := schemas.LogMessage{
-			MASID:          masID,
-			AgentID:        agentID,
-			Timestamp:      storLogs[i].Timestamp,
-			LogType:        logtype,
-			Message:        storLogs[i].Message,
-			AdditionalData: storLogs[i].Data}
-		logs = append(logs, logtemp)
-	}
+	logs, err = logger.stor.getAgentLogMessagesInRange(masID, agentID, logtype, start, end)
 	return
 }
 
@@ -185,13 +153,13 @@ func (logger *Logger) getCommunication(masID int, agentID int) (comm []schemas.C
 }
 
 // getAgentState returns the latest agent state
-func (logger *Logger) getAgentState(masID int, agentID int) (agState []byte, err error) {
+func (logger *Logger) getAgentState(masID int, agentID int) (agState schemas.State, err error) {
 	agState, err = logger.stor.getAgentState(masID, agentID)
 	return
 }
 
 // updateAgentState updates agent state
-func (logger *Logger) updateAgentState(masID int, agentID int, agState []byte) (err error) {
+func (logger *Logger) updateAgentState(masID int, agentID int, agState schemas.State) (err error) {
 	err = logger.stor.updateAgentState(masID, agentID, agState)
 	return
 }

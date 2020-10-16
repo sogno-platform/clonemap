@@ -298,17 +298,21 @@ func (logger *Logger) handleLogsTime(masID int, agentid int, logType string, sta
 func (logger *Logger) handleState(masID int, agentid int, w http.ResponseWriter,
 	r *http.Request) (cmapErr, httpErr error) {
 	if r.Method == "GET" {
-		var state []byte
+		var state schemas.State
 		state, cmapErr = logger.getAgentState(masID, agentid)
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		_, httpErr = w.Write(state)
+		httpErr = httpreply.Resource(w, state, cmapErr)
 	} else if r.Method == "PUT" {
 		var body []byte
 		body, cmapErr = ioutil.ReadAll(r.Body)
 		if cmapErr == nil {
-			go logger.updateAgentState(masID, agentid, body)
-			httpErr = httpreply.Updated(w, nil)
+			var state schemas.State
+			cmapErr = json.Unmarshal(body, &state)
+			if cmapErr == nil {
+				go logger.updateAgentState(masID, agentid, state)
+				httpErr = httpreply.Updated(w, nil)
+			} else {
+				httpErr = httpreply.JSONUnmarshalError(w)
+			}
 		} else {
 			httpErr = httpreply.InvalidBodyError(w)
 		}
@@ -317,6 +321,7 @@ func (logger *Logger) handleState(masID int, agentid int, w http.ResponseWriter,
 		cmapErr = errors.New("Error: Method not allowed on path /api/state/{mas-id}/{agent-id}")
 	}
 	return
+
 }
 
 // listen opens a http server listening and serving request

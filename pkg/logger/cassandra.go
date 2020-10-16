@@ -47,39 +47,58 @@ package logger
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 	"github.com/gocql/gocql"
 )
 
+// logEnvelope contains log and agentid masid
+// type logEnvelope struct {
+// 	masID   int
+// 	agentID int
+// 	log     schemas.LogMessage
+// }
+
 // cassStorage stores information regarding connection to cassandra cluster
 type cassStorage struct {
-	cluster *gocql.ClusterConfig
-	session *gocql.Session
+	cluster     *gocql.ClusterConfig
+	session     *gocql.Session
+	logStatusIn chan schemas.LogMessage // logging inbox
+	logAppIn    chan schemas.LogMessage // logging inbox
+	logErrorIn  chan schemas.LogMessage // logging inbox
+	logDebugIn  chan schemas.LogMessage // logging inbox
+	logMsgIn    chan schemas.LogMessage // logging inbox
+	stateIn     chan schemas.State      // state inbox
 }
 
 // addAgentLogMessage adds an entry to specified logging entry
-func (stor *cassStorage) addAgentLogMessage(masID int, agentID int, logType string,
-	log LogMessage) (err error) {
-	var js []byte
-	js, err = json.Marshal(log)
-	switch logType {
+func (stor *cassStorage) addAgentLogMessage(log schemas.LogMessage) (err error) {
+
+	// var js []byte
+	// js, err = json.Marshal(log)
+	switch log.LogType {
 	case "error":
-		err = stor.session.Query("INSERT INTO logging_error (masid, agentid, t, log) "+
-			"VALUES (?, ?, ?, ?)", masID, agentID, log.Timestamp, js).Exec()
+		stor.logErrorIn <- log
+		// err = stor.session.Query("INSERT INTO logging_error (masid, agentid, t, log) "+
+		// 	"VALUES (?, ?, ?, ?)", masID, agentID, log.Timestamp, js).Exec()
 	case "debug":
-		err = stor.session.Query("INSERT INTO logging_debug (masid, agentid, t, log) "+
-			"VALUES (?, ?, ?, ?)", masID, agentID, log.Timestamp, js).Exec()
+		stor.logDebugIn <- log
+		// err = stor.session.Query("INSERT INTO logging_debug (masid, agentid, t, log) "+
+		// 	"VALUES (?, ?, ?, ?)", masID, agentID, log.Timestamp, js).Exec()
 	case "msg":
-		err = stor.session.Query("INSERT INTO logging_msg (masid, agentid, t, log) "+
-			"VALUES (?, ?, ?, ?)", masID, agentID, log.Timestamp, js).Exec()
+		stor.logMsgIn <- log
+		// err = stor.session.Query("INSERT INTO logging_msg (masid, agentid, t, log) "+
+		// 	"VALUES (?, ?, ?, ?)", masID, agentID, log.Timestamp, js).Exec()
 	case "status":
-		err = stor.session.Query("INSERT INTO logging_status (masid, agentid, t, log) "+
-			"VALUES (?, ?, ?, ?)", masID, agentID, log.Timestamp, js).Exec()
+		stor.logStatusIn <- log
+		// err = stor.session.Query("INSERT INTO logging_status (masid, agentid, t, log) "+
+		// 	"VALUES (?, ?, ?, ?)", masID, agentID, log.Timestamp, js).Exec()
 	case "app":
-		err = stor.session.Query("INSERT INTO logging_app (masid, agentid, t, log) "+
-			"VALUES (?, ?, ?, ?)", masID, agentID, log.Timestamp, js).Exec()
+		stor.logAppIn <- log
+		// err = stor.session.Query("INSERT INTO logging_app (masid, agentid, t, log) "+
+		// 	"VALUES (?, ?, ?, ?)", masID, agentID, log.Timestamp, js).Exec()
 	default:
 		err = errors.New("WrongLogType")
 	}
@@ -88,7 +107,7 @@ func (stor *cassStorage) addAgentLogMessage(masID int, agentID int, logType stri
 
 // getLatestAgentLogMessages return the latest num log messages
 func (stor *cassStorage) getLatestAgentLogMessages(masID int, agentID int, logtype string,
-	num int) (logs []LogMessage, err error) {
+	num int) (logs []schemas.LogMessage, err error) {
 	var iter *gocql.Iter
 	switch logtype {
 	case "error":
@@ -114,7 +133,7 @@ func (stor *cassStorage) getLatestAgentLogMessages(masID int, agentID int, logty
 	}
 	var js []byte
 	for iter.Scan(&js) {
-		var logmsg LogMessage
+		var logmsg schemas.LogMessage
 		err = json.Unmarshal(js, &logmsg)
 		if err != nil {
 			return
@@ -126,7 +145,7 @@ func (stor *cassStorage) getLatestAgentLogMessages(masID int, agentID int, logty
 
 // getAgentLogMessagesInRange return the log messages in the specified time range
 func (stor *cassStorage) getAgentLogMessagesInRange(masID int, agentID int, logtype string,
-	start time.Time, end time.Time) (logs []LogMessage, err error) {
+	start time.Time, end time.Time) (logs []schemas.LogMessage, err error) {
 	var iter *gocql.Iter
 	switch logtype {
 	case "error":
@@ -152,7 +171,7 @@ func (stor *cassStorage) getAgentLogMessagesInRange(masID int, agentID int, logt
 	}
 	var js []byte
 	for iter.Scan(&js) {
-		var logmsg LogMessage
+		var logmsg schemas.LogMessage
 		err = json.Unmarshal(js, &logmsg)
 		if err != nil {
 			return
@@ -198,28 +217,124 @@ func (stor *cassStorage) getCommunication(masID int,
 }
 
 // updateAgentState updates the agent status
-func (stor *cassStorage) updateAgentState(masID int, agentID int, state []byte) (err error) {
-	err = stor.session.Query("INSERT INTO state (masid, agentid, state) "+
-		"VALUES (?, ?, ?)", masID, agentID, state).Exec()
+func (stor *cassStorage) updateAgentState(masID int, agentID int, state schemas.State) (err error) {
+	stor.stateIn <- state
+	// err = stor.session.Query("INSERT INTO state (masid, agentid, state) "+
+	// 	"VALUES (?, ?, ?)", masID, agentID, state).Exec()
 	return
 }
 
 // getAgentState return the latest agent status
-func (stor *cassStorage) getAgentState(masID int, agentID int) (state []byte, err error) {
+func (stor *cassStorage) getAgentState(masID int, agentID int) (state schemas.State, err error) {
 	var iter *gocql.Iter
+	var js []byte
 	iter = stor.session.Query("SELECT state FROM state WHERE masid = ? AND agentid = ?", masID,
 		agentID).Iter()
 	if iter.NumRows() == 1 {
-		iter.Scan(&state)
+		iter.Scan(&js)
+		err = json.Unmarshal(js, &state)
 	}
 	iter.Close()
 	return
+
 }
 
 // deleteAgentState deletes the status of an agent
 func (stor *cassStorage) deleteAgentState(masID int, agentID int) (err error) {
 
 	return
+}
+
+// storeLogs stores the logs in a batch operation
+func (stor *cassStorage) storeLogs(topic string) {
+	var logIn chan schemas.LogMessage
+	var err error
+	stmt := "INSERT INTO logging_" + topic + " (masid, agentid, t, log) VALUES (?, ?, ?, ?)"
+	if topic == "status" {
+		logIn = stor.logStatusIn
+	} else if topic == "app" {
+		logIn = stor.logAppIn
+	} else if topic == "error" {
+		logIn = stor.logErrorIn
+	} else if topic == "debug" {
+		logIn = stor.logDebugIn
+	} else if topic == "msg" {
+		logIn = stor.logMsgIn
+	} else {
+		return
+	}
+
+	for {
+		batch := gocql.NewBatch(gocql.UnloggedBatch)
+		log := <-logIn
+		var js []byte
+		js, err = json.Marshal(log)
+		if err != nil {
+			fmt.Println(err)
+		}
+		batch.Query(stmt, log.MASID, log.AgentID, log.Timestamp, js)
+		size := len(js)
+		for i := 0; i < 9; i++ {
+			// maximum of 10 operations in batch
+			if size > 25000 {
+				break
+			}
+			select {
+			case log = <-logIn:
+				js, err = json.Marshal(log)
+				if err != nil {
+					fmt.Println(err)
+				}
+				batch.Query(stmt, log.MASID, log.AgentID, log.Timestamp, js)
+				size += len(js)
+			default:
+				break
+			}
+		}
+		err = stor.session.ExecuteBatch(batch)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+}
+
+// storeState stores the state in a batch operation
+func (stor *cassStorage) storeState() {
+	var err error
+	stmt := "INSERT INTO state (masid, agentid, state) VALUES (?, ?, ?)"
+
+	for {
+		batch := gocql.NewBatch(gocql.UnloggedBatch)
+		state := <-stor.stateIn
+		var js []byte
+		js, err = json.Marshal(state)
+		if err != nil {
+			fmt.Println(err)
+		}
+		batch.Query(stmt, state.MASID, state.AgentID, js)
+		size := len(js)
+		for i := 0; i < 9; i++ {
+			// maximum of 10 operations in batch
+			if size > 25000 {
+				break
+			}
+			select {
+			case state = <-stor.stateIn:
+				js, err = json.Marshal(state)
+				if err != nil {
+					fmt.Println(err)
+				}
+				batch.Query(stmt, state.MASID, state.AgentID, js)
+				size += len(js)
+			default:
+				break
+			}
+		}
+		err = stor.session.ExecuteBatch(batch)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
 }
 
 func (stor *cassStorage) disconnect() {
@@ -240,6 +355,21 @@ func newCassandraStorage(ip []string, user string, pass string) (stor storage, e
 	temp.session, err = temp.cluster.CreateSession()
 	if err != nil {
 		return
+	}
+	temp.logStatusIn = make(chan schemas.LogMessage, 10000)
+	temp.logAppIn = make(chan schemas.LogMessage, 10000)
+	temp.logDebugIn = make(chan schemas.LogMessage, 10000)
+	temp.logErrorIn = make(chan schemas.LogMessage, 10000)
+	temp.logMsgIn = make(chan schemas.LogMessage, 10000)
+	temp.stateIn = make(chan schemas.State, 10000)
+
+	for i := 0; i < 3; i++ {
+		go temp.storeLogs("status")
+		go temp.storeLogs("app")
+		go temp.storeLogs("error")
+		go temp.storeLogs("debug")
+		go temp.storeLogs("msg")
+		go temp.storeState()
 	}
 	stor = &temp
 	return
