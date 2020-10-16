@@ -101,7 +101,7 @@ func (logger *Logger) init() (err error) {
 		logger.stor = newLocalStorage()
 	case "production":
 		logger.logInfo.Println("Cassandra storage")
-		logger.stor, err = newCassandraStorage([]string{"cass-ssset-0.cassandra", "cass-ssset-1.cassandra", "cass-ssset-2.cassandra"}, "cassandra", "cassandra")
+		logger.stor, err = newCassandraStorage([]string{"cassandra", "cass-ssset-1.cassandra", "cass-ssset-2.cassandra"}, "cassandra", "cassandra")
 	default:
 		err = errors.New("Wrong deployment type: " + deplType)
 	}
@@ -161,5 +161,16 @@ func (logger *Logger) getAgentState(masID int, agentID int) (agState schemas.Sta
 // updateAgentState updates agent state
 func (logger *Logger) updateAgentState(masID int, agentID int, agState schemas.State) (err error) {
 	err = logger.stor.updateAgentState(masID, agentID, agState)
+	return
+}
+
+// addAgentLogMessageList
+func (logger *Logger) updateAgentStatesList(masID int, states []schemas.State) (err error) {
+	for i := 0; i < len(states); i++ {
+		err = logger.updateAgentState(masID, states[i].AgentID, states[i])
+		if err != nil {
+			return
+		}
+	}
 	return
 }

@@ -110,6 +110,14 @@ func PutState(state schemas.State) (httpStatus int, err error) {
 	return
 }
 
+// UpdateStates updates the state
+func UpdateStates(masID int, states []schemas.State) (httpStatus int, err error) {
+	js, _ := json.Marshal(states)
+	_, httpStatus, err = httpretry.Put(httpClient, "http://"+Host+":"+strconv.Itoa(Port)+
+		"/api/state/"+strconv.Itoa(masID)+"/list", js, time.Second*2, 4)
+	return
+}
+
 // GetState requests state from logger
 func GetState(masID int, agentID int) (state schemas.State, httpStatus int, err error) {
 	var body []byte

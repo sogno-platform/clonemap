@@ -87,10 +87,15 @@ func (logger *Logger) handleAPI(w http.ResponseWriter, r *http.Request) {
 			var masID, agentID int
 			masID, cmapErr = strconv.Atoi(respath[3])
 			if cmapErr == nil {
-				agentID, cmapErr = strconv.Atoi(respath[4])
-				if cmapErr == nil {
-					cmapErr, httpErr = logger.handleState(masID, agentID, w, r)
+				if respath[4] == "list" {
+					cmapErr, httpErr = logger.handleStateList(masID, w, r)
 					resvalid = true
+				} else {
+					agentID, cmapErr = strconv.Atoi(respath[4])
+					if cmapErr == nil {
+						cmapErr, httpErr = logger.handleState(masID, agentID, w, r)
+						resvalid = true
+					}
 				}
 			}
 		}
@@ -321,7 +326,31 @@ func (logger *Logger) handleState(masID int, agentid int, w http.ResponseWriter,
 		cmapErr = errors.New("Error: Method not allowed on path /api/state/{mas-id}/{agent-id}")
 	}
 	return
+}
 
+// handleStateList is the handler for requests to path /api/state/{mas-id}/list
+func (logger *Logger) handleStateList(masID int, w http.ResponseWriter,
+	r *http.Request) (cmapErr, httpErr error) {
+	if r.Method == "PUT" {
+		var body []byte
+		body, cmapErr = ioutil.ReadAll(r.Body)
+		if cmapErr == nil {
+			var states []schemas.State
+			cmapErr = json.Unmarshal(body, &states)
+			if cmapErr == nil {
+				go logger.updateAgentStatesList(masID, states)
+				httpErr = httpreply.Updated(w, nil)
+			} else {
+				httpErr = httpreply.JSONUnmarshalError(w)
+			}
+		} else {
+			httpErr = httpreply.InvalidBodyError(w)
+		}
+	} else {
+		httpErr = httpreply.MethodNotAllowed(w)
+		cmapErr = errors.New("Error: Method not allowed on path /api/state/{mas-id}/list")
+	}
+	return
 }
 
 // listen opens a http server listening and serving request

@@ -113,7 +113,8 @@ func (log *Logger) UpdateState(state string) (err error) {
 		AgentID:   log.agentID,
 		Timestamp: time.Now(),
 		State:     state}
-	_, err = client.PutState(agState)
+	// _, err = client.PutState(agState)
+	log.client.stateIn <- agState
 	return
 }
 
@@ -160,7 +161,8 @@ func (log *Logger) close() {
 type loggerClient struct {
 	masID    int
 	logIn    chan schemas.LogMessage // logging inbox
-	active   bool                    // indicates if logging is active (switch via env)
+	stateIn  chan schemas.State
+	active   bool // indicates if logging is active (switch via env)
 	logError *log.Logger
 	logInfo  *log.Logger
 }
@@ -202,6 +204,35 @@ func (log *loggerClient) storeLogs() (err error) {
 	}
 }
 
+// storeState requests the logging service to store state
+func (log *loggerClient) storeState() (err error) {
+	if log.active {
+		for {
+			var states []schemas.State
+			state := <-log.stateIn
+			states = append(states, state)
+			for i := 0; i < 24; i++ {
+				// maximum of 25 states
+				select {
+				case state = <-log.stateIn:
+					states = append(states, state)
+				default:
+					break
+				}
+			}
+			_, err = client.UpdateStates(states[0].MASID, states)
+			if err != nil {
+				log.logError.Println(err)
+				for i := range states {
+					log.stateIn <- states[i]
+				}
+				continue
+			}
+		}
+	}
+	return
+}
+
 // newLoggerClient creates an agency logger client
 func newLoggerClient(masID int, logErr *log.Logger, logInf *log.Logger) (log *loggerClient) {
 	log = &loggerClient{
@@ -215,7 +246,9 @@ func newLoggerClient(masID int, logErr *log.Logger, logInf *log.Logger) (log *lo
 		log.active = true
 	}
 	log.logIn = make(chan schemas.LogMessage, 10000)
+	log.stateIn = make(chan schemas.State, 10000)
 	go log.storeLogs()
+	go log.storeState()
 	log.logInfo.Println("Created new logger client; status: ", log.active)
 	return
 }
