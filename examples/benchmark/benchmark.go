@@ -110,7 +110,7 @@ func pingPong(ag *agency.Agent, config CustomAgentData) (err error) {
 		var rtts []int
 		var msg schemas.ACLMessage
 		msg, err = ag.ACL.NewMessage(config.PeerID, schemas.FIPAProtQuery, schemas.FIPAPerfInform,
-			"test msg")
+			"hello world")
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -214,7 +214,7 @@ func pingPongft(ag *agency.Agent, config CustomAgentData) (err error) {
 		var rtts []int
 		var msg schemas.ACLMessage
 		msg, err = ag.ACL.NewMessage(config.PeerID, schemas.FIPAProtQuery, schemas.FIPAPerfInform,
-			"test msg")
+			"hello world")
 		if err != nil {
 			fmt.Println(err)
 		}
