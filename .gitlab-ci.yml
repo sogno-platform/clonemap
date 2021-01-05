@@ -131,3 +131,13 @@ pnpdeploy:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.git.rwth-aachen.de
     - docker tag plugnplay registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/plugnplay
     - docker push registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/plugnplay
+
+frontenddeploy:
+  stage: deploy
+  only:
+    - master
+    - develop
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.git.rwth-aachen.de
+    - docker tag frontend registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/frontend
+    - docker push registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/frontend

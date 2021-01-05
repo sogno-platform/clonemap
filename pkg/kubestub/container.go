@@ -50,15 +50,21 @@ import (
 	"fmt"
 	"os/exec"
 	"strconv"
-	"strings"
 	"time"
 )
 
 // createBridge creates a new docker bridge network for MAP parts to connect to
 func (stub *LocalStub) createBridge() (err error) {
 	com := "docker network create clonemap-net"
-	cmd := exec.Command("bash", "-c", com)
+	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
+	if err != nil {
+		err = errors.New(err.Error() + " " + string(cmdOut))
+		return
+	}
+	com = "docker network connect clonemap-net stub"
+	cmd = exec.Command("sh", "-c", com)
+	cmdOut, err = cmd.Output()
 	if err != nil {
 		err = errors.New(err.Error() + " " + string(cmdOut))
 	}
@@ -67,9 +73,16 @@ func (stub *LocalStub) createBridge() (err error) {
 
 // deleteBridge deletes docker bridge network
 func (stub *LocalStub) deleteBridge() (err error) {
-	com := "docker network rm clonemap-net"
-	cmd := exec.Command("bash", "-c", com)
+	com := "docker network disconnect clonemap-net stub"
+	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
+	if err != nil {
+		err = errors.New(err.Error() + " " + string(cmdOut))
+		return
+	}
+	com = "docker network rm clonemap-net"
+	cmd = exec.Command("sh", "-c", com)
+	cmdOut, err = cmd.Output()
 	if err != nil {
 		err = errors.New(err.Error() + " " + string(cmdOut))
 	}
@@ -81,7 +94,7 @@ func (stub *LocalStub) createFiware() (err error) {
 	com := "docker run -d -p 27017:27017 --name=mongodb --hostname=mongodb --network=clonemap-net " +
 		"-e ALLOW_EMPTY_PASSWORD=yes -e MONGODB_SYSTEM_LOG_VERBOSITY=3 -e MONGO_DATA_DIR=/data/db " +
 		"-e MONGO_LOG_DIR=/dev/null mongo:4.2 --bind_ip_all --quiet"
-	cmd := exec.Command("bash", "-c", com)
+	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
 		err = errors.New(err.Error() + " " + string(cmdOut))
@@ -91,7 +104,7 @@ func (stub *LocalStub) createFiware() (err error) {
 	com = "docker run -d -p 1026:1026 --name=orion --hostname=orion --network=clonemap-net " +
 		"fiware/orion-ld -dbhost mongodb -logForHumans"
 	// fmt.Println(com)
-	cmd = exec.Command("bash", "-c", com)
+	cmd = exec.Command("sh", "-c", com)
 	cmdOut, err = cmd.Output()
 	if err != nil {
 		err = errors.New(err.Error() + " " + string(cmdOut))
@@ -104,28 +117,28 @@ func (stub *LocalStub) createFiware() (err error) {
 // deleteFiware stops amd removes orion and mongodb
 func (stub *LocalStub) deleteFiware() (err error) {
 	com := "docker stop orion"
-	cmd := exec.Command("bash", "-c", com)
+	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
 		err = errors.New(err.Error() + " " + string(cmdOut))
 		return
 	}
 	com = "docker rm orion"
-	cmd = exec.Command("bash", "-c", com)
+	cmd = exec.Command("sh", "-c", com)
 	cmdOut, err = cmd.Output()
 	if err != nil {
 		err = errors.New(err.Error() + " " + string(cmdOut))
 		return
 	}
 	com = "docker stop mongodb"
-	cmd = exec.Command("bash", "-c", com)
+	cmd = exec.Command("sh", "-c", com)
 	cmdOut, err = cmd.Output()
 	if err != nil {
 		err = errors.New(err.Error() + " " + string(cmdOut))
 		return
 	}
 	com = "docker rm mongodb"
-	cmd = exec.Command("bash", "-c", com)
+	cmd = exec.Command("sh", "-c", com)
 	cmdOut, err = cmd.Output()
 	if err != nil {
 		err = errors.New(err.Error() + " " + string(cmdOut))
@@ -135,48 +148,49 @@ func (stub *LocalStub) deleteFiware() (err error) {
 
 // createAMS starts a new AMS docker image
 func (stub *LocalStub) createAMS() (err error) {
-	com := "ip route show | grep docker0 | awk '{print $9}'"
-	cmd := exec.Command("bash", "-c", com)
+	// com := "ip route show | grep docker0 | awk '{print $9}'"
+	// cmd := exec.Command("sh", "-c", com)
+	// cmdOut, err := cmd.Output()
+	// if err != nil {
+	// 	err = errors.New(err.Error() + " " + strings.Trim(string(cmdOut), "\n"))
+	// } else {
+	// 	ip := strings.Trim(string(cmdOut), "\n")
+	com := "docker run -d"
+	// com += " --add-host=parent-host:" + ip
+	com += " -p 30009:9000"
+	com += " --name=ams" //.clonemap""
+	com += " --hostname=ams"
+	com += " --network=clonemap-net"
+	com += " -e CLONEMAP_DEPLOYMENT_TYPE=\"local\""
+	if stub.fiware {
+		com += " -e CLONEMAP_STORAGE_TYPE=\"fiware\""
+	} else {
+		com += " -e CLONEMAP_STORAGE_TYPE=\"local\""
+	}
+	com += " -e CLONEMAP_SUFFIX=\".clonemap\""
+	com += " -e CLONEMAP_LOG_LEVEL=\"error\""
+	com += " -e CLONEMAP_STUB_HOSTNAME=\"kubestub\""
+	com += " ams"
+	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
-		err = errors.New(err.Error() + " " + strings.Trim(string(cmdOut), "\n"))
-	} else {
-		ip := strings.Trim(string(cmdOut), "\n")
-		com = "docker run -d"
-		com += " --add-host=parent-host:" + ip
-		com += " -p 30009:9000"
-		com += " --name=ams" //.clonemap""
-		com += " --hostname=ams"
-		com += " --network=clonemap-net"
-		com += " -e CLONEMAP_DEPLOYMENT_TYPE=\"local\""
-		if stub.fiware {
-			com += " -e CLONEMAP_STORAGE_TYPE=\"fiware\""
-		} else {
-			com += " -e CLONEMAP_STORAGE_TYPE=\"local\""
-		}
-		com += " -e CLONEMAP_SUFFIX=\".clonemap\""
-		com += " -e CLONEMAP_LOG_LEVEL=\"error\""
-		com += " ams"
-		cmd := exec.Command("bash", "-c", com)
-		cmdOut, err := cmd.Output()
-		if err != nil {
-			err = errors.New(err.Error() + " " + string(cmdOut))
-		}
+		err = errors.New(err.Error() + " " + string(cmdOut))
 	}
+	// }
 	return
 }
 
 // deleteAMS stops amd removes AMS docker image
 func (stub *LocalStub) deleteAMS() (err error) {
 	com := "docker stop ams" //.clonemap"
-	cmd := exec.Command("bash", "-c", com)
+	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
 		err = errors.New(err.Error() + " " + string(cmdOut))
 		return
 	}
 	com = "docker rm ams" //.clonemap"
-	cmd = exec.Command("bash", "-c", com)
+	cmd = exec.Command("sh", "-c", com)
 	cmdOut, err = cmd.Output()
 	if err != nil {
 		err = errors.New(err.Error() + " " + string(cmdOut))
@@ -194,7 +208,7 @@ func (stub *LocalStub) createLogger() (err error) {
 	com += " -e CLONEMAP_DEPLOYMENT_TYPE=\"local\""
 	com += " -e CLONEMAP_LOG_LEVEL=\"error\""
 	com += " logger"
-	cmd := exec.Command("bash", "-c", com)
+	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
 		err = errors.New(err.Error() + " " + string(cmdOut))
@@ -205,14 +219,14 @@ func (stub *LocalStub) createLogger() (err error) {
 // deleteLogger stops amd removes Logger docker image
 func (stub *LocalStub) deleteLogger() (err error) {
 	com := "docker stop logger" //.clonemap"
-	cmd := exec.Command("bash", "-c", com)
+	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
 		err = errors.New(err.Error() + " " + string(cmdOut))
 		return
 	}
 	com = "docker rm logger" //.clonemap"
-	cmd = exec.Command("bash", "-c", com)
+	cmd = exec.Command("sh", "-c", com)
 	cmdOut, err = cmd.Output()
 	if err != nil {
 		err = errors.New(err.Error() + " " + string(cmdOut))
@@ -230,7 +244,7 @@ func (stub *LocalStub) createDF() (err error) {
 	com += " -e CLONEMAP_DEPLOYMENT_TYPE=\"local\""
 	com += " -e CLONEMAP_LOG_LEVEL=\"error\""
 	com += " df"
-	cmd := exec.Command("bash", "-c", com)
+	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
 		err = errors.New(err.Error() + " " + string(cmdOut))
@@ -241,14 +255,14 @@ func (stub *LocalStub) createDF() (err error) {
 // deleteDF stops amd removes DF docker image
 func (stub *LocalStub) deleteDF() (err error) {
 	com := "docker stop df" //.clonemap"
-	cmd := exec.Command("bash", "-c", com)
+	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
 		err = errors.New(err.Error() + " " + string(cmdOut))
 		return
 	}
 	com = "docker rm df" //.clonemap"
-	cmd = exec.Command("bash", "-c", com)
+	cmd = exec.Command("sh", "-c", com)
 	cmdOut, err = cmd.Output()
 	if err != nil {
 		err = errors.New(err.Error() + " " + string(cmdOut))
@@ -265,7 +279,7 @@ func (stub *LocalStub) createPnP() (err error) {
 	com += " -e CLONEMAP_DEPLOYMENT_TYPE=\"local\""
 	com += " -e CLONEMAP_LOG_LEVEL=\"info\""
 	com += " plugnplay"
-	cmd := exec.Command("bash", "-c", com)
+	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
 		err = errors.New(err.Error() + " " + string(cmdOut))
@@ -276,14 +290,14 @@ func (stub *LocalStub) createPnP() (err error) {
 // deletePnP stops amd removes PnP docker image
 func (stub *LocalStub) deletePnP() (err error) {
 	com := "docker stop pnp"
-	cmd := exec.Command("bash", "-c", com)
+	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
 		err = errors.New(err.Error() + " " + string(cmdOut))
 		return
 	}
 	com = "docker rm pnp"
-	cmd = exec.Command("bash", "-c", com)
+	cmd = exec.Command("sh", "-c", com)
 	cmdOut, err = cmd.Output()
 	if err != nil {
 		err = errors.New(err.Error() + " " + string(cmdOut))
@@ -301,7 +315,7 @@ func (stub *LocalStub) createFrontend() (err error) {
 	com += " -e CLONEMAP_DEPLOYMENT_TYPE=\"local\""
 	com += " -e CLONEMAP_LOG_LEVEL=\"info\""
 	com += " frontend"
-	cmd := exec.Command("bash", "-c", com)
+	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
 		err = errors.New(err.Error() + " " + string(cmdOut))
@@ -312,14 +326,14 @@ func (stub *LocalStub) createFrontend() (err error) {
 // deleteFrontend stops amd removes Frontend docker image
 func (stub *LocalStub) deleteFrontend() (err error) {
 	com := "docker stop fe"
-	cmd := exec.Command("bash", "-c", com)
+	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
 		err = errors.New(err.Error() + " " + string(cmdOut))
 		return
 	}
 	com = "docker rm fe"
-	cmd = exec.Command("bash", "-c", com)
+	cmd = exec.Command("sh", "-c", com)
 	cmdOut, err = cmd.Output()
 	if err != nil {
 		err = errors.New(err.Error() + " " + string(cmdOut))
@@ -336,7 +350,7 @@ func (stub *LocalStub) createMQTT() (err error) {
 	com += " --network=clonemap-net"
 	com += " -e CLONEMAP_DEPLOYMENT_TYPE=\"local\""
 	com += " eclipse-mosquitto"
-	cmd := exec.Command("bash", "-c", com)
+	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
 		err = errors.New(err.Error() + " " + string(cmdOut))
@@ -347,14 +361,14 @@ func (stub *LocalStub) createMQTT() (err error) {
 // deleteMQTT stops amd removes MQTT Broker docker image
 func (stub *LocalStub) deleteMQTT() (err error) {
 	com := "docker stop mqtt" //.clonemap"
-	cmd := exec.Command("bash", "-c", com)
+	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
 		err = errors.New(err.Error() + " " + string(cmdOut))
 		return
 	}
 	com = "docker rm mqtt" //.clonemap"
-	cmd = exec.Command("bash", "-c", com)
+	cmd = exec.Command("sh", "-c", com)
 	cmdOut, err = cmd.Output()
 	if err != nil {
 		err = errors.New(err.Error() + " " + string(cmdOut))
@@ -391,7 +405,7 @@ func (stub *LocalStub) createAgency(image string, masID int, imID int, agencyID 
 	com += " -e CLONEMAP_LOG_LEVEL=\"info\" "
 
 	com += image
-	cmd := exec.Command("bash", "-c", com)
+	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
 		err = errors.New(err.Error() + " " + string(cmdOut))
@@ -404,7 +418,7 @@ func (stub *LocalStub) deleteAgency(masID int, imID int, agencyID int) (err erro
 	com := "docker stop "
 	com += "mas-" + strconv.Itoa(masID) + "-im-" + strconv.Itoa(imID) + "-agency-" +
 		strconv.Itoa(agencyID) + ".mas" + strconv.Itoa(masID) + "agencies"
-	cmd := exec.Command("bash", "-c", com)
+	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
 		err = errors.New(err.Error() + " " + string(cmdOut))
@@ -413,7 +427,7 @@ func (stub *LocalStub) deleteAgency(masID int, imID int, agencyID int) (err erro
 	com = "docker rm "
 	com += "mas-" + strconv.Itoa(masID) + "-im-" + strconv.Itoa(imID) + "-agency-" +
 		strconv.Itoa(agencyID) + ".mas" + strconv.Itoa(masID) + "agencies"
-	cmd = exec.Command("bash", "-c", com)
+	cmd = exec.Command("sh", "-c", com)
 	cmdOut, err = cmd.Output()
 	if err != nil {
 		err = errors.New(err.Error() + " " + string(cmdOut))
