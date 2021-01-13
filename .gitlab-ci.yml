@@ -59,17 +59,17 @@ stubbuild:
 #     - cd pkg/ams
 #     - CGO_ENABLED=0 go test -coverpkg=./...
 
-agencytest:
-  stage: test
-  script:
-    - cd pkg/agency
-    - CGO_ENABLED=0 go test -coverpkg=./...
+# agencytest:
+#   stage: test
+#   script:
+#     - cd pkg/agency
+#     - CGO_ENABLED=0 go test -coverpkg=./...
 
-loggertest:
-  stage: test
-  script:
-    - cd pkg/logger
-    - CGO_ENABLED=0 go test -coverpkg=./...
+# loggertest:
+#   stage: test
+#   script:
+#     - cd pkg/logger
+#     - CGO_ENABLED=0 go test -coverpkg=./...
 
 amsdeploy:
   stage: deploy
