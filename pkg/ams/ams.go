@@ -236,8 +236,9 @@ func (ams *AMS) startMAS(masID int, masInfo schemas.MASInfo, numAgencies []int) 
 	if os.Getenv("CLONEMAP_DEPLOYMENT_TYPE") == "local" {
 		_, err = dfcli.PostGraph(masID, masInfo.Graph)
 		if err != nil {
-			ams.logError.Println(err.Error())
-			return
+			ams.logInfo.Println(err.Error())
+			// return
+			err = nil
 		}
 	}
 

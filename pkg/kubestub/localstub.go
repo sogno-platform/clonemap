@@ -70,6 +70,7 @@ type LocalStub struct {
 	df       bool
 	pnp      bool
 	frontend bool
+	logLevel string
 }
 
 // StartLocalStub starts the local stub. The AMS is started and a server for AMS interaction is
@@ -84,6 +85,10 @@ func StartLocalStub() {
 	_, cntxt.df = os.LookupEnv("CLONEMAP_MODULE_DF")
 	_, cntxt.pnp = os.LookupEnv("CLONEMAP_MODULE_PNP")
 	_, cntxt.frontend = os.LookupEnv("CLONEMAP_MODULE_FRONTEND")
+	cntxt.logLevel, _ = os.LookupEnv("CLONEMAP_LOG_LEVEL")
+	if cntxt.logLevel == "" {
+		cntxt.logLevel = "error"
+	}
 
 	fmt.Println("Create Bridge Network")
 	err = cntxt.createBridge()

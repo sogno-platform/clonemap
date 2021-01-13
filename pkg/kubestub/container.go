@@ -168,9 +168,9 @@ func (stub *LocalStub) createAMS() (err error) {
 		com += " -e CLONEMAP_STORAGE_TYPE=\"local\""
 	}
 	com += " -e CLONEMAP_SUFFIX=\".clonemap\""
-	com += " -e CLONEMAP_LOG_LEVEL=\"error\""
+	com += " -e CLONEMAP_LOG_LEVEL=\"" + stub.logLevel + "\""
 	com += " -e CLONEMAP_STUB_HOSTNAME=\"kubestub\""
-	com += " ams"
+	com += " registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/ams"
 	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
@@ -206,8 +206,8 @@ func (stub *LocalStub) createLogger() (err error) {
 	com += " --hostname=logger"
 	com += " --network=clonemap-net"
 	com += " -e CLONEMAP_DEPLOYMENT_TYPE=\"local\""
-	com += " -e CLONEMAP_LOG_LEVEL=\"error\""
-	com += " logger"
+	com += " -e CLONEMAP_LOG_LEVEL=\"" + stub.logLevel + "\""
+	com += " registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/logger"
 	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
@@ -242,8 +242,8 @@ func (stub *LocalStub) createDF() (err error) {
 	com += " --hostname=df"
 	com += " --network=clonemap-net"
 	com += " -e CLONEMAP_DEPLOYMENT_TYPE=\"local\""
-	com += " -e CLONEMAP_LOG_LEVEL=\"error\""
-	com += " df"
+	com += " -e CLONEMAP_LOG_LEVEL=\"" + stub.logLevel + "\""
+	com += " registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/df"
 	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
@@ -277,8 +277,8 @@ func (stub *LocalStub) createPnP() (err error) {
 	com += " --hostname=pnp"
 	com += " --network=clonemap-net"
 	com += " -e CLONEMAP_DEPLOYMENT_TYPE=\"local\""
-	com += " -e CLONEMAP_LOG_LEVEL=\"info\""
-	com += " plugnplay"
+	com += " -e CLONEMAP_LOG_LEVEL=\"" + stub.logLevel + "\""
+	com += " registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/plugnplay"
 	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
@@ -313,8 +313,8 @@ func (stub *LocalStub) createFrontend() (err error) {
 	com += " --hostname=fe"
 	com += " --network=clonemap-net"
 	com += " -e CLONEMAP_DEPLOYMENT_TYPE=\"local\""
-	com += " -e CLONEMAP_LOG_LEVEL=\"info\""
-	com += " frontend"
+	com += " -e CLONEMAP_LOG_LEVEL=\"" + stub.logLevel + "\""
+	com += " registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/frontend"
 	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
@@ -402,7 +402,7 @@ func (stub *LocalStub) createAgency(image string, masID int, imID int, agencyID 
 	} else {
 		com += " -e CLONEMAP_DF=\"OFF\" "
 	}
-	com += " -e CLONEMAP_LOG_LEVEL=\"info\" "
+	com += " -e CLONEMAP_LOG_LEVEL=\"" + stub.logLevel + "\" "
 
 	com += image
 	cmd := exec.Command("sh", "-c", com)
