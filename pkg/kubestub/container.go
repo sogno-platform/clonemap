@@ -62,7 +62,7 @@ func (stub *LocalStub) createBridge() (err error) {
 		err = errors.New(err.Error() + " " + string(cmdOut))
 		return
 	}
-	com = "docker network connect clonemap-net stub"
+	com = "docker network connect clonemap-net kubestub"
 	cmd = exec.Command("sh", "-c", com)
 	cmdOut, err = cmd.Output()
 	if err != nil {
