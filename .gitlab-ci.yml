@@ -49,8 +49,7 @@ stubbuild:
   stage: build
   script:
     - export GOPATH=$HOME/go
-    - cd cmd/kubestub
-    - CGO_ENABLED=0 GOOS=linux go build main.go
+    - docker build -f build/docker/clonemap_local/Dockerfile -t clonemap_local .
 
 # amstest:
 #   stage: test
@@ -141,3 +140,13 @@ frontenddeploy:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.git.rwth-aachen.de
     - docker tag frontend registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/frontend
     - docker push registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/frontend
+
+stubdeploy:
+  stage: deploy
+  only:
+    - master
+    - develop
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.git.rwth-aachen.de
+    - docker tag clonemap_local registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/clonemap_local
+    - docker push registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/clonemap_local
