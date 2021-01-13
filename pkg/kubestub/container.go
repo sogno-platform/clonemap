@@ -73,7 +73,7 @@ func (stub *LocalStub) createBridge() (err error) {
 
 // deleteBridge deletes docker bridge network
 func (stub *LocalStub) deleteBridge() (err error) {
-	com := "docker network disconnect clonemap-net stub"
+	com := "docker network disconnect clonemap-net kubestub"
 	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
