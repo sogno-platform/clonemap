@@ -65,33 +65,31 @@ type LocalStub struct {
 	// and to stop all agencies upon termination
 	agencies []schemas.StubAgencyConfig
 	fiware   bool
+	mqtt     bool
+	logger   bool
+	df       bool
+	pnp      bool
+	frontend bool
 }
 
 // StartLocalStub starts the local stub. The AMS is started and a server for AMS interaction is
 // created
-func StartLocalStub(fiware bool) {
+func StartLocalStub() {
 	var err error
 	// initialization
-	cntxt := &LocalStub{fiware: fiware}
+	cntxt := &LocalStub{}
+	_, cntxt.mqtt = os.LookupEnv("CLONEMAP_MODULE_MQTT")
+	_, cntxt.fiware = os.LookupEnv("CLONEMAP_MODULE_FIWARE")
+	_, cntxt.logger = os.LookupEnv("CLONEMAP_MODULE_LOGGER")
+	_, cntxt.df = os.LookupEnv("CLONEMAP_MODULE_DF")
+	_, cntxt.pnp = os.LookupEnv("CLONEMAP_MODULE_PNP")
+	_, cntxt.frontend = os.LookupEnv("CLONEMAP_MODULE_FRONTEND")
+
 	fmt.Println("Create Bridge Network")
 	err = cntxt.createBridge()
 	if err != nil {
 		fmt.Println(err)
 		return
-	}
-	fmt.Println("Create MQTT Broker Container")
-	err = cntxt.createMQTT()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	if fiware {
-		fmt.Println("Ceate Fiware Containers")
-		err = cntxt.createFiware()
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
 	}
 	fmt.Println("Create AMS Container")
 	err = cntxt.createAMS()
@@ -99,29 +97,53 @@ func StartLocalStub(fiware bool) {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println("Create Logger Container")
-	err = cntxt.createLogger()
-	if err != nil {
-		fmt.Println(err)
-		return
+	if cntxt.mqtt || cntxt.fiware {
+		fmt.Println("Create MQTT Broker Container")
+		err = cntxt.createMQTT()
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 	}
-	fmt.Println("Create DF Container")
-	err = cntxt.createDF()
-	if err != nil {
-		fmt.Println(err)
-		return
+	if cntxt.fiware {
+		fmt.Println("Ceate Fiware Containers")
+		err = cntxt.createFiware()
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 	}
-	fmt.Println("Create Plugnplay Container")
-	err = cntxt.createPnP()
-	if err != nil {
-		fmt.Println(err)
-		return
+	if cntxt.logger {
+		fmt.Println("Create Logger Container")
+		err = cntxt.createLogger()
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 	}
-	fmt.Println("Create Frontend Container")
-	err = cntxt.createFrontend()
-	if err != nil {
-		fmt.Println(err)
-		return
+	if cntxt.df {
+		fmt.Println("Create DF Container")
+		err = cntxt.createDF()
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+	}
+	if cntxt.pnp {
+		fmt.Println("Create Plugnplay Container")
+		err = cntxt.createPnP()
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+	}
+	if cntxt.frontend {
+		fmt.Println("Create Frontend Container")
+		err = cntxt.createFrontend()
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 	}
 	fmt.Println("Ready")
 
@@ -162,35 +184,45 @@ func (stub *LocalStub) terminate(gracefulStop chan os.Signal) {
 		fmt.Println(err)
 		os.Exit(0)
 	}
-	fmt.Println("Stop Logger Container")
-	err = stub.deleteLogger()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(0)
+	if stub.logger {
+		fmt.Println("Stop Logger Container")
+		err = stub.deleteLogger()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(0)
+		}
 	}
-	fmt.Println("Stop DF Container")
-	err = stub.deleteDF()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(0)
+	if stub.df {
+		fmt.Println("Stop DF Container")
+		err = stub.deleteDF()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(0)
+		}
 	}
-	fmt.Println("Stop Plugnplay Container")
-	err = stub.deletePnP()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(0)
+	if stub.pnp {
+		fmt.Println("Stop Plugnplay Container")
+		err = stub.deletePnP()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(0)
+		}
 	}
-	fmt.Println("Stop Frontend Container")
-	err = stub.deleteFrontend()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(0)
+	if stub.frontend {
+		fmt.Println("Stop Frontend Container")
+		err = stub.deleteFrontend()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(0)
+		}
 	}
-	fmt.Println("Stop MQTT Broker Container")
-	err = stub.deleteMQTT()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(0)
+	if stub.mqtt || stub.fiware {
+		fmt.Println("Stop MQTT Broker Container")
+		err = stub.deleteMQTT()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(0)
+		}
 	}
 	if stub.fiware {
 		fmt.Println("Stop FIWARE Containers")
