@@ -43,8 +43,9 @@ For easy user interaction it is planned to provide a WebUI that interacts with t
 The following documentation is available for cloneMAP:
 
 - [Repository structure](docs/repo.md)
-- [Installation requirements](docs/installation.md)
-- [User guide](docs/user.md)
+- [Developer Guide](docs/developer_guide.md)
+- [Administration Guide](docs/administration_guide.md)
+- [User Guide](docs/user_guide.md)
 
 Documentation of the code follows the [godoc](https://blog.golang.org/godoc-documenting-go-code) specification.
 
