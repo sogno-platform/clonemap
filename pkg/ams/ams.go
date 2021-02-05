@@ -63,16 +63,20 @@ import (
 
 // AMS contains storage and deployment object
 type AMS struct {
-	stor     storage     // interface for local or distributed storage
-	depl     deployment  // interface for local or cloud deployment
-	logInfo  *log.Logger // logger for info logging
-	logError *log.Logger // logger for error logging
+	stor         storage     // interface for local or distributed storage
+	depl         deployment  // interface for local or cloud deployment
+	logInfo      *log.Logger // logger for info logging
+	logError     *log.Logger // logger for error logging
+	agencyClient *agcli.Client
 }
 
 // StartAMS starts an AMS instance. It initializes the cluster and storage object and starts API
 // server.
 func StartAMS() (err error) {
-	ams := &AMS{logError: log.New(os.Stderr, "[ERROR] ", log.LstdFlags)}
+	ams := &AMS{
+		logError:     log.New(os.Stderr, "[ERROR] ", log.LstdFlags),
+		agencyClient: agcli.New(time.Second*60, time.Second*1, 4),
+	}
 	// create storage and deployment object according to specified deployment type
 	err = ams.init()
 	if err != nil {
@@ -455,7 +459,7 @@ func (ams *AMS) removeAgent(masID int, agentID int) (err error) {
 	if err != nil {
 		return
 	}
-	_, err = agcli.DeleteAgent(addr.Agency, agentID)
+	_, err = ams.agencyClient.DeleteAgent(addr.Agency, agentID)
 
 	return
 }
@@ -463,7 +467,7 @@ func (ams *AMS) removeAgent(masID int, agentID int) (err error) {
 // postAgentToAgency sends a post request to agency with info about agent to start
 func (ams *AMS) postAgentToAgency(agentInfo schemas.AgentInfo) (err error) {
 	var httpStatus int
-	httpStatus, err = agcli.PostAgent(agentInfo.Address.Agency, agentInfo)
+	httpStatus, err = ams.agencyClient.PostAgent(agentInfo.Address.Agency, agentInfo)
 	if err != nil {
 		return
 	}

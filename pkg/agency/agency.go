@@ -58,6 +58,7 @@ import (
 	"syscall"
 	"time"
 
+	agencycli "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/agency/client"
 	amscli "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/ams/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/status"
@@ -76,6 +77,7 @@ type Agency struct {
 	logger         *loggerClient
 	mqtt           *mqttClient
 	amsClient      *amscli.Client
+	agencyClient   *agencycli.Client
 	logInfo        *log.Logger // logger for info logging
 	logError       *log.Logger // logger for error logging
 }
@@ -90,6 +92,7 @@ func StartAgency(task func(*Agent) error) (err error) {
 		remoteAgencies: make(map[string]*remoteAgency),
 		msgIn:          make(chan []schemas.ACLMessage, 1000),
 		amsClient:      amscli.New(time.Second*60, time.Second*1, 4),
+		agencyClient:   agencycli.New(time.Second*60, time.Second*1, 4),
 		logError:       log.New(os.Stderr, "[ERROR] ", log.LstdFlags),
 	}
 	err = agency.init()

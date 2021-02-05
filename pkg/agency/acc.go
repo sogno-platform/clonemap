@@ -51,13 +51,14 @@ import (
 	"net/http"
 	"strconv"
 
-	agencyclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/agency/client"
+	agencycli "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/agency/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 )
 
 // remoteAgency holds the channel used for sending messages to remot agency
 type remoteAgency struct {
-	msgIn chan schemas.ACLMessage // ACL message inbox
+	msgIn        chan schemas.ACLMessage // ACL message inbox
+	agencyClient *agencycli.Client
 	// agents map[int]*agent.Agent
 }
 
@@ -113,7 +114,8 @@ func (agency *Agency) aclLookup(agentID int) (acl *ACL, err error) {
 		agency.logInfo.Println("New remote agent ", agentID, " in unknown agency ", address.Agency)
 		// create new remote agency
 		remAgency = &remoteAgency{
-			msgIn: make(chan schemas.ACLMessage, 1000),
+			msgIn:        make(chan schemas.ACLMessage, 1000),
+			agencyClient: agency.agencyClient,
 		}
 		agency.mutex.Lock()
 		agency.remoteAgencies[address.Agency] = remAgency
@@ -172,14 +174,14 @@ func (remAgency *remoteAgency) sendMsgs(remName string, localName string, logErr
 			msgs[i+1].AgencySender = localName
 			msgs[i+1].AgencyReceiver = remName
 		}
-		stat, err = agencyclient.PostMsgs(ip, msgs)
+		stat, err = remAgency.agencyClient.PostMsgs(ip, msgs)
 		if err != nil || stat != http.StatusCreated {
 			ip, err = getIP(remName)
 			if err != nil {
 				logErr.Println(err)
 				return
 			}
-			stat, err = agencyclient.PostMsgs(ip, msgs)
+			stat, err = remAgency.agencyClient.PostMsgs(ip, msgs)
 			if err != nil {
 				logErr.Println(err)
 			}
@@ -219,14 +221,14 @@ func (agency *Agency) receiveMsgs() {
 			if ok {
 				err := ag.ACL.newIncomingMessage(msgs[i])
 				if err != nil {
-					_, err = agencyclient.ReturnMsg(msgs[i].AgencySender, msgs[i])
+					_, err = agency.agencyClient.ReturnMsg(msgs[i].AgencySender, msgs[i])
 					if err != nil {
 						agency.logError.Println(err)
 						return
 					}
 				}
 			} else {
-				_, err := agencyclient.ReturnMsg(msgs[i].AgencySender, msgs[i])
+				_, err := agency.agencyClient.ReturnMsg(msgs[i].AgencySender, msgs[i])
 				if err != nil {
 					agency.logError.Println(err)
 					return
