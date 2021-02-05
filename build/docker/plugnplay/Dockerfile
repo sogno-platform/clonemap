@@ -48,7 +48,6 @@ COPY go.sum .
 RUN go mod download
 COPY cmd/plugnplay cmd/plugnplay
 COPY pkg/plugnplay pkg/plugnplay
-COPY pkg/ams/client pkg/ams/client
 COPY pkg/schemas pkg/schemas
 COPY pkg/common pkg/common
 ENV PATH="/clonemap:${PATH}"
