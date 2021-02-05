@@ -282,6 +282,7 @@ func newMQTTClient(svc string, port int, name string, logErr *log.Logger,
 	cli.msgIn = make(chan schemas.MQTTMessage, 1000)
 	cli.subscription = make(map[string][]*MQTT)
 	cli.logInfo.Println("Created new MQTT client; status: ", cli.active)
+	cli.init()
 	return
 }
 

@@ -58,8 +58,9 @@ import (
 	"syscall"
 	"time"
 
-	agencycli "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/agency/client"
-	amscli "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/ams/client"
+	agencyclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/agency/client"
+	amsclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/ams/client"
+	dfclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/df/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/status"
 )
@@ -74,10 +75,11 @@ type Agency struct {
 	mutex          *sync.Mutex // mutex to protect agents from concurrent reads and writes
 	agentTask      func(*Agent) error
 	msgIn          chan []schemas.ACLMessage
-	logger         *loggerClient
-	mqtt           *mqttClient
-	amsClient      *amscli.Client
-	agencyClient   *agencycli.Client
+	logHandler     *logHandler
+	mqttClient     *mqttClient
+	dfClient       *dfclient.Client
+	amsClient      *amsclient.Client
+	agencyClient   *agencyclient.Client
 	logInfo        *log.Logger // logger for info logging
 	logError       *log.Logger // logger for error logging
 }
@@ -91,8 +93,9 @@ func StartAgency(task func(*Agent) error) (err error) {
 		remoteAgents:   make(map[int]*Agent),
 		remoteAgencies: make(map[string]*remoteAgency),
 		msgIn:          make(chan []schemas.ACLMessage, 1000),
-		amsClient:      amscli.New(time.Second*60, time.Second*1, 4),
-		agencyClient:   agencycli.New(time.Second*60, time.Second*1, 4),
+		dfClient:       dfclient.New(time.Second*60, time.Second*1, 4),
+		amsClient:      amsclient.New(time.Second*60, time.Second*1, 4),
+		agencyClient:   agencyclient.New(time.Second*60, time.Second*1, 4),
 		logError:       log.New(os.Stderr, "[ERROR] ", log.LstdFlags),
 	}
 	err = agency.init()
@@ -146,9 +149,8 @@ func (agency *Agency) init() (err error) {
 	agency.info.ImageGroupID, err = strconv.Atoi(hostname[3])
 	agency.info.ID, err = strconv.Atoi(hostname[5])
 	agency.info.Name = temp + ".mas" + hostname[1] + "agencies"
-	agency.logger = newLoggerClient(agency.info.MASID, agency.logError, agency.logInfo)
-	agency.mqtt = newMQTTClient("mqtt", 1883, agency.info.Name, agency.logError, agency.logInfo)
-	agency.mqtt.init()
+	agency.logHandler = newLogHandler(agency.info.MASID, agency.logError, agency.logInfo)
+	agency.mqttClient = newMQTTClient("mqtt", 1883, agency.info.Name, agency.logError, agency.logInfo)
 	agency.mutex.Unlock()
 	return
 }
@@ -164,7 +166,7 @@ func (agency *Agency) terminate(gracefulStop chan os.Signal) {
 		agency.localAgents[i].Terminate()
 	}
 	agency.mutex.Unlock()
-	agency.mqtt.close()
+	agency.mqttClient.close()
 	time.Sleep(time.Second * 2)
 	os.Exit(0)
 }
@@ -216,8 +218,8 @@ func (agency *Agency) createAgent(agentInfo schemas.AgentInfo) (err error) {
 	agentInfo.Status.Code = status.Starting
 	msgIn := make(chan schemas.ACLMessage, 1000)
 	agency.mutex.Lock()
-	ag := newAgent(agentInfo, msgIn, agency.aclLookup, agency.logger, agency.info.Logger,
-		agency.mqtt, agency.logError, agency.logInfo)
+	ag := newAgent(agentInfo, msgIn, agency.aclLookup, agency.logHandler, agency.info.Logger,
+		agency.mqttClient, agency.dfClient, agency.logError, agency.logInfo)
 	agency.localAgents[agentInfo.ID] = ag
 	agency.mutex.Unlock()
 	ag.startAgent(agency.agentTask)

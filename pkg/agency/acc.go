@@ -51,14 +51,14 @@ import (
 	"net/http"
 	"strconv"
 
-	agencycli "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/agency/client"
+	agencyclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/agency/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 )
 
 // remoteAgency holds the channel used for sending messages to remot agency
 type remoteAgency struct {
 	msgIn        chan schemas.ACLMessage // ACL message inbox
-	agencyClient *agencycli.Client
+	agencyClient *agencyclient.Client
 	// agents map[int]*agent.Agent
 }
 
@@ -109,7 +109,8 @@ func (agency *Agency) aclLookup(agentID int) (acl *ACL, err error) {
 	// check if remote agency is already known
 	if ok {
 		agency.logInfo.Println("New remote agent ", agentID, " in known agency ", address.Agency)
-		ag = newAgent(agentInfo, remAgency.msgIn, nil, nil, schemas.LogConfig{}, nil, agency.logError, agency.logInfo)
+		ag = newAgent(agentInfo, remAgency.msgIn, nil, nil, schemas.LogConfig{}, nil, nil,
+			agency.logError, agency.logInfo)
 	} else {
 		agency.logInfo.Println("New remote agent ", agentID, " in unknown agency ", address.Agency)
 		// create new remote agency
@@ -130,7 +131,8 @@ func (agency *Agency) aclLookup(agentID int) (acl *ACL, err error) {
 			numRemAgencies < numLocalAgs {
 			go agency.receiveMsgs()
 		}
-		ag = newAgent(agentInfo, remAgency.msgIn, nil, nil, schemas.LogConfig{}, nil, agency.logError, agency.logInfo)
+		ag = newAgent(agentInfo, remAgency.msgIn, nil, nil, schemas.LogConfig{}, nil, nil,
+			agency.logError, agency.logInfo)
 	}
 	agency.mutex.Lock()
 	agency.remoteAgents[agentID] = ag

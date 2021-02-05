@@ -63,19 +63,21 @@ import (
 
 // AMS contains storage and deployment object
 type AMS struct {
-	stor         storage     // interface for local or distributed storage
-	depl         deployment  // interface for local or cloud deployment
-	logInfo      *log.Logger // logger for info logging
-	logError     *log.Logger // logger for error logging
-	agencyClient *agcli.Client
+	stor      storage     // interface for local or distributed storage
+	depl      deployment  // interface for local or cloud deployment
+	logInfo   *log.Logger // logger for info logging
+	logError  *log.Logger // logger for error logging
+	agencyCli *agcli.Client
+	dfCli     *dfcli.Client
 }
 
 // StartAMS starts an AMS instance. It initializes the cluster and storage object and starts API
 // server.
 func StartAMS() (err error) {
 	ams := &AMS{
-		logError:     log.New(os.Stderr, "[ERROR] ", log.LstdFlags),
-		agencyClient: agcli.New(time.Second*60, time.Second*1, 4),
+		logError:  log.New(os.Stderr, "[ERROR] ", log.LstdFlags),
+		agencyCli: agcli.New(time.Second*60, time.Second*1, 4),
+		dfCli:     dfcli.New(time.Second*60, time.Second*1, 4),
 	}
 	// create storage and deployment object according to specified deployment type
 	err = ams.init()
@@ -248,7 +250,7 @@ func (ams *AMS) startMAS(masID int, masInfo schemas.MASInfo, numAgencies []int) 
 	}
 	ams.logInfo.Println("Stored MAS data")
 	if os.Getenv("CLONEMAP_DEPLOYMENT_TYPE") == "local" {
-		_, err = dfcli.PostGraph(masID, masInfo.Graph)
+		_, err = ams.dfCli.PostGraph(masID, masInfo.Graph)
 		if err != nil {
 			ams.logInfo.Println(err.Error())
 			// return
@@ -459,7 +461,7 @@ func (ams *AMS) removeAgent(masID int, agentID int) (err error) {
 	if err != nil {
 		return
 	}
-	_, err = ams.agencyClient.DeleteAgent(addr.Agency, agentID)
+	_, err = ams.agencyCli.DeleteAgent(addr.Agency, agentID)
 
 	return
 }
@@ -467,7 +469,7 @@ func (ams *AMS) removeAgent(masID int, agentID int) (err error) {
 // postAgentToAgency sends a post request to agency with info about agent to start
 func (ams *AMS) postAgentToAgency(agentInfo schemas.AgentInfo) (err error) {
 	var httpStatus int
-	httpStatus, err = ams.agencyClient.PostAgent(agentInfo.Address.Agency, agentInfo)
+	httpStatus, err = ams.agencyCli.PostAgent(agentInfo.Address.Agency, agentInfo)
 	if err != nil {
 		return
 	}

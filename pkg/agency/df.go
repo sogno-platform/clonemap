@@ -51,7 +51,7 @@ import (
 	"sync"
 	"time"
 
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/df/client"
+	dfclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/df/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 )
 
@@ -63,6 +63,7 @@ type DF struct {
 	mutex              *sync.Mutex
 	registeredServices map[string]schemas.Service
 	active             bool // indicates if df is active (switch via env)
+	dfClient           *dfclient.Client
 	logError           *log.Logger
 	logInfo            *log.Logger
 }
@@ -97,7 +98,7 @@ func (df *DF) RegisterService(svc schemas.Service) (id string, err error) {
 	svc.NodeID = nodeID
 	svc.CreatedAt = time.Now()
 	svc.ChangedAt = svc.CreatedAt
-	svc, _, err = client.PostSvc(masID, svc)
+	svc, _, err = df.dfClient.PostSvc(masID, svc)
 	id = svc.GUID
 	if err != nil {
 		return
@@ -118,7 +119,7 @@ func (df *DF) SearchForService(desc string) (svc []schemas.Service, err error) {
 	masID := df.masID
 	df.mutex.Unlock()
 	var temp []schemas.Service
-	temp, _, err = client.GetSvc(masID, desc)
+	temp, _, err = df.dfClient.GetSvc(masID, desc)
 	if err != nil {
 		return
 	}
@@ -141,7 +142,7 @@ func (df *DF) SearchForLocalService(desc string, dist float64) (svc []schemas.Se
 	nodeID := df.nodeID
 	df.mutex.Unlock()
 	var temp []schemas.Service
-	temp, _, err = client.GetLocalSvc(masID, desc, nodeID, dist)
+	temp, _, err = df.dfClient.GetLocalSvc(masID, desc, nodeID, dist)
 	if err != nil {
 		return
 	}
@@ -178,12 +179,13 @@ func (df *DF) DeregisterService(svcID string) (err error) {
 	df.mutex.Lock()
 	delete(df.registeredServices, desc)
 	df.mutex.Unlock()
-	_, err = client.DeleteSvc(masID, svcID)
+	_, err = df.dfClient.DeleteSvc(masID, svcID)
 	return
 }
 
 // newDF creates a new DF object
-func newDF(masID int, agentID int, nodeID int, logErr *log.Logger, logInf *log.Logger) (df *DF) {
+func newDF(masID int, agentID int, nodeID int, dfCli *dfclient.Client, logErr *log.Logger,
+	logInf *log.Logger) (df *DF) {
 	df = &DF{
 		agentID:  agentID,
 		masID:    masID,

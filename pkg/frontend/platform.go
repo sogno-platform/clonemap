@@ -49,8 +49,6 @@ import (
 	"net/http"
 
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/common/httpreply"
-	dfclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/df/client"
-	logclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/logger/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 )
 
@@ -90,8 +88,8 @@ func (fe *Frontend) handleModules(w http.ResponseWriter, r *http.Request) (cmapE
 
 // getModuleStatus returns the on/off status of all modules
 func (fe *Frontend) getModuleStatus() (mods schemas.ModuleStatus, err error) {
-	mods.Logging = logclient.Alive()
+	mods.Logging = fe.logClient.Alive()
 	mods.Core = fe.amsClient.Alive()
-	mods.DF = dfclient.Alive()
+	mods.DF = fe.dfClient.Alive()
 	return
 }

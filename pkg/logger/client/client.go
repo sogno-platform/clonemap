@@ -55,21 +55,19 @@ import (
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 )
 
-// Host contains the host name of logger (IP or k8s service name)
-var Host = "logger"
-
-// Port contains the port on which logger is listening
-var Port = 11000
-
-var httpClient = &http.Client{Timeout: time.Second * 60}
-var delay = time.Second * 1
-var numRetries = 4
+// Client is the ams client
+type Client struct {
+	httpClient *http.Client  // http client
+	Host       string        // ams host name
+	Port       int           // ams port
+	delay      time.Duration // delay between two retries
+	numRetries int           // number of retries
+}
 
 // Alive tests if alive
-func Alive() (alive bool) {
+func (cli *Client) Alive() (alive bool) {
 	alive = false
-	_, httpStatus, err := httpretry.Get(httpClient, "http://"+Host+":"+strconv.Itoa(Port)+
-		"/api/alive", time.Second*2, 2)
+	_, httpStatus, err := httpretry.Get(cli.httpClient, cli.prefix()+"/api/alive", time.Second*2, 2)
 	if err == nil && httpStatus == http.StatusOK {
 		alive = true
 	}
@@ -77,19 +75,19 @@ func Alive() (alive bool) {
 }
 
 // PostLogs posts new log messages to logger
-func PostLogs(masID int, logs []schemas.LogMessage) (httpStatus int, err error) {
+func (cli *Client) PostLogs(masID int, logs []schemas.LogMessage) (httpStatus int, err error) {
 	js, _ := json.Marshal(logs)
-	_, httpStatus, err = httpretry.Post(httpClient, "http://"+Host+":"+strconv.Itoa(Port)+
-		"/api/logging/"+strconv.Itoa(masID)+"/list", "application/json", js, time.Second*2, 4)
+	_, httpStatus, err = httpretry.Post(cli.httpClient, cli.prefix()+"/api/logging/"+
+		strconv.Itoa(masID)+"/list", "application/json", js, time.Second*2, 4)
 	return
 }
 
 // GetLatestLogs gets log messages
-func GetLatestLogs(masID int, agentID int, topic string, num int) (msgs []schemas.LogMessage,
-	httpStatus int, err error) {
+func (cli *Client) GetLatestLogs(masID int, agentID int, topic string,
+	num int) (msgs []schemas.LogMessage, httpStatus int, err error) {
 	var body []byte
-	body, httpStatus, err = httpretry.Get(httpClient, "http://"+Host+":"+strconv.Itoa(Port)+
-		"/api/logging/"+strconv.Itoa(masID)+"/"+strconv.Itoa(agentID)+"/"+topic+"/latest/"+
+	body, httpStatus, err = httpretry.Get(cli.httpClient, cli.prefix()+"/api/logging/"+
+		strconv.Itoa(masID)+"/"+strconv.Itoa(agentID)+"/"+topic+"/latest/"+
 		strconv.Itoa(num), time.Second*2, 4)
 	if err != nil {
 		return
@@ -102,33 +100,51 @@ func GetLatestLogs(masID int, agentID int, topic string, num int) (msgs []schema
 }
 
 // PutState updates the state
-func PutState(state schemas.State) (httpStatus int, err error) {
+func (cli *Client) PutState(state schemas.State) (httpStatus int, err error) {
 	js, _ := json.Marshal(state)
-	_, httpStatus, err = httpretry.Put(httpClient, "http://"+Host+":"+strconv.Itoa(Port)+
-		"/api/state/"+strconv.Itoa(state.MASID)+"/"+strconv.Itoa(state.AgentID), js,
+	_, httpStatus, err = httpretry.Put(cli.httpClient, cli.prefix()+"/api/state/"+
+		strconv.Itoa(state.MASID)+"/"+strconv.Itoa(state.AgentID), js,
 		time.Second*2, 4)
 	return
 }
 
 // UpdateStates updates the state
-func UpdateStates(masID int, states []schemas.State) (httpStatus int, err error) {
+func (cli *Client) UpdateStates(masID int, states []schemas.State) (httpStatus int, err error) {
 	js, _ := json.Marshal(states)
-	_, httpStatus, err = httpretry.Put(httpClient, "http://"+Host+":"+strconv.Itoa(Port)+
-		"/api/state/"+strconv.Itoa(masID)+"/list", js, time.Second*2, 4)
+	_, httpStatus, err = httpretry.Put(cli.httpClient, cli.prefix()+"/api/state/"+
+		strconv.Itoa(masID)+"/list", js, time.Second*2, 4)
 	return
 }
 
 // GetState requests state from logger
-func GetState(masID int, agentID int) (state schemas.State, httpStatus int, err error) {
+func (cli *Client) GetState(masID int, agentID int) (state schemas.State, httpStatus int,
+	err error) {
 	var body []byte
-	body, httpStatus, err = httpretry.Get(httpClient, "http://"+Host+":"+strconv.Itoa(Port)+
-		"/api/state/"+strconv.Itoa(masID)+"/"+strconv.Itoa(agentID), time.Second*2, 4)
+	body, httpStatus, err = httpretry.Get(cli.httpClient, cli.prefix()+"/api/state/"+
+		strconv.Itoa(masID)+"/"+strconv.Itoa(agentID), time.Second*2, 4)
 	if err != nil {
 		return
 	}
 	err = json.Unmarshal(body, &state)
 	if err != nil {
 		state = schemas.State{}
+	}
+	return
+}
+
+func (cli *Client) prefix() (ret string) {
+	ret = "http://" + cli.Host + ":" + strconv.Itoa(cli.Port)
+	return
+}
+
+// New creates a new AMS client
+func New(timeout time.Duration, del time.Duration, numRet int) (cli *Client) {
+	cli = &Client{
+		httpClient: &http.Client{Timeout: timeout},
+		Host:       "logger",
+		Port:       11000,
+		delay:      del,
+		numRetries: numRet,
 	}
 	return
 }

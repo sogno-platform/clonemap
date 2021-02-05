@@ -52,14 +52,14 @@ import (
 	"sync"
 	"time"
 
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/logger/client"
+	logclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/logger/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 )
 
 // Logger logs data to logging service
 type Logger struct {
 	agentID  int
-	client   *loggerClient
+	handler  *logHandler
 	mutex    *sync.Mutex
 	config   schemas.LogConfig
 	logError *log.Logger
@@ -95,7 +95,7 @@ func (log *Logger) NewLog(logType string, message string, data string) (err erro
 		LogType:        logType,
 		Message:        message,
 		AdditionalData: data}
-	log.client.logIn <- msg
+	log.handler.logIn <- msg
 
 	return
 }
@@ -109,12 +109,12 @@ func (log *Logger) UpdateState(state string) (err error) {
 	}
 	log.mutex.Unlock()
 	agState := schemas.State{
-		MASID:     log.client.masID,
+		MASID:     log.handler.masID,
 		AgentID:   log.agentID,
 		Timestamp: time.Now(),
 		State:     state}
 	// _, err = client.PutState(agState)
-	log.client.stateIn <- agState
+	log.handler.stateIn <- agState
 	return
 }
 
@@ -128,17 +128,17 @@ func (log *Logger) RestoreState() (state string, err error) {
 	}
 	log.mutex.Unlock()
 	var agState schemas.State
-	agState, _, err = client.GetState(log.client.masID, log.agentID)
+	agState, _, err = log.handler.client.GetState(log.handler.masID, log.agentID)
 	state = agState.State
 	return
 }
 
 // newLogger craetes a new object of type Logger
-func newLogger(agentID int, client *loggerClient, config schemas.LogConfig, logErr *log.Logger,
+func newLogger(agentID int, handler *logHandler, config schemas.LogConfig, logErr *log.Logger,
 	logInf *log.Logger) (log *Logger) {
 	log = &Logger{
 		agentID:  agentID,
-		client:   client,
+		handler:  handler,
 		mutex:    &sync.Mutex{},
 		config:   config,
 		logError: logErr,
@@ -157,18 +157,19 @@ func (log *Logger) close() {
 	return
 }
 
-// loggerClient is the agency client for the logger
-type loggerClient struct {
+// logHandler is the agency client for the logger
+type logHandler struct {
 	masID    int
 	logIn    chan schemas.LogMessage // logging inbox
 	stateIn  chan schemas.State
 	active   bool // indicates if logging is active (switch via env)
+	client   *logclient.Client
 	logError *log.Logger
 	logInfo  *log.Logger
 }
 
 // storeLogs periodically requests the logging service to store log messages
-func (log *loggerClient) storeLogs() (err error) {
+func (log *logHandler) storeLogs() (err error) {
 	if log.active {
 		for {
 			if len(log.logIn) > 0 {
@@ -178,7 +179,7 @@ func (log *loggerClient) storeLogs() (err error) {
 					logMsgs[i] = <-log.logIn
 					logMsgs[i].MASID = log.masID
 				}
-				_, err = client.PostLogs(log.masID, logMsgs)
+				_, err = log.client.PostLogs(log.masID, logMsgs)
 				if err != nil {
 					log.logError.Println(err)
 					for i := range logMsgs {
@@ -205,7 +206,7 @@ func (log *loggerClient) storeLogs() (err error) {
 }
 
 // storeState requests the logging service to store state
-func (log *loggerClient) storeState() (err error) {
+func (log *logHandler) storeState() (err error) {
 	if log.active {
 		for {
 			var states []schemas.State
@@ -220,7 +221,7 @@ func (log *loggerClient) storeState() (err error) {
 					break
 				}
 			}
-			_, err = client.UpdateStates(states[0].MASID, states)
+			_, err = log.client.UpdateStates(states[0].MASID, states)
 			if err != nil {
 				log.logError.Println(err)
 				for i := range states {
@@ -233,13 +234,14 @@ func (log *loggerClient) storeState() (err error) {
 	return
 }
 
-// newLoggerClient creates an agency logger client
-func newLoggerClient(masID int, logErr *log.Logger, logInf *log.Logger) (log *loggerClient) {
-	log = &loggerClient{
+// newLogHandler creates an agency logger client
+func newLogHandler(masID int, logErr *log.Logger, logInf *log.Logger) (log *logHandler) {
+	log = &logHandler{
 		masID:    masID,
 		active:   false,
 		logError: logErr,
 		logInfo:  logInf,
+		client:   logclient.New(time.Second*60, time.Second*1, 4),
 	}
 	temp := os.Getenv("CLONEMAP_LOGGING")
 	if temp == "ON" {

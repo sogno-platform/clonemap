@@ -51,6 +51,7 @@ import (
 	"log"
 	"sync"
 
+	dfclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/df/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/status"
 )
@@ -77,8 +78,8 @@ type Agent struct {
 
 // newAgent creates a new agent
 func newAgent(info schemas.AgentInfo, msgIn chan schemas.ACLMessage,
-	aclLookup func(int) (*ACL, error), log *loggerClient, logConfig schemas.LogConfig,
-	mqtt *mqttClient, logErr *log.Logger, logInf *log.Logger) (ag *Agent) {
+	aclLookup func(int) (*ACL, error), log *logHandler, logConfig schemas.LogConfig,
+	mqtt *mqttClient, dfClient *dfclient.Client, logErr *log.Logger, logInf *log.Logger) (ag *Agent) {
 	ag = &Agent{
 		id:       info.ID,
 		nodeID:   info.Spec.NodeID,
@@ -96,7 +97,7 @@ func newAgent(info schemas.AgentInfo, msgIn chan schemas.ACLMessage,
 	// in, out := ag.ACL.getCommDataChannels()
 	ag.Logger = newLogger(ag.id, log, logConfig, ag.logError, ag.logInfo)
 	ag.MQTT = newMQTT(ag.id, mqtt, ag.Logger, ag.logError, ag.logInfo)
-	ag.DF = newDF(ag.masID, ag.id, ag.nodeID, ag.logError, ag.logInfo)
+	ag.DF = newDF(ag.masID, ag.id, ag.nodeID, dfClient, ag.logError, ag.logInfo)
 	return
 }
 
