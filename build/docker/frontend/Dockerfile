@@ -50,6 +50,7 @@ COPY cmd/frontend cmd/frontend
 COPY pkg/frontend pkg/frontend
 COPY pkg/common pkg/common
 COPY pkg/schemas pkg/schemas
+COPY pkg/ams pkg/ams
 COPY pkg/df/client pkg/df/client
 COPY pkg/logger/client pkg/logger/client
 COPY web web
