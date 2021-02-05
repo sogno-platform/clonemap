@@ -51,7 +51,6 @@ import (
 	"testing"
 	"time"
 
-	amsclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/ams/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/common/httpreply"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 )
@@ -114,12 +113,13 @@ func stubHandler(w http.ResponseWriter, r *http.Request) {
 // dummyClient makes requests to ams and terminates ams server at end
 func dummyClient(s *http.Server, t *testing.T) {
 	time.Sleep(time.Second * 1)
-	amsclient.Host = "localhost"
-	amsclient.Port = 10000
+	amsClient := NewClient(time.Second*60, time.Second*1, 4)
+	amsClient.Host = "localhost"
+	amsClient.Port = 10000
 
 	var err error
 	var httpStatus int
-	_, httpStatus, err = amsclient.GetCloneMAP()
+	_, httpStatus, err = amsClient.GetCloneMAP()
 	if err != nil {
 		t.Error(err)
 	}
@@ -153,7 +153,7 @@ func dummyClient(s *http.Server, t *testing.T) {
 			},
 		},
 	}
-	httpStatus, err = amsclient.PostMAS(mas)
+	httpStatus, err = amsClient.PostMAS(mas)
 	if err != nil {
 		t.Error(err)
 	}
@@ -161,7 +161,7 @@ func dummyClient(s *http.Server, t *testing.T) {
 		t.Error("Error PostMAS " + strconv.Itoa(httpStatus))
 	}
 
-	_, httpStatus, err = amsclient.GetMASsShort()
+	_, httpStatus, err = amsClient.GetMASsShort()
 	if err != nil {
 		t.Error(err)
 	}
@@ -169,7 +169,7 @@ func dummyClient(s *http.Server, t *testing.T) {
 		t.Error("Error GetMASs " + strconv.Itoa(httpStatus))
 	}
 
-	_, httpStatus, err = amsclient.GetMAS(0)
+	_, httpStatus, err = amsClient.GetMAS(0)
 	if err != nil {
 		t.Error(err)
 	}
@@ -177,7 +177,7 @@ func dummyClient(s *http.Server, t *testing.T) {
 		t.Error("Error GetMAS " + strconv.Itoa(httpStatus))
 	}
 
-	_, httpStatus, err = amsclient.GetAgents(0)
+	_, httpStatus, err = amsClient.GetAgents(0)
 	if err != nil {
 		t.Error(err)
 	}
@@ -185,7 +185,7 @@ func dummyClient(s *http.Server, t *testing.T) {
 		t.Error("Error GetAgents " + strconv.Itoa(httpStatus))
 	}
 
-	_, httpStatus, err = amsclient.GetAgent(0, 0)
+	_, httpStatus, err = amsClient.GetAgent(0, 0)
 	if err != nil {
 		t.Error(err)
 	}
@@ -193,7 +193,7 @@ func dummyClient(s *http.Server, t *testing.T) {
 		t.Error("Error GetAgent " + strconv.Itoa(httpStatus))
 	}
 
-	_, httpStatus, err = amsclient.GetAgentAddress(0, 0)
+	_, httpStatus, err = amsClient.GetAgentAddress(0, 0)
 	if err != nil {
 		t.Error(err)
 	}
@@ -201,7 +201,7 @@ func dummyClient(s *http.Server, t *testing.T) {
 		t.Error("Error GetAgentAddress " + strconv.Itoa(httpStatus))
 	}
 
-	_, httpStatus, err = amsclient.GetAgencies(0)
+	_, httpStatus, err = amsClient.GetAgencies(0)
 	if err != nil {
 		t.Error(err)
 	}
@@ -209,7 +209,7 @@ func dummyClient(s *http.Server, t *testing.T) {
 		t.Error("Error GetAgencies " + strconv.Itoa(httpStatus))
 	}
 
-	_, httpStatus, err = amsclient.GetAgencyInfo(0, 0, 0)
+	_, httpStatus, err = amsClient.GetAgencyInfo(0, 0, 0)
 	if err != nil {
 		t.Error(err)
 	}

@@ -127,6 +127,9 @@ func (ams *AMS) handleAPI(w http.ResponseWriter, r *http.Request) {
 					if respath[7] == "address" {
 						cmapErr, httpErr = ams.handleAgentAddress(masID, agentID, w, r)
 						resvalid = true
+					} else if respath[7] == "custom" {
+						cmapErr, httpErr = ams.handleAgentCustom(masID, agentID, w, r)
+						resvalid = true
 					}
 				}
 			}
@@ -311,8 +314,8 @@ func (ams *AMS) handleAgentAddress(masID int, agentid int, w http.ResponseWriter
 			var agentAddr schemas.Address
 			cmapErr := json.Unmarshal(body, &agentAddr)
 			if cmapErr == nil {
-				go ams.updateAgentAddress(masID, agentid, agentAddr)
-				httpErr = httpreply.Updated(w, nil)
+				cmapErr = ams.updateAgentAddress(masID, agentid, agentAddr)
+				httpErr = httpreply.Updated(w, cmapErr)
 			} else {
 				httpErr = httpreply.JSONUnmarshalError(w)
 			}
@@ -323,6 +326,29 @@ func (ams *AMS) handleAgentAddress(masID int, agentid int, w http.ResponseWriter
 		httpErr = httpreply.MethodNotAllowed(w)
 		cmapErr = errors.New("Error: Method not allowed on path /api/clonemap/mas/{mas-id}/agent/" +
 			"{agent-id}/address")
+	}
+	return
+}
+
+// handleAgentAddress is the handler for requests to path
+// /api/clonemap/mas/{mas-id}/agents/{agent-id}/custom
+func (ams *AMS) handleAgentCustom(masID int, agentid int, w http.ResponseWriter,
+	r *http.Request) (cmapErr, httpErr error) {
+	if r.Method == "PUT" {
+		// update custom of specified agent
+		var body []byte
+		body, cmapErr = ioutil.ReadAll(r.Body)
+		if cmapErr == nil {
+			custom := string(body)
+			cmapErr = ams.updateAgentCustom(masID, agentid, custom)
+			httpErr = httpreply.Updated(w, cmapErr)
+		} else {
+			httpErr = httpreply.InvalidBodyError(w)
+		}
+	} else {
+		httpErr = httpreply.MethodNotAllowed(w)
+		cmapErr = errors.New("Error: Method not allowed on path /api/clonemap/mas/{mas-id}/agent/" +
+			"{agent-id}/custom")
 	}
 	return
 }

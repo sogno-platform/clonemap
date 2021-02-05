@@ -51,7 +51,7 @@ import (
 	"strconv"
 	"sync"
 
-	amsclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/ams/client"
+	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/ams"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
@@ -65,11 +65,12 @@ type mqttClient struct {
 	mutex      *sync.Mutex // mutex for message inbox map
 	logError   *log.Logger
 	logInfo    *log.Logger
+	amsClient  *ams.Client
 }
 
 // newMQTTClient creates a new mqtt agency client
 func newMQTTClient(svc string, port int, name string, logErr *log.Logger,
-	logInf *log.Logger) (cli *mqttClient) {
+	logInf *log.Logger, amsClient *ams.Client) (cli *mqttClient) {
 	cli = &mqttClient{
 		brokerSvc:  svc,
 		brokerPort: port,
@@ -77,6 +78,7 @@ func newMQTTClient(svc string, port int, name string, logErr *log.Logger,
 		mutex:      &sync.Mutex{},
 		logError:   logErr,
 		logInfo:    logInf,
+		amsClient:  amsClient,
 	}
 	cli.logInfo.Println("Created MQTT client")
 	return
@@ -111,7 +113,7 @@ func (cli *mqttClient) newIncomingMQTTMessage(client mqtt.Client, msg mqtt.Messa
 		return
 	}
 	ags := []schemas.ImageGroupSpec{imSpec}
-	_, err = amsclient.PostAgents(0, ags)
+	_, err = cli.amsClient.PostAgents(0, ags)
 	return
 }
 

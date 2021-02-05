@@ -92,6 +92,9 @@ type storage interface {
 	// setAgentAddress sets address of agent
 	setAgentAddress(masID int, agentID int, address schemas.Address) (err error)
 
+	// setAgentCustom sets custom config of agent
+	setAgentCustom(masID int, agentID int, custom string) (err error)
+
 	// getAgencies returns specs of all agencies in MAS
 	getAgencies(masID int) (ret schemas.Agencies, err error)
 
@@ -302,6 +305,24 @@ func (stor *localStorage) setAgentAddress(masID int, agentID int,
 		return
 	}
 	stor.mas[masID].Agents.Inst[agentID].Address = address
+	stor.mutex.Unlock()
+	return
+}
+
+// setAgentCustom sets custom of agent
+func (stor *localStorage) setAgentCustom(masID int, agentID int, custom string) (err error) {
+	stor.mutex.Lock()
+	if len(stor.mas)-1 < masID {
+		stor.mutex.Unlock()
+		err = errors.New("Agent does not exist")
+		return
+	}
+	if len(stor.mas[masID].Agents.Inst)-1 < agentID {
+		stor.mutex.Unlock()
+		err = errors.New("Agent does not exist")
+		return
+	}
+	stor.mas[masID].Agents.Inst[agentID].Spec.Custom = custom
 	stor.mutex.Unlock()
 	return
 }

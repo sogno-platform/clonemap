@@ -42,8 +42,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-// Package client contains code for interaction with ams
-package client
+// contains code for interaction with ams
+
+package ams
 
 import (
 	"encoding/json"
@@ -57,21 +58,20 @@ import (
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 )
 
-// Host contains the host name of ams (IP or k8s service name)
-var Host = "ams"
-
-// Port contains the port on which ams is listening
-var Port = 9000
-
-var httpClient = &http.Client{Timeout: time.Second * 60}
-var delay = time.Second * 1
-var numRetries = 4
+// Client is the ams client
+type Client struct {
+	httpClient *http.Client  // http client
+	Host       string        // ams host name
+	Port       int           // ams port
+	delay      time.Duration // delay between two retries
+	numRetries int           // number of retries
+}
 
 // Alive tests if alive
-func Alive() (alive bool) {
+func (cli *Client) Alive() (alive bool) {
 	alive = false
-	_, httpStatus, err := httpretry.Get(httpClient, "http://"+Host+":"+strconv.Itoa(Port)+
-		"/api/alive", time.Second*2, 2)
+	_, httpStatus, err := httpretry.Get(cli.httpClient, cli.prefix()+"/api/alive",
+		time.Second*2, 2)
 	if err == nil && httpStatus == http.StatusOK {
 		alive = true
 	}
@@ -79,10 +79,10 @@ func Alive() (alive bool) {
 }
 
 // GetCloneMAP requests CloneMAP information
-func GetCloneMAP() (cmap schemas.CloneMAP, httpStatus int, err error) {
+func (cli *Client) GetCloneMAP() (cmap schemas.CloneMAP, httpStatus int, err error) {
 	var body []byte
-	body, httpStatus, err = httpretry.Get(httpClient, "http://"+Host+":"+strconv.Itoa(Port)+
-		"/api/clonemap", time.Second*2, 2)
+	body, httpStatus, err = httpretry.Get(cli.httpClient, cli.prefix()+"/api/clonemap",
+		time.Second*2, 2)
 	if err != nil {
 		return
 	}
@@ -94,10 +94,10 @@ func GetCloneMAP() (cmap schemas.CloneMAP, httpStatus int, err error) {
 }
 
 // GetMASsShort requests mas information
-func GetMASsShort() (mass []schemas.MASInfoShort, httpStatus int, err error) {
+func (cli *Client) GetMASsShort() (mass []schemas.MASInfoShort, httpStatus int, err error) {
 	var body []byte
-	body, httpStatus, err = httpretry.Get(httpClient, "http://"+Host+":"+strconv.Itoa(Port)+
-		"/api/clonemap/mas", time.Second*2, 2)
+	body, httpStatus, err = httpretry.Get(cli.httpClient, cli.prefix()+"/api/clonemap/mas",
+		time.Second*2, 2)
 	if err != nil {
 		return
 	}
@@ -109,18 +109,18 @@ func GetMASsShort() (mass []schemas.MASInfoShort, httpStatus int, err error) {
 }
 
 // PostMAS post an mas
-func PostMAS(mas schemas.MASSpec) (httpStatus int, err error) {
+func (cli *Client) PostMAS(mas schemas.MASSpec) (httpStatus int, err error) {
 	js, _ := json.Marshal(mas)
-	_, httpStatus, err = httpretry.Post(httpClient, "http://"+Host+":"+strconv.Itoa(Port)+
-		"/api/clonemap/mas", "application/json", js, time.Second*2, 2)
+	_, httpStatus, err = httpretry.Post(cli.httpClient, cli.prefix()+"/api/clonemap/mas",
+		"application/json", js, time.Second*2, 2)
 	return
 }
 
 // GetMAS requests mas information
-func GetMAS(masID int) (mas schemas.MASInfo, httpStatus int, err error) {
+func (cli *Client) GetMAS(masID int) (mas schemas.MASInfo, httpStatus int, err error) {
 	var body []byte
-	body, httpStatus, err = httpretry.Get(httpClient, "http://"+Host+":"+strconv.Itoa(Port)+
-		"/api/clonemap/mas/"+strconv.Itoa(masID), time.Second*2, 2)
+	body, httpStatus, err = httpretry.Get(cli.httpClient, cli.prefix()+"/api/clonemap/mas/"+
+		strconv.Itoa(masID), time.Second*2, 2)
 	if err != nil {
 		return
 	}
@@ -132,18 +132,18 @@ func GetMAS(masID int) (mas schemas.MASInfo, httpStatus int, err error) {
 }
 
 // DeleteMAS deletes a MAS
-func DeleteMAS(masID int) (httpStatus int, err error) {
-	httpStatus, err = httpretry.Delete(httpClient, "http://"+Host+":"+strconv.Itoa(Port)+
-		"/api/clonemap/mas/"+strconv.Itoa(masID), nil,
+func (cli *Client) DeleteMAS(masID int) (httpStatus int, err error) {
+	httpStatus, err = httpretry.Delete(cli.httpClient, cli.prefix()+"/api/clonemap/mas/"+
+		strconv.Itoa(masID), nil,
 		time.Second*2, 2)
 	return
 }
 
 // GetAgents requests agent information
-func GetAgents(masID int) (agents schemas.Agents, httpStatus int, err error) {
+func (cli *Client) GetAgents(masID int) (agents schemas.Agents, httpStatus int, err error) {
 	var body []byte
-	body, httpStatus, err = httpretry.Get(httpClient, "http://"+Host+":"+strconv.Itoa(Port)+
-		"/api/clonemap/mas/"+strconv.Itoa(masID)+"/agents", time.Second*2, 2)
+	body, httpStatus, err = httpretry.Get(cli.httpClient, cli.prefix()+"/api/clonemap/mas/"+
+		strconv.Itoa(masID)+"/agents", time.Second*2, 2)
 	if err != nil {
 		return
 	}
@@ -155,19 +155,20 @@ func GetAgents(masID int) (agents schemas.Agents, httpStatus int, err error) {
 }
 
 // PostAgents post agents to mas
-func PostAgents(masID int, ags []schemas.ImageGroupSpec) (httpStatus int, err error) {
+func (cli *Client) PostAgents(masID int, ags []schemas.ImageGroupSpec) (httpStatus int, err error) {
 	js, _ := json.Marshal(ags)
-	_, httpStatus, err = httpretry.Post(httpClient, "http://"+Host+":"+strconv.Itoa(Port)+
-		"/api/clonemap/mas/"+strconv.Itoa(masID)+"/agents", "application/json", js, time.Second*2,
+	_, httpStatus, err = httpretry.Post(cli.httpClient, cli.prefix()+"/api/clonemap/mas/"+
+		strconv.Itoa(masID)+"/agents", "application/json", js, time.Second*2,
 		2)
 	return
 }
 
 // GetAgent requests agent information
-func GetAgent(masID int, agentID int) (agent schemas.AgentInfo, httpStatus int, err error) {
+func (cli *Client) GetAgent(masID int, agentID int) (agent schemas.AgentInfo, httpStatus int,
+	err error) {
 	var body []byte
-	body, httpStatus, err = httpretry.Get(httpClient, "http://"+Host+":"+strconv.Itoa(Port)+
-		"/api/clonemap/mas/"+strconv.Itoa(masID)+"/agents/"+strconv.Itoa(agentID), time.Second*2, 2)
+	body, httpStatus, err = httpretry.Get(cli.httpClient, cli.prefix()+"/api/clonemap/mas/"+
+		strconv.Itoa(masID)+"/agents/"+strconv.Itoa(agentID), time.Second*2, 2)
 	if err != nil {
 		return
 	}
@@ -179,10 +180,11 @@ func GetAgent(masID int, agentID int) (agent schemas.AgentInfo, httpStatus int, 
 }
 
 // GetAgentAddress requests agent address
-func GetAgentAddress(masID int, agentID int) (address schemas.Address, httpStatus int, err error) {
+func (cli *Client) GetAgentAddress(masID int, agentID int) (address schemas.Address, httpStatus int,
+	err error) {
 	var body []byte
-	ip := getIP()
-	body, httpStatus, err = httpretry.Get(httpClient, "http://"+ip+":"+strconv.Itoa(Port)+
+	ip := cli.getIP()
+	body, httpStatus, err = httpretry.Get(cli.httpClient, "http://"+ip+":"+strconv.Itoa(cli.Port)+
 		"/api/clonemap/mas/"+strconv.Itoa(masID)+"/agents/"+strconv.Itoa(agentID)+"/address",
 		time.Second*2, 2)
 	if err != nil {
@@ -196,18 +198,18 @@ func GetAgentAddress(masID int, agentID int) (address schemas.Address, httpStatu
 }
 
 // DeleteAgent deletes an agent
-func DeleteAgent(masID int, agentID int) (httpStatus int, err error) {
-	httpStatus, err = httpretry.Delete(httpClient, "http://"+Host+":"+strconv.Itoa(Port)+
-		"/api/clonemap/mas/"+strconv.Itoa(masID)+"/agents/"+strconv.Itoa(agentID), nil,
+func (cli *Client) DeleteAgent(masID int, agentID int) (httpStatus int, err error) {
+	httpStatus, err = httpretry.Delete(cli.httpClient, cli.prefix()+"/api/clonemap/mas/"+
+		strconv.Itoa(masID)+"/agents/"+strconv.Itoa(agentID), nil,
 		time.Second*2, 2)
 	return
 }
 
 // GetAgencies requests agency information
-func GetAgencies(masID int) (agencies schemas.Agencies, httpStatus int, err error) {
+func (cli *Client) GetAgencies(masID int) (agencies schemas.Agencies, httpStatus int, err error) {
 	var body []byte
-	body, httpStatus, err = httpretry.Get(httpClient, "http://"+Host+":"+strconv.Itoa(Port)+
-		"/api/clonemap/mas/"+strconv.Itoa(masID)+"/agencies", time.Second*2, 2)
+	body, httpStatus, err = httpretry.Get(cli.httpClient, cli.prefix()+"/api/clonemap/mas/"+
+		strconv.Itoa(masID)+"/agencies", time.Second*2, 2)
 	if err != nil {
 		return
 	}
@@ -219,11 +221,11 @@ func GetAgencies(masID int) (agencies schemas.Agencies, httpStatus int, err erro
 }
 
 // GetAgencyInfo requests agency information
-func GetAgencyInfo(masID int, imID int, agencyID int) (agency schemas.AgencyInfoFull,
+func (cli *Client) GetAgencyInfo(masID int, imID int, agencyID int) (agency schemas.AgencyInfoFull,
 	httpStatus int, err error) {
 	var body []byte
-	body, httpStatus, err = httpretry.Get(httpClient, "http://"+Host+":"+strconv.Itoa(Port)+
-		"/api/clonemap/mas/"+strconv.Itoa(masID)+"/imgroup/"+strconv.Itoa(imID)+"/agency/"+
+	body, httpStatus, err = httpretry.Get(cli.httpClient, cli.prefix()+"/api/clonemap/mas/"+
+		strconv.Itoa(masID)+"/imgroup/"+strconv.Itoa(imID)+"/agency/"+
 		strconv.Itoa(agencyID), time.Second*2, 2)
 	if err != nil {
 		return
@@ -236,20 +238,30 @@ func GetAgencyInfo(masID int, imID int, agencyID int) (agency schemas.AgencyInfo
 	return
 }
 
-// Init initializes the client
-func Init(timeout time.Duration, del time.Duration, numRet int) {
-	httpClient.Timeout = timeout
-	delay = del
-	numRetries = numRet
-}
-
-func getIP() (ret string) {
+func (cli *Client) getIP() (ret string) {
 	for {
-		ips, err := net.LookupHost(Host)
+		ips, err := net.LookupHost(cli.Host)
 		if len(ips) > 0 && err == nil {
 			ret = ips[0]
 			break
 		}
+	}
+	return
+}
+
+func (cli *Client) prefix() (ret string) {
+	ret = "http://" + cli.Host + ":" + strconv.Itoa(cli.Port)
+	return
+}
+
+// NewClient creates a new AMS client
+func NewClient(timeout time.Duration, del time.Duration, numRet int) (cli *Client) {
+	cli = &Client{
+		httpClient: &http.Client{Timeout: timeout},
+		Host:       "ams",
+		Port:       9000,
+		delay:      del,
+		numRetries: numRet,
 	}
 	return
 }

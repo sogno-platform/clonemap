@@ -56,6 +56,7 @@ THE SOFTWARE.
 // ams/mas/<masID>/im/<imID>/agency/<agencyID>: schemas.AgencyInfo
 // ams/mas/<masID>/agentcounter int (agentCounter)
 // ams/mas/<masID>/agent/<agentID>: schemas.AgentInfo
+// ams/mas/<masID>/agent/<agentID>/address: schemas.Adress
 //
 // df/graph/<masID>: schemas.Graph
 
@@ -115,8 +116,27 @@ func (stor *etcdStorage) setCloneMAPInfo(cloneMAP schemas.CloneMAP) (err error) 
 // setAgentAddress sets address of agent
 func (stor *etcdStorage) setAgentAddress(masID int, agentID int,
 	address schemas.Address) (err error) {
-	err = stor.etcdPutResource("ams/mas/"+strconv.Itoa(masID)+"/agent/"+strconv.Itoa(agentID)+
-		"/address", address)
+	var agentInfo schemas.AgentInfo
+	agentInfo, err = stor.getAgentInfo(masID, agentID)
+	if err != nil {
+		return
+	}
+	agentInfo.Address = address
+	err = stor.etcdPutResource("ams/mas/"+strconv.Itoa(masID)+"/agent/"+strconv.Itoa(agentID),
+		agentInfo)
+	return
+}
+
+// setAgentCustom sets custom config of agent
+func (stor *etcdStorage) setAgentCustom(masID int, agentID int, custom string) (err error) {
+	var agentInfo schemas.AgentInfo
+	agentInfo, err = stor.getAgentInfo(masID, agentID)
+	if err != nil {
+		return
+	}
+	agentInfo.Spec.Custom = custom
+	err = stor.etcdPutResource("ams/mas/"+strconv.Itoa(masID)+"/agent/"+strconv.Itoa(agentID),
+		agentInfo)
 	return
 }
 

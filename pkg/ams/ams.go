@@ -189,6 +189,16 @@ func (ams *AMS) updateAgentAddress(masID int, agentID int, address schemas.Addre
 	return
 }
 
+// updateAgentCustom sets custom config of agent and sends PUT to agency
+func (ams *AMS) updateAgentCustom(masID int, agentID int, custom string) (err error) {
+	err = ams.stor.setAgentCustom(masID, agentID, custom)
+	if err != nil {
+		return
+	}
+	// ToDo Post new custom to agency
+	return
+}
+
 // getAgencies returns specs of all agencies in MAS
 func (ams *AMS) getAgencies(masID int) (ret schemas.Agencies, err error) {
 	ret, err = ams.stor.getAgencies(masID)

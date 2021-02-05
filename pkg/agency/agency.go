@@ -58,7 +58,7 @@ import (
 	"syscall"
 	"time"
 
-	amsclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/ams/client"
+	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/ams"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/status"
 )
@@ -75,6 +75,7 @@ type Agency struct {
 	msgIn          chan []schemas.ACLMessage
 	logger         *loggerClient
 	mqtt           *mqttClient
+	amsClient      *ams.Client
 	logInfo        *log.Logger // logger for info logging
 	logError       *log.Logger // logger for error logging
 }
@@ -88,6 +89,7 @@ func StartAgency(task func(*Agent) error) (err error) {
 		remoteAgents:   make(map[int]*Agent),
 		remoteAgencies: make(map[string]*remoteAgency),
 		msgIn:          make(chan []schemas.ACLMessage, 1000),
+		amsClient:      ams.NewClient(time.Second*60, time.Second*1, 4),
 		logError:       log.New(os.Stderr, "[ERROR] ", log.LstdFlags),
 	}
 	err = agency.init()
@@ -168,7 +170,7 @@ func (agency *Agency) terminate(gracefulStop chan os.Signal) {
 func (agency *Agency) startAgents() (err error) {
 	// request configuration
 	var agencyInfoFull schemas.AgencyInfoFull
-	agencyInfoFull, _, err = amsclient.GetAgencyInfo(agency.info.MASID, agency.info.ImageGroupID,
+	agencyInfoFull, _, err = agency.amsClient.GetAgencyInfo(agency.info.MASID, agency.info.ImageGroupID,
 		agency.info.ID)
 	agency.mutex.Lock()
 	agency.info.ID = agencyInfoFull.ID

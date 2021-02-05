@@ -44,13 +44,22 @@ THE SOFTWARE.
 
 package frontend
 
+import (
+	"time"
+
+	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/ams"
+)
+
 // Frontend frontend
 type Frontend struct {
+	amsClient *ams.Client
 }
 
 // StartFrontend start
 func StartFrontend() (err error) {
-	fe := &Frontend{}
+	fe := &Frontend{
+		amsClient: ams.NewClient(time.Second*60, time.Second*1, 4),
+	}
 	fe.listen()
 	return
 }

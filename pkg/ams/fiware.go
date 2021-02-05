@@ -406,6 +406,12 @@ func (stor *fiwareStorage) setAgentAddress(masID int, agentID int,
 	return
 }
 
+// setAgentCustom sets custom config of agent
+func (stor *fiwareStorage) setAgentCustom(masID int, agentID int, custom string) (err error) {
+
+	return
+}
+
 // getAgencies returns specs of all agencies in MAS
 func (stor *fiwareStorage) getAgencies(masID int) (ret schemas.Agencies, err error) {
 	// check if mas exists

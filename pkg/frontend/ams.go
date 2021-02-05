@@ -51,7 +51,6 @@ import (
 	"net/http"
 	"strconv"
 
-	amsclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/ams/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/common/httpreply"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 )
@@ -106,7 +105,7 @@ func (fe *Frontend) handleMAS(w http.ResponseWriter, r *http.Request) (cmapErr, 
 	if r.Method == "GET" {
 		// return short info of all MAS
 		var mass []schemas.MASInfoShort
-		mass, _, cmapErr = amsclient.GetMASsShort()
+		mass, _, cmapErr = fe.amsClient.GetMASsShort()
 		if cmapErr == nil {
 			httpErr = httpreply.Resource(w, mass, cmapErr)
 		} else {
@@ -119,7 +118,7 @@ func (fe *Frontend) handleMAS(w http.ResponseWriter, r *http.Request) (cmapErr, 
 			var masSpec schemas.MASSpec
 			cmapErr = json.Unmarshal(body, &masSpec)
 			if cmapErr == nil {
-				_, httpErr = amsclient.PostMAS(masSpec)
+				_, httpErr = fe.amsClient.PostMAS(masSpec)
 			} else {
 				httpErr = httpreply.JSONUnmarshalError(w)
 			}
@@ -139,7 +138,7 @@ func (fe *Frontend) handlemasID(masID int, w http.ResponseWriter, r *http.Reques
 	if r.Method == "GET" {
 		// return long information about specified MAS
 		var masInfo schemas.MASInfo
-		masInfo, _, cmapErr = amsclient.GetMAS(masID)
+		masInfo, _, cmapErr = fe.amsClient.GetMAS(masID)
 		httpErr = httpreply.Resource(w, masInfo, cmapErr)
 	} else if r.Method == "DELETE" {
 		// delete specified MAS
@@ -162,7 +161,7 @@ func (fe *Frontend) handleAgent(masID int, w http.ResponseWriter, r *http.Reques
 			var groupSpecs []schemas.ImageGroupSpec
 			cmapErr = json.Unmarshal(body, &groupSpecs)
 			if cmapErr == nil {
-				_, cmapErr = amsclient.PostAgents(masID, groupSpecs)
+				_, cmapErr = fe.amsClient.PostAgents(masID, groupSpecs)
 				httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Ressource Created"))
 			} else {
 				httpErr = httpreply.JSONUnmarshalError(w)
@@ -183,11 +182,11 @@ func (fe *Frontend) handleAgentID(masID int, agentID int, w http.ResponseWriter,
 	if r.Method == "GET" {
 		// return long information of specified agent
 		var agentInfo schemas.AgentInfo
-		agentInfo, _, cmapErr = amsclient.GetAgent(masID, agentID)
+		agentInfo, _, cmapErr = fe.amsClient.GetAgent(masID, agentID)
 		httpErr = httpreply.Resource(w, agentInfo, cmapErr)
 	} else if r.Method == "DELETE" {
 		// delete specified agent
-		_, cmapErr = amsclient.DeleteAgent(masID, agentID)
+		_, cmapErr = fe.amsClient.DeleteAgent(masID, agentID)
 		httpErr = httpreply.Deleted(w, cmapErr)
 	} else {
 		httpErr = httpreply.MethodNotAllowed(w)

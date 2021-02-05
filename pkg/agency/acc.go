@@ -52,7 +52,6 @@ import (
 	"strconv"
 
 	agencyclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/agency/client"
-	amsclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/ams/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 )
 
@@ -144,7 +143,7 @@ func (agency *Agency) requestAgentAddress(agentID int) (address schemas.Address,
 	agency.mutex.Lock()
 	masID := agency.info.MASID
 	agency.mutex.Unlock()
-	address, _, err = amsclient.GetAgentAddress(masID, agentID)
+	address, _, err = agency.amsClient.GetAgentAddress(masID, agentID)
 	return
 }
 
