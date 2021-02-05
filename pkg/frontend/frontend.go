@@ -47,18 +47,18 @@ package frontend
 import (
 	"time"
 
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/ams"
+	amscli "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/ams/client"
 )
 
 // Frontend frontend
 type Frontend struct {
-	amsClient *ams.Client
+	amsClient *amscli.Client
 }
 
 // StartFrontend start
 func StartFrontend() (err error) {
 	fe := &Frontend{
-		amsClient: ams.NewClient(time.Second*60, time.Second*1, 4),
+		amsClient: amscli.New(time.Second*60, time.Second*1, 4),
 	}
 	fe.listen()
 	return

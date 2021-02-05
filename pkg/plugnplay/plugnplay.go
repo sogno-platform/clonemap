@@ -54,7 +54,7 @@ import (
 	"os"
 	"time"
 
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/ams"
+	amscli "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/ams/client"
 )
 
 // PnP implements the plug and play mechanism
@@ -62,14 +62,14 @@ type PnP struct {
 	logInfo   *log.Logger // logger for info logging
 	logError  *log.Logger // logger for error logging
 	mqttCli   *mqttClient
-	amsClient *ams.Client
+	amsClient *amscli.Client
 }
 
 // StartPnP starts an PnP instance. It initializes the storage object and starts the API server.
 func StartPnP() (err error) {
 	pnp := &PnP{
 		logError:  log.New(os.Stderr, "[ERROR] ", log.LstdFlags),
-		amsClient: ams.NewClient(time.Second*60, time.Second*1, 4),
+		amsClient: amscli.New(time.Second*60, time.Second*1, 4),
 	}
 	// create storage and deployment object according to specified deployment type
 	err = pnp.init()

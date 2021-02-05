@@ -42,9 +42,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-// contains code for interaction with ams
-
-package ams
+// Package client contains code for interaction with ams
+package client
 
 import (
 	"encoding/json"
@@ -254,8 +253,8 @@ func (cli *Client) prefix() (ret string) {
 	return
 }
 
-// NewClient creates a new AMS client
-func NewClient(timeout time.Duration, del time.Duration, numRet int) (cli *Client) {
+// New creates a new AMS client
+func New(timeout time.Duration, del time.Duration, numRet int) (cli *Client) {
 	cli = &Client{
 		httpClient: &http.Client{Timeout: timeout},
 		Host:       "ams",

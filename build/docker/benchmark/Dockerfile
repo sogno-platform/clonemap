@@ -47,7 +47,7 @@ COPY go.mod .
 COPY go.sum .
 RUN go mod download
 COPY pkg/agency pkg/agency
-COPY pkg/ams pkg/ams
+COPY pkg/ams/client pkg/ams/client
 COPY pkg/logger/client pkg/logger/client
 COPY pkg/df/client pkg/df/client
 COPY pkg/schemas pkg/schemas
