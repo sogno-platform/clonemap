@@ -262,7 +262,9 @@ func (ams *AMS) handleMASName(name string, w http.ResponseWriter, r *http.Reques
 	httpErr error) {
 	if r.Method == "GET" {
 		// search for MAS with matching name
-		// ToDo
+		var ids []int
+		ids, cmapErr = ams.getMASByName(name)
+		httpErr = httpreply.Resource(w, ids, cmapErr)
 	} else {
 		httpErr = httpreply.MethodNotAllowed(w)
 		cmapErr = errors.New("Error: Method not allowed on path /api/clonemap/name/{name}")
@@ -383,7 +385,9 @@ func (ams *AMS) handleAgentName(masID int, name string, w http.ResponseWriter,
 	r *http.Request) (cmapErr, httpErr error) {
 	if r.Method == "GET" {
 		// search for agents with matching name
-		// ToDo
+		var ids []int
+		ids, cmapErr = ams.getAgentsByName(masID, name)
+		httpErr = httpreply.Resource(w, ids, cmapErr)
 	} else {
 		httpErr = httpreply.MethodNotAllowed(w)
 		cmapErr = errors.New("Error: Method not allowed on path /api/clonemap/mas/{masid}/agents/" +

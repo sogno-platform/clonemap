@@ -171,6 +171,21 @@ func (ams *AMS) getMASInfo(masID int) (ret schemas.MASInfo, err error) {
 	return
 }
 
+// getMASByName returns IDs of all MAS with mathcing name
+func (ams *AMS) getMASByName(name string) (masIDs []int, err error) {
+	var mass schemas.MASs
+	mass, err = ams.stor.getMASs()
+	if err != nil {
+		return
+	}
+	for i := range mass.Inst {
+		if mass.Inst[i].Config.Name == name {
+			masIDs = append(masIDs, i)
+		}
+	}
+	return
+}
+
 // getAgents returns specs of all agents in MAS
 func (ams *AMS) getAgents(masID int) (ret schemas.Agents, err error) {
 	ret, err = ams.stor.getAgents(masID)
@@ -210,6 +225,17 @@ func (ams *AMS) updateAgentCustom(masID int, agentID int, custom string) (err er
 	httpStatus, err = ams.agencyClient.PutAgentCustom(agentAddress.Agency, agentID, custom)
 	if httpStatus != http.StatusOK {
 		err = errors.New("error updating custom data")
+	}
+	return
+}
+
+// getAgentsByName returns IDs of all agents with matching name
+func (ams *AMS) getAgentsByName(masID int, name string) (agentIDs []int, err error) {
+	var agents schemas.Agents
+	for i := range agents.Inst {
+		if agents.Inst[i].Spec.Name == name {
+			agentIDs = append(agentIDs, i)
+		}
 	}
 	return
 }
