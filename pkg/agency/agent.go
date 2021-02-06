@@ -142,6 +142,14 @@ func (agent *Agent) GetCustomData() (ret string) {
 	return
 }
 
+// updateCustomData updates custom data
+func (agent *Agent) updateCustomData(custom string) {
+	agent.mutex.Lock()
+	agent.custom = custom
+	agent.mutex.Unlock()
+	return
+}
+
 // Terminate terminates the agent
 func (agent *Agent) Terminate() {
 	agent.logInfo.Println("Terminating agent ", agent.GetAgentID())

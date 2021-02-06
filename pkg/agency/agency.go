@@ -255,3 +255,21 @@ func (agency *Agency) getAgencyInfo() (agencyInfo schemas.AgencyInfo, err error)
 	err = nil
 	return
 }
+
+// updateAgentCustom updates the custom agent config
+func (agency *Agency) updateAgentCustom(agentID int, custom string) (err error) {
+	agentExist := false
+	agency.mutex.Lock()
+	for i := range agency.localAgents {
+		if i == agentID {
+			agentExist = true
+			agency.localAgents[i].updateCustomData(custom)
+			break
+		}
+	}
+	agency.mutex.Unlock()
+	if !agentExist {
+		err = errors.New("agent does not exist")
+	}
+	return
+}

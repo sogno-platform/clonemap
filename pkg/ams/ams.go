@@ -56,28 +56,28 @@ import (
 	"strconv"
 	"time"
 
-	agcli "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/agency/client"
-	dfcli "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/df/client"
+	agclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/agency/client"
+	dfclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/df/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 )
 
 // AMS contains storage and deployment object
 type AMS struct {
-	stor      storage     // interface for local or distributed storage
-	depl      deployment  // interface for local or cloud deployment
-	logInfo   *log.Logger // logger for info logging
-	logError  *log.Logger // logger for error logging
-	agencyCli *agcli.Client
-	dfCli     *dfcli.Client
+	stor         storage     // interface for local or distributed storage
+	depl         deployment  // interface for local or cloud deployment
+	logInfo      *log.Logger // logger for info logging
+	logError     *log.Logger // logger for error logging
+	agencyClient *agclient.Client
+	dfClient     *dfclient.Client
 }
 
 // StartAMS starts an AMS instance. It initializes the cluster and storage object and starts API
 // server.
 func StartAMS() (err error) {
 	ams := &AMS{
-		logError:  log.New(os.Stderr, "[ERROR] ", log.LstdFlags),
-		agencyCli: agcli.New(time.Second*60, time.Second*1, 4),
-		dfCli:     dfcli.New(time.Second*60, time.Second*1, 4),
+		logError:     log.New(os.Stderr, "[ERROR] ", log.LstdFlags),
+		agencyClient: agclient.New(time.Second*60, time.Second*1, 4),
+		dfClient:     dfclient.New(time.Second*60, time.Second*1, 4),
 	}
 	// create storage and deployment object according to specified deployment type
 	err = ams.init()
@@ -201,7 +201,16 @@ func (ams *AMS) updateAgentCustom(masID int, agentID int, custom string) (err er
 	if err != nil {
 		return
 	}
-	// ToDo Post new custom to agency
+	var agentAddress schemas.Address
+	agentAddress, err = ams.stor.getAgentAddress(masID, agentID)
+	if err != nil {
+		return
+	}
+	var httpStatus int
+	httpStatus, err = ams.agencyClient.PutAgentCustom(agentAddress.Agency, agentID, custom)
+	if httpStatus != http.StatusOK {
+		err = errors.New("error updating custom data")
+	}
 	return
 }
 
@@ -250,7 +259,7 @@ func (ams *AMS) startMAS(masID int, masInfo schemas.MASInfo, numAgencies []int) 
 	}
 	ams.logInfo.Println("Stored MAS data")
 	if os.Getenv("CLONEMAP_DEPLOYMENT_TYPE") == "local" {
-		_, err = ams.dfCli.PostGraph(masID, masInfo.Graph)
+		_, err = ams.dfClient.PostGraph(masID, masInfo.Graph)
 		if err != nil {
 			ams.logInfo.Println(err.Error())
 			// return
@@ -461,7 +470,7 @@ func (ams *AMS) removeAgent(masID int, agentID int) (err error) {
 	if err != nil {
 		return
 	}
-	_, err = ams.agencyCli.DeleteAgent(addr.Agency, agentID)
+	_, err = ams.agencyClient.DeleteAgent(addr.Agency, agentID)
 
 	return
 }
@@ -469,7 +478,7 @@ func (ams *AMS) removeAgent(masID int, agentID int) (err error) {
 // postAgentToAgency sends a post request to agency with info about agent to start
 func (ams *AMS) postAgentToAgency(agentInfo schemas.AgentInfo) (err error) {
 	var httpStatus int
-	httpStatus, err = ams.agencyCli.PostAgent(agentInfo.Address.Agency, agentInfo)
+	httpStatus, err = ams.agencyClient.PostAgent(agentInfo.Address.Agency, agentInfo)
 	if err != nil {
 		return
 	}

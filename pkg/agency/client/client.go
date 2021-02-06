@@ -163,6 +163,14 @@ func (cli *Client) ReturnMsg(agency string, msg schemas.ACLMessage) (httpStatus 
 	return
 }
 
+// PutAgentCustom puts agent custom data
+func (cli *Client) PutAgentCustom(agency string, agentID int, custom string) (httpStatus int,
+	err error) {
+	_, httpStatus, err = httpretry.Put(cli.httpClient, cli.prefix(agency)+"/api/agency/agents/"+
+		strconv.Itoa(agentID)+"/custom", []byte(custom), time.Second*2, 2)
+	return
+}
+
 func (cli *Client) prefix(agency string) (ret string) {
 	ret = "http://" + agency + ":" + strconv.Itoa(cli.Port)
 	return

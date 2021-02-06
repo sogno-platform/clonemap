@@ -97,6 +97,9 @@ func (agency *Agency) handleAPI(w http.ResponseWriter, r *http.Request) {
 			if respath[5] == "status" {
 				cmapErr, httpErr = agency.handleAgentStatus(agentID, w, r)
 				resvalid = true
+			} else if respath[5] == "custom" {
+				cmapErr, httpErr = agency.handleAgentCustom(agentID, w, r)
+				resvalid = true
 			}
 		}
 	default:
@@ -231,6 +234,28 @@ func (agency *Agency) handleAgentStatus(agid int, w http.ResponseWriter,
 		httpErr = httpreply.MethodNotAllowed(w)
 		cmapErr = errors.New("Error: Method not allowed on path /api/agency/agents/{agent-id}/" +
 			"status")
+	}
+	return
+}
+
+// handleAgentCustom is the handler for requests to path /api/agency/agents/{agent-id}/custom
+func (agency *Agency) handleAgentCustom(agid int, w http.ResponseWriter,
+	r *http.Request) (cmapErr, httpErr error) {
+	if r.Method == "PUT" {
+		// update custom of specified agent
+		var body []byte
+		body, cmapErr = ioutil.ReadAll(r.Body)
+		if cmapErr == nil {
+			custom := string(body)
+			cmapErr = agency.updateAgentCustom(agid, custom)
+			httpErr = httpreply.Updated(w, cmapErr)
+		} else {
+			httpErr = httpreply.InvalidBodyError(w)
+		}
+	} else {
+		httpErr = httpreply.MethodNotAllowed(w)
+		cmapErr = errors.New("Error: Method not allowed on path /api/agency/agents/{agent-id}/" +
+			"custom")
 	}
 	return
 }
