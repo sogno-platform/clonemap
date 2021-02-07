@@ -1,0 +1,44 @@
+version: "3.7"
+
+services:
+  kubestub: 
+    container_name: kubestub
+    hostname: kubestub
+    image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/clonemap_local
+    volumes:
+     - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+     - 8000:8000
+    networks: 
+     - clonemap-net
+    stop_grace_period: 30s
+
+  ams: 
+    image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/ams
+    environment:
+      CLONEMAP_DEPLOYMENT_TYPE: ${CLONEMAP_DEPLOYMENT_TYPE}
+      CLONEMAP_STORAGE_TYPE: ${CLONEMAP_STORAGE_TYPE}
+      CLONEMAP_LOG_LEVEL: ${CLONEMAP_LOG_LEVEL}
+      CLONEMAP_STUB_HOSTNAME: ${CLONEMAP_STUB_HOSTNAME}
+    ports:
+     - 30009:9000
+    depends_on: 
+      - kubestub
+    networks: 
+      - clonemap-net
+
+  # mqtt: 
+  #   image: eclipse-mosquitto
+  #   environment: 
+  #     CLONEMAP_DEPLOYMENT_TYPE: ${CLONEMAP_DEPLOYMENT_TYPE}
+  #   tty: true
+  #   stdin_open: true
+  #   #ports:
+  #   #  - 30883:1883
+  #   networks: 
+  #     - clonemap-net123
+
+networks:
+  clonemap-net:
+    name: clonemap-net
+    attachable: true

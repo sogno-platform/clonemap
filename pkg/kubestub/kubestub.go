@@ -63,14 +63,15 @@ type LocalStub struct {
 	address string
 	// list of all agencies; necessary in order to prevent from starting agencies with same name
 	// and to stop all agencies upon termination
-	agencies []schemas.StubAgencyConfig
-	fiware   bool
-	mqtt     bool
-	logger   bool
-	df       bool
-	pnp      bool
-	frontend bool
-	logLevel string
+	agencies     []schemas.StubAgencyConfig
+	startModules bool
+	fiware       bool
+	mqtt         bool
+	logger       bool
+	df           bool
+	pnp          bool
+	frontend     bool
+	logLevel     string
 }
 
 // StartLocalStub starts the local stub. The AMS is started and a server for AMS interaction is
@@ -79,6 +80,7 @@ func StartLocalStub() {
 	var err error
 	// initialization
 	cntxt := &LocalStub{}
+	_, cntxt.startModules = os.LookupEnv("CLONEMAP_START_MODULES")
 	_, cntxt.mqtt = os.LookupEnv("CLONEMAP_MODULE_MQTT")
 	_, cntxt.fiware = os.LookupEnv("CLONEMAP_MODULE_FIWARE")
 	_, cntxt.logger = os.LookupEnv("CLONEMAP_MODULE_LOGGER")
@@ -90,64 +92,66 @@ func StartLocalStub() {
 		cntxt.logLevel = "error"
 	}
 
-	fmt.Println("Create Bridge Network")
-	err = cntxt.createBridge()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Println("Create AMS Container")
-	err = cntxt.createAMS()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	if cntxt.mqtt || cntxt.fiware {
-		fmt.Println("Create MQTT Broker Container")
-		err = cntxt.createMQTT()
+	if cntxt.startModules {
+		fmt.Println("Create Bridge Network")
+		err = cntxt.createBridge()
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-	}
-	if cntxt.fiware {
-		fmt.Println("Ceate Fiware Containers")
-		err = cntxt.createFiware()
+		fmt.Println("Create AMS Container")
+		err = cntxt.createAMS()
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-	}
-	if cntxt.logger {
-		fmt.Println("Create Logger Container")
-		err = cntxt.createLogger()
-		if err != nil {
-			fmt.Println(err)
-			return
+		if cntxt.mqtt || cntxt.fiware {
+			fmt.Println("Create MQTT Broker Container")
+			err = cntxt.createMQTT()
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
 		}
-	}
-	if cntxt.df {
-		fmt.Println("Create DF Container")
-		err = cntxt.createDF()
-		if err != nil {
-			fmt.Println(err)
-			return
+		if cntxt.fiware {
+			fmt.Println("Ceate Fiware Containers")
+			err = cntxt.createFiware()
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
 		}
-	}
-	if cntxt.pnp {
-		fmt.Println("Create Plugnplay Container")
-		err = cntxt.createPnP()
-		if err != nil {
-			fmt.Println(err)
-			return
+		if cntxt.logger {
+			fmt.Println("Create Logger Container")
+			err = cntxt.createLogger()
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
 		}
-	}
-	if cntxt.frontend {
-		fmt.Println("Create Frontend Container")
-		err = cntxt.createFrontend()
-		if err != nil {
-			fmt.Println(err)
-			return
+		if cntxt.df {
+			fmt.Println("Create DF Container")
+			err = cntxt.createDF()
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+		}
+		if cntxt.pnp {
+			fmt.Println("Create Plugnplay Container")
+			err = cntxt.createPnP()
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+		}
+		if cntxt.frontend {
+			fmt.Println("Create Frontend Container")
+			err = cntxt.createFrontend()
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
 		}
 	}
 	fmt.Println("Ready")
@@ -183,65 +187,68 @@ func (stub *LocalStub) terminate(gracefulStop chan os.Signal) {
 			// os.Exit(0)
 		}
 	}
-	fmt.Println("Stop AMS Container")
-	err = stub.deleteAMS()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(0)
-	}
-	if stub.logger {
-		fmt.Println("Stop Logger Container")
-		err = stub.deleteLogger()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(0)
-		}
-	}
-	if stub.df {
-		fmt.Println("Stop DF Container")
-		err = stub.deleteDF()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(0)
-		}
-	}
-	if stub.pnp {
-		fmt.Println("Stop Plugnplay Container")
-		err = stub.deletePnP()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(0)
-		}
-	}
-	if stub.frontend {
-		fmt.Println("Stop Frontend Container")
-		err = stub.deleteFrontend()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(0)
-		}
-	}
-	if stub.mqtt || stub.fiware {
-		fmt.Println("Stop MQTT Broker Container")
-		err = stub.deleteMQTT()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(0)
-		}
-	}
-	if stub.fiware {
-		fmt.Println("Stop FIWARE Containers")
-		err = stub.deleteFiware()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(0)
-		}
-	}
 
-	fmt.Println("Delete Bridge Network")
-	err = stub.deleteBridge()
-	if err != nil {
-		fmt.Println(err)
+	if stub.startModules {
+		fmt.Println("Stop AMS Container")
+		err = stub.deleteAMS()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(0)
+		}
+		if stub.logger {
+			fmt.Println("Stop Logger Container")
+			err = stub.deleteLogger()
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(0)
+			}
+		}
+		if stub.df {
+			fmt.Println("Stop DF Container")
+			err = stub.deleteDF()
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(0)
+			}
+		}
+		if stub.pnp {
+			fmt.Println("Stop Plugnplay Container")
+			err = stub.deletePnP()
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(0)
+			}
+		}
+		if stub.frontend {
+			fmt.Println("Stop Frontend Container")
+			err = stub.deleteFrontend()
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(0)
+			}
+		}
+		if stub.mqtt || stub.fiware {
+			fmt.Println("Stop MQTT Broker Container")
+			err = stub.deleteMQTT()
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(0)
+			}
+		}
+		if stub.fiware {
+			fmt.Println("Stop FIWARE Containers")
+			err = stub.deleteFiware()
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(0)
+			}
+		}
+
+		fmt.Println("Delete Bridge Network")
+		err = stub.deleteBridge()
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 	os.Exit(0)
 }

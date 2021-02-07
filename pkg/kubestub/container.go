@@ -167,7 +167,6 @@ func (stub *LocalStub) createAMS() (err error) {
 	} else {
 		com += " -e CLONEMAP_STORAGE_TYPE=\"local\""
 	}
-	com += " -e CLONEMAP_SUFFIX=\".clonemap\""
 	com += " -e CLONEMAP_LOG_LEVEL=\"" + stub.logLevel + "\""
 	com += " -e CLONEMAP_STUB_HOSTNAME=\"kubestub\""
 	com += " registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/ams"
@@ -348,7 +347,6 @@ func (stub *LocalStub) createMQTT() (err error) {
 	com += " --name=mqtt" //.clonemap"
 	com += " --hostname=mqtt"
 	com += " --network=clonemap-net"
-	com += " -e CLONEMAP_DEPLOYMENT_TYPE=\"local\""
 	com += " eclipse-mosquitto"
 	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
@@ -386,7 +384,6 @@ func (stub *LocalStub) createAgency(image string, masID int, imID int, agencyID 
 	com += " --name=" + agencyName + ".mas" + strconv.Itoa(masID) + "agencies"
 	com += " --hostname=" + agencyName
 	com += " --network=clonemap-net"
-	//com += " -e CLONEMAP_SUFFIX=\".clonemap\" "
 	if logging {
 		com += " -e CLONEMAP_LOGGING=\"ON\" "
 	} else {
