@@ -88,15 +88,22 @@ func (ams *AMS) handleAPI(w http.ResponseWriter, r *http.Request) {
 			resvalid = true
 		}
 	case 6:
-		var masID int
-		masID, cmapErr = strconv.Atoi(respath[4])
 		if respath[2] == "clonemap" && respath[3] == "mas" && cmapErr == nil {
-			if respath[5] == "agents" {
-				cmapErr, httpErr = ams.handleAgent(masID, w, r)
+			if respath[4] == "name" {
+				cmapErr, httpErr = ams.handleMASName(respath[5], w, r)
 				resvalid = true
-			} else if respath[5] == "agencies" {
-				cmapErr, httpErr = ams.handleAgency(masID, w, r)
-				resvalid = true
+			} else {
+				var masID int
+				masID, cmapErr = strconv.Atoi(respath[4])
+				if cmapErr == nil {
+					if respath[5] == "agents" {
+						cmapErr, httpErr = ams.handleAgent(masID, w, r)
+						resvalid = true
+					} else if respath[5] == "agencies" {
+						cmapErr, httpErr = ams.handleAgency(masID, w, r)
+						resvalid = true
+					}
+				}
 			}
 		}
 	case 7:
@@ -117,19 +124,24 @@ func (ams *AMS) handleAPI(w http.ResponseWriter, r *http.Request) {
 		masID, cmapErr = strconv.Atoi(respath[4])
 		if respath[2] == "clonemap" && respath[3] == "mas" && cmapErr == nil {
 			if respath[5] == "agents" {
-				var agentID int
-				agentID, cmapErr = strconv.Atoi(respath[6])
-				if cmapErr == nil {
-					// if respath[7] == "status" {
-					// 	cmapErr, httpErr = ams.handleAgentStatus(masID, agentID, w, r)
-					// 	resvalid = true
-					// } else
-					if respath[7] == "address" {
-						cmapErr, httpErr = ams.handleAgentAddress(masID, agentID, w, r)
-						resvalid = true
-					} else if respath[7] == "custom" {
-						cmapErr, httpErr = ams.handleAgentCustom(masID, agentID, w, r)
-						resvalid = true
+				if respath[6] == "name" {
+					cmapErr, httpErr = ams.handleAgentName(masID, respath[7], w, r)
+					resvalid = true
+				} else {
+					var agentID int
+					agentID, cmapErr = strconv.Atoi(respath[6])
+					if cmapErr == nil {
+						// if respath[7] == "status" {
+						// 	cmapErr, httpErr = ams.handleAgentStatus(masID, agentID, w, r)
+						// 	resvalid = true
+						// } else
+						if respath[7] == "address" {
+							cmapErr, httpErr = ams.handleAgentAddress(masID, agentID, w, r)
+							resvalid = true
+						} else if respath[7] == "custom" {
+							cmapErr, httpErr = ams.handleAgentCustom(masID, agentID, w, r)
+							resvalid = true
+						}
 					}
 				}
 			}
@@ -245,6 +257,21 @@ func (ams *AMS) handlemasID(masID int, w http.ResponseWriter, r *http.Request) (
 	return
 }
 
+// handleMASName is the handler for requests to path /api/clonemap/mas/name/{name}
+func (ams *AMS) handleMASName(name string, w http.ResponseWriter, r *http.Request) (cmapErr,
+	httpErr error) {
+	if r.Method == "GET" {
+		// search for MAS with matching name
+		var ids []int
+		ids, cmapErr = ams.getMASByName(name)
+		httpErr = httpreply.Resource(w, ids, cmapErr)
+	} else {
+		httpErr = httpreply.MethodNotAllowed(w)
+		cmapErr = errors.New("Error: Method not allowed on path /api/clonemap/name/{name}")
+	}
+	return
+}
+
 // handleAgent is the handler for requests to path /api/clonemap/mas/{mas-id}/agents
 func (ams *AMS) handleAgent(masID int, w http.ResponseWriter, r *http.Request) (cmapErr,
 	httpErr error) {
@@ -349,6 +376,22 @@ func (ams *AMS) handleAgentCustom(masID int, agentid int, w http.ResponseWriter,
 		httpErr = httpreply.MethodNotAllowed(w)
 		cmapErr = errors.New("Error: Method not allowed on path /api/clonemap/mas/{mas-id}/agent/" +
 			"{agent-id}/custom")
+	}
+	return
+}
+
+// handleAgentName is the handler for requests to path /api/clonemap/mas/{masid}/agents/name/{name}
+func (ams *AMS) handleAgentName(masID int, name string, w http.ResponseWriter,
+	r *http.Request) (cmapErr, httpErr error) {
+	if r.Method == "GET" {
+		// search for agents with matching name
+		var ids []int
+		ids, cmapErr = ams.getAgentsByName(masID, name)
+		httpErr = httpreply.Resource(w, ids, cmapErr)
+	} else {
+		httpErr = httpreply.MethodNotAllowed(w)
+		cmapErr = errors.New("Error: Method not allowed on path /api/clonemap/mas/{masid}/agents/" +
+			"name/{name}")
 	}
 	return
 }
