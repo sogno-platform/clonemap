@@ -8,15 +8,19 @@ Although cloneMAP is designed to be executed within a Kubernetes cluster it can 
 This is ment as an easier way to test your MAS application.
 Note that microservices such as the AMS, DF and Logger cannot be scaled horizontally with this method.
 Moreover, the platform is not fault-tolerant when deployed locally and cannot be spread over several machines.
+Local deployment can be done with Docker only or with Docker Compose.
 
-In order to start cloneMAP locally you need a docker installation.
+### Docker only
+
+In the Docker only version you have to start a single Docker container which will start the rest of the platform.
+You need a docker installation.
 How to get started with docker is explained [here](https://docs.docker.com/get-started/).
 An installation guide for Ubuntu can be found [here](https://docs.docker.com/install/linux/docker-ce/ubuntu/).
 
 After installing Docker you can start cloneMAP by running the following command:
 
 ```bash
-docker run -p 8000:8000 -v /var/run/docker.sock:/var/run/docker.sock --name=kubestub registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/clonemap_local
+docker run -p 8000:8000 -v /var/run/docker.sock:/var/run/docker.sock -e CLONEMAP_START_MODULES=true --name=kubestub registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/clonemap_local
 ```
 
 This command will start a Docker container of the image `registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/clonemap_local` and assign the name `kubestub` to it.
@@ -28,7 +32,7 @@ As a result, all docker commands executed inside of the kubestub container will 
 The output of starting the kubestub container should look like this:
 
 ```bash
-docker run -p 8000:8000 -v /var/run/docker.sock:/var/run/docker.sock --name=kubestub registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/clonemap_local
+docker run -p 8000:8000 -v /var/run/docker.sock:/var/run/docker.sock -e CLONEMAP_START_MODULES=true --name=kubestub registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/clonemap_local
 >Create Bridge Network
 >Create AMS Container
 >Ready
@@ -48,7 +52,7 @@ If you want use other modules you can start them as well by setting correspondin
 For example, if you would like to start a MQTT broker the command would look like this:
 
 ```bash
-docker run -p 8000:8000 -v /var/run/docker.sock:/var/run/docker.sock -e CLONEMAP_MODULE_MQTT=true --name=kubestub registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/clonemap_local
+docker run -p 8000:8000 -v /var/run/docker.sock:/var/run/docker.sock -e CLONEMAP_START_MODULES=true -e CLONEMAP_MODULE_MQTT=true --name=kubestub registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/clonemap_local
 ```
 
 The following environment variables can be used to start further modules:
@@ -76,13 +80,32 @@ Subsequently it will detach itself from the clonemap-net network, delete the net
 Starting the platform locally and then terminating it should produce the following output:
 
 ```bash
-docker run -p 8000:8000 -v /var/run/docker.sock:/var/run/docker.sock --name=kubestub registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/clonemap_local
+docker run -p 8000:8000 -v /var/run/docker.sock:/var/run/docker.sock -e CLONEMAP_START_MODULES=true --name=kubestub registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/clonemap_local
 >Create Bridge Network
 >Create AMS Container
 >Ready
 >^CCaught sig: interrupt
 >Stop AMS Container
 >Delete Bridge Network
+```
+
+### Docker Compose
+
+You can also start the platform locally using Docker Compose.
+For this purpose a compose file can be found in `deployments/docker` directory.
+In this directory run the following command:
+
+```bash
+docker-compose up
+```
+
+This will start all cloneMAP modules.
+If you want to start only a subset of modules, create your own override file containing only the required modules.
+
+Stop the local platform with
+
+```bash
+docker-compose down
 ```
 
 ## Kubernetes deployment
