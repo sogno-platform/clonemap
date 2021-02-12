@@ -1,7 +1,7 @@
 stages:
   - build
   # - test
-  # - deploy
+  - deploy
 
 amsbuild:
   stage: build
@@ -100,15 +100,17 @@ stubbuild:
 # #     - cd pkg/logger
 # #     - CGO_ENABLED=0 go test -coverpkg=./...
 
-# amsdeploy:
-#   stage: deploy
-#   only:
-#     - master
-#     - develop
-#   script:
-#     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.git.rwth-aachen.de
-#     - docker tag ams registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/ams
-#     - docker push registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/ams
+amsdeploy:
+  stage: deploy
+  image: docker:19.03.12
+  only:
+    - master
+    - develop
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.git.rwth-aachen.de
+    - docker build -f build/docker/ams/Dockerfile -t ams .
+    - docker tag ams registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/ams
+    - docker push registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/ams
 
 # agencydeploy:
 #   stage: deploy
