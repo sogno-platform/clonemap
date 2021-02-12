@@ -21,38 +21,61 @@ agencybuild:
 #     - export GOPATH=$HOME/go
 #     - docker build -f build/docker/agency/Dockerfile -t agency .
 
-# benchmarkbuild:
-#   stage: build
-#   script:
+benchmarkbuild:
+  stage: build
+  image: golang:1.13.8
+  script:
+    - cd cmd/benchmark
+    - CGO_ENABLED=0 GOOS=linux go build -ldflags '-s' -o benchmark
 #     - export GOPATH=$HOME/go
 #     - docker build -f build/docker/benchmark/Dockerfile -t benchmark .
 
-# loggerbuild:
-#   stage: build
+loggerbuild:
+  stage: build
+  image: golang:1.13.8
+  script:
+    - cd cmd/logger
+    - CGO_ENABLED=0 GOOS=linux go build -ldflags '-s' -o logger
 #   script:
 #     - export GOPATH=$HOME/go
 #     - docker build -f build/docker/logger/Dockerfile -t logger .
 
-# dfbuild:
-#   stage: build
+dfbuild:
+  stage: build
+  image: golang:1.13.8
+  script:
+    - cd cmd/df
+    - CGO_ENABLED=0 GOOS=linux go build -ldflags '-s' -o df
 #   script:
 #     - export GOPATH=$HOME/go
 #     - docker build -f build/docker/df/Dockerfile -t df .
 
-# pnpbuild:
-#   stage: build
+pnpbuild:
+  stage: build
+  image: golang:1.13.8
+  script:
+    - cd cmd/plugnplay
+    - CGO_ENABLED=0 GOOS=linux go build -ldflags '-s' -o pnp
 #   script:
 #     - export GOPATH=$HOME/go
 #     - docker build -f build/docker/plugnplay/Dockerfile -t plugnplay .
 
-# frontendbuild:
-#   stage: build
+frontendbuild:
+  stage: build
+  image: golang:1.13.8
+  script:
+    - cd cmd/frontend
+    - CGO_ENABLED=0 GOOS=linux go build -ldflags '-s' -o frontend
 #   script:
 #     - export GOPATH=$HOME/go
 #     - docker build -f build/docker/frontend/Dockerfile -t frontend .
 
-# stubbuild:
-#   stage: build
+stubbuild:
+  stage: build
+  image: golang:1.13.8
+  script:
+    - cd cmd/kubestub
+    - CGO_ENABLED=0 GOOS=linux go build -ldflags '-s' -o kubestub
 #   script:
 #     - export GOPATH=$HOME/go
 #     - docker build -f build/docker/clonemap_local/Dockerfile -t clonemap_local .
