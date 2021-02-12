@@ -1,152 +1,155 @@
 stages:
   - build
   # - test
-  - deploy
+  # - deploy
 
 amsbuild:
   stage: build
+  image: golang:1.13.8
   script:
-    - export GOPATH=$HOME/go
-    - docker build -f build/docker/ams/Dockerfile -t ams .
+    - cd cmd/ams
+    - CGO_ENABLED=0 GOOS=linux go build -ldflags '-s' -o ams
+#     - export GOPATH=$HOME/go
+#     - docker build -f build/docker/ams/Dockerfile -t ams .
 
-agencybuild:
-  stage: build
-  script:
-    - export GOPATH=$HOME/go
-    - docker build -f build/docker/agency/Dockerfile -t agency .
+# agencybuild:
+#   stage: build
+#   script:
+#     - export GOPATH=$HOME/go
+#     - docker build -f build/docker/agency/Dockerfile -t agency .
 
-benchmarkbuild:
-  stage: build
-  script:
-    - export GOPATH=$HOME/go
-    - docker build -f build/docker/benchmark/Dockerfile -t benchmark .
+# benchmarkbuild:
+#   stage: build
+#   script:
+#     - export GOPATH=$HOME/go
+#     - docker build -f build/docker/benchmark/Dockerfile -t benchmark .
 
-loggerbuild:
-  stage: build
-  script:
-    - export GOPATH=$HOME/go
-    - docker build -f build/docker/logger/Dockerfile -t logger .
+# loggerbuild:
+#   stage: build
+#   script:
+#     - export GOPATH=$HOME/go
+#     - docker build -f build/docker/logger/Dockerfile -t logger .
 
-dfbuild:
-  stage: build
-  script:
-    - export GOPATH=$HOME/go
-    - docker build -f build/docker/df/Dockerfile -t df .
+# dfbuild:
+#   stage: build
+#   script:
+#     - export GOPATH=$HOME/go
+#     - docker build -f build/docker/df/Dockerfile -t df .
 
-pnpbuild:
-  stage: build
-  script:
-    - export GOPATH=$HOME/go
-    - docker build -f build/docker/plugnplay/Dockerfile -t plugnplay .
+# pnpbuild:
+#   stage: build
+#   script:
+#     - export GOPATH=$HOME/go
+#     - docker build -f build/docker/plugnplay/Dockerfile -t plugnplay .
 
-frontendbuild:
-  stage: build
-  script:
-    - export GOPATH=$HOME/go
-    - docker build -f build/docker/frontend/Dockerfile -t frontend .
+# frontendbuild:
+#   stage: build
+#   script:
+#     - export GOPATH=$HOME/go
+#     - docker build -f build/docker/frontend/Dockerfile -t frontend .
 
-stubbuild:
-  stage: build
-  script:
-    - export GOPATH=$HOME/go
-    - docker build -f build/docker/clonemap_local/Dockerfile -t clonemap_local .
+# stubbuild:
+#   stage: build
+#   script:
+#     - export GOPATH=$HOME/go
+#     - docker build -f build/docker/clonemap_local/Dockerfile -t clonemap_local .
 
-# amstest:
-#   stage: test
+# # amstest:
+# #   stage: test
+# #   only:
+# #     - master
+# #   script:
+# #     - cd pkg/ams
+# #     - CGO_ENABLED=0 go test -coverpkg=./...
+
+# # agencytest:
+# #   stage: test
+# #   script:
+# #     - cd pkg/agency
+# #     - CGO_ENABLED=0 go test -coverpkg=./...
+
+# # loggertest:
+# #   stage: test
+# #   script:
+# #     - cd pkg/logger
+# #     - CGO_ENABLED=0 go test -coverpkg=./...
+
+# amsdeploy:
+#   stage: deploy
 #   only:
 #     - master
+#     - develop
 #   script:
-#     - cd pkg/ams
-#     - CGO_ENABLED=0 go test -coverpkg=./...
+#     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.git.rwth-aachen.de
+#     - docker tag ams registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/ams
+#     - docker push registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/ams
 
-# agencytest:
-#   stage: test
+# agencydeploy:
+#   stage: deploy
+#   only:
+#     - master
+#     - develop
 #   script:
-#     - cd pkg/agency
-#     - CGO_ENABLED=0 go test -coverpkg=./...
+#     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.git.rwth-aachen.de
+#     - docker tag agency registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/agency
+#     - docker push registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/agency
 
-# loggertest:
-#   stage: test
+# benchmarkdeploy:
+#   stage: deploy
+#   only:
+#     - master
+#     - develop
 #   script:
-#     - cd pkg/logger
-#     - CGO_ENABLED=0 go test -coverpkg=./...
+#     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.git.rwth-aachen.de
+#     - docker tag benchmark registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/benchmark
+#     - docker push registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/benchmark
 
-amsdeploy:
-  stage: deploy
-  only:
-    - master
-    - develop
-  script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.git.rwth-aachen.de
-    - docker tag ams registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/ams
-    - docker push registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/ams
+# loggerdeploy:
+#   stage: deploy
+#   only:
+#     - master
+#     - develop
+#   script:
+#     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.git.rwth-aachen.de
+#     - docker tag logger registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/logger
+#     - docker push registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/logger
 
-agencydeploy:
-  stage: deploy
-  only:
-    - master
-    - develop
-  script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.git.rwth-aachen.de
-    - docker tag agency registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/agency
-    - docker push registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/agency
+# dfdeploy:
+#   stage: deploy
+#   only:
+#     - master
+#     - develop
+#   script:
+#     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.git.rwth-aachen.de
+#     - docker tag df registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/df
+#     - docker push registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/df
 
-benchmarkdeploy:
-  stage: deploy
-  only:
-    - master
-    - develop
-  script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.git.rwth-aachen.de
-    - docker tag benchmark registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/benchmark
-    - docker push registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/benchmark
+# pnpdeploy:
+#   stage: deploy
+#   only:
+#     - master
+#     - develop
+#   script:
+#     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.git.rwth-aachen.de
+#     - docker tag plugnplay registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/plugnplay
+#     - docker push registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/plugnplay
 
-loggerdeploy:
-  stage: deploy
-  only:
-    - master
-    - develop
-  script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.git.rwth-aachen.de
-    - docker tag logger registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/logger
-    - docker push registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/logger
+# frontenddeploy:
+#   stage: deploy
+#   only:
+#     - master
+#     - develop
+#   script:
+#     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.git.rwth-aachen.de
+#     - docker tag frontend registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/frontend
+#     - docker push registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/frontend
 
-dfdeploy:
-  stage: deploy
-  only:
-    - master
-    - develop
-  script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.git.rwth-aachen.de
-    - docker tag df registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/df
-    - docker push registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/df
-
-pnpdeploy:
-  stage: deploy
-  only:
-    - master
-    - develop
-  script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.git.rwth-aachen.de
-    - docker tag plugnplay registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/plugnplay
-    - docker push registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/plugnplay
-
-frontenddeploy:
-  stage: deploy
-  only:
-    - master
-    - develop
-  script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.git.rwth-aachen.de
-    - docker tag frontend registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/frontend
-    - docker push registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/frontend
-
-stubdeploy:
-  stage: deploy
-  only:
-    - master
-    - develop
-  script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.git.rwth-aachen.de
-    - docker tag clonemap_local registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/clonemap_local
-    - docker push registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/clonemap_local
+# stubdeploy:
+#   stage: deploy
+#   only:
+#     - master
+#     - develop
+#   script:
+#     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.git.rwth-aachen.de
+#     - docker tag clonemap_local registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/clonemap_local
+#     - docker push registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/clonemap_local
