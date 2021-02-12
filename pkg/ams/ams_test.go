@@ -45,14 +45,17 @@ THE SOFTWARE.
 package ams
 
 import (
+	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"testing"
 	"time"
 
+	agclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/agency/client"
 	amscli "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/ams/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/common/httpreply"
+	dfclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/df/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 )
 
@@ -64,7 +67,11 @@ func TestAMS(t *testing.T) {
 	os.Setenv("CLONEMAP_STORAGE_TYPE", "local")
 	os.Setenv("CLONEMAP_STUB_HOSTNAME", "localhost")
 	os.Setenv("CLONEMAP_LOG_LEVEL", "error")
-	ams := &AMS{}
+	ams := &AMS{
+		logError:     log.New(os.Stderr, "[ERROR] ", log.LstdFlags),
+		agencyClient: agclient.New(time.Second*60, time.Second*1, 4),
+		dfClient:     dfclient.New(time.Second*60, time.Second*1, 4),
+	}
 	// create storage and deployment object according to specified deployment type
 	err := ams.init()
 	if err != nil {
