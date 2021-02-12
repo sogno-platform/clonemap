@@ -12,9 +12,12 @@ amsbuild:
 #     - export GOPATH=$HOME/go
 #     - docker build -f build/docker/ams/Dockerfile -t ams .
 
-# agencybuild:
-#   stage: build
-#   script:
+agencybuild:
+  stage: build
+  image: golang:1.13.8
+  script:
+    - cd cmd/agency
+    - CGO_ENABLED=0 GOOS=linux go build -ldflags '-s' -o agency
 #     - export GOPATH=$HOME/go
 #     - docker build -f build/docker/agency/Dockerfile -t agency .
 
