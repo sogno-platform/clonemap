@@ -40,7 +40,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-FROM golang:1.13.8 AS df_builder
+FROM golang:1.15.8 AS df_builder
 
 WORKDIR /clonemap
 COPY go.mod .
