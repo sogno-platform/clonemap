@@ -5,7 +5,7 @@ stages:
 
 build:
   stage: build
-  image: golang:1.13.8
+  image: golang:1.15.8
   script:
     - cd cmd/ams
     - CGO_ENABLED=0 GOOS=linux go build -ldflags '-s' -o ams
@@ -26,7 +26,7 @@ build:
 
 test:
   stage: test
-  image: golang:1.13.8
+  image: golang:1.15.8
   script:
     - cd pkg
     - go test ./... -coverprofile cover.out
