@@ -68,19 +68,6 @@ func (ams *AMS) handleAPI(w http.ResponseWriter, r *http.Request) {
 	resvalid := false
 
 	switch len(respath) {
-	case 3:
-		if respath[2] == "clonemap" {
-			cmapErr, httpErr = ams.handleCloneMAP(w, r)
-			resvalid = true
-		} else if respath[2] == "alive" {
-			cmapErr, httpErr = ams.handleAlive(w, r)
-			resvalid = true
-		}
-	case 4:
-		if respath[2] == "clonemap" && respath[3] == "mas" {
-			cmapErr, httpErr = ams.handleMAS(w, r)
-			resvalid = true
-		}
 	case 5:
 		var masID int
 		masID, cmapErr = strconv.Atoi(respath[4])
@@ -180,63 +167,75 @@ func (ams *AMS) handleAPI(w http.ResponseWriter, r *http.Request) {
 }
 
 // handleAlive is the handler for requests to path /api/alive
-func (ams *AMS) handleAlive(w http.ResponseWriter, r *http.Request) (cmapErr, httpErr error) {
-	if r.Method == "GET" {
-		httpErr = httpreply.Alive(w, nil)
-	} else {
-		httpErr = httpreply.MethodNotAllowed(w)
-		cmapErr = errors.New("Error: Method not allowed on path /api/alive")
-	}
+func (ams *AMS) handleAlive(w http.ResponseWriter, r *http.Request) {
+	var httpErr error
+	httpErr = httpreply.Alive(w, nil)
+	ams.logErrors(r.URL.Path, nil, httpErr)
 	return
 }
 
 // handleCloneMAP is the handler for requests to path /api/clonemap
-func (ams *AMS) handleCloneMAP(w http.ResponseWriter, r *http.Request) (cmapErr, httpErr error) {
-	if r.Method == "GET" {
-		// return info about running clonemap instance
-		var cmapInfo schemas.CloneMAP
-		cmapInfo, cmapErr = ams.getCloneMAPInfo()
-		httpErr = httpreply.Resource(w, cmapInfo, cmapErr)
-	} else {
-		httpErr = httpreply.MethodNotAllowed(w)
-		cmapErr = errors.New("Error: Method not allowed on path /api/clonemap")
-	}
+func (ams *AMS) handleCloneMAP(w http.ResponseWriter, r *http.Request) {
+	var cmapErr, httpErr error
+	// return info about running clonemap instance
+	var cmapInfo schemas.CloneMAP
+	cmapInfo, cmapErr = ams.getCloneMAPInfo()
+	httpErr = httpreply.Resource(w, cmapInfo, cmapErr)
+	ams.logErrors(r.URL.Path, cmapErr, httpErr)
 	return
 }
 
-// handleMAS is the handler for requests to path /api/clonemap/mas
-func (ams *AMS) handleMAS(w http.ResponseWriter, r *http.Request) (cmapErr, httpErr error) {
-	if r.Method == "GET" {
-		// return short info of all MAS
-		var mass []schemas.MASInfoShort
-		mass, cmapErr = ams.getMASsShort()
-		httpErr = httpreply.Resource(w, mass, cmapErr)
-	} else if r.Method == "POST" {
-		// create new MAS
-		var body []byte
-		body, cmapErr = ioutil.ReadAll(r.Body)
+// handleGetMAS is the handler for get requests to path /api/clonemap/mas
+func (ams *AMS) handleGetMAS(w http.ResponseWriter, r *http.Request) {
+	var cmapErr, httpErr error
+	var mass []schemas.MASInfoShort
+	mass, cmapErr = ams.getMASsShort()
+	httpErr = httpreply.Resource(w, mass, cmapErr)
+	ams.logErrors(r.URL.Path, cmapErr, httpErr)
+	return
+}
+
+// handlePostMAS is the handler for post requests to path /api/clonemap/mas
+func (ams *AMS) handlePostMAS(w http.ResponseWriter, r *http.Request) {
+	var cmapErr, httpErr error
+	// create new MAS
+	var body []byte
+	body, cmapErr = ioutil.ReadAll(r.Body)
+	if cmapErr == nil {
+		var masSpec schemas.MASSpec
+		cmapErr = json.Unmarshal(body, &masSpec)
 		if cmapErr == nil {
-			var masSpec schemas.MASSpec
-			cmapErr = json.Unmarshal(body, &masSpec)
+			cmapErr = ams.createMAS(masSpec)
 			if cmapErr == nil {
-				cmapErr = ams.createMAS(masSpec)
-				if cmapErr == nil {
-					httpErr = httpreply.Created(w, cmapErr, "text/plain",
-						[]byte("Ressource Created"))
-				} else {
-					httpErr = httpreply.CMAPError(w, cmapErr.Error())
-				}
+				httpErr = httpreply.Created(w, cmapErr, "text/plain",
+					[]byte("Ressource Created"))
 			} else {
-				httpErr = httpreply.JSONUnmarshalError(w)
+				httpErr = httpreply.CMAPError(w, cmapErr.Error())
 			}
 		} else {
-			httpErr = httpreply.InvalidBodyError(w)
+			httpErr = httpreply.JSONUnmarshalError(w)
 		}
 	} else {
-		httpErr = httpreply.MethodNotAllowed(w)
-		cmapErr = errors.New("Error: Method not allowed on path /api/clonemap/mas")
+		httpErr = httpreply.InvalidBodyError(w)
 	}
+	ams.logErrors(r.URL.Path, cmapErr, httpErr)
 	return
+}
+
+// handleGetMASID is the handler for get requests to path /api/clonemap/mas/{mas-id}
+func (ams *AMS) handleGetMASID(w http.ResponseWriter, r *http.Request) {
+	var cmapErr, httpErr error
+	vars := mux.Vars(r)
+	masID, cmapErr := strconv.Atoi(vars["masid"])
+	if cmapErr == nil {
+		// return long information about specified MAS
+		var masInfo schemas.MASInfo
+		masInfo, cmapErr = ams.getMASInfo(masID)
+		httpErr = httpreply.Resource(w, masInfo, cmapErr)
+	} else {
+		httpErr = httpreply.InvalidBodyError(w)
+	}
+	ams.logErrors(r.URL.Path, cmapErr, httpErr)
 }
 
 // handlemasID is the handler for requests to path /api/clonemap/mas/{mas-id}
@@ -428,12 +427,38 @@ func (ams *AMS) handleAgencyID(masID int, imID int, agencyid int, w http.Respons
 	return
 }
 
+// methodNotAllowed is the default handler for valid paths but invalid methods
+func (ams *AMS) methodNotAllowed(w http.ResponseWriter, r *http.Request) {
+	httpErr := httpreply.MethodNotAllowed(w)
+	cmapErr := errors.New("Error: Method not allowed on path " + r.URL.Path)
+	ams.logErrors(r.URL.Path, cmapErr, httpErr)
+	return
+}
+
+// logErrors logs errors if any
+func (ams *AMS) logErrors(path string, cmapErr error, httpErr error) {
+	if cmapErr != nil {
+		ams.logError.Println(path, cmapErr)
+	}
+	if httpErr != nil {
+		ams.logError.Println(path, httpErr)
+	}
+	return
+}
+
 // server creates the ams server
 func (ams *AMS) server(port int) (serv *http.Server) {
 	r := mux.NewRouter()
 	// r.HandleFunc("/api/", ams.handleAPI)
 	s := r.PathPrefix("/api").Subrouter()
-	// s.HandleFunc("/clonemap", ams.handleCloneMAP)
+	s.Path("/alive").Methods("GET").HandlerFunc(ams.handleAlive)
+	s.Path("/alive").Methods("POST", "PUT", "DELETE").HandlerFunc(ams.methodNotAllowed)
+	s.Path("/clonemap").Methods("GET").HandlerFunc(ams.handleCloneMAP)
+	s.Path("/clonemap").Methods("POST", "PUT", "DELETE").HandlerFunc(ams.methodNotAllowed)
+	s.Path("/clonemap/mas").Methods("GET").HandlerFunc(ams.handleGetMAS)
+	s.Path("/clonemap/mas").Methods("POST").HandlerFunc(ams.handlePostMAS)
+	s.Path("/clonemap/mas").Methods("PUT", "DELETE").HandlerFunc(ams.methodNotAllowed)
+	s.Path("/clonemap/mas/{masid}").Methods("GET").HandlerFunc(ams.handleGetMASID)
 	s.PathPrefix("").HandlerFunc(ams.handleAPI)
 
 	serv = &http.Server{

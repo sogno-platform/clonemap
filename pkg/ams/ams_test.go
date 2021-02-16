@@ -70,6 +70,7 @@ func TestAMS(t *testing.T) {
 	os.Setenv("CLONEMAP_LOG_LEVEL", "error")
 	ams := &AMS{
 		logError:     log.New(os.Stderr, "[ERROR] ", log.LstdFlags),
+		logInfo:      log.New(os.Stdout, "[INFO] ", log.LstdFlags),
 		agencyClient: agclient.New(time.Second*60, time.Second*1, 4),
 		dfClient:     dfclient.New(time.Second*60, time.Second*1, 4),
 	}
