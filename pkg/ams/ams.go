@@ -90,7 +90,11 @@ func StartAMS() (err error) {
 	}
 	ams.stor.setCloneMAPInfo(cmap)
 	// start to listen and serve requests
-	err = ams.listen()
+	serv := ams.server(9000)
+	if err != nil {
+		return
+	}
+	err = ams.listen(serv)
 	return
 }
 

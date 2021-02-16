@@ -56,6 +56,7 @@ import (
 
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/common/httpreply"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
+	"github.com/gorilla/mux"
 )
 
 // handleAPI is the global handler for requests to path /api
@@ -427,15 +428,25 @@ func (ams *AMS) handleAgencyID(masID int, imID int, agencyid int, w http.Respons
 	return
 }
 
-// listen opens a http server listening and serving request
-func (ams *AMS) listen() (err error) {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/api/", ams.handleAPI)
-	s := &http.Server{
-		Addr:    ":9000",
-		Handler: mux,
+// server creates the ams server
+func (ams *AMS) server(port int) (serv *http.Server) {
+	r := mux.NewRouter()
+	// r.HandleFunc("/api/", ams.handleAPI)
+	s := r.PathPrefix("/api").Subrouter()
+	// s.HandleFunc("/clonemap", ams.handleCloneMAP)
+	s.PathPrefix("").HandlerFunc(ams.handleAPI)
+
+	serv = &http.Server{
+		Addr:    ":" + strconv.Itoa(port),
+		Handler: r,
 	}
-	ams.logInfo.Println("AMS listening on port 9000")
-	err = s.ListenAndServe()
+	return
+}
+
+// listen opens a http server listening and serving request
+func (ams *AMS) listen(serv *http.Server) (err error) {
+
+	ams.logInfo.Println("AMS listening on " + serv.Addr)
+	err = serv.ListenAndServe()
 	return
 }

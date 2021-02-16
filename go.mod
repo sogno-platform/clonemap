@@ -14,6 +14,7 @@ require (
 	github.com/google/gofuzz v0.0.0-20170612174753-24818f796faf // indirect
 	github.com/google/uuid v1.1.0 // indirect
 	github.com/googleapis/gnostic v0.2.0 // indirect
+	github.com/gorilla/mux v1.8.0
 	github.com/gregjones/httpcache v0.0.0-20181110185634-c63ab54fda8f // indirect
 	github.com/json-iterator/go v1.1.5 // indirect
 	github.com/kr/pretty v0.1.0 // indirect

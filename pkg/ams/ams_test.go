@@ -84,18 +84,23 @@ func TestAMS(t *testing.T) {
 	}
 	ams.stor.setCloneMAPInfo(cmap)
 	// start to listen and serve requests
-	mux := http.NewServeMux()
-	mux.HandleFunc("/api/", ams.handleAPI)
-	s := &http.Server{
-		Addr:    ":10001",
-		Handler: mux,
-	}
+	serv := ams.server(10001)
+	// r := mux.NewRouter()
+	// r.PathPrefix("/api/").HandlerFunc(ams.handleAPI)
+
+	// mux := http.NewServeMux()
+	// mux.HandleFunc("/api/", ams.handleAPI)
+
+	// serv := &http.Server{
+	// 	Addr:    ":10001",
+	// 	Handler: r,
+	// }
 
 	// start dummy client
-	go dummyClient(s, t)
+	go dummyClient(serv, t)
 
 	// start ams server
-	err = s.ListenAndServe()
+	err = serv.ListenAndServe()
 	if err != nil && err != http.ErrServerClosed {
 		t.Error(err)
 	}
