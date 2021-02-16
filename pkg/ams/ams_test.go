@@ -45,6 +45,7 @@ THE SOFTWARE.
 package ams
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
@@ -86,7 +87,7 @@ func TestAMS(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/", ams.handleAPI)
 	s := &http.Server{
-		Addr:    ":10000",
+		Addr:    ":10001",
 		Handler: mux,
 	}
 
@@ -123,7 +124,7 @@ func dummyClient(s *http.Server, t *testing.T) {
 	time.Sleep(time.Second * 1)
 	amsClient := amscli.New(time.Second*60, time.Second*1, 4)
 	amsClient.Host = "localhost"
-	amsClient.Port = 10000
+	amsClient.Port = 10001
 
 	var err error
 	var httpStatus int
@@ -225,6 +226,8 @@ func dummyClient(s *http.Server, t *testing.T) {
 		t.Error("Error GetAgencyConfig " + strconv.Itoa(httpStatus))
 	}
 
-	s.Shutdown(nil)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	s.Shutdown(ctx)
 	return
 }

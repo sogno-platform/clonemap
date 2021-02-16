@@ -45,6 +45,7 @@ THE SOFTWARE.
 package logger
 
 import (
+	"context"
 	"net/http"
 	"os"
 	"testing"
@@ -83,6 +84,8 @@ func dummyClient(s *http.Server, t *testing.T) {
 	time.Sleep(time.Second * 1)
 	//TODO
 
-	s.Shutdown(nil)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	s.Shutdown(ctx)
 	return
 }
