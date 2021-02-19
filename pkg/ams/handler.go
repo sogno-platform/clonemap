@@ -472,9 +472,9 @@ func (ams *AMS) server(port int) (serv *http.Server) {
 	s.Path("/clonemap/mas/{masid}/agencies").Methods("GET").HandlerFunc(ams.handleGetAgencies)
 	s.Path("/clonemap/mas/{masid}/agencies").Methods("PUT", "DELETE", "POST").
 		HandlerFunc(ams.methodNotAllowed)
-	s.Path("/clonemap/mas/{masid}/imgroup/{imID}/agencies/{agency-id}").Methods("GET").
+	s.Path("/clonemap/mas/{masid}/imgroup/{imID}/agency/{agency-id}").Methods("GET").
 		HandlerFunc(ams.handleGetAgencyID)
-	s.Path("/clonemap/mas/{masid}/imgroup/{imID}/agencies/{agency-id}").
+	s.Path("/clonemap/mas/{masid}/imgroup/{imID}/agency/{agency-id}").
 		Methods("PUT", "DELETE", "POST").HandlerFunc(ams.methodNotAllowed)
 	s.PathPrefix("").HandlerFunc(ams.resourceNotFound)
 
