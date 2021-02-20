@@ -487,7 +487,6 @@ func (ams *AMS) server(port int) (serv *http.Server) {
 
 // listen opens a http server listening and serving request
 func (ams *AMS) listen(serv *http.Server) (err error) {
-
 	ams.logInfo.Println("AMS listening on " + serv.Addr)
 	err = serv.ListenAndServe()
 	return

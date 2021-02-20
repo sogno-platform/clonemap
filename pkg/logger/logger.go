@@ -70,7 +70,12 @@ func StartLogger() {
 		log.logError.Println(err)
 		return
 	}
-	err = log.listen()
+	serv := log.server(11000)
+	if err != nil {
+		log.logError.Println(err)
+		return
+	}
+	err = log.listen(serv)
 	if err != nil {
 		log.logError.Println(err)
 	}

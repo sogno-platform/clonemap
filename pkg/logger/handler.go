@@ -57,6 +57,7 @@ import (
 
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/common/httpreply"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
+	"github.com/gorilla/mux"
 )
 
 // handleAPI is the global handler for requests to path /api
@@ -68,11 +69,6 @@ func (logger *Logger) handleAPI(w http.ResponseWriter, r *http.Request) {
 	resvalid := false
 
 	switch len(respath) {
-	case 3:
-		if respath[2] == "alive" {
-			cmapErr, httpErr = logger.handleAlive(w, r)
-			resvalid = true
-		}
 	case 5:
 		if respath[2] == "logging" {
 			var masID int
@@ -173,13 +169,11 @@ func (logger *Logger) handleAPI(w http.ResponseWriter, r *http.Request) {
 }
 
 // handleAlive is the handler for requests to path /api/alive
-func (logger *Logger) handleAlive(w http.ResponseWriter, r *http.Request) (cmapErr, httpErr error) {
-	if r.Method == "GET" {
-		httpErr = httpreply.Alive(w, nil)
-	} else {
-		httpErr = httpreply.MethodNotAllowed(w)
-		cmapErr = errors.New("Error: Method not allowed on path /api/alive")
-	}
+func (logger *Logger) handleAlive(w http.ResponseWriter, r *http.Request) {
+	logger.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
+	var httpErr error
+	httpErr = httpreply.Alive(w, nil)
+	logger.logErrors(r.URL.Path, nil, httpErr)
 	return
 }
 
@@ -353,14 +347,54 @@ func (logger *Logger) handleStateList(masID int, w http.ResponseWriter,
 	return
 }
 
-// listen opens a http server listening and serving request
-func (logger *Logger) listen() (err error) {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/api/", logger.handleAPI)
-	s := &http.Server{
-		Addr:    ":11000",
-		Handler: mux,
+// methodNotAllowed is the default handler for valid paths but invalid methods
+func (logger *Logger) methodNotAllowed(w http.ResponseWriter, r *http.Request) {
+	logger.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
+	httpErr := httpreply.MethodNotAllowed(w)
+	cmapErr := errors.New("Error: Method not allowed on path " + r.URL.Path)
+	logger.logErrors(r.URL.Path, cmapErr, httpErr)
+	return
+}
+
+// resourceNotFound is the default handler for invalid paths
+func (logger *Logger) resourceNotFound(w http.ResponseWriter, r *http.Request) {
+	logger.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
+	httpErr := httpreply.NotFoundError(w)
+	cmapErr := errors.New("Resource not found")
+	logger.logErrors(r.URL.Path, cmapErr, httpErr)
+	return
+}
+
+// logErrors logs errors if any
+func (logger *Logger) logErrors(path string, cmapErr error, httpErr error) {
+	if cmapErr != nil {
+		logger.logError.Println(path, cmapErr)
 	}
-	err = s.ListenAndServe()
+	if httpErr != nil {
+		logger.logError.Println(path, httpErr)
+	}
+	return
+}
+
+// server creates the logger server
+func (logger *Logger) server(port int) (serv *http.Server) {
+	r := mux.NewRouter()
+	r.HandleFunc("/api/", logger.handleAPI)
+	// s := r.PathPrefix("/api").Subrouter()
+	// s.Path("/alive").Methods("GET").HandlerFunc(logger.handleAlive)
+
+	// s.PathPrefix("").HandlerFunc(logger.resourceNotFound)
+
+	serv = &http.Server{
+		Addr:    ":" + strconv.Itoa(port),
+		Handler: r,
+	}
+	return
+}
+
+// listen opens a http server listening and serving request
+func (logger *Logger) listen(serv *http.Server) (err error) {
+	logger.logInfo.Println("Logger listening on " + serv.Addr)
+	err = serv.ListenAndServe()
 	return
 }
