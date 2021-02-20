@@ -63,17 +63,12 @@ func TestLogger(t *testing.T) {
 		t.Error(err)
 	}
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/api/", log.handleAPI)
-	s := &http.Server{
-		Addr:    ":11000",
-		Handler: mux,
-	}
+	serv := log.server(11000)
 
 	// start dummy client
-	go dummyClient(s, t)
+	go dummyClient(serv, t)
 
-	err = s.ListenAndServe()
+	err = serv.ListenAndServe()
 	if err != nil && err != http.ErrServerClosed {
 		t.Error(err)
 	}

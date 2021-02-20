@@ -117,7 +117,7 @@ func (ams *AMS) handlePostMAS(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-// handleGetMASID is the handler for get requests to path /api/clonemap/mas/{mas-id}
+// handleGetMASID is the handler for get requests to path /api/clonemap/mas/{masid}
 func (ams *AMS) handleGetMASID(w http.ResponseWriter, r *http.Request) {
 	ams.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
@@ -125,7 +125,7 @@ func (ams *AMS) handleGetMASID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	masID, cmapErr := strconv.Atoi(vars["masid"])
 	if cmapErr != nil {
-		httpErr = httpreply.InvalidBodyError(w)
+		httpErr = httpreply.NotFoundError(w)
 		return
 	}
 	// return long information about specified MAS
@@ -135,7 +135,7 @@ func (ams *AMS) handleGetMASID(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-// handleDeleteMASID is the handler for delete requests to path /api/clonemap/mas/{mas-id}
+// handleDeleteMASID is the handler for delete requests to path /api/clonemap/mas/{masid}
 func (ams *AMS) handleDeleteMASID(w http.ResponseWriter, r *http.Request) {
 	ams.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
@@ -143,7 +143,7 @@ func (ams *AMS) handleDeleteMASID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	masID, cmapErr := strconv.Atoi(vars["masid"])
 	if cmapErr != nil {
-		httpErr = httpreply.InvalidBodyError(w)
+		httpErr = httpreply.NotFoundError(w)
 		return
 	}
 	// delete specified MAS
@@ -166,7 +166,7 @@ func (ams *AMS) handleGetMASName(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-// handleGetAgents is the handler for get requests to path /api/clonemap/mas/{mas-id}/agents
+// handleGetAgents is the handler for get requests to path /api/clonemap/mas/{masid}/agents
 func (ams *AMS) handleGetAgents(w http.ResponseWriter, r *http.Request) {
 	ams.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
@@ -174,7 +174,7 @@ func (ams *AMS) handleGetAgents(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	masID, cmapErr := strconv.Atoi(vars["masid"])
 	if cmapErr != nil {
-		httpErr = httpreply.InvalidBodyError(w)
+		httpErr = httpreply.NotFoundError(w)
 		return
 	}
 	// return short information of all agents in specified MAS
@@ -184,7 +184,7 @@ func (ams *AMS) handleGetAgents(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-// handlePostAgent is the handler for post requests to path /api/clonemap/mas/{mas-id}/agents
+// handlePostAgent is the handler for post requests to path /api/clonemap/mas/{masid}/agents
 func (ams *AMS) handlePostAgent(w http.ResponseWriter, r *http.Request) {
 	ams.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
@@ -192,7 +192,7 @@ func (ams *AMS) handlePostAgent(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	masID, cmapErr := strconv.Atoi(vars["masid"])
 	if cmapErr != nil {
-		httpErr = httpreply.InvalidBodyError(w)
+		httpErr = httpreply.NotFoundError(w)
 		return
 	}
 	// create new agent in MAS
@@ -213,15 +213,15 @@ func (ams *AMS) handlePostAgent(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-// handleGetAgentID is the handler for get requests to path /api/clonemap/mas/{mas-id}/agents/
-// {agent-id}
+// handleGetAgentID is the handler for get requests to path
+// /api/clonemap/mas/{masid}/agents/{agentid}
 func (ams *AMS) handleGetAgentID(w http.ResponseWriter, r *http.Request) {
 	ams.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer ams.logErrors(r.URL.Path, cmapErr, httpErr)
 	masID, agentID, cmapErr := getAgentID(r)
 	if cmapErr != nil {
-		httpErr = httpreply.InvalidBodyError(w)
+		httpErr = httpreply.NotFoundError(w)
 		return
 	}
 	var agentInfo schemas.AgentInfo
@@ -230,15 +230,15 @@ func (ams *AMS) handleGetAgentID(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-// handleDeleteAgentID is the handler for delete requests to path /api/clonemap/mas/{mas-id}/agents/
-// {agent-id}
+// handleDeleteAgentID is the handler for delete requests to path
+// /api/clonemap/mas/{masid}/agents/{agentid}
 func (ams *AMS) handleDeleteAgentID(w http.ResponseWriter, r *http.Request) {
 	ams.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer ams.logErrors(r.URL.Path, cmapErr, httpErr)
 	masID, agentID, cmapErr := getAgentID(r)
 	if cmapErr != nil {
-		httpErr = httpreply.InvalidBodyError(w)
+		httpErr = httpreply.NotFoundError(w)
 		return
 	}
 	// delete specified agent
@@ -248,14 +248,14 @@ func (ams *AMS) handleDeleteAgentID(w http.ResponseWriter, r *http.Request) {
 }
 
 // handleGetAgentAddress is the handler for get requests to path
-// /api/clonemap/mas/{mas-id}/agents/{agent-id}/address
+// /api/clonemap/mas/{masid}/agents/{agentid}/address
 func (ams *AMS) handleGetAgentAddress(w http.ResponseWriter, r *http.Request) {
 	ams.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer ams.logErrors(r.URL.Path, cmapErr, httpErr)
 	masID, agentID, cmapErr := getAgentID(r)
 	if cmapErr != nil {
-		httpErr = httpreply.InvalidBodyError(w)
+		httpErr = httpreply.NotFoundError(w)
 		return
 	}
 	// return address of specified agent
@@ -266,14 +266,14 @@ func (ams *AMS) handleGetAgentAddress(w http.ResponseWriter, r *http.Request) {
 }
 
 // handlePutAgentAddress is the handler for put requests to path
-// /api/clonemap/mas/{mas-id}/agents/{agent-id}/address
+// /api/clonemap/mas/{masid}/agents/{agentid}/address
 func (ams *AMS) handlePutAgentAddress(w http.ResponseWriter, r *http.Request) {
 	ams.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer ams.logErrors(r.URL.Path, cmapErr, httpErr)
 	masID, agentID, cmapErr := getAgentID(r)
 	if cmapErr != nil {
-		httpErr = httpreply.InvalidBodyError(w)
+		httpErr = httpreply.NotFoundError(w)
 		return
 	}
 	// update address of specified agent
@@ -295,14 +295,14 @@ func (ams *AMS) handlePutAgentAddress(w http.ResponseWriter, r *http.Request) {
 }
 
 // handlePutAgentCustom is the put handler for requests to path
-// /api/clonemap/mas/{mas-id}/agents/{agent-id}/custom
+// /api/clonemap/mas/{masid}/agents/{agentid}/custom
 func (ams *AMS) handlePutAgentCustom(w http.ResponseWriter, r *http.Request) {
 	ams.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer ams.logErrors(r.URL.Path, cmapErr, httpErr)
 	masID, agentID, cmapErr := getAgentID(r)
 	if cmapErr != nil {
-		httpErr = httpreply.InvalidBodyError(w)
+		httpErr = httpreply.NotFoundError(w)
 		return
 	}
 	// update custom of specified agent
@@ -327,7 +327,7 @@ func (ams *AMS) handleGetAgentName(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	masID, cmapErr := strconv.Atoi(vars["masid"])
 	if cmapErr != nil {
-		httpErr = httpreply.InvalidBodyError(w)
+		httpErr = httpreply.NotFoundError(w)
 		return
 	}
 	name := vars["name"]
@@ -338,7 +338,7 @@ func (ams *AMS) handleGetAgentName(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-// handleGetAgencies is the handler for get requests to path /api/cloumap/mas/{mas-id}/agencies
+// handleGetAgencies is the handler for get requests to path /api/cloumap/mas/{masid}/agencies
 func (ams *AMS) handleGetAgencies(w http.ResponseWriter, r *http.Request) {
 	ams.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
@@ -346,7 +346,7 @@ func (ams *AMS) handleGetAgencies(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	masID, cmapErr := strconv.Atoi(vars["masid"])
 	if cmapErr != nil {
-		httpErr = httpreply.InvalidBodyError(w)
+		httpErr = httpreply.NotFoundError(w)
 		return
 	}
 	// return information of specified agency
@@ -357,7 +357,7 @@ func (ams *AMS) handleGetAgencies(w http.ResponseWriter, r *http.Request) {
 }
 
 // handleGetAgencyID is the handler for get requests to path
-// /api/clonemap/mas/{mas-id}/imgroup/{imID}/agencies/{agency-id}
+// /api/clonemap/mas/{masid}/imgroup/{imid}/agencies/{agencyid}
 func (ams *AMS) handleGetAgencyID(w http.ResponseWriter, r *http.Request) {
 	ams.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
@@ -365,17 +365,17 @@ func (ams *AMS) handleGetAgencyID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	masID, cmapErr := strconv.Atoi(vars["masid"])
 	if cmapErr != nil {
-		httpErr = httpreply.InvalidBodyError(w)
+		httpErr = httpreply.NotFoundError(w)
 		return
 	}
 	imID, cmapErr := strconv.Atoi(vars["imid"])
 	if cmapErr != nil {
-		httpErr = httpreply.InvalidBodyError(w)
+		httpErr = httpreply.NotFoundError(w)
 		return
 	}
 	agencyID, cmapErr := strconv.Atoi(vars["agencyid"])
 	if cmapErr != nil {
-		httpErr = httpreply.InvalidBodyError(w)
+		httpErr = httpreply.NotFoundError(w)
 		return
 	}
 	var agencySpec schemas.AgencyInfoFull
