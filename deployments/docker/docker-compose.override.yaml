@@ -2,7 +2,7 @@ version: "3.7"
 
 services:
   mqtt:
-    image: eclipse-mosquitto
+    image: eclipse-mosquitto:1.6.13
     ports:
      - 30883:1883
     depends_on: 

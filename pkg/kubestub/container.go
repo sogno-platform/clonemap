@@ -347,7 +347,7 @@ func (stub *LocalStub) createMQTT() (err error) {
 	com += " --name=mqtt" //.clonemap"
 	com += " --hostname=mqtt"
 	com += " --network=clonemap-net"
-	com += " eclipse-mosquitto"
+	com += " eclipse-mosquitto:1.6.13"
 	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
