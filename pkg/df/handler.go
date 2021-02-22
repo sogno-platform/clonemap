@@ -50,216 +50,258 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/common/httpreply"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
+	"github.com/gorilla/mux"
 )
 
-// handleAPI is the global handler for requests to path /api
-func (df *DF) handleAPI(w http.ResponseWriter, r *http.Request) {
-	var cmapErr, httpErr error
+// handleAlive is the handler for requests to path /api/alive
+func (df *DF) handleAlive(w http.ResponseWriter, r *http.Request) {
 	df.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
-	// determine which ressource is requested and call corresponding handler
-	respath := strings.Split(r.URL.EscapedPath(), "/")
-	resvalid := false
+	var httpErr error
+	httpErr = httpreply.Alive(w, nil)
+	df.logErrors(r.URL.Path, nil, httpErr)
+	return
+}
 
-	switch len(respath) {
-	case 3:
-		if respath[2] == "alive" {
-			cmapErr, httpErr = df.handleAlive(w, r)
-			resvalid = true
-		}
-	case 5:
-		var masID int
-		masID, cmapErr = strconv.Atoi(respath[3])
-		if respath[2] == "df" && cmapErr == nil {
-			if respath[4] == "svc" {
-				cmapErr, httpErr = df.handlemasID(masID, w, r)
-				resvalid = true
-			} else if respath[4] == "graph" {
-				cmapErr, httpErr = df.handleMASGraph(masID, w, r)
-				resvalid = true
-			}
-		}
-	case 7:
-		var masID int
-		masID, cmapErr = strconv.Atoi(respath[3])
-		if respath[2] == "df" && respath[4] == "svc" && cmapErr == nil {
-			if respath[5] == "desc" {
-				cmapErr, httpErr = df.handleSvcDesc(masID, respath[6], w, r)
-				resvalid = true
-			} else if respath[5] == "id" {
-				svcID := respath[6]
-				if cmapErr == nil {
-					cmapErr, httpErr = df.handleSvcID(masID, svcID, w, r)
-					resvalid = true
-				}
-			}
-		}
-	case 11:
-		var masID int
-		masID, cmapErr = strconv.Atoi(respath[3])
-		if respath[2] == "df" && respath[4] == "svc" && respath[5] == "desc" &&
-			respath[7] == "node" && respath[9] == "dist" && cmapErr == nil {
-			var nodeID int
-			nodeID, cmapErr = strconv.Atoi(respath[8])
-			if cmapErr == nil {
-				var dist float64
-				dist, cmapErr = strconv.ParseFloat(respath[10], 64)
-				if cmapErr == nil {
-					cmapErr, httpErr = df.handleSvcNode(masID, respath[6], nodeID, dist, w, r)
-					resvalid = true
-				}
-			}
-		}
-	default:
-		cmapErr = errors.New("Resource not found")
-	}
-
-	if !resvalid {
-		httpErr = httpreply.NotFoundError(w)
-		cmapErr = errors.New("Resource not found")
-	}
+// handleGetMASService is the handler for get requests to path /api/df/{masid}/svc
+func (df *DF) handleGetMASService(w http.ResponseWriter, r *http.Request) {
+	df.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
+	var cmapErr, httpErr error
+	defer df.logErrors(r.URL.Path, cmapErr, httpErr)
+	vars := mux.Vars(r)
+	masID, cmapErr := strconv.Atoi(vars["masid"])
 	if cmapErr != nil {
-		df.logError.Println(respath, cmapErr)
+		httpErr = httpreply.NotFoundError(w)
+		return
+	}
+	var svc []schemas.Service
+	svc, cmapErr = df.stor.searchServices(masID, "")
+	httpErr = httpreply.Resource(w, svc, cmapErr)
+	return
+}
+
+// handlePostMASService is the handler for post requests to path /api/df/{masid}/svc
+func (df *DF) handlePostMASService(w http.ResponseWriter, r *http.Request) {
+	df.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
+	var cmapErr, httpErr error
+	defer df.logErrors(r.URL.Path, cmapErr, httpErr)
+	var body []byte
+	body, cmapErr = ioutil.ReadAll(r.Body)
+	if cmapErr != nil {
+		httpErr = httpreply.InvalidBodyError(w)
+		return
+	}
+	var svc schemas.Service
+	cmapErr = json.Unmarshal(body, &svc)
+	if cmapErr != nil {
+		httpErr = httpreply.JSONUnmarshalError(w)
+		return
+	}
+	var id string
+	id, cmapErr = df.stor.registerService(svc)
+	svc.GUID = id
+	var res []byte
+	res, cmapErr = json.Marshal(svc)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		return
+	}
+	httpErr = httpreply.Created(w, cmapErr, "application/json", res)
+	return
+}
+
+// handleGetMASGraph is the handler for get requests to path /api/df/{masid}/graph
+func (df *DF) handleGetMASGraph(w http.ResponseWriter, r *http.Request) {
+	df.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
+	var cmapErr, httpErr error
+	defer df.logErrors(r.URL.Path, cmapErr, httpErr)
+	vars := mux.Vars(r)
+	masID, cmapErr := strconv.Atoi(vars["masid"])
+	if cmapErr != nil {
+		httpErr = httpreply.NotFoundError(w)
+		return
+	}
+	var gr schemas.Graph
+	gr, cmapErr = df.stor.getGraph(masID)
+	httpErr = httpreply.Resource(w, gr, cmapErr)
+	return
+}
+
+// handlePostMASGraph is the handler for post and put requests to path /api/df/{masid}/graph
+func (df *DF) handlePostMASGraph(w http.ResponseWriter, r *http.Request) {
+	df.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
+	var cmapErr, httpErr error
+	defer df.logErrors(r.URL.Path, cmapErr, httpErr)
+	vars := mux.Vars(r)
+	masID, cmapErr := strconv.Atoi(vars["masid"])
+	if cmapErr != nil {
+		httpErr = httpreply.NotFoundError(w)
+		return
+	}
+	var body []byte
+	body, cmapErr = ioutil.ReadAll(r.Body)
+	if cmapErr != nil {
+		httpErr = httpreply.InvalidBodyError(w)
+		return
+	}
+	var gr schemas.Graph
+	cmapErr = json.Unmarshal(body, &gr)
+	if cmapErr != nil {
+		httpErr = httpreply.JSONUnmarshalError(w)
+		return
+	}
+	cmapErr = df.stor.updateGraph(masID, gr)
+	httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Ressource Created"))
+	return
+}
+
+// handleGetSvcDesc is the handler for get requests to path /api/df/{masid}/svc/desc/{desc}
+func (df *DF) handleGetSvcDesc(w http.ResponseWriter, r *http.Request) {
+	df.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
+	var cmapErr, httpErr error
+	defer df.logErrors(r.URL.Path, cmapErr, httpErr)
+	vars := mux.Vars(r)
+	masID, cmapErr := strconv.Atoi(vars["masid"])
+	if cmapErr != nil {
+		httpErr = httpreply.NotFoundError(w)
+		return
+	}
+	desc := vars["desc"]
+	var svc []schemas.Service
+	svc, cmapErr = df.stor.searchServices(masID, desc)
+	httpErr = httpreply.Resource(w, svc, cmapErr)
+	return
+}
+
+// handleGetSvcNode is the handler for get requests to path
+// /api/df/{masid}/svc/desc/{desc}/node/{nodeid}/dist/{dist}
+func (df *DF) handleGetSvcNodeDist(w http.ResponseWriter, r *http.Request) {
+	df.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
+	var cmapErr, httpErr error
+	defer df.logErrors(r.URL.Path, cmapErr, httpErr)
+	vars := mux.Vars(r)
+	masID, cmapErr := strconv.Atoi(vars["masid"])
+	if cmapErr != nil {
+		httpErr = httpreply.NotFoundError(w)
+		return
+	}
+	desc := vars["desc"]
+	nodeID, cmapErr := strconv.Atoi(vars["nodeid"])
+	if cmapErr != nil {
+		httpErr = httpreply.NotFoundError(w)
+		return
+	}
+	dist, cmapErr := strconv.ParseFloat(vars["dist"], 64)
+	if cmapErr != nil {
+		httpErr = httpreply.NotFoundError(w)
+		return
+	}
+	var svc []schemas.Service
+	svc, cmapErr = df.stor.searchLocalServices(masID, nodeID, dist, desc)
+	httpErr = httpreply.Resource(w, svc, cmapErr)
+	return
+}
+
+// handleGetSvcID is the handler for get requests to path /api/df/{masid}/svc/id/{svcid}
+func (df *DF) handleGetSvcID(w http.ResponseWriter, r *http.Request) {
+	df.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
+	var cmapErr, httpErr error
+	defer df.logErrors(r.URL.Path, cmapErr, httpErr)
+	vars := mux.Vars(r)
+	masID, cmapErr := strconv.Atoi(vars["masid"])
+	if cmapErr != nil {
+		httpErr = httpreply.NotFoundError(w)
+		return
+	}
+	svcID := vars["svcid"]
+	var svc schemas.Service
+	svc, cmapErr = df.stor.getService(masID, svcID)
+	httpErr = httpreply.Resource(w, svc, cmapErr)
+	return
+}
+
+// handleDeleteSvcID is the handler for delete requests to path /api/df/{masid}/svc/id/{svcid}
+func (df *DF) handleDeleteSvcID(w http.ResponseWriter, r *http.Request) {
+	df.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
+	var cmapErr, httpErr error
+	defer df.logErrors(r.URL.Path, cmapErr, httpErr)
+	vars := mux.Vars(r)
+	masID, cmapErr := strconv.Atoi(vars["masid"])
+	if cmapErr != nil {
+		httpErr = httpreply.NotFoundError(w)
+		return
+	}
+	svcID := vars["svcid"]
+	cmapErr = df.stor.deregisterService(masID, svcID)
+	httpErr = httpreply.Deleted(w, cmapErr)
+	return
+}
+
+// methodNotAllowed is the default handler for valid paths but invalid methods
+func (df *DF) methodNotAllowed(w http.ResponseWriter, r *http.Request) {
+	df.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
+	httpErr := httpreply.MethodNotAllowed(w)
+	cmapErr := errors.New("Error: Method not allowed on path " + r.URL.Path)
+	df.logErrors(r.URL.Path, cmapErr, httpErr)
+	return
+}
+
+// resourceNotFound is the default handler for invalid paths
+func (df *DF) resourceNotFound(w http.ResponseWriter, r *http.Request) {
+	df.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
+	httpErr := httpreply.NotFoundError(w)
+	cmapErr := errors.New("Resource not found")
+	df.logErrors(r.URL.Path, cmapErr, httpErr)
+	return
+}
+
+// logErrors logs errors if any
+func (df *DF) logErrors(path string, cmapErr error, httpErr error) {
+	if cmapErr != nil {
+		df.logError.Println(path, cmapErr)
 	}
 	if httpErr != nil {
-		df.logError.Println(respath, httpErr)
-	}
-}
-
-// handleAlive is the handler for requests to path /api/alive
-func (df *DF) handleAlive(w http.ResponseWriter, r *http.Request) (cmapErr, httpErr error) {
-	if r.Method == "GET" {
-		httpErr = httpreply.Alive(w, nil)
-	} else {
-		httpErr = httpreply.MethodNotAllowed(w)
-		cmapErr = errors.New("Error: Method not allowed on path /api/alive")
+		df.logError.Println(path, httpErr)
 	}
 	return
 }
 
-// handlemasID is the handler for requests to path /api/df/{mas-id}/svc
-func (df *DF) handlemasID(masID int, w http.ResponseWriter,
-	r *http.Request) (cmapErr, httpErr error) {
-	if r.Method == "GET" {
-		var svc []schemas.Service
-		svc, cmapErr = df.stor.searchServices(masID, "")
-		httpErr = httpreply.Resource(w, svc, cmapErr)
-	} else if r.Method == "POST" {
-		var body []byte
-		body, cmapErr = ioutil.ReadAll(r.Body)
-		if cmapErr == nil {
-			var svc schemas.Service
-			cmapErr = json.Unmarshal(body, &svc)
-			if cmapErr == nil {
-				var id string
-				id, cmapErr = df.stor.registerService(svc)
-				svc.GUID = id
-				var res []byte
-				res, cmapErr = json.Marshal(svc)
-				if cmapErr == nil {
-					httpErr = httpreply.Created(w, cmapErr, "application/json", res)
-				} else {
-					httpErr = httpreply.CMAPError(w, cmapErr.Error())
-				}
-			} else {
-				httpErr = httpreply.JSONUnmarshalError(w)
-			}
-		} else {
-			httpErr = httpreply.InvalidBodyError(w)
-		}
-	} else {
-		httpErr = httpreply.MethodNotAllowed(w)
-		cmapErr = errors.New("Error: Method not allowed on path /api/mas/{mas-id}/svc")
-	}
-	return
-}
-
-// handleMASGraph is the handler for requests to path /api/df/{mas-id}/graph
-func (df *DF) handleMASGraph(masID int, w http.ResponseWriter,
-	r *http.Request) (cmapErr, httpErr error) {
-	if r.Method == "GET" {
-		var gr schemas.Graph
-		gr, cmapErr = df.stor.getGraph(masID)
-		httpErr = httpreply.Resource(w, gr, cmapErr)
-	} else if r.Method == "POST" || r.Method == "PUT" {
-		var body []byte
-		body, cmapErr = ioutil.ReadAll(r.Body)
-		if cmapErr == nil {
-			var gr schemas.Graph
-			cmapErr = json.Unmarshal(body, &gr)
-			if cmapErr == nil {
-				cmapErr = df.stor.updateGraph(masID, gr)
-				httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Ressource Created"))
-			} else {
-				httpErr = httpreply.JSONUnmarshalError(w)
-			}
-		} else {
-			httpErr = httpreply.InvalidBodyError(w)
-		}
-	} else {
-		httpErr = httpreply.MethodNotAllowed(w)
-		cmapErr = errors.New("Error: Method not allowed on path /api/mas/{mas-id}/graph")
-	}
-	return
-}
-
-// handleSvcDesc is the handler for requests to path /api/df/{mas-id}/svc/desc/{desc}
-func (df *DF) handleSvcDesc(masID int, desc string, w http.ResponseWriter,
-	r *http.Request) (cmapErr, httpErr error) {
-	if r.Method == "GET" {
-		var svc []schemas.Service
-		svc, cmapErr = df.stor.searchServices(masID, desc)
-		httpErr = httpreply.Resource(w, svc, cmapErr)
-	} else {
-		httpErr = httpreply.MethodNotAllowed(w)
-		cmapErr = errors.New("Error: Method not allowed on path /api/mas/{mas-id}/svc/desc/{desc}")
-	}
-	return
-}
-
-// handleSvcNode is the handler for requests to path /api/df/{mas-id}/svc/desc/{desc}/node/
-// {nodeid}/dist/{dist}
-func (df *DF) handleSvcNode(masID int, desc string, nodeID int, dist float64, w http.ResponseWriter,
-	r *http.Request) (cmapErr, httpErr error) {
-	if r.Method == "GET" {
-		var svc []schemas.Service
-		svc, cmapErr = df.stor.searchLocalServices(masID, nodeID, dist, desc)
-		httpErr = httpreply.Resource(w, svc, cmapErr)
-	} else {
-		httpErr = httpreply.MethodNotAllowed(w)
-		cmapErr = errors.New("Error: Method not allowed on path /api/mas/{mas-id}/svc/desc/{desc}")
-	}
-	return
-}
-
-// handleSvcID is the handler for requests to path /api/df/{mas-id}/svc/id/{svcID}
-func (df *DF) handleSvcID(masID int, svcID string, w http.ResponseWriter,
-	r *http.Request) (cmapErr, httpErr error) {
-	if r.Method == "GET" {
-		var svc schemas.Service
-		svc, cmapErr = df.stor.getService(masID, svcID)
-		httpErr = httpreply.Resource(w, svc, cmapErr)
-	} else if r.Method == "DELETE" {
-		cmapErr = df.stor.deregisterService(masID, svcID)
-		httpErr = httpreply.Deleted(w, cmapErr)
-	} else {
-		httpErr = httpreply.MethodNotAllowed(w)
-		cmapErr = errors.New("Error: Method not allowed on path /api/mas/{mas-id}/svc/id/{svcID}")
+// server creates the df server
+func (df *DF) server(port int) (serv *http.Server) {
+	r := mux.NewRouter()
+	// r.HandleFunc("/api/", logger.handleAPI)
+	s := r.PathPrefix("/api").Subrouter()
+	s.Path("/alive").Methods("GET").HandlerFunc(df.handleAlive)
+	s.Path("/alive").Methods("POST", "PUT", "DELETE").HandlerFunc(df.methodNotAllowed)
+	s.Path("/df/{masid}/svc").Methods("GET").HandlerFunc(df.handleGetMASService)
+	s.Path("/df/{masid}/svc").Methods("POST").HandlerFunc(df.handlePostMASService)
+	s.Path("/df/{masid}/svc").Methods("PUT", "DELETE").HandlerFunc(df.methodNotAllowed)
+	s.Path("/df/{masid}/graph").Methods("GET").HandlerFunc(df.handleGetMASGraph)
+	s.Path("/df/{masid}/graph").Methods("POST", "PUT").HandlerFunc(df.handlePostMASGraph)
+	s.Path("/df/{masid}/graph").Methods("DELETE").HandlerFunc(df.methodNotAllowed)
+	s.Path("/df/{masid}/svc/desc/{desc}").Methods("GET").HandlerFunc(df.handleGetSvcDesc)
+	s.Path("/df/{masid}/svc/desc/{desc}").Methods("POST", "PUT", "DELETE").
+		HandlerFunc(df.methodNotAllowed)
+	s.Path("/df/{masid}/svc/desc/{desc}/node/{nodeid}/dist/{dist}").Methods("GET").
+		HandlerFunc(df.handleGetSvcNodeDist)
+	s.Path("/df/{masid}/svc/desc/{desc}/node/{nodeid}/dist/{dist}").
+		Methods("POST", "PUT", "DELETE").HandlerFunc(df.methodNotAllowed)
+	s.Path("/df/{masid}/svc/id/{svcid}").Methods("GET").HandlerFunc(df.handleGetSvcID)
+	s.Path("/df/{masid}/svc/id/{svcid}").Methods("DELETE").HandlerFunc(df.handleDeleteSvcID)
+	s.Path("/df/{masid}/svc/id/{svcid}").Methods("POST", "PUT").HandlerFunc(df.methodNotAllowed)
+	s.PathPrefix("").HandlerFunc(df.resourceNotFound)
+	serv = &http.Server{
+		Addr:    ":" + strconv.Itoa(port),
+		Handler: r,
 	}
 	return
 }
 
 // listen opens a http server listening and serving request
-func (df *DF) listen() (err error) {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/api/", df.handleAPI)
-	s := &http.Server{
-		Addr:    ":12000",
-		Handler: mux,
-	}
-	err = s.ListenAndServe()
+func (df *DF) listen(serv *http.Server) (err error) {
+	df.logInfo.Println("DF listening on " + serv.Addr)
+	err = serv.ListenAndServe()
 	return
 }

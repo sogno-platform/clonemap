@@ -68,7 +68,15 @@ func StartDF() (err error) {
 		return
 	}
 	// start to listen and serve requests
-	err = df.listen()
+	serv := df.server(12000)
+	if err != nil {
+		df.logError.Println(err)
+		return
+	}
+	err = df.listen(serv)
+	if err != nil {
+		df.logError.Println(err)
+	}
 
 	return
 }
