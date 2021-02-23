@@ -52,222 +52,240 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/common/httpreply"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
+	"github.com/gorilla/mux"
 )
 
-// handleAPI is the global handler for requests to path /api
-func (agency *Agency) handleAPI(w http.ResponseWriter, r *http.Request) {
-	var cmapErr, httpErr error
+// handleGetAgency is the handler for get requests to path /api/agency
+func (agency *Agency) handleGetAgency(w http.ResponseWriter, r *http.Request) {
 	agency.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
-	// determine which ressource is requested and call corresponding handler
-	respath := strings.Split(r.URL.EscapedPath(), "/")
-	resvalid := false
-
-	switch len(respath) {
-	case 3:
-		if respath[2] == "agency" {
-			cmapErr, httpErr = agency.handleAgency(w, r)
-			resvalid = true
-		}
-	case 4:
-		if respath[2] == "agency" && respath[3] == "agents" {
-			cmapErr, httpErr = agency.handleAgent(w, r)
-			resvalid = true
-		} else if respath[2] == "agency" && respath[3] == "msgs" {
-			cmapErr, httpErr = agency.handleMsgs(w, r)
-			resvalid = true
-		} else if respath[2] == "agency" && respath[3] == "msgundeliv" {
-			cmapErr, httpErr = agency.handleUndeliverableMsg(w, r)
-			resvalid = true
-		}
-	case 5:
-		var id int
-		id, cmapErr = strconv.Atoi(respath[4])
-		if respath[2] == "agency" && respath[3] == "agents" && cmapErr == nil {
-			cmapErr, httpErr = agency.handleAgentID(id, w, r)
-			resvalid = true
-		}
-	case 6:
-		var agentID int
-		agentID, cmapErr = strconv.Atoi(respath[4])
-		if respath[2] == "agency" && respath[3] == "agents" && cmapErr == nil {
-			if respath[5] == "status" {
-				cmapErr, httpErr = agency.handleAgentStatus(agentID, w, r)
-				resvalid = true
-			} else if respath[5] == "custom" {
-				cmapErr, httpErr = agency.handleAgentCustom(agentID, w, r)
-				resvalid = true
-			}
-		}
-	default:
-		cmapErr = errors.New("Resource not found")
-	}
-
-	if !resvalid {
-		httpErr = httpreply.NotFoundError(w)
-		cmapErr = errors.New("Resource not found")
-	}
+	var cmapErr, httpErr error
+	defer agency.logErrors(r.URL.Path, cmapErr, httpErr)
+	// return info about agency
+	var agencyInfo schemas.AgencyInfo
+	agencyInfo, cmapErr = agency.getAgencyInfo()
 	if cmapErr != nil {
-		agency.logError.Println(respath, cmapErr)
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		return
+	}
+	httpErr = httpreply.Resource(w, agencyInfo, cmapErr)
+	return
+}
+
+// handlePostAgent is the handler for post requests to path /api/agency/agents
+func (agency *Agency) handlePostAgent(w http.ResponseWriter, r *http.Request) {
+	agency.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
+	var cmapErr, httpErr error
+	defer agency.logErrors(r.URL.Path, cmapErr, httpErr)
+	// create new agent in agency
+	var body []byte
+	body, cmapErr = ioutil.ReadAll(r.Body)
+	if cmapErr != nil {
+		httpErr = httpreply.InvalidBodyError(w)
+		return
+	}
+	var agentInfo schemas.AgentInfo
+	cmapErr = json.Unmarshal(body, &agentInfo)
+	if cmapErr != nil {
+		httpErr = httpreply.JSONUnmarshalError(w)
+		return
+	}
+	go agency.createAgent(agentInfo)
+	httpErr = httpreply.Created(w, nil, "text/plain", []byte("Ressource Created"))
+	return
+}
+
+// handlePostMsgs is the handler for post requests to path /api/agency/msgs
+func (agency *Agency) handlePostMsgs(w http.ResponseWriter, r *http.Request) {
+	agency.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
+	var cmapErr, httpErr error
+	defer agency.logErrors(r.URL.Path, cmapErr, httpErr)
+	var body []byte
+	body, cmapErr = ioutil.ReadAll(r.Body)
+	if cmapErr != nil {
+		httpErr = httpreply.InvalidBodyError(w)
+		return
+	}
+	var msgs []schemas.ACLMessage
+	cmapErr = json.Unmarshal(body, &msgs)
+	if cmapErr != nil {
+		httpErr = httpreply.JSONUnmarshalError(w)
+		return
+	}
+	agency.msgIn <- msgs
+	httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Ressource Created"))
+	return
+}
+
+// handlePostUndeliverableMsg is the handler for post requests to path /api/agency/msgundeliv
+func (agency *Agency) handlePostUndeliverableMsg(w http.ResponseWriter, r *http.Request) {
+	agency.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
+	var cmapErr, httpErr error
+	defer agency.logErrors(r.URL.Path, cmapErr, httpErr)
+	var body []byte
+	body, cmapErr = ioutil.ReadAll(r.Body)
+	if cmapErr != nil {
+		httpErr = httpreply.InvalidBodyError(w)
+		return
+	}
+	var msg schemas.ACLMessage
+	cmapErr = json.Unmarshal(body, &msg)
+	if cmapErr != nil {
+		httpErr = httpreply.JSONUnmarshalError(w)
+		return
+	}
+	go agency.resendUndeliverableMsg(msg)
+	httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Ressource Created"))
+	return
+}
+
+// handleDeleteAgentID is the handler for delete requests to path /api/agency/agents/{agentid}
+func (agency *Agency) handleDeleteAgentID(w http.ResponseWriter, r *http.Request) {
+	agency.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
+	var cmapErr, httpErr error
+	defer agency.logErrors(r.URL.Path, cmapErr, httpErr)
+	vars := mux.Vars(r)
+	agentID, cmapErr := strconv.Atoi(vars["agentid"])
+	if cmapErr != nil {
+		httpErr = httpreply.NotFoundError(w)
+		return
+	}
+	// delete specified agent
+	cmapErr = agency.removeAgent(agentID)
+	httpErr = httpreply.Deleted(w, cmapErr)
+	return
+}
+
+// handleGetAgentStatus is the handler for get requests to path /api/agency/agents/{agentid}/status
+func (agency *Agency) handleGetAgentStatus(w http.ResponseWriter, r *http.Request) {
+	agency.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
+	var cmapErr, httpErr error
+	defer agency.logErrors(r.URL.Path, cmapErr, httpErr)
+	vars := mux.Vars(r)
+	agentID, cmapErr := strconv.Atoi(vars["agentid"])
+	if cmapErr != nil {
+		httpErr = httpreply.NotFoundError(w)
+		return
+	}
+	// return status of specified agent
+	var agentStatus schemas.Status
+	agentStatus, cmapErr = agency.getAgentStatus(agentID)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		return
+	}
+	httpErr = httpreply.Resource(w, agentStatus, cmapErr)
+	return
+}
+
+// handlePutAgentCustom is the handler for put requests to path /api/agency/agents/{agentid}/custom
+func (agency *Agency) handleAgentCustom(w http.ResponseWriter, r *http.Request) {
+	agency.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
+	var cmapErr, httpErr error
+	defer agency.logErrors(r.URL.Path, cmapErr, httpErr)
+	vars := mux.Vars(r)
+	agentID, cmapErr := strconv.Atoi(vars["agentid"])
+	if cmapErr != nil {
+		httpErr = httpreply.NotFoundError(w)
+		return
+	}
+	// update custom of specified agent
+	var body []byte
+	body, cmapErr = ioutil.ReadAll(r.Body)
+	if cmapErr != nil {
+		httpErr = httpreply.InvalidBodyError(w)
+		return
+	}
+	custom := string(body)
+	cmapErr = agency.updateAgentCustom(agentID, custom)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		return
+	}
+	httpErr = httpreply.Updated(w, cmapErr)
+	return
+}
+
+// methodNotAllowed is the default handler for valid paths but invalid methods
+func (agency *Agency) methodNotAllowed(w http.ResponseWriter, r *http.Request) {
+	agency.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
+	httpErr := httpreply.MethodNotAllowed(w)
+	cmapErr := errors.New("Error: Method not allowed on path " + r.URL.Path)
+	agency.logErrors(r.URL.Path, cmapErr, httpErr)
+	return
+}
+
+// resourceNotFound is the default handler for invalid paths
+func (agency *Agency) resourceNotFound(w http.ResponseWriter, r *http.Request) {
+	agency.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
+	httpErr := httpreply.NotFoundError(w)
+	cmapErr := errors.New("Resource not found")
+	agency.logErrors(r.URL.Path, cmapErr, httpErr)
+	return
+}
+
+// logErrors logs errors if any
+func (agency *Agency) logErrors(path string, cmapErr error, httpErr error) {
+	if cmapErr != nil {
+		agency.logError.Println(path, cmapErr)
 	}
 	if httpErr != nil {
-		agency.logError.Println(respath, httpErr)
-	}
-}
-
-// handleAgency is the handler for requests to path /api/agency
-func (agency *Agency) handleAgency(w http.ResponseWriter, r *http.Request) (cmapErr,
-	httpErr error) {
-	if r.Method == "GET" {
-		// return info about agency
-		var agencyInfo schemas.AgencyInfo
-		agencyInfo, cmapErr = agency.getAgencyInfo()
-		httpErr = httpreply.Resource(w, agencyInfo, cmapErr)
-	} else {
-		httpErr = httpreply.MethodNotAllowed(w)
-		cmapErr = errors.New("Error: Method not allowed on path /api/agency")
+		agency.logError.Println(path, httpErr)
 	}
 	return
 }
 
-// handleAgent is the handler for requests to path /api/agency/agents
-func (agency *Agency) handleAgent(w http.ResponseWriter, r *http.Request) (cmapErr, httpErr error) {
-	if r.Method == "POST" {
-		// create new agent in agency
-		var body []byte
-		body, cmapErr = ioutil.ReadAll(r.Body)
-		if cmapErr == nil {
-			var agentInfo schemas.AgentInfo
-			cmapErr = json.Unmarshal(body, &agentInfo)
-			if cmapErr == nil {
-				go agency.createAgent(agentInfo)
-				httpErr = httpreply.Created(w, nil, "text/plain", []byte("Ressource Created"))
-			} else {
-				httpErr = httpreply.JSONUnmarshalError(w)
-			}
-		} else {
-			httpErr = httpreply.InvalidBodyError(w)
-		}
-	} else {
-		httpErr = httpreply.MethodNotAllowed(w)
-		cmapErr = errors.New("Error: Method not allowed on path /api/agency/agents")
+// getAgentID returns the masID and agentID from the path
+func getAgentID(r *http.Request) (masID int, agentID int, err error) {
+	vars := mux.Vars(r)
+	masID, err = strconv.Atoi(vars["masid"])
+	if err != nil {
+		return
+	}
+	agentID, err = strconv.Atoi(vars["agentid"])
+	if err != nil {
+		return
 	}
 	return
 }
 
-// handleMsgs is the handler for requests to path /api/agency/msgs
-func (agency *Agency) handleMsgs(w http.ResponseWriter, r *http.Request) (cmapErr, httpErr error) {
-	if r.Method == "POST" {
-		var body []byte
-		body, cmapErr = ioutil.ReadAll(r.Body)
-		if cmapErr == nil {
-			var msgs []schemas.ACLMessage
-			cmapErr = json.Unmarshal(body, &msgs)
-			if cmapErr == nil {
-				agency.msgIn <- msgs
-				httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Ressource Created"))
-			} else {
-				httpErr = httpreply.JSONUnmarshalError(w)
-			}
-		} else {
-			httpErr = httpreply.InvalidBodyError(w)
-		}
-	} else {
-		httpErr = httpreply.MethodNotAllowed(w)
-		cmapErr = errors.New("Error: Method not allowed on path /api/agency/msgs")
-	}
-	return
-}
-
-// handleUndeliverableMsg is the handler for requests to path /api/agency/msgundeliv
-func (agency *Agency) handleUndeliverableMsg(w http.ResponseWriter,
-	r *http.Request) (cmapErr, httpErr error) {
-	if r.Method == "POST" {
-		var body []byte
-		body, cmapErr = ioutil.ReadAll(r.Body)
-		if cmapErr == nil {
-			var msg schemas.ACLMessage
-			cmapErr = json.Unmarshal(body, &msg)
-			if cmapErr == nil {
-				go agency.resendUndeliverableMsg(msg)
-				httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Ressource Created"))
-			} else {
-				httpErr = httpreply.JSONUnmarshalError(w)
-			}
-		} else {
-			httpErr = httpreply.InvalidBodyError(w)
-		}
-	} else {
-		httpErr = httpreply.MethodNotAllowed(w)
-		cmapErr = errors.New("Error: Method not allowed on path /api/agency/msgundeliv")
-	}
-	return
-}
-
-// handleAgentID is the handler for requests to path /api/agency/agents/{agent-id}
-func (agency *Agency) handleAgentID(agid int, w http.ResponseWriter, r *http.Request) (cmapErr,
-	httpErr error) {
-	if r.Method == "DELETE" {
-		// delete specified agent
-		cmapErr = agency.removeAgent(agid)
-		httpErr = httpreply.Deleted(w, cmapErr)
-
-	} else {
-		httpErr = httpreply.MethodNotAllowed(w)
-		cmapErr = errors.New("Error: Method not allowed on path /api/agency/agents/{agent-id}")
-	}
-	return
-}
-
-// handleAgentStatus is the handler for requests to path /api/agency/agents/{agent-id}/status
-func (agency *Agency) handleAgentStatus(agid int, w http.ResponseWriter,
-	r *http.Request) (cmapErr, httpErr error) {
-	if r.Method == "GET" {
-		// return status of specified agent
-		var agentStatus schemas.Status
-		agentStatus, cmapErr = agency.getAgentStatus(agid)
-		httpErr = httpreply.Resource(w, agentStatus, cmapErr)
-	} else {
-		httpErr = httpreply.MethodNotAllowed(w)
-		cmapErr = errors.New("Error: Method not allowed on path /api/agency/agents/{agent-id}/" +
-			"status")
-	}
-	return
-}
-
-// handleAgentCustom is the handler for requests to path /api/agency/agents/{agent-id}/custom
-func (agency *Agency) handleAgentCustom(agid int, w http.ResponseWriter,
-	r *http.Request) (cmapErr, httpErr error) {
-	if r.Method == "PUT" {
-		// update custom of specified agent
-		var body []byte
-		body, cmapErr = ioutil.ReadAll(r.Body)
-		if cmapErr == nil {
-			custom := string(body)
-			cmapErr = agency.updateAgentCustom(agid, custom)
-			httpErr = httpreply.Updated(w, cmapErr)
-		} else {
-			httpErr = httpreply.InvalidBodyError(w)
-		}
-	} else {
-		httpErr = httpreply.MethodNotAllowed(w)
-		cmapErr = errors.New("Error: Method not allowed on path /api/agency/agents/{agent-id}/" +
-			"custom")
+// server creates the fe server
+func (agency *Agency) server(port int) (serv *http.Server) {
+	r := mux.NewRouter()
+	s := r.PathPrefix("/api").Subrouter()
+	s.Path("/agency").Methods("GET").HandlerFunc(agency.handleGetAgency)
+	s.Path("/agency").Methods("PUT", "POST", "DELETE").HandlerFunc(agency.methodNotAllowed)
+	s.Path("/agency/agents").Methods("POST").HandlerFunc(agency.handlePostAgent)
+	s.Path("/agency/agents").Methods("PUT", "GET", "DELETE").HandlerFunc(agency.methodNotAllowed)
+	s.Path("/agency/msgs").Methods("POST").HandlerFunc(agency.handlePostMsgs)
+	s.Path("/agency/msgs").Methods("PUT", "GET", "DELETE").HandlerFunc(agency.methodNotAllowed)
+	s.Path("/agency/msgundeliv").Methods("POST").HandlerFunc(agency.handlePostUndeliverableMsg)
+	s.Path("/agency/msgundeliv").Methods("PUT", "GET", "DELETE").
+		HandlerFunc(agency.methodNotAllowed)
+	s.Path("/agency/agents/{agentid}").Methods("DELETE").HandlerFunc(agency.handleDeleteAgentID)
+	s.Path("/agency/agents/{agentid}").Methods("PUT", "GET", "POST").
+		HandlerFunc(agency.methodNotAllowed)
+	s.Path("/agency/agents/{agentid}/status").Methods("GET").
+		HandlerFunc(agency.handleGetAgentStatus)
+	s.Path("/agency/agents/{agentid}/status").Methods("PUT", "DELETE", "POST").
+		HandlerFunc(agency.methodNotAllowed)
+	s.Path("/agency/agents/{agentid}/custom").Methods("PUT").
+		HandlerFunc(agency.handleGetAgentStatus)
+	s.Path("/agency/agents/{agentid}/custom").Methods("GET", "DELETE", "POST").
+		HandlerFunc(agency.methodNotAllowed)
+	s.PathPrefix("").HandlerFunc(agency.resourceNotFound)
+	serv = &http.Server{
+		Addr:    ":" + strconv.Itoa(port),
+		Handler: r,
 	}
 	return
 }
 
 // listen opens a http server listening and serving request
-func (agency *Agency) listen() (err error) {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/api/", agency.handleAPI)
-	s := &http.Server{
-		Addr:    ":10000",
-		Handler: mux,
-	}
-	err = s.ListenAndServe()
+func (agency *Agency) listen(serv *http.Server) (err error) {
+	agency.logInfo.Println("Frontend listening on " + serv.Addr)
+	err = serv.ListenAndServe()
 	return
 }
