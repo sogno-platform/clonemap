@@ -60,7 +60,6 @@ import (
 
 // handleGetAgency is the handler for get requests to path /api/agency
 func (agency *Agency) handleGetAgency(w http.ResponseWriter, r *http.Request) {
-	agency.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer agency.logErrors(r.URL.Path, cmapErr, httpErr)
 	// return info about agency
@@ -76,7 +75,6 @@ func (agency *Agency) handleGetAgency(w http.ResponseWriter, r *http.Request) {
 
 // handlePostAgent is the handler for post requests to path /api/agency/agents
 func (agency *Agency) handlePostAgent(w http.ResponseWriter, r *http.Request) {
-	agency.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer agency.logErrors(r.URL.Path, cmapErr, httpErr)
 	// create new agent in agency
@@ -99,7 +97,6 @@ func (agency *Agency) handlePostAgent(w http.ResponseWriter, r *http.Request) {
 
 // handlePostMsgs is the handler for post requests to path /api/agency/msgs
 func (agency *Agency) handlePostMsgs(w http.ResponseWriter, r *http.Request) {
-	agency.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer agency.logErrors(r.URL.Path, cmapErr, httpErr)
 	var body []byte
@@ -121,7 +118,6 @@ func (agency *Agency) handlePostMsgs(w http.ResponseWriter, r *http.Request) {
 
 // handlePostUndeliverableMsg is the handler for post requests to path /api/agency/msgundeliv
 func (agency *Agency) handlePostUndeliverableMsg(w http.ResponseWriter, r *http.Request) {
-	agency.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer agency.logErrors(r.URL.Path, cmapErr, httpErr)
 	var body []byte
@@ -143,7 +139,6 @@ func (agency *Agency) handlePostUndeliverableMsg(w http.ResponseWriter, r *http.
 
 // handleDeleteAgentID is the handler for delete requests to path /api/agency/agents/{agentid}
 func (agency *Agency) handleDeleteAgentID(w http.ResponseWriter, r *http.Request) {
-	agency.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer agency.logErrors(r.URL.Path, cmapErr, httpErr)
 	vars := mux.Vars(r)
@@ -160,7 +155,6 @@ func (agency *Agency) handleDeleteAgentID(w http.ResponseWriter, r *http.Request
 
 // handleGetAgentStatus is the handler for get requests to path /api/agency/agents/{agentid}/status
 func (agency *Agency) handleGetAgentStatus(w http.ResponseWriter, r *http.Request) {
-	agency.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer agency.logErrors(r.URL.Path, cmapErr, httpErr)
 	vars := mux.Vars(r)
@@ -182,7 +176,6 @@ func (agency *Agency) handleGetAgentStatus(w http.ResponseWriter, r *http.Reques
 
 // handlePutAgentCustom is the handler for put requests to path /api/agency/agents/{agentid}/custom
 func (agency *Agency) handleAgentCustom(w http.ResponseWriter, r *http.Request) {
-	agency.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer agency.logErrors(r.URL.Path, cmapErr, httpErr)
 	vars := mux.Vars(r)
@@ -210,7 +203,6 @@ func (agency *Agency) handleAgentCustom(w http.ResponseWriter, r *http.Request) 
 
 // methodNotAllowed is the default handler for valid paths but invalid methods
 func (agency *Agency) methodNotAllowed(w http.ResponseWriter, r *http.Request) {
-	agency.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	httpErr := httpreply.MethodNotAllowed(w)
 	cmapErr := errors.New("Error: Method not allowed on path " + r.URL.Path)
 	agency.logErrors(r.URL.Path, cmapErr, httpErr)
@@ -219,7 +211,6 @@ func (agency *Agency) methodNotAllowed(w http.ResponseWriter, r *http.Request) {
 
 // resourceNotFound is the default handler for invalid paths
 func (agency *Agency) resourceNotFound(w http.ResponseWriter, r *http.Request) {
-	agency.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	httpErr := httpreply.NotFoundError(w)
 	cmapErr := errors.New("Resource not found")
 	agency.logErrors(r.URL.Path, cmapErr, httpErr)
@@ -237,18 +228,12 @@ func (agency *Agency) logErrors(path string, cmapErr error, httpErr error) {
 	return
 }
 
-// getAgentID returns the masID and agentID from the path
-func getAgentID(r *http.Request) (masID int, agentID int, err error) {
-	vars := mux.Vars(r)
-	masID, err = strconv.Atoi(vars["masid"])
-	if err != nil {
-		return
-	}
-	agentID, err = strconv.Atoi(vars["agentid"])
-	if err != nil {
-		return
-	}
-	return
+// loggingMiddleware logs request before calling final handler
+func (agency *Agency) loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		agency.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
+		next.ServeHTTP(w, r)
+	})
 }
 
 // server creates the fe server
@@ -275,7 +260,8 @@ func (agency *Agency) server(port int) (serv *http.Server) {
 		HandlerFunc(agency.handleGetAgentStatus)
 	s.Path("/agency/agents/{agentid}/custom").Methods("GET", "DELETE", "POST").
 		HandlerFunc(agency.methodNotAllowed)
-	s.PathPrefix("").HandlerFunc(agency.resourceNotFound)
+	s.Use(agency.loggingMiddleware)
+	r.PathPrefix("").HandlerFunc(agency.resourceNotFound)
 	serv = &http.Server{
 		Addr:    ":" + strconv.Itoa(port),
 		Handler: r,
