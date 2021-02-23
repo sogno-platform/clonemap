@@ -47,69 +47,105 @@ package frontend
 import (
 	"errors"
 	"net/http"
-	"strings"
+	"strconv"
 
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/common/httpreply"
+	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
+	"github.com/gorilla/mux"
 )
 
-// handleAPI is the global handler for requests to path /api
-func (fe *Frontend) handleAPI(w http.ResponseWriter, r *http.Request) {
+// handleGetModules is the handler for get requests to path /api/pf/modules
+func (fe *Frontend) handleGetModules(w http.ResponseWriter, r *http.Request) {
+	fe.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
-	// ams.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
-	// determine which ressource is requested and call corresponding handler
-	respath := strings.Split(r.URL.EscapedPath(), "/")
-	resvalid := false
-
-	if len(respath) > 2 {
-		switch respath[2] {
-		case "pf":
-			resvalid, cmapErr, httpErr = fe.handlePlatform(w, r, respath)
-		case "ams":
-			resvalid, cmapErr, httpErr = fe.handleAMS(w, r, respath)
-		case "df":
-			resvalid, cmapErr, httpErr = fe.handleDF(w, r, respath)
-		case "logger":
-			resvalid, cmapErr, httpErr = fe.handleLogging(w, r, respath)
-		case "overview":
-			resvalid = true
-			cmapErr, httpErr = fe.handleOverview(w, r)
-		default:
-			cmapErr = errors.New("Resource not found")
-		}
-	}
-
-	if !resvalid {
-		httpErr = httpreply.NotFoundError(w)
-		cmapErr = errors.New("Resource not found")
-	}
+	defer fe.logErrors(r.URL.Path, cmapErr, httpErr)
+	var mods schemas.ModuleStatus
+	mods, cmapErr = fe.getModuleStatus()
 	if cmapErr != nil {
-		// ams.logError.Println(respath, cmapErr)
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		return
 	}
-	if httpErr != nil {
-		// ams.logError.Println(respath, httpErr)
-	}
+	httpErr = httpreply.Resource(w, mods, cmapErr)
+	return
 }
 
-// handleOverview is the handler for requests to path /api/overview
-func (fe *Frontend) handleOverview(w http.ResponseWriter, r *http.Request) (cmapErr, httpErr error) {
-	if r.Method == "GET" {
-		cmapErr, httpErr = fe.handleMAS(w, r)
-	} else {
-		httpErr = httpreply.MethodNotAllowed(w)
-		cmapErr = errors.New("Error: Method not allowed on path /api/overview")
+// methodNotAllowed is the default handler for valid paths but invalid methods
+func (fe *Frontend) methodNotAllowed(w http.ResponseWriter, r *http.Request) {
+	fe.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
+	httpErr := httpreply.MethodNotAllowed(w)
+	cmapErr := errors.New("Error: Method not allowed on path " + r.URL.Path)
+	fe.logErrors(r.URL.Path, cmapErr, httpErr)
+	return
+}
+
+// resourceNotFound is the default handler for invalid paths
+func (fe *Frontend) resourceNotFound(w http.ResponseWriter, r *http.Request) {
+	fe.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
+	httpErr := httpreply.NotFoundError(w)
+	cmapErr := errors.New("Resource not found")
+	fe.logErrors(r.URL.Path, cmapErr, httpErr)
+	return
+}
+
+// logErrors logs errors if any
+func (fe *Frontend) logErrors(path string, cmapErr error, httpErr error) {
+	if cmapErr != nil {
+		fe.logError.Println(path, cmapErr)
+	}
+	if httpErr != nil {
+		fe.logError.Println(path, httpErr)
+	}
+	return
+}
+
+// getAgentID returns the masID and agentID from the path
+func getAgentID(r *http.Request) (masID int, agentID int, err error) {
+	vars := mux.Vars(r)
+	masID, err = strconv.Atoi(vars["masid"])
+	if err != nil {
+		return
+	}
+	agentID, err = strconv.Atoi(vars["agentid"])
+	if err != nil {
+		return
+	}
+	return
+}
+
+// server creates the fe server
+func (fe *Frontend) server(port int) (serv *http.Server) {
+	r := mux.NewRouter()
+	s := r.PathPrefix("/api").Subrouter()
+	s.Path("/overview").Methods("GET").HandlerFunc(fe.handleGetMASs)
+	s.Path("/overview").Methods("POST").HandlerFunc(fe.handlePostMAS)
+	s.Path("/overview").Methods("PUT", "DELETE").HandlerFunc(fe.methodNotAllowed)
+	s.Path("/ams/mas").Methods("GET").HandlerFunc(fe.handleGetMASs)
+	s.Path("/ams/mas").Methods("POST").HandlerFunc(fe.handlePostMAS)
+	s.Path("/ams/mas").Methods("PUT", "DELETE").HandlerFunc(fe.methodNotAllowed)
+	s.Path("/ams/mas/{masid}").Methods("GET").HandlerFunc(fe.handleGetMASID)
+	s.Path("/ams/mas/{masid}").Methods("DELETE").HandlerFunc(fe.handleDeleteMASID)
+	s.Path("/ams/mas/{masid}").Methods("PUT", "POST").HandlerFunc(fe.methodNotAllowed)
+	s.Path("/ams/mas/{masid}/agents").Methods("POST").HandlerFunc(fe.handlePostAgent)
+	s.Path("/ams/mas/{masid}/agents").Methods("PUT", "GET", "DELETE").HandlerFunc(fe.methodNotAllowed)
+	s.Path("/ams/mas/{masid}/agents/{agentid}").Methods("GET").HandlerFunc(fe.handleGetAgentID)
+	s.Path("/ams/mas/{masid}/agents/{agentid}").Methods("DELETE").
+		HandlerFunc(fe.handleDeleteAgentID)
+	s.Path("/ams/mas/{masid}/agents/{agentid}").Methods("PUT", "POST").
+		HandlerFunc(fe.methodNotAllowed)
+	s.Path("/pf/modules").Methods("GET").HandlerFunc(fe.handleGetModules)
+	s.Path("/pf/modules").Methods("POST", "PUT", "POST").HandlerFunc(fe.methodNotAllowed)
+	s.PathPrefix("").HandlerFunc(fe.resourceNotFound)
+	r.HandleFunc("/", http.FileServer(http.Dir("./web")).ServeHTTP)
+	serv = &http.Server{
+		Addr:    ":" + strconv.Itoa(port),
+		Handler: r,
 	}
 	return
 }
 
 // listen opens a http server listening and serving request
-func (fe *Frontend) listen() (err error) {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/api/", fe.handleAPI)
-	mux.HandleFunc("/", http.FileServer(http.Dir("./web")).ServeHTTP)
-	s := &http.Server{
-		Addr:    ":13000",
-		Handler: mux,
-	}
-	err = s.ListenAndServe()
+func (fe *Frontend) listen(serv *http.Server) (err error) {
+	fe.logInfo.Println("Frontend listening on " + serv.Addr)
+	err = serv.ListenAndServe()
 	return
 }

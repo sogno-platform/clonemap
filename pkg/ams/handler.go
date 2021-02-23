@@ -75,6 +75,10 @@ func (ams *AMS) handleCloneMAP(w http.ResponseWriter, r *http.Request) {
 	// return info about running clonemap instance
 	var cmapInfo schemas.CloneMAP
 	cmapInfo, cmapErr = ams.getCloneMAPInfo()
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		return
+	}
 	httpErr = httpreply.Resource(w, cmapInfo, cmapErr)
 	return
 }
@@ -86,6 +90,10 @@ func (ams *AMS) handleGetMAS(w http.ResponseWriter, r *http.Request) {
 	defer ams.logErrors(r.URL.Path, cmapErr, httpErr)
 	var mass []schemas.MASInfoShort
 	mass, cmapErr = ams.getMASsShort()
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		return
+	}
 	httpErr = httpreply.Resource(w, mass, cmapErr)
 	return
 }
@@ -131,6 +139,10 @@ func (ams *AMS) handleGetMASID(w http.ResponseWriter, r *http.Request) {
 	// return long information about specified MAS
 	var masInfo schemas.MASInfo
 	masInfo, cmapErr = ams.getMASInfo(masID)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		return
+	}
 	httpErr = httpreply.Resource(w, masInfo, cmapErr)
 	return
 }
@@ -148,6 +160,10 @@ func (ams *AMS) handleDeleteMASID(w http.ResponseWriter, r *http.Request) {
 	}
 	// delete specified MAS
 	cmapErr = ams.removeMAS(masID)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		return
+	}
 	httpErr = httpreply.Deleted(w, cmapErr)
 	return
 }
@@ -162,6 +178,10 @@ func (ams *AMS) handleGetMASName(w http.ResponseWriter, r *http.Request) {
 	// search for MAS with matching name
 	var ids []int
 	ids, cmapErr = ams.getMASByName(name)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		return
+	}
 	httpErr = httpreply.Resource(w, ids, cmapErr)
 	return
 }
@@ -180,6 +200,10 @@ func (ams *AMS) handleGetAgents(w http.ResponseWriter, r *http.Request) {
 	// return short information of all agents in specified MAS
 	var agents schemas.Agents
 	agents, cmapErr = ams.getAgents(masID)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		return
+	}
 	httpErr = httpreply.Resource(w, agents, cmapErr)
 	return
 }
@@ -209,6 +233,10 @@ func (ams *AMS) handlePostAgent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	cmapErr = ams.createAgents(masID, groupSpecs)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		return
+	}
 	httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Ressource Created"))
 	return
 }
@@ -226,6 +254,10 @@ func (ams *AMS) handleGetAgentID(w http.ResponseWriter, r *http.Request) {
 	}
 	var agentInfo schemas.AgentInfo
 	agentInfo, cmapErr = ams.getAgentInfo(masID, agentID)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		return
+	}
 	httpErr = httpreply.Resource(w, agentInfo, cmapErr)
 	return
 }
@@ -243,6 +275,10 @@ func (ams *AMS) handleDeleteAgentID(w http.ResponseWriter, r *http.Request) {
 	}
 	// delete specified agent
 	cmapErr = ams.removeAgent(masID, agentID)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		return
+	}
 	httpErr = httpreply.Deleted(w, cmapErr)
 	return
 }
@@ -290,6 +326,10 @@ func (ams *AMS) handlePutAgentAddress(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	cmapErr = ams.updateAgentAddress(masID, agentID, agentAddr)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		return
+	}
 	httpErr = httpreply.Updated(w, cmapErr)
 	return
 }
@@ -314,6 +354,10 @@ func (ams *AMS) handlePutAgentCustom(w http.ResponseWriter, r *http.Request) {
 	}
 	custom := string(body)
 	cmapErr = ams.updateAgentCustom(masID, agentID, custom)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		return
+	}
 	httpErr = httpreply.Updated(w, cmapErr)
 	return
 }
@@ -334,6 +378,10 @@ func (ams *AMS) handleGetAgentName(w http.ResponseWriter, r *http.Request) {
 	// search for agents with matching name
 	var ids []int
 	ids, cmapErr = ams.getAgentsByName(masID, name)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		return
+	}
 	httpErr = httpreply.Resource(w, ids, cmapErr)
 	return
 }
@@ -352,6 +400,10 @@ func (ams *AMS) handleGetAgencies(w http.ResponseWriter, r *http.Request) {
 	// return information of specified agency
 	var agencies schemas.Agencies
 	agencies, cmapErr = ams.getAgencies(masID)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		return
+	}
 	httpErr = httpreply.Resource(w, agencies, cmapErr)
 	return
 }
@@ -380,6 +432,10 @@ func (ams *AMS) handleGetAgencyID(w http.ResponseWriter, r *http.Request) {
 	}
 	var agencySpec schemas.AgencyInfoFull
 	agencySpec, cmapErr = ams.getAgencyInfoFull(masID, imID, agencyID)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		return
+	}
 	httpErr = httpreply.Resource(w, agencySpec, cmapErr)
 	return
 }

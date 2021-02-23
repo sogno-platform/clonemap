@@ -78,6 +78,10 @@ func (df *DF) handleGetMASService(w http.ResponseWriter, r *http.Request) {
 	}
 	var svc []schemas.Service
 	svc, cmapErr = df.stor.searchServices(masID, "")
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		return
+	}
 	httpErr = httpreply.Resource(w, svc, cmapErr)
 	return
 }
@@ -125,6 +129,10 @@ func (df *DF) handleGetMASGraph(w http.ResponseWriter, r *http.Request) {
 	}
 	var gr schemas.Graph
 	gr, cmapErr = df.stor.getGraph(masID)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		return
+	}
 	httpErr = httpreply.Resource(w, gr, cmapErr)
 	return
 }
@@ -153,6 +161,10 @@ func (df *DF) handlePostMASGraph(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	cmapErr = df.stor.updateGraph(masID, gr)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		return
+	}
 	httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Ressource Created"))
 	return
 }
@@ -171,6 +183,10 @@ func (df *DF) handleGetSvcDesc(w http.ResponseWriter, r *http.Request) {
 	desc := vars["desc"]
 	var svc []schemas.Service
 	svc, cmapErr = df.stor.searchServices(masID, desc)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		return
+	}
 	httpErr = httpreply.Resource(w, svc, cmapErr)
 	return
 }
@@ -200,6 +216,10 @@ func (df *DF) handleGetSvcNodeDist(w http.ResponseWriter, r *http.Request) {
 	}
 	var svc []schemas.Service
 	svc, cmapErr = df.stor.searchLocalServices(masID, nodeID, dist, desc)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		return
+	}
 	httpErr = httpreply.Resource(w, svc, cmapErr)
 	return
 }
@@ -218,6 +238,10 @@ func (df *DF) handleGetSvcID(w http.ResponseWriter, r *http.Request) {
 	svcID := vars["svcid"]
 	var svc schemas.Service
 	svc, cmapErr = df.stor.getService(masID, svcID)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		return
+	}
 	httpErr = httpreply.Resource(w, svc, cmapErr)
 	return
 }
@@ -235,6 +259,10 @@ func (df *DF) handleDeleteSvcID(w http.ResponseWriter, r *http.Request) {
 	}
 	svcID := vars["svcid"]
 	cmapErr = df.stor.deregisterService(masID, svcID)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		return
+	}
 	httpErr = httpreply.Deleted(w, cmapErr)
 	return
 }

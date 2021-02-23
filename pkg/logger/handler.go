@@ -105,6 +105,10 @@ func (logger *Logger) handleGetCommunication(w http.ResponseWriter, r *http.Requ
 	}
 	var comm []schemas.Communication
 	comm, cmapErr = logger.getCommunication(masID, agentID)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		return
+	}
 	httpErr = httpreply.Resource(w, comm, cmapErr)
 	return
 }
@@ -181,6 +185,10 @@ func (logger *Logger) handleGetLogsLatest(w http.ResponseWriter, r *http.Request
 	}
 	var logMsg []schemas.LogMessage
 	logMsg, cmapErr = logger.getLatestAgentLogMessages(masID, agentID, topic, num)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		return
+	}
 	httpErr = httpreply.Resource(w, logMsg, cmapErr)
 	return
 }
@@ -210,6 +218,10 @@ func (logger *Logger) handleGetLogsTime(w http.ResponseWriter, r *http.Request) 
 	}
 	var logMsg []schemas.LogMessage
 	logMsg, cmapErr = logger.getAgentLogMessagesInRange(masID, agentID, topic, start, end)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		return
+	}
 	httpErr = httpreply.Resource(w, logMsg, cmapErr)
 	return
 }
@@ -226,6 +238,10 @@ func (logger *Logger) handleGetState(w http.ResponseWriter, r *http.Request) {
 	}
 	var state schemas.State
 	state, cmapErr = logger.getAgentState(masID, agentID)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		return
+	}
 	httpErr = httpreply.Resource(w, state, cmapErr)
 	return
 }

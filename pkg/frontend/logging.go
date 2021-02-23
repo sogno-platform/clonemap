@@ -43,21 +43,3 @@ THE SOFTWARE.
 */
 
 package frontend
-
-import (
-	"errors"
-	"net/http"
-)
-
-// handleLogging handles requests to /api/logger/...
-func (fe *Frontend) handleLogging(w http.ResponseWriter, r *http.Request,
-	respath []string) (resvalid bool, cmapErr error, httpErr error) {
-	resvalid = false
-	switch len(respath) {
-	case 4:
-
-	default:
-		cmapErr = errors.New("Resource not found")
-	}
-	return
-}

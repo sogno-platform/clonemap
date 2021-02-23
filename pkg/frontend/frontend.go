@@ -45,11 +45,16 @@ THE SOFTWARE.
 package frontend
 
 import (
+	"errors"
+	"io/ioutil"
+	"log"
+	"os"
 	"time"
 
 	amsclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/ams/client"
 	dfclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/df/client"
 	logclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/logger/client"
+	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 )
 
 // Frontend frontend
@@ -57,6 +62,8 @@ type Frontend struct {
 	amsClient *amsclient.Client
 	dfClient  *dfclient.Client
 	logClient *logclient.Client
+	logInfo   *log.Logger // logger for info logging
+	logError  *log.Logger // logger for error logging
 }
 
 // StartFrontend start
@@ -65,7 +72,35 @@ func StartFrontend() (err error) {
 		amsClient: amsclient.New(time.Second*60, time.Second*1, 4),
 		dfClient:  dfclient.New(time.Second*60, time.Second*1, 4),
 		logClient: logclient.New(time.Second*60, time.Second*1, 4),
+		logError:  log.New(os.Stderr, "[ERROR] ", log.LstdFlags),
 	}
-	fe.listen()
+	logType := os.Getenv("CLONEMAP_LOG_LEVEL")
+	switch logType {
+	case "info":
+		fe.logInfo = log.New(os.Stdout, "[INFO] ", log.LstdFlags)
+	case "error":
+		fe.logInfo = log.New(ioutil.Discard, "", log.LstdFlags)
+	default:
+		err = errors.New("Wrong log type: " + logType)
+		return
+	}
+	fe.logInfo.Println("Starting DF")
+	serv := fe.server(13000)
+	if err != nil {
+		fe.logError.Println(err)
+		return
+	}
+	err = fe.listen(serv)
+	if err != nil {
+		fe.logError.Println(err)
+	}
+	return
+}
+
+// getModuleStatus returns the on/off status of all modules
+func (fe *Frontend) getModuleStatus() (mods schemas.ModuleStatus, err error) {
+	mods.Logging = fe.logClient.Alive()
+	mods.Core = fe.amsClient.Alive()
+	mods.DF = fe.dfClient.Alive()
 	return
 }
