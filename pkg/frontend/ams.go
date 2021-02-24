@@ -57,7 +57,6 @@ import (
 
 // handleGetMASs is the handler for get requests to path /api/ams/mas
 func (fe *Frontend) handleGetMASs(w http.ResponseWriter, r *http.Request) {
-	fe.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer fe.logErrors(r.URL.Path, cmapErr, httpErr)
 	// return short info of all MAS
@@ -73,7 +72,6 @@ func (fe *Frontend) handleGetMASs(w http.ResponseWriter, r *http.Request) {
 
 // handlePostMASs is the handler for post requests to path /api/ams/mas
 func (fe *Frontend) handlePostMAS(w http.ResponseWriter, r *http.Request) {
-	fe.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer fe.logErrors(r.URL.Path, cmapErr, httpErr)
 	var body []byte
@@ -99,7 +97,6 @@ func (fe *Frontend) handlePostMAS(w http.ResponseWriter, r *http.Request) {
 
 // handleGetMASID is the handler for get requests to path /api/ams/mas/{masid}
 func (fe *Frontend) handleGetMASID(w http.ResponseWriter, r *http.Request) {
-	fe.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer fe.logErrors(r.URL.Path, cmapErr, httpErr)
 	vars := mux.Vars(r)
@@ -126,7 +123,6 @@ func (fe *Frontend) handleDeleteMASID(w http.ResponseWriter, r *http.Request) {
 
 // handlePostAgent is the handler for post requests to path /api/clonemap/mas/{masid}/agents
 func (fe *Frontend) handlePostAgent(w http.ResponseWriter, r *http.Request) {
-	fe.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer fe.logErrors(r.URL.Path, cmapErr, httpErr)
 	vars := mux.Vars(r)
@@ -159,7 +155,6 @@ func (fe *Frontend) handlePostAgent(w http.ResponseWriter, r *http.Request) {
 
 // handleGetAgentID is the handler for get requests to path /api/ams/mas/{masid}/agents/{agentid}
 func (fe *Frontend) handleGetAgentID(w http.ResponseWriter, r *http.Request) {
-	fe.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer fe.logErrors(r.URL.Path, cmapErr, httpErr)
 	masID, agentID, cmapErr := getAgentID(r)
@@ -181,7 +176,6 @@ func (fe *Frontend) handleGetAgentID(w http.ResponseWriter, r *http.Request) {
 // handleDeleteAgentID is the handler for delete requests to path
 // /api/ams/mas/{masid}/agents/{agentid}
 func (fe *Frontend) handleDeleteAgentID(w http.ResponseWriter, r *http.Request) {
-	fe.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer fe.logErrors(r.URL.Path, cmapErr, httpErr)
 	masID, agentID, cmapErr := getAgentID(r)

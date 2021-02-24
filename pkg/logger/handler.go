@@ -61,7 +61,6 @@ import (
 
 // handleAlive is the handler for requests to path /api/alive
 func (logger *Logger) handleAlive(w http.ResponseWriter, r *http.Request) {
-	logger.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var httpErr error
 	httpErr = httpreply.Alive(w, nil)
 	logger.logErrors(r.URL.Path, nil, httpErr)
@@ -71,7 +70,6 @@ func (logger *Logger) handleAlive(w http.ResponseWriter, r *http.Request) {
 // handlePostLogMsg is the handler for post requests to path
 // /api/logging/{masid}/{agentid}/{topic}
 func (logger *Logger) handlePostLogMsg(w http.ResponseWriter, r *http.Request) {
-	logger.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer logger.logErrors(r.URL.Path, cmapErr, httpErr)
 	// create new log message entry
@@ -95,7 +93,6 @@ func (logger *Logger) handlePostLogMsg(w http.ResponseWriter, r *http.Request) {
 // handleGetCommunication is the handler for get requests to path
 // /api/logging/{masid}/{agentid}/comm
 func (logger *Logger) handleGetCommunication(w http.ResponseWriter, r *http.Request) {
-	logger.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer logger.logErrors(r.URL.Path, cmapErr, httpErr)
 	masID, agentID, cmapErr := getAgentID(r)
@@ -116,7 +113,6 @@ func (logger *Logger) handleGetCommunication(w http.ResponseWriter, r *http.Requ
 // handlePutCommunication is the handler for put requests to path
 // /api/logging/{masid}/{agentid}/comm
 func (logger *Logger) handlePutCommunication(w http.ResponseWriter, r *http.Request) {
-	logger.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer logger.logErrors(r.URL.Path, cmapErr, httpErr)
 	masID, agentID, cmapErr := getAgentID(r)
@@ -144,7 +140,6 @@ func (logger *Logger) handlePutCommunication(w http.ResponseWriter, r *http.Requ
 
 // handlePostLogMsgList is the handler for post requests to path /api/logging/{masid}/list
 func (logger *Logger) handlePostLogMsgList(w http.ResponseWriter, r *http.Request) {
-	logger.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer logger.logErrors(r.URL.Path, cmapErr, httpErr)
 	// create new log message entry
@@ -168,7 +163,6 @@ func (logger *Logger) handlePostLogMsgList(w http.ResponseWriter, r *http.Reques
 // handleGetLogsLatest is the handler for requests to path
 // /api/logging/{masid}/{agentid}/{topic}/latest/{num}
 func (logger *Logger) handleGetLogsLatest(w http.ResponseWriter, r *http.Request) {
-	logger.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer logger.logErrors(r.URL.Path, cmapErr, httpErr)
 	masID, agentID, cmapErr := getAgentID(r)
@@ -196,7 +190,6 @@ func (logger *Logger) handleGetLogsLatest(w http.ResponseWriter, r *http.Request
 // handleGetLogsTime is the handler for get requests to path
 // /api/logging/{masid}/{agentid}/{topic}/time/{start}/{end}
 func (logger *Logger) handleGetLogsTime(w http.ResponseWriter, r *http.Request) {
-	logger.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer logger.logErrors(r.URL.Path, cmapErr, httpErr)
 	masID, agentID, cmapErr := getAgentID(r)
@@ -228,7 +221,6 @@ func (logger *Logger) handleGetLogsTime(w http.ResponseWriter, r *http.Request) 
 
 // handleGetState is the handler for get requests to path /api/state/{masid}/{agentid}
 func (logger *Logger) handleGetState(w http.ResponseWriter, r *http.Request) {
-	logger.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer logger.logErrors(r.URL.Path, cmapErr, httpErr)
 	masID, agentID, cmapErr := getAgentID(r)
@@ -248,7 +240,6 @@ func (logger *Logger) handleGetState(w http.ResponseWriter, r *http.Request) {
 
 // handlePutState is the handler for put requests to path /api/state/{masid}/{agentid}
 func (logger *Logger) handlePutState(w http.ResponseWriter, r *http.Request) {
-	logger.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer logger.logErrors(r.URL.Path, cmapErr, httpErr)
 	masID, agentID, cmapErr := getAgentID(r)
@@ -275,7 +266,6 @@ func (logger *Logger) handlePutState(w http.ResponseWriter, r *http.Request) {
 
 // handlePutStateList is the handler for requests to path /api/state/{masid}/list
 func (logger *Logger) handlePutStateList(w http.ResponseWriter, r *http.Request) {
-	logger.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer logger.logErrors(r.URL.Path, cmapErr, httpErr)
 	vars := mux.Vars(r)
@@ -303,7 +293,6 @@ func (logger *Logger) handlePutStateList(w http.ResponseWriter, r *http.Request)
 
 // methodNotAllowed is the default handler for valid paths but invalid methods
 func (logger *Logger) methodNotAllowed(w http.ResponseWriter, r *http.Request) {
-	logger.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	httpErr := httpreply.MethodNotAllowed(w)
 	cmapErr := errors.New("Error: Method not allowed on path " + r.URL.Path)
 	logger.logErrors(r.URL.Path, cmapErr, httpErr)
@@ -312,7 +301,6 @@ func (logger *Logger) methodNotAllowed(w http.ResponseWriter, r *http.Request) {
 
 // resourceNotFound is the default handler for invalid paths
 func (logger *Logger) resourceNotFound(w http.ResponseWriter, r *http.Request) {
-	logger.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	httpErr := httpreply.NotFoundError(w)
 	cmapErr := errors.New("Resource not found")
 	logger.logErrors(r.URL.Path, cmapErr, httpErr)
@@ -342,6 +330,14 @@ func getAgentID(r *http.Request) (masID int, agentID int, err error) {
 		return
 	}
 	return
+}
+
+// loggingMiddleware logs request before calling final handler
+func (logger *Logger) loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logger.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
+		next.ServeHTTP(w, r)
+	})
 }
 
 // server creates the logger server
@@ -377,8 +373,8 @@ func (logger *Logger) server(port int) (serv *http.Server) {
 	s.Path("/state/{masid}/list").Methods("PUT").HandlerFunc(logger.handlePutStateList)
 	s.Path("/state/{masid}/list").Methods("POST", "DELETE", "GET").
 		HandlerFunc(logger.methodNotAllowed)
-
 	s.PathPrefix("").HandlerFunc(logger.resourceNotFound)
+	s.Use(logger.loggingMiddleware)
 	serv = &http.Server{
 		Addr:    ":" + strconv.Itoa(port),
 		Handler: r,

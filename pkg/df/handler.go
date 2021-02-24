@@ -58,7 +58,6 @@ import (
 
 // handleAlive is the handler for requests to path /api/alive
 func (df *DF) handleAlive(w http.ResponseWriter, r *http.Request) {
-	df.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var httpErr error
 	httpErr = httpreply.Alive(w, nil)
 	df.logErrors(r.URL.Path, nil, httpErr)
@@ -67,7 +66,6 @@ func (df *DF) handleAlive(w http.ResponseWriter, r *http.Request) {
 
 // handleGetMASService is the handler for get requests to path /api/df/{masid}/svc
 func (df *DF) handleGetMASService(w http.ResponseWriter, r *http.Request) {
-	df.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer df.logErrors(r.URL.Path, cmapErr, httpErr)
 	vars := mux.Vars(r)
@@ -88,7 +86,6 @@ func (df *DF) handleGetMASService(w http.ResponseWriter, r *http.Request) {
 
 // handlePostMASService is the handler for post requests to path /api/df/{masid}/svc
 func (df *DF) handlePostMASService(w http.ResponseWriter, r *http.Request) {
-	df.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer df.logErrors(r.URL.Path, cmapErr, httpErr)
 	var body []byte
@@ -118,7 +115,6 @@ func (df *DF) handlePostMASService(w http.ResponseWriter, r *http.Request) {
 
 // handleGetMASGraph is the handler for get requests to path /api/df/{masid}/graph
 func (df *DF) handleGetMASGraph(w http.ResponseWriter, r *http.Request) {
-	df.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer df.logErrors(r.URL.Path, cmapErr, httpErr)
 	vars := mux.Vars(r)
@@ -139,7 +135,6 @@ func (df *DF) handleGetMASGraph(w http.ResponseWriter, r *http.Request) {
 
 // handlePostMASGraph is the handler for post and put requests to path /api/df/{masid}/graph
 func (df *DF) handlePostMASGraph(w http.ResponseWriter, r *http.Request) {
-	df.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer df.logErrors(r.URL.Path, cmapErr, httpErr)
 	vars := mux.Vars(r)
@@ -171,7 +166,6 @@ func (df *DF) handlePostMASGraph(w http.ResponseWriter, r *http.Request) {
 
 // handleGetSvcDesc is the handler for get requests to path /api/df/{masid}/svc/desc/{desc}
 func (df *DF) handleGetSvcDesc(w http.ResponseWriter, r *http.Request) {
-	df.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer df.logErrors(r.URL.Path, cmapErr, httpErr)
 	vars := mux.Vars(r)
@@ -194,7 +188,6 @@ func (df *DF) handleGetSvcDesc(w http.ResponseWriter, r *http.Request) {
 // handleGetSvcNode is the handler for get requests to path
 // /api/df/{masid}/svc/desc/{desc}/node/{nodeid}/dist/{dist}
 func (df *DF) handleGetSvcNodeDist(w http.ResponseWriter, r *http.Request) {
-	df.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer df.logErrors(r.URL.Path, cmapErr, httpErr)
 	vars := mux.Vars(r)
@@ -226,7 +219,6 @@ func (df *DF) handleGetSvcNodeDist(w http.ResponseWriter, r *http.Request) {
 
 // handleGetSvcID is the handler for get requests to path /api/df/{masid}/svc/id/{svcid}
 func (df *DF) handleGetSvcID(w http.ResponseWriter, r *http.Request) {
-	df.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer df.logErrors(r.URL.Path, cmapErr, httpErr)
 	vars := mux.Vars(r)
@@ -248,7 +240,6 @@ func (df *DF) handleGetSvcID(w http.ResponseWriter, r *http.Request) {
 
 // handleDeleteSvcID is the handler for delete requests to path /api/df/{masid}/svc/id/{svcid}
 func (df *DF) handleDeleteSvcID(w http.ResponseWriter, r *http.Request) {
-	df.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer df.logErrors(r.URL.Path, cmapErr, httpErr)
 	vars := mux.Vars(r)
@@ -269,7 +260,6 @@ func (df *DF) handleDeleteSvcID(w http.ResponseWriter, r *http.Request) {
 
 // methodNotAllowed is the default handler for valid paths but invalid methods
 func (df *DF) methodNotAllowed(w http.ResponseWriter, r *http.Request) {
-	df.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	httpErr := httpreply.MethodNotAllowed(w)
 	cmapErr := errors.New("Error: Method not allowed on path " + r.URL.Path)
 	df.logErrors(r.URL.Path, cmapErr, httpErr)
@@ -278,7 +268,6 @@ func (df *DF) methodNotAllowed(w http.ResponseWriter, r *http.Request) {
 
 // resourceNotFound is the default handler for invalid paths
 func (df *DF) resourceNotFound(w http.ResponseWriter, r *http.Request) {
-	df.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	httpErr := httpreply.NotFoundError(w)
 	cmapErr := errors.New("Resource not found")
 	df.logErrors(r.URL.Path, cmapErr, httpErr)
@@ -294,6 +283,14 @@ func (df *DF) logErrors(path string, cmapErr error, httpErr error) {
 		df.logError.Println(path, httpErr)
 	}
 	return
+}
+
+// loggingMiddleware logs request before calling final handler
+func (df *DF) loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		df.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
+		next.ServeHTTP(w, r)
+	})
 }
 
 // server creates the df server
@@ -320,6 +317,7 @@ func (df *DF) server(port int) (serv *http.Server) {
 	s.Path("/df/{masid}/svc/id/{svcid}").Methods("DELETE").HandlerFunc(df.handleDeleteSvcID)
 	s.Path("/df/{masid}/svc/id/{svcid}").Methods("POST", "PUT").HandlerFunc(df.methodNotAllowed)
 	s.PathPrefix("").HandlerFunc(df.resourceNotFound)
+	s.Use(df.loggingMiddleware)
 	serv = &http.Server{
 		Addr:    ":" + strconv.Itoa(port),
 		Handler: r,

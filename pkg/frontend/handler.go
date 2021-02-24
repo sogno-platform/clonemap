@@ -56,7 +56,6 @@ import (
 
 // handleGetModules is the handler for get requests to path /api/pf/modules
 func (fe *Frontend) handleGetModules(w http.ResponseWriter, r *http.Request) {
-	fe.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	var cmapErr, httpErr error
 	defer fe.logErrors(r.URL.Path, cmapErr, httpErr)
 	var mods schemas.ModuleStatus
@@ -71,7 +70,6 @@ func (fe *Frontend) handleGetModules(w http.ResponseWriter, r *http.Request) {
 
 // methodNotAllowed is the default handler for valid paths but invalid methods
 func (fe *Frontend) methodNotAllowed(w http.ResponseWriter, r *http.Request) {
-	fe.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	httpErr := httpreply.MethodNotAllowed(w)
 	cmapErr := errors.New("Error: Method not allowed on path " + r.URL.Path)
 	fe.logErrors(r.URL.Path, cmapErr, httpErr)
@@ -80,7 +78,6 @@ func (fe *Frontend) methodNotAllowed(w http.ResponseWriter, r *http.Request) {
 
 // resourceNotFound is the default handler for invalid paths
 func (fe *Frontend) resourceNotFound(w http.ResponseWriter, r *http.Request) {
-	fe.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
 	httpErr := httpreply.NotFoundError(w)
 	cmapErr := errors.New("Resource not found")
 	fe.logErrors(r.URL.Path, cmapErr, httpErr)
@@ -112,6 +109,14 @@ func getAgentID(r *http.Request) (masID int, agentID int, err error) {
 	return
 }
 
+// loggingMiddleware logs request before calling final handler
+func (fe *Frontend) loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fe.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
+		next.ServeHTTP(w, r)
+	})
+}
+
 // server creates the fe server
 func (fe *Frontend) server(port int) (serv *http.Server) {
 	r := mux.NewRouter()
@@ -135,6 +140,7 @@ func (fe *Frontend) server(port int) (serv *http.Server) {
 	s.Path("/pf/modules").Methods("GET").HandlerFunc(fe.handleGetModules)
 	s.Path("/pf/modules").Methods("POST", "PUT", "POST").HandlerFunc(fe.methodNotAllowed)
 	s.PathPrefix("").HandlerFunc(fe.resourceNotFound)
+	s.Use(fe.loggingMiddleware)
 	r.HandleFunc("/", http.FileServer(http.Dir("./web")).ServeHTTP)
 	serv = &http.Server{
 		Addr:    ":" + strconv.Itoa(port),
