@@ -5,7 +5,7 @@
         "logging":true,
         "mqtt":true,
         "df":false,
-        "log":{
+        "logger":{
             "msg":true,
             "app":true,
             "status":true,
@@ -15,7 +15,7 @@
     "imagegroups":[
         {
             "config":{
-                "image":"cmapytest"
+                "image":"agency"
             },
             "agents":[
                 {
