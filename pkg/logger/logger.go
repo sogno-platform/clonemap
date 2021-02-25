@@ -131,16 +131,16 @@ func (logger *Logger) addAgentLogMessageList(logmsg []schemas.LogMessage) (err e
 }
 
 // getLatestAgentLogMessages return the latest num log messages
-func (logger *Logger) getLatestAgentLogMessages(masID int, agentID int, logtype string,
+func (logger *Logger) getLatestAgentLogMessages(masID int, agentID int, topic string,
 	num int) (logs []schemas.LogMessage, err error) {
-	logs, err = logger.stor.getLatestAgentLogMessages(masID, agentID, logtype, num)
+	logs, err = logger.stor.getLatestAgentLogMessages(masID, agentID, topic, num)
 	return
 }
 
 // getAgentLogMessagesInRange return the log messages in the specified time range
-func (logger *Logger) getAgentLogMessagesInRange(masID int, agentID int, logtype string,
+func (logger *Logger) getAgentLogMessagesInRange(masID int, agentID int, topic string,
 	start time.Time, end time.Time) (logs []schemas.LogMessage, err error) {
-	logs, err = logger.stor.getAgentLogMessagesInRange(masID, agentID, logtype, start, end)
+	logs, err = logger.stor.getAgentLogMessagesInRange(masID, agentID, topic, start, end)
 	return
 }
 

@@ -58,16 +58,16 @@ type CloneMAP struct {
 
 // ModuleStatus shows the status of clonemaps modules
 type ModuleStatus struct {
-	Core    bool `json:"core"`    // Core module
-	DF      bool `json:"df"`      // DF module
-	Logging bool `json:"logging"` // Logging module
+	Core   bool `json:"core"`   // Core module
+	DF     bool `json:"df"`     // DF module
+	Logger bool `json:"logger"` // Logging module
 }
 
 // MASInfoShort contains info about MAS spec, agents in MAS
 type MASInfoShort struct {
 	ID        int       `json:"id"`
 	Config    MASConfig `json:"config"`
-	NumAgents int       `json:"numags"`
+	NumAgents int       `json:"numagents"`
 	Uptime    time.Time `json:"uptime"`
 	Status    Status    `json:"status"`
 }
@@ -78,7 +78,7 @@ type MASInfo struct {
 	ID          int         `json:"id"`
 	Config      MASConfig   `json:"config"`
 	Graph       Graph       `json:"graph"`
-	ImageGroups ImageGroups `json:"groups"`
+	ImageGroups ImageGroups `json:"imagegroups"`
 	Agents      Agents      `json:"agents"`
 	Uptime      time.Time   `json:"uptime"`
 	Status      Status      `json:"status"`
@@ -87,7 +87,7 @@ type MASInfo struct {
 // MASSpec contains information about a MAS running in clonemap
 type MASSpec struct {
 	Config      MASConfig        `json:"config"`
-	ImageGroups []ImageGroupSpec `json:"groups"`
+	ImageGroups []ImageGroupSpec `json:"imagegroups"`
 	Graph       Graph            `json:"graph"`
 }
 
@@ -98,7 +98,7 @@ type MASConfig struct {
 	Logging            bool      `json:"logging"`                   // switch for logging module
 	MQTT               bool      `json:"mqtt"`                      //switch for mqtt
 	DF                 bool      `json:"df"`                        //switch for df
-	Logger             LogConfig `json:"log"`                       // logger configuration
+	Logger             LogConfig `json:"logger"`                    // logger configuration
 }
 
 // ImageGroupInfo contains information about all agents that have the same image
@@ -153,22 +153,22 @@ type Status struct {
 
 // AgencyInfo contains information about agency spec and status (for storage)
 type AgencyInfo struct {
-	MASID        int       `json:"masid"` // ID of MAS
-	Name         string    `json:"name"`  // name of agency (hostname of pod given by kubernetes)
-	ID           int       `json:"id"`    // within image group unique ID (contained in name)
-	ImageGroupID int       `json:"imid"`  // ID of agency image group
-	Logger       LogConfig `json:"log"`   // logger configuration
+	MASID        int       `json:"masid"`  // ID of MAS
+	Name         string    `json:"name"`   // name of agency (hostname of pod given by kubernetes)
+	ID           int       `json:"id"`     // within image group unique ID (contained in name)
+	ImageGroupID int       `json:"imid"`   // ID of agency image group
+	Logger       LogConfig `json:"logger"` // logger configuration
 	Agents       []int     `json:"agents"`
 	Status       Status    `json:"status"`
 }
 
 // AgencyInfoFull contains information about agency and full info about agents it conatins (for api)
 type AgencyInfoFull struct {
-	MASID        int         `json:"masid"` // ID of MAS
-	Name         string      `json:"name"`  // name of agency (hostname of pod given by kubernetes)
-	ID           int         `json:"id"`    // within image group unique ID (contained in name)
-	ImageGroupID int         `json:"imid"`  // ID of agency image group
-	Logger       LogConfig   `json:"log"`   // logger configuration
+	MASID        int         `json:"masid"`  // ID of MAS
+	Name         string      `json:"name"`   // name of agency (hostname of pod given by kubernetes)
+	ID           int         `json:"id"`     // within image group unique ID (contained in name)
+	ImageGroupID int         `json:"imid"`   // ID of agency image group
+	Logger       LogConfig   `json:"logger"` // logger configuration
 	Agents       []AgentInfo `json:"agents"`
 	Status       Status      `json:"status"`
 }
@@ -215,9 +215,9 @@ type StubAgencyConfig struct {
 	AgencyID     int    `json:"agencyid"`
 	ImageGroupID int    `json:"imid"` // ID of agency image
 	Image        string `json:"image"`
-	Logging      bool   `json:"logging"` // switch for logging module
-	MQTT         bool   `json:"mqtt"`    //switch for mqtt
-	DF           bool   `json:"df"`      //switch for df
+	Logging      bool   `json:"logger"` // switch for logging module
+	MQTT         bool   `json:"mqtt"`   //switch for mqtt
+	DF           bool   `json:"df"`     //switch for df
 }
 
 // ACLMessage struct representing agent message

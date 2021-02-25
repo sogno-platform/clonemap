@@ -48,14 +48,14 @@ import "time"
 
 // Service holds information about an agent service that can be registered and searched with the DF
 type Service struct {
-	GUID      string    `json:"id"`     // unique svc id
-	AgentID   int       `json:"agid"`   // ID of agent who registered service
-	NodeID    int       `json:"nodeid"` // ID of node agent is located at
-	MASID     int       `json:"masid"`  // ID of MAS agent lives in
-	CreatedAt time.Time `json:"crat"`   // time of service creation
-	ChangedAt time.Time `json:"chat"`   // time of last change
-	Desc      string    `json:"desc"`   // description
-	Dist      float64   `json:"dist"`   // distance (only if local search was executed)
+	GUID      string    `json:"id"`        // unique svc id
+	AgentID   int       `json:"agentid"`   // ID of agent who registered service
+	NodeID    int       `json:"nodeid"`    // ID of node agent is located at
+	MASID     int       `json:"masid"`     // ID of MAS agent lives in
+	CreatedAt time.Time `json:"createdat"` // time of service creation
+	ChangedAt time.Time `json:"changedat"` // time of last change
+	Desc      string    `json:"desc"`      // description
+	Dist      float64   `json:"dist"`      // distance (only if local search was executed)
 }
 
 // Graph stores one mas graph for topological search
@@ -66,8 +66,8 @@ type Graph struct {
 
 // Node is one graph node
 type Node struct {
-	ID    int   `json:"id"`            // unique ID of node
-	Agent []int `json:"ags,omitempty"` // list of agents attached to node
+	ID    int   `json:"id"`               // unique ID of node
+	Agent []int `json:"agents,omitempty"` // list of agents attached to node
 }
 
 // Edge is one dge of graph

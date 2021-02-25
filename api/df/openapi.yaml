@@ -46,7 +46,17 @@ info:
   title: Directory Facilitator
   description: API of the DF
 paths:
-  /api/df/{mas-id}/svc:
+  /api/alive:
+    get:
+      description: indicates if df is alive
+      responses:
+        '200':
+          description: OK - clonemap information
+          content:
+            text/plain:
+              schema:
+                type: string
+  /api/df/{masid}/svc:
     parameters:
     - $ref: '#/components/parameters/masID'
     get:
@@ -72,7 +82,7 @@ paths:
       responses:
         '201':
           description: Created
-  /api/df/{mas-id}/graph:
+  /api/df/{masid}/graph:
     parameters:
     - $ref: '#/components/parameters/masID'
     get:
@@ -85,7 +95,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Graph'
     post:
-      description: update graph for MAS
+      description: create graph for MAS
       requestBody:
         description: new graph
         content:
@@ -96,9 +106,22 @@ paths:
       responses:
         '201':
           description: Created
-  /api/df/{mas-id}/svc/desc/{desc}:
+    put:
+      description: update graph for MAS
+      requestBody:
+        description: new graph
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Graph'
+        required: true
+      responses:
+        '200':
+          description: Updated
+  /api/df/{masid}/svc/desc/{desc}:
     parameters:
     - $ref: '#/components/parameters/masID'
+    - $ref: '#/components/parameters/desc'
     get:
       description: search for service in MAS
       responses:
@@ -110,7 +133,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Service'
-  /api/df/{mas-id}/svc/desc/{desc}/node/{node-id}/dist/{dist}:
+  /api/df/{masid}/svc/desc/{desc}/node/{nodeid}/dist/{dist}:
     parameters:
     - $ref: '#/components/parameters/masID'
     - $ref: '#/components/parameters/desc'
@@ -127,7 +150,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Service'
-  /api/df/{mas-id}/svc/id/{svc-id}:
+  /api/df/{masid}/svc/id/{svcid}:
     parameters:
     - $ref: '#/components/parameters/masID'
     - $ref: '#/components/parameters/svcID'
@@ -148,14 +171,21 @@ paths:
 components:
   parameters:
     masID:
-      name: mas-id
+      name: masid
       in: path
       description: ID of MAS
       required: true
       schema:
         type: integer
+    agentID:
+      name: agentid
+      in: path
+      description: ID of agent
+      required: true
+      schema:
+        type: integer
     svcID:
-      name: svc-id
+      name: svcid
       in: path
       description: ID of service
       required: true
@@ -169,7 +199,7 @@ components:
       schema:
         type: string
     nodeID:
-      name: node-id
+      name: nodeid
       in: path
       description: ID of node
       required: true
@@ -183,13 +213,49 @@ components:
       schema:
         type: integer
   schemas:
+    Graph:
+      description: stores one mas graph for topological search
+      properties:
+        node:
+          description: list of graph nodes
+          type: array
+          items:
+            $ref: '#/components/schemas/Node'
+        edge:
+          description: list of graph edges
+          type: array
+          items:
+            $ref: '#/components/schemas/Edge'
+    Node:
+      description: graph node
+      properties:
+        id:
+          description: unique ID of node
+          type: integer
+        agents:
+          description: list of agents attached to node
+          type: array
+          items:
+            type: integer
+    Edge:
+      description: one edge of graph
+      properties:
+        n1:
+          description: id of node 1
+          type: integer
+        n2:
+          description: id of node 2
+          type: integer
+        weight:
+          description: weight of edge
+          type: number
     Service:
       description: DF service
       properties:
         id:
           description: id of service
           type: integer
-        agid:
+        agentid:
           description: id of agent which registered service
           type: integer
         nodeid:
@@ -198,51 +264,15 @@ components:
         masid:
           description: id of MAS
           type: integer
-        crat:
+        cretedat:
           description: time of creation
-          type: date-time
-        chat:
+          type: string
+        changedat:
           description: time of last change
-          type: date-time
+          type: string
         desc:
           description: description of service
           type: string
         dist:
           description: distance
-          type: float
-    Graph:
-      description: graph of MAS
-      properties:
-        node:
-          description: list of nodes
-          type: array
-          items:
-            $ref: '#/components/schemas/Node'
-        edge:
-          description: list of edges
-          type: array
-          items:
-            $ref: '#/components/schemas/Edge'
-    Node:
-      description: node of MAS graph
-      properties:
-        id:
-          description: id of node
-          type: integer
-        ags:
-          description: list of agents that are connected to node
-          type: array
-          items: 
-            type: integer
-    Edge:
-      description: edge between two graph nodes
-      properties:
-        n1:
-          description: id of first node
-          type: integer
-        n2:
-          description: id of second node
-          type: integer
-        weight:
-          description: weight of edge
-          type: float
+          type: number

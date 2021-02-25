@@ -78,7 +78,7 @@ func (stor *cassStorage) addAgentLogMessage(log schemas.LogMessage) (err error) 
 
 	// var js []byte
 	// js, err = json.Marshal(log)
-	switch log.LogType {
+	switch log.Topic {
 	case "error":
 		stor.logErrorIn <- log
 		// err = stor.session.Query("INSERT INTO logging_error (masid, agentid, t, log) "+
@@ -100,16 +100,16 @@ func (stor *cassStorage) addAgentLogMessage(log schemas.LogMessage) (err error) 
 		// err = stor.session.Query("INSERT INTO logging_app (masid, agentid, t, log) "+
 		// 	"VALUES (?, ?, ?, ?)", masID, agentID, log.Timestamp, js).Exec()
 	default:
-		err = errors.New("WrongLogType")
+		err = errors.New("Wrong topic")
 	}
 	return
 }
 
 // getLatestAgentLogMessages return the latest num log messages
-func (stor *cassStorage) getLatestAgentLogMessages(masID int, agentID int, logtype string,
+func (stor *cassStorage) getLatestAgentLogMessages(masID int, agentID int, topic string,
 	num int) (logs []schemas.LogMessage, err error) {
 	var iter *gocql.Iter
-	switch logtype {
+	switch topic {
 	case "error":
 		iter = stor.session.Query("SELECT log FROM logging_error WHERE masid = ? AND "+
 			"agentid = ? LIMIT ?", masID, agentID, num).Iter()
@@ -126,7 +126,7 @@ func (stor *cassStorage) getLatestAgentLogMessages(masID int, agentID int, logty
 		iter = stor.session.Query("SELECT log FROM logging_app WHERE masid = ? AND "+
 			"agentid = ? LIMIT ?", masID, agentID, num).Iter()
 	default:
-		err = errors.New("WrongLogType")
+		err = errors.New("Wrong topic")
 	}
 	if err != nil {
 		return
@@ -144,10 +144,10 @@ func (stor *cassStorage) getLatestAgentLogMessages(masID int, agentID int, logty
 }
 
 // getAgentLogMessagesInRange return the log messages in the specified time range
-func (stor *cassStorage) getAgentLogMessagesInRange(masID int, agentID int, logtype string,
+func (stor *cassStorage) getAgentLogMessagesInRange(masID int, agentID int, topic string,
 	start time.Time, end time.Time) (logs []schemas.LogMessage, err error) {
 	var iter *gocql.Iter
-	switch logtype {
+	switch topic {
 	case "error":
 		iter = stor.session.Query("SELECT log FROM logging_error WHERE masid = ? AND "+
 			"agentid = ? AND t > ? AND t < ?", masID, agentID, start, end).Iter()
@@ -164,7 +164,7 @@ func (stor *cassStorage) getAgentLogMessagesInRange(masID int, agentID int, logt
 		iter = stor.session.Query("SELECT log FROM logging_app WHERE masid = ? AND "+
 			"agentid = ? AND t > ? AND t < ?", masID, agentID, start, end).Iter()
 	default:
-		err = errors.New("WrongLogType")
+		err = errors.New("Wrong topic")
 	}
 	if err != nil {
 		return

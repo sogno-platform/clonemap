@@ -79,7 +79,7 @@ paths:
             schema:
               type: array
               items:
-                $ref: '#/components/schemas/Message'
+                $ref: '#/components/schemas/ACLMessage'
         required: true
       responses:
         '201':
@@ -92,15 +92,15 @@ paths:
         content:
           applications/json:
             schema:
-              $ref: '#/components/schemas/Message'
+              $ref: '#/components/schemas/ACLMessage'
         required: true
       responses:
         '201':
           description: Created
-  /api/agency/agents/{agent-id}:
+  /api/agency/agents/{agentid}:
     parameters:
     - in: path
-      name: agent-id
+      name: agentid
       description: ID of agent
       required: true
       schema:
@@ -110,10 +110,10 @@ paths:
       responses:
         '200':
           description: succesful deletion
-  /api/agency/agents/{agent-id}/status:
+  /api/agency/agents/{agentid}/status:
     parameters:
     - in: path
-      name: agent-id
+      name: agentid
       description: ID of agent
       required: true
       schema:
@@ -126,20 +126,28 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Status' 
+                $ref: '#/components/schemas/Status'
+  /api/agency/agents/{agentid}/custom:
+    parameters:
+    - in: path
+      name: agentid
+      description: ID of agent
+      required: true
+      schema:
+        type: integer
+    put:
+      description: agent status
+      responses:
+        '200':
+          description: OK 
+          content:
+            text/plain:
+              schema:
+                type: string
 components:
   schemas:
     AgencyInfo:
       description: information about agency
-      properties:
-        spec:
-          description: spec of Agency
-          $ref: '#/components/schemas/AgencySpec'
-        status:
-          description: status of agency
-          $ref: '#/components/schemas/Status'
-    AgencySpec:
-      description: contains information about agency
       properties:
         masid:
           description: ID of MAS
@@ -150,7 +158,10 @@ components:
         id:
           description: unique ID of agency
           type: integer
-        log:
+        imid:
+          description: unique ID of image group
+          type: integer
+        logger:
           description: configuration of logging
           $ref: '#/components/schemas/LogConfig'
         agents:
@@ -158,89 +169,39 @@ components:
           type: array
           items:
             type: integer
-    LogConfig:
-      description: contains information about agency
-      properties:
-        msg:
-          description: activation of msg log topic
-          type: boolean
-        app:
-          description: activation of app log topic
-          type: boolean
         status:
-          description: activation of status log topic
-          type: boolean
-        debug:
-          description: activation of debug log topic
-          type: boolean
-    Status:
-      description: information about an agent's or agency's status
-      properties:
-        code:
-          description: status code
-          type: integer
-        lastupdate:
-          description: time of last update
-          type: date-time
+          description: status of agency
+          $ref: '#/components/schemas/Status'
     AgentInfo:
       description: detailed information about agent
       properties:
         spec:
           description: spec of Agent
           $ref: '#/components/schemas/AgentSpec'
-        address:
-          description: address of agent
-          $ref: '#/components/schemas/Address'
-        status:
-          description: status of agent
-          $ref: '#/components/schemas/Status'
-    AgentSpec:
-      description: contains information about a agent running in a MAS
-      properties:
         masid:
           description: ID of MAS
           type: integer
         agencyid:
           description: ID of agency
           type: integer
-        nodeid:
-          description: ID of node
+        imid:
+          description: unique ID of image group
           type: integer
         id:
           description: unique ID of agent
           type: integer
-        image:
-          description: docker image to be used for agencies
-          type: string
-        secret:
-          description: image pull secret
-          type: string
-        name: 
-          description: name/description of agent
-          type: string
-        type:
-          description: type of agent (application dependent)
-          type: string
-        subtype:
-          description: subtype of agent (application dependent)
-          type: string
-        custom:
-          description: custom agent specification
-          type: array
-          items:
-            type: byte
-    Address:
-      description: holds the address information of an agent
-      properties:
-        agency:
-          description: name of the agency
-          type: string
-    Message:
+        address:
+          description: address of agent
+          $ref: '#/components/schemas/Address'
+        status:
+          description: status of agent
+          $ref: '#/components/schemas/Status'
+    ACLMessage:
       description: message for agent communication
       properties:
         ts:
           description: sending time
-          type: date-time
+          type: string
         perf:
           description: Denotes the type of the communicative act of the ACL message
           type: string
@@ -294,4 +255,52 @@ components:
         repby:
           description: Denotes a time and/or date expression which indicates the latest 
                         time by which the sending agent would like to receive a reply
-          type: date-time
+          type: string
+    Status:
+      description: information about an agent's or agency's status
+      properties:
+        code:
+          description: status code
+          type: integer
+        lastupdate:
+          description: time of last update
+          type: string
+    LogConfig:
+      description: contains information about agency
+      properties:
+        msg:
+          description: activation of msg log topic
+          type: boolean
+        app:
+          description: activation of app log topic
+          type: boolean
+        status:
+          description: activation of status log topic
+          type: boolean
+        debug:
+          description: activation of debug log topic
+          type: boolean
+    Address:
+      description: holds the address information of an agent
+      properties:
+        agency:
+          description: name of the agency
+          type: string
+    AgentSpec:
+      description: contains information about a agent running in a MAS
+      properties:
+        nodeid:
+          description: ID of node
+          type: integer
+        name: 
+          description: name/description of agent
+          type: string
+        type:
+          description: type of agent (application dependent)
+          type: string
+        subtype:
+          description: subtype of agent (application dependent)
+          type: string
+        custom:
+          description: custom agent specification
+          type: string

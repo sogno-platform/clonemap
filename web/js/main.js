@@ -63,7 +63,7 @@ function contentOverview(mass) {
         $("#"+masID).append("<tr><th></th><th>DF:</th><th>"+i.config.df.toString()+"</th></tr>");
         $("#"+masID).append("<tr><th></th><th>Logging:</th><th>"+i.config.logging.toString()+"</th></tr>");
         $("#"+masID).append("<tr><th></th><th>MQTT:</th><th>"+i.config.mqtt.toString()+"</th></tr>");
-        $("#"+masID).append("<tr><th></th><th>Agents:</th><th>"+i.numags.toString()+"</th></tr>");
+        $("#"+masID).append("<tr><th></th><th>Agents:</th><th>"+i.numagents.toString()+"</th></tr>");
     }
 }
 

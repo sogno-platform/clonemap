@@ -46,11 +46,21 @@ info:
   title: Logger
   description: API of the logger for state saving and logging
 paths:
-  /api/logging/{mas-id}/{agent-id}/{log-type}:
+  /api/alive:
+    get:
+      description: indicates if ams is alive
+      responses:
+        '200':
+          description: OK - clonemap information
+          content:
+            text/plain:
+              schema:
+                type: string
+  /api/logging/{masid}/{agentid}/{topic}:
     parameters:
     - $ref: '#/components/parameters/masID'
     - $ref: '#/components/parameters/agentID'
-    - $ref: '#/components/parameters/logType'
+    - $ref: '#/components/parameters/topic'
     post:
       description: create a new logging entry with specified log type
       requestBody:
@@ -63,7 +73,7 @@ paths:
       responses:
         '201':
           description: Created
-  /api/logging/{mas-id}/list:
+  /api/logging/{masid}/list:
     parameters:
     - $ref: '#/components/parameters/masID'
     post:
@@ -80,11 +90,11 @@ paths:
         responses:
           '201':
             description: Created
-  /api/logging/{mas-id}/{agent-id}/{log-type}/latest/{num}:
+  /api/logging/{masid}/{agentid}/{topic}/latest/{num}:
     parameters:
     - $ref: '#/components/parameters/masID'
     - $ref: '#/components/parameters/agentID'
-    - $ref: '#/components/parameters/logType'
+    - $ref: '#/components/parameters/topic'
     - name: num
       in: path
       description: number of log messages
@@ -102,23 +112,23 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/LogMessage'
-  /api/logging/{mas-id}/{agent-id}/{log-type}/time/{start}/{end}:
+  /api/logging/{masid}/{agentid}/{topic}/time/{start}/{end}:
     parameters:
     - $ref: '#/components/parameters/masID'
     - $ref: '#/components/parameters/agentID'
-    - $ref: '#/components/parameters/logType'
+    - $ref: '#/components/parameters/topic'
     - name: start
       in: path
       description: start time of query
       required: true
       schema:
-        type: date-time
+        type: string
     - name: end
       in: path
       description: end time of query
       required: true
       schema:
-        type: date-time
+        type: string
     get:
       description: get logging messages within specified time range
       responses:
@@ -159,7 +169,7 @@ paths:
 #                 type: array
 #                 items:
 #                   $ref: '#/components/schemas/Communication'
-  /api/state/{mas-id}/{agent-id}:
+  /api/state/{masid}/{agentid}:
     parameters:
     - $ref: '#/components/parameters/masID'
     - $ref: '#/components/parameters/agentID'
@@ -184,23 +194,40 @@ paths:
       responses:
         '200':
           description: OK - updated
+  /api/state/{masid}/list:
+    parameters:
+    - $ref: '#/components/parameters/masID'
+    put:
+      description: update agent states
+      requestBody:
+        description: new states
+        content:
+          applications/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/State'
+        required: true
+      responses:
+        '200':
+          description: OK - updated
 components:
   parameters:
     masID:
-      name: mas-id
+      name: masid
       in: path
       description: ID of MAS
       required: true
       schema:
         type: integer
     agentID:
-      name: agent-id
+      name: agentid
       in: path
       description: ID of agent
       required: true
       schema:
         type: integer
-    logType:
+    topic:
       name: log-type
       in: path
       description: type of logging
@@ -223,20 +250,18 @@ components:
         agentid:
           description: ID of Agent
           type: integer
-        logtype:
+        topic:
           description: type of logging
           type: string
         timestamp:
           description: time at which message was generated
-          type: date-time
+          type: string
         msg:
           description: message to be logged
           type: string
         data:
           description: additional data
-          type: array
-          items:
-            type: byte
+          type: string
     State:
       description: state of agent
       properties:
@@ -248,12 +273,10 @@ components:
           type: integer
         timestamp:
           description: latest update time
-          type: date-time
+          type: string
         state:
           description: state of agent
-          type: array
-          items:
-            type: byte
+          type: string
     Communication:
       description: communication data
       properties:

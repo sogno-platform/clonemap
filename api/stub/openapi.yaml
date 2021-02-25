@@ -59,7 +59,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/AgencyConfig'
+                  $ref: '#/components/schemas/StubAgencyConfig'
     post:
       description: create a new agency
       requestBody:
@@ -67,34 +67,34 @@ paths:
         content:
           applications/json:
             schema:
-              $ref: '#/components/schemas/AgencyConfig'
+              $ref: '#/components/schemas/StubAgencyConfig'
         required: true
       responses:
         '201':
           description: Created
 components:
   schemas:
-    AgencyConfig:
+    StubAgencyConfig:
       description: configuration of agency container
       properties:
-          MASID:
+          masid:
             description: ID of MAS for pod name
             type: integer
-          AgencyID:
+          agencyid:
             description: unique ID of agency
             type: integer
-          NumAgents:
-            description: number of agents
-            type: int
-          Image:
+          imid:
+            description: unique ID of image group
+            type: integer
+          image:
             description: name of docker image
             type: string
-          Logging:
+          logger:
             description: switch for logging module
-            type: bool
-          MQTT:
+            type: boolean
+          mqtt:
             description: switch for MQTT module
-            type: bool
-          DF:
+            type: boolean
+          df:
             description: switch for DF module
-            type: bool
+            type: boolean

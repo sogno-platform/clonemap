@@ -68,21 +68,21 @@ type Logger struct {
 }
 
 // NewLog sends a new logging message to the logging service
-func (log *Logger) NewLog(logType string, message string, data string) (err error) {
+func (log *Logger) NewLog(topic string, message string, data string) (err error) {
 	log.mutex.Lock()
 	if !log.active {
 		log.mutex.Unlock()
 		return errors.New("log not active")
 	}
 	log.mutex.Unlock()
-	if logType != "error" && logType != "debug" && logType != "status" && logType != "msg" &&
-		logType != "app" {
-		err = errors.New("UnknownLogType")
+	if topic != "error" && topic != "debug" && topic != "status" && topic != "msg" &&
+		topic != "app" {
+		err = errors.New("Unknown topic")
 		return
 	}
 	log.mutex.Lock()
-	if (logType == "msg" && !log.config.Msg) || (logType == "app" && !log.config.App) ||
-		(logType == "debug" && !log.config.Debug) || (logType == "status" && !log.config.Status) {
+	if (topic == "msg" && !log.config.Msg) || (topic == "app" && !log.config.App) ||
+		(topic == "debug" && !log.config.Debug) || (topic == "status" && !log.config.Status) {
 		log.mutex.Unlock()
 		return
 	}
@@ -92,7 +92,7 @@ func (log *Logger) NewLog(logType string, message string, data string) (err erro
 	msg := schemas.LogMessage{
 		AgentID:        log.agentID,
 		Timestamp:      tStamp,
-		LogType:        logType,
+		Topic:          topic,
 		Message:        message,
 		AdditionalData: data}
 	log.handler.logIn <- msg

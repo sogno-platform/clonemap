@@ -1,1 +1,34 @@
-{"config":{"name":"test","agentsperagency":1,"logging":false,"mqtt":true,"df":false,"log":{"msg":true,"app":true,"status":true,"debug":true}},"groups":[{"config":{"image":"agentlibtest"},"agents":[{"nodeid":0,"name":"AgentNoTask","type":"NoTask","custom":""}]}],"graph":{"node":null,"edge":null}}
+{
+    "config":{
+        "name":"test",
+        "agentsperagency":1,
+        "logging":true,
+        "mqtt":true,
+        "df":false,
+        "log":{
+            "msg":true,
+            "app":true,
+            "status":true,
+            "debug":true
+        }
+    },
+    "imagegroups":[
+        {
+            "config":{
+                "image":"cmapytest"
+            },
+            "agents":[
+                {
+                    "nodeid":0,
+                    "name":"agentnotask",
+                    "type":"NoTask",
+                    "custom":""
+                }
+            ]
+        }
+    ],
+    "graph":{
+        "node":null,
+        "edge":null
+    }
+}

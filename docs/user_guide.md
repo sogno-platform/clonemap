@@ -131,7 +131,7 @@ Create the file `scenario.json` with following content.
             "debug":true
         }
     },
-    "groups":[
+    "imagegroups":[
         {
             "config":{
                 "image":"<image>",

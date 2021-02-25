@@ -47,6 +47,16 @@ info:
   description: API of the Agent Management System for user interaction with the MAS
                 and MAS-internal communication
 paths:
+  /api/alive:
+    get:
+      description: indicates if ams is alive
+      responses:
+        '200':
+          description: OK - clonemap information
+          content:
+            text/plain:
+              schema:
+                type: string
   /api/clonemap:
     get:
       description: returns basic information about cloneMAP
@@ -79,7 +89,7 @@ paths:
       responses:
         '201':
           description: Created
-  /api/clonemap/mas/{mas-id}:
+  /api/clonemap/mas/{masid}:
     parameters:
     - $ref: '#/components/parameters/masID'
     get:
@@ -96,7 +106,21 @@ paths:
       responses:
         '200':
           description: succesful deletion
-  /api/clonemap/mas/{mas-id}/agents:
+  /api/clonemap/mas/name/{name}:
+    parameters:
+    - $ref: '#/components/parameters/name'
+    get:
+      description: get IDs of all MAS with specified name (not case sensitive)
+      responses:
+        '200':
+          description: OK - list of MAS IDs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+  /api/clonemap/mas/{masid}/agents:
     parameters:
     - $ref: '#/components/parameters/masID'
     get:
@@ -122,7 +146,7 @@ paths:
       responses:
         '201':
           description: Created
-  /api/clonemap/mas/{mas-id}/agents/{agent-id}:
+  /api/clonemap/mas/{masid}/agents/{agentid}:
     parameters:
     - $ref: '#/components/parameters/masID'
     - $ref: '#/components/parameters/agentID'
@@ -135,12 +159,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AgentInfo'
-    # delete:
-    #   description: delete agent
-    #   responses:
-    #     '200':
-    #       description: succesful deletion
-  /api/clonemap/mas/{mas-id}/agents/{agent-id}/address:
+    delete:
+      description: delete agent
+      responses:
+        '200':
+          description: succesful deletion
+  /api/clonemap/mas/{masid}/agents/{agentid}/address:
     parameters:
     - $ref: '#/components/parameters/masID'
     - $ref: '#/components/parameters/agentID'
@@ -164,7 +188,37 @@ paths:
       responses:
         '200':
           description: OK - address update
-  /api/clonemap/mas/{mas-id}/agencies:
+  /api/clonemap/mas/{masid}/agents/{agentid}/custom:
+    parameters:
+    - $ref: '#/components/parameters/masID'
+    - $ref: '#/components/parameters/agentID'
+    put:
+      description: update address of agent
+      requestBody:
+        description: address
+        content:
+          text/plain:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: OK - address update
+  /api/clonemap/mas/{masid}/agents/name/{name}:
+    parameters:
+    - $ref: '#/components/parameters/masID'
+    - $ref: '#/components/parameters/name'
+    get:
+      description: get IDs of all agents with specified name (not case sensitive)
+      responses:
+        '200':
+          description: OK - list of agent IDs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+  /api/clonemap/mas/{masid}/agencies:
     parameters:
     - $ref: '#/components/parameters/masID'
     get:
@@ -176,7 +230,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Agencies'
-  /api/clonemap/mas/{mas-id}/imgroup/{im-id}/agencies/{agency-id}:
+  /api/clonemap/mas/{masid}/imgroup/{imid}/agencies/{agencyid}:
     parameters:
     - $ref: '#/components/parameters/masID'
     - $ref: '#/components/parameters/imID'
@@ -193,33 +247,40 @@ paths:
 components:
   parameters:
     masID:
-      name: mas-id
+      name: masid
       in: path
       description: ID of MAS
       required: true
       schema:
         type: integer
     agentID:
-      name: agent-id
+      name: agentid
       in: path
       description: ID of agent
       required: true
       schema:
         type: integer
     imID:
-      name: im-id
+      name: imid
       in: path
       description: ID of image group
       required: true
       schema:
         type: integer
     agencyID:
-      name: agency-id
+      name: agencyid
       in: path
       description: ID of agency
       required: true
       schema:
         type: integer
+    name:
+      name: name
+      in: path
+      description: search name for mas or agent
+      required: true
+      schema:
+        type: string
   schemas:
     CloneMAP:
       description: contains information about clonemap
@@ -229,7 +290,25 @@ components:
           type: string
         uptime:
           description: uptime of clonemap
-          type: date-time
+          type: string
+    MASInfoShort:
+      description: short information about MAS
+      properties:
+        config:
+          description: configuration of MAS
+          $ref: '#/components/schemas/MASConfig'
+        id:
+          description: unique ID of MAS
+          type: integer
+        numagents:
+          description: number of agents
+          type: integer
+        status:
+          description: status of MAS
+          $ref: '#/components/schemas/Status'
+        uptime:
+          description: uptime of MAS
+          type: string
     MASInfo:
       description: detailed information about MAS
       properties:
@@ -242,7 +321,7 @@ components:
         graph:
           description: graph of MAS
           $ref: '#/components/schemas/Graph'
-        groups:
+        imagegroups:
           description: image groups of MAS
           $ref: '#/components/schemas/ImageGroups'
         agents:
@@ -251,13 +330,16 @@ components:
         status:
           description: status of MAS
           $ref: '#/components/schemas/Status'
+        uptime:
+          description: uptime of MAS
+          type: string
     MASSpec:
       description: contains information about a MAS running in clonemap
       properties:
         config:
           description: configuration of MAS
           $ref: '#/components/schemas/MASConfig'
-        groups:
+        imagegroups:
           description: image groups in MAS
           type: array
           items:
@@ -283,7 +365,7 @@ components:
         df:
           description: switch for df module
           type: boolean
-        log:
+        logger:
           description: configuration of logging module
           $ref: '#/components/schemas/LogConfig'
     ImageGroupInfo:
@@ -318,89 +400,6 @@ components:
         secret:
           description: pull secret to be used for image
           type: string
-    AgentInfo:
-      description: detailed information about agent
-      properties:
-        spec:
-          description: spec of Agent
-          $ref: '#/components/schemas/AgentSpec'
-        address:
-          description: address of agent
-          $ref: '#/components/schemas/Address'
-        status:
-          description: status of agent
-          $ref: '#/components/schemas/Status'
-        id:
-          description: unique ID of agent
-          type: integer
-        masid:
-          description: ID of MAS
-          type: integer
-        agencyid:
-          description: ID of agency
-          type: integer
-        imid:
-          description: id of image group
-          type: integer
-    AgentSpec:
-      description: contains information about a agent running in a MAS
-      properties:
-        nodeid:
-          description: ID of node
-          type: integer
-        name:
-          description: name/description of agent
-          type: string
-        type:
-          description: type of agent (application dependent)
-          type: string
-        subtype:
-          description: subtype of agent (application dependent)
-          type: string
-        custom:
-          description: custom agent specification
-          type: string
-    Address:
-      description: holds the address information of an agent
-      properties:
-        agency:
-          description: name of the agency
-          type: string
-    Status:
-      description: information about an agent's or agency's status
-      properties:
-        code:
-          description: status code
-          type: integer
-        lastupdate:
-          description: time of last update
-          type: date-time
-    AgencyInfo:
-      description: information about agency
-      properties:
-        masid:
-          description: ID of MAS
-          type: integer
-        id:
-          description: ID of agency
-          type: integer
-        name:
-          description: name of agency (corresponds to pod name)
-          type: string
-        imid:
-          description: id of image group
-          type: integer
-        log:
-          description: configuration of logging module
-          $ref: '#/components/schemas/LogConfig'
-        status:
-          description: status of agent
-          $ref: '#/components/schemas/Status'
-        agents:
-          description: list of agents in agency
-          type: array
-          items:
-            type: integer
     AgencyInfoFull:
       description: information about agency
       properties:
@@ -416,7 +415,7 @@ components:
         imid:
           description: id of image group
           type: integer
-        log:
+        logger:
           description: configuration of logging module
           $ref: '#/components/schemas/LogConfig'
         status:
@@ -505,7 +504,7 @@ components:
         id:
           description: unique ID of node
           type: integer
-        ags:
+        agents:
           description: list of agents attached to node
           type: array
           items:
@@ -521,4 +520,87 @@ components:
           type: integer
         weight:
           description: weight of edge
-          type: float
+          type: number
+    AgencyInfo:
+      description: information about agency
+      properties:
+        masid:
+          description: ID of MAS
+          type: integer
+        name:
+          description: name of agency (hostname of pod given by Kubernetes)
+          type: string
+        id:
+          description: unique ID of agency
+          type: integer
+        imid:
+          description: unique ID of image group
+          type: integer
+        logger:
+          description: configuration of logging
+          $ref: '#/components/schemas/LogConfig'
+        agents:
+          description: list of all agents in agency
+          type: array
+          items:
+            type: integer
+        status:
+          description: status of agency
+          $ref: '#/components/schemas/Status'
+    Status:
+      description: information about an agent's or agency's status
+      properties:
+        code:
+          description: status code
+          type: integer
+        lastupdate:
+          description: time of last update
+          type: string
+    AgentInfo:
+      description: detailed information about agent
+      properties:
+        spec:
+          description: spec of Agent
+          $ref: '#/components/schemas/AgentSpec'
+        masid:
+          description: ID of MAS
+          type: integer
+        agencyid:
+          description: ID of agency
+          type: integer
+        imid:
+          description: unique ID of image group
+          type: integer
+        id:
+          description: unique ID of agent
+          type: integer
+        address:
+          description: address of agent
+          $ref: '#/components/schemas/Address'
+        status:
+          description: status of agent
+          $ref: '#/components/schemas/Status'
+    AgentSpec:
+      description: contains information about a agent running in a MAS
+      properties:
+        nodeid:
+          description: ID of node
+          type: integer
+        name: 
+          description: name/description of agent
+          type: string
+        type:
+          description: type of agent (application dependent)
+          type: string
+        subtype:
+          description: subtype of agent (application dependent)
+          type: string
+        custom:
+          description: custom agent specification
+          type: string
+    Address:
+      description: holds the address information of an agent
+      properties:
+        agency:
+          description: name of the agency
+          type: string

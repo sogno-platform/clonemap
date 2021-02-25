@@ -59,11 +59,11 @@ type storage interface {
 	addAgentLogMessage(log schemas.LogMessage) (err error)
 
 	// getLatestAgentLogMessages return the latest num log messages
-	getLatestAgentLogMessages(masID int, agentID int, logtype string,
+	getLatestAgentLogMessages(masID int, agentID int, topic string,
 		num int) (logs []schemas.LogMessage, err error)
 
 	// getAgentLogMessagesInRange return the log messages in the specified time range
-	getAgentLogMessagesInRange(masID int, agentID int, logtype string, start time.Time,
+	getAgentLogMessagesInRange(masID int, agentID int, topic string, start time.Time,
 		end time.Time) (logs []schemas.LogMessage, err error)
 
 	// deleteAgentLogMessages deletes all log messages og an agent
@@ -127,7 +127,7 @@ func (stor *localStorage) addAgentLogMessage(log schemas.LogMessage) (err error)
 			stor.mas[log.MASID].agents = append(stor.mas[log.MASID].agents, agentStorage{})
 		}
 	}
-	switch log.LogType {
+	switch log.Topic {
 	case "error":
 		stor.mas[log.MASID].agents[log.AgentID].errLogs = append(stor.mas[log.MASID].agents[log.AgentID].errLogs,
 			log)
@@ -144,19 +144,19 @@ func (stor *localStorage) addAgentLogMessage(log schemas.LogMessage) (err error)
 		stor.mas[log.MASID].agents[log.AgentID].appLogs = append(stor.mas[log.MASID].agents[log.AgentID].appLogs,
 			log)
 	default:
-		err = errors.New("WrongLogType")
+		err = errors.New("Wrong topic")
 	}
 	stor.mutex.Unlock()
 	return
 }
 
 // getLatestAgentLogMessages return the latest num log messages
-func (stor *localStorage) getLatestAgentLogMessages(masID int, agentID int, logtype string,
+func (stor *localStorage) getLatestAgentLogMessages(masID int, agentID int, topic string,
 	num int) (logs []schemas.LogMessage, err error) {
 	stor.mutex.Lock()
 	if masID < len(stor.mas) {
 		if agentID < len(stor.mas[masID].agents) {
-			switch logtype {
+			switch topic {
 			case "error":
 				length := len(stor.mas[masID].agents[agentID].errLogs)
 				if length < num {
@@ -193,7 +193,7 @@ func (stor *localStorage) getLatestAgentLogMessages(masID int, agentID int, logt
 				logs = make([]schemas.LogMessage, num, num)
 				copy(logs, stor.mas[masID].agents[agentID].appLogs[length-num:length])
 			default:
-				err = errors.New("WrongLogType")
+				err = errors.New("Wrong topic")
 			}
 		}
 	}
@@ -202,12 +202,12 @@ func (stor *localStorage) getLatestAgentLogMessages(masID int, agentID int, logt
 }
 
 // getAgentLogMessagesInRange return the log messages in the specified time range
-func (stor *localStorage) getAgentLogMessagesInRange(masID int, agentID int, logtype string,
+func (stor *localStorage) getAgentLogMessagesInRange(masID int, agentID int, topic string,
 	start time.Time, end time.Time) (logs []schemas.LogMessage, err error) {
 	stor.mutex.Lock()
 	if masID < len(stor.mas) {
 		if agentID < len(stor.mas[masID].agents) {
-			switch logtype {
+			switch topic {
 			case "error":
 				length := len(stor.mas[masID].agents[agentID].errLogs)
 				if length > 0 {
@@ -290,7 +290,7 @@ func (stor *localStorage) getAgentLogMessagesInRange(masID int, agentID int, log
 					}
 				}
 			default:
-				err = errors.New("WrongLogType")
+				err = errors.New("Wrong topic")
 			}
 		}
 	}

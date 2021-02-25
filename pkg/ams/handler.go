@@ -217,13 +217,13 @@ func (ams *AMS) handlePostAgent(w http.ResponseWriter, r *http.Request) {
 		httpErr = httpreply.InvalidBodyError(w)
 		return
 	}
-	var groupSpecs []schemas.ImageGroupSpec
-	cmapErr = json.Unmarshal(body, &groupSpecs)
+	var imgroupSpecs []schemas.ImageGroupSpec
+	cmapErr = json.Unmarshal(body, &imgroupSpecs)
 	if cmapErr != nil {
 		httpErr = httpreply.JSONUnmarshalError(w)
 		return
 	}
-	cmapErr = ams.createAgents(masID, groupSpecs)
+	cmapErr = ams.createAgents(masID, imgroupSpecs)
 	if cmapErr != nil {
 		httpErr = httpreply.CMAPError(w, cmapErr.Error())
 		return

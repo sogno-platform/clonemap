@@ -99,7 +99,7 @@ func StartFrontend() (err error) {
 
 // getModuleStatus returns the on/off status of all modules
 func (fe *Frontend) getModuleStatus() (mods schemas.ModuleStatus, err error) {
-	mods.Logging = fe.logClient.Alive()
+	mods.Logger = fe.logClient.Alive()
 	mods.Core = fe.amsClient.Alive()
 	mods.DF = fe.dfClient.Alive()
 	return

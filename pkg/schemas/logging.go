@@ -61,7 +61,7 @@ type LogMessage struct {
 	MASID          int       `json:"masid"`          // ID of MAS agent runs in
 	AgentID        int       `json:"agentid"`        // ID of agent
 	Timestamp      time.Time `json:"timestamp"`      // time of message
-	LogType        string    `json:"logtype"`        // log type (error, debug, msg, status, app)
+	Topic          string    `json:"topic"`          // log type (error, debug, msg, status, app)
 	Message        string    `json:"msg"`            // log message
 	AdditionalData string    `json:"data,omitempty"` // additional information e.g in json
 }
