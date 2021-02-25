@@ -511,7 +511,7 @@ func (ams *AMS) server(port int) (serv *http.Server) {
 	s.Path("/clonemap/mas/{masid}/agents/{agentid}/custom").Methods("DELETE", "POST", "GET").
 		HandlerFunc(ams.methodNotAllowed)
 	s.Path("/clonemap/mas/{masid}/agents/name/{name}").Methods("GET").
-		HandlerFunc(ams.handleGetAgentAddress)
+		HandlerFunc(ams.handleGetAgentName)
 	s.Path("/clonemap/mas/{masid}/agents/name/{name}").Methods("DELETE", "POST", "PUT").
 		HandlerFunc(ams.methodNotAllowed)
 	s.Path("/clonemap/mas/{masid}/agencies").Methods("GET").HandlerFunc(ams.handleGetAgencies)

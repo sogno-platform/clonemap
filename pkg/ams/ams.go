@@ -225,8 +225,8 @@ func (ams *AMS) updateAgentCustom(masID int, agentID int, custom string) (err er
 	}
 	var httpStatus int
 	httpStatus, err = ams.agencyClient.PutAgentCustom(agentAddress.Agency, agentID, custom)
-	if httpStatus != http.StatusOK {
-		err = errors.New("error updating custom data")
+	if httpStatus != http.StatusOK || err != nil {
+		err = errors.New("error updating custom data " + err.Error())
 	}
 	return
 }
@@ -234,6 +234,10 @@ func (ams *AMS) updateAgentCustom(masID int, agentID int, custom string) (err er
 // getAgentsByName returns IDs of all agents with matching name
 func (ams *AMS) getAgentsByName(masID int, name string) (agentIDs []int, err error) {
 	var agents schemas.Agents
+	agents, err = ams.stor.getAgents(masID)
+	if err != nil {
+		return
+	}
 	for i := range agents.Inst {
 		if agents.Inst[i].Spec.Name == name {
 			agentIDs = append(agentIDs, i)

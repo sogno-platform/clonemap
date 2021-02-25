@@ -147,6 +147,7 @@ func (agent *Agent) updateCustomData(custom string) {
 	agent.mutex.Lock()
 	agent.custom = custom
 	agent.mutex.Unlock()
+	agent.logInfo.Println("Updated config of agent ", agent.GetAgentID())
 	return
 }
 

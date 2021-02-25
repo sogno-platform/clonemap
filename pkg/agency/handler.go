@@ -175,7 +175,7 @@ func (agency *Agency) handleGetAgentStatus(w http.ResponseWriter, r *http.Reques
 }
 
 // handlePutAgentCustom is the handler for put requests to path /api/agency/agents/{agentid}/custom
-func (agency *Agency) handleAgentCustom(w http.ResponseWriter, r *http.Request) {
+func (agency *Agency) handlePutAgentCustom(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
 	defer agency.logErrors(r.URL.Path, cmapErr, httpErr)
 	vars := mux.Vars(r)
@@ -257,7 +257,7 @@ func (agency *Agency) server(port int) (serv *http.Server) {
 	s.Path("/agency/agents/{agentid}/status").Methods("PUT", "DELETE", "POST").
 		HandlerFunc(agency.methodNotAllowed)
 	s.Path("/agency/agents/{agentid}/custom").Methods("PUT").
-		HandlerFunc(agency.handleGetAgentStatus)
+		HandlerFunc(agency.handlePutAgentCustom)
 	s.Path("/agency/agents/{agentid}/custom").Methods("GET", "DELETE", "POST").
 		HandlerFunc(agency.methodNotAllowed)
 	s.Use(agency.loggingMiddleware)

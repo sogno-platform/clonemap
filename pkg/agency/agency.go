@@ -112,7 +112,7 @@ func StartAgency(task func(*Agent) error) (err error) {
 	signal.Notify(gracefulStop, syscall.SIGINT)
 	go agency.terminate(gracefulStop)
 
-	serv := agency.server(13000)
+	serv := agency.server(10000)
 	if err != nil {
 		agency.logError.Println(err)
 		return
