@@ -57,14 +57,15 @@ import (
 // handleGetModules is the handler for get requests to path /api/pf/modules
 func (fe *Frontend) handleGetModules(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
-	defer fe.logErrors(r.URL.Path, cmapErr, httpErr)
 	var mods schemas.ModuleStatus
 	mods, cmapErr = fe.getModuleStatus()
 	if cmapErr != nil {
 		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	httpErr = httpreply.Resource(w, mods, cmapErr)
+	fe.logErrors(r.URL.Path, cmapErr, httpErr)
 	return
 }
 

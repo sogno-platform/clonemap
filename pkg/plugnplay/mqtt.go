@@ -114,6 +114,9 @@ func (cli *mqttClient) newIncomingMQTTMessage(client mqtt.Client, msg mqtt.Messa
 	}
 	ags := []schemas.ImageGroupSpec{imSpec}
 	_, err = cli.amsClient.PostAgents(0, ags)
+	if err != nil {
+		cli.logError.Println(err)
+	}
 	return
 }
 

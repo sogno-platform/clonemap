@@ -58,51 +58,55 @@ import (
 // handleGetMASs is the handler for get requests to path /api/ams/mas
 func (fe *Frontend) handleGetMASs(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
-	defer fe.logErrors(r.URL.Path, cmapErr, httpErr)
 	// return short info of all MAS
 	var mass []schemas.MASInfoShort
 	mass, _, cmapErr = fe.amsClient.GetMASsShort()
 	if cmapErr != nil {
 		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	httpErr = httpreply.Resource(w, mass, cmapErr)
+	fe.logErrors(r.URL.Path, cmapErr, httpErr)
 	return
 }
 
 // handlePostMASs is the handler for post requests to path /api/ams/mas
 func (fe *Frontend) handlePostMAS(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
-	defer fe.logErrors(r.URL.Path, cmapErr, httpErr)
 	var body []byte
 	body, cmapErr = ioutil.ReadAll(r.Body)
 	if cmapErr != nil {
 		httpErr = httpreply.InvalidBodyError(w)
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	var masSpec schemas.MASSpec
 	cmapErr = json.Unmarshal(body, &masSpec)
 	if cmapErr != nil {
 		httpErr = httpreply.JSONUnmarshalError(w)
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	_, httpErr = fe.amsClient.PostMAS(masSpec)
 	if httpErr != nil {
 		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Ressource Created"))
+	fe.logErrors(r.URL.Path, cmapErr, httpErr)
 	return
 }
 
 // handleGetMASID is the handler for get requests to path /api/ams/mas/{masid}
 func (fe *Frontend) handleGetMASID(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
-	defer fe.logErrors(r.URL.Path, cmapErr, httpErr)
 	vars := mux.Vars(r)
 	masID, cmapErr := strconv.Atoi(vars["masid"])
 	if cmapErr != nil {
 		httpErr = httpreply.NotFoundError(w)
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	// return long information about specified MAS
@@ -110,9 +114,11 @@ func (fe *Frontend) handleGetMASID(w http.ResponseWriter, r *http.Request) {
 	masInfo, _, cmapErr = fe.amsClient.GetMAS(masID)
 	if cmapErr != nil {
 		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	httpErr = httpreply.Resource(w, masInfo, cmapErr)
+	fe.logErrors(r.URL.Path, cmapErr, httpErr)
 	return
 }
 
@@ -124,11 +130,11 @@ func (fe *Frontend) handleDeleteMASID(w http.ResponseWriter, r *http.Request) {
 // handlePostAgent is the handler for post requests to path /api/clonemap/mas/{masid}/agents
 func (fe *Frontend) handlePostAgent(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
-	defer fe.logErrors(r.URL.Path, cmapErr, httpErr)
 	vars := mux.Vars(r)
 	masID, cmapErr := strconv.Atoi(vars["masid"])
 	if cmapErr != nil {
 		httpErr = httpreply.NotFoundError(w)
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	// create new agent in MAS
@@ -136,30 +142,34 @@ func (fe *Frontend) handlePostAgent(w http.ResponseWriter, r *http.Request) {
 	body, cmapErr = ioutil.ReadAll(r.Body)
 	if cmapErr != nil {
 		httpErr = httpreply.InvalidBodyError(w)
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	var groupSpecs []schemas.ImageGroupSpec
 	cmapErr = json.Unmarshal(body, &groupSpecs)
 	if cmapErr != nil {
 		httpErr = httpreply.JSONUnmarshalError(w)
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	_, cmapErr = fe.amsClient.PostAgents(masID, groupSpecs)
 	if cmapErr != nil {
 		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Ressource Created"))
+	fe.logErrors(r.URL.Path, cmapErr, httpErr)
 	return
 }
 
 // handleGetAgentID is the handler for get requests to path /api/ams/mas/{masid}/agents/{agentid}
 func (fe *Frontend) handleGetAgentID(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
-	defer fe.logErrors(r.URL.Path, cmapErr, httpErr)
 	masID, agentID, cmapErr := getAgentID(r)
 	if cmapErr != nil {
 		httpErr = httpreply.NotFoundError(w)
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	// return long information of specified agent
@@ -167,9 +177,11 @@ func (fe *Frontend) handleGetAgentID(w http.ResponseWriter, r *http.Request) {
 	agentInfo, _, cmapErr = fe.amsClient.GetAgent(masID, agentID)
 	if cmapErr != nil {
 		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	httpErr = httpreply.Resource(w, agentInfo, cmapErr)
+	fe.logErrors(r.URL.Path, cmapErr, httpErr)
 	return
 }
 
@@ -177,18 +189,20 @@ func (fe *Frontend) handleGetAgentID(w http.ResponseWriter, r *http.Request) {
 // /api/ams/mas/{masid}/agents/{agentid}
 func (fe *Frontend) handleDeleteAgentID(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
-	defer fe.logErrors(r.URL.Path, cmapErr, httpErr)
 	masID, agentID, cmapErr := getAgentID(r)
 	if cmapErr != nil {
 		httpErr = httpreply.NotFoundError(w)
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	// delete specified agent
 	_, cmapErr = fe.amsClient.DeleteAgent(masID, agentID)
 	if cmapErr != nil {
 		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	httpErr = httpreply.Deleted(w, cmapErr)
+	fe.logErrors(r.URL.Path, cmapErr, httpErr)
 	return
 }

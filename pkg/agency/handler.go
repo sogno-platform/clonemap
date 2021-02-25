@@ -61,106 +61,114 @@ import (
 // handleGetAgency is the handler for get requests to path /api/agency
 func (agency *Agency) handleGetAgency(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
-	defer agency.logErrors(r.URL.Path, cmapErr, httpErr)
 	// return info about agency
 	var agencyInfo schemas.AgencyInfo
 	agencyInfo, cmapErr = agency.getAgencyInfo()
 	if cmapErr != nil {
 		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		agency.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	httpErr = httpreply.Resource(w, agencyInfo, cmapErr)
+	agency.logErrors(r.URL.Path, cmapErr, httpErr)
 	return
 }
 
 // handlePostAgent is the handler for post requests to path /api/agency/agents
 func (agency *Agency) handlePostAgent(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
-	defer agency.logErrors(r.URL.Path, cmapErr, httpErr)
 	// create new agent in agency
 	var body []byte
 	body, cmapErr = ioutil.ReadAll(r.Body)
 	if cmapErr != nil {
 		httpErr = httpreply.InvalidBodyError(w)
+		agency.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	var agentInfo schemas.AgentInfo
 	cmapErr = json.Unmarshal(body, &agentInfo)
 	if cmapErr != nil {
 		httpErr = httpreply.JSONUnmarshalError(w)
+		agency.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	go agency.createAgent(agentInfo)
 	httpErr = httpreply.Created(w, nil, "text/plain", []byte("Ressource Created"))
+	agency.logErrors(r.URL.Path, cmapErr, httpErr)
 	return
 }
 
 // handlePostMsgs is the handler for post requests to path /api/agency/msgs
 func (agency *Agency) handlePostMsgs(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
-	defer agency.logErrors(r.URL.Path, cmapErr, httpErr)
 	var body []byte
 	body, cmapErr = ioutil.ReadAll(r.Body)
 	if cmapErr != nil {
 		httpErr = httpreply.InvalidBodyError(w)
+		agency.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	var msgs []schemas.ACLMessage
 	cmapErr = json.Unmarshal(body, &msgs)
 	if cmapErr != nil {
 		httpErr = httpreply.JSONUnmarshalError(w)
+		agency.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	agency.msgIn <- msgs
 	httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Ressource Created"))
+	agency.logErrors(r.URL.Path, cmapErr, httpErr)
 	return
 }
 
 // handlePostUndeliverableMsg is the handler for post requests to path /api/agency/msgundeliv
 func (agency *Agency) handlePostUndeliverableMsg(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
-	defer agency.logErrors(r.URL.Path, cmapErr, httpErr)
 	var body []byte
 	body, cmapErr = ioutil.ReadAll(r.Body)
 	if cmapErr != nil {
 		httpErr = httpreply.InvalidBodyError(w)
+		agency.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	var msg schemas.ACLMessage
 	cmapErr = json.Unmarshal(body, &msg)
 	if cmapErr != nil {
 		httpErr = httpreply.JSONUnmarshalError(w)
+		agency.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	go agency.resendUndeliverableMsg(msg)
 	httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Ressource Created"))
+	agency.logErrors(r.URL.Path, cmapErr, httpErr)
 	return
 }
 
 // handleDeleteAgentID is the handler for delete requests to path /api/agency/agents/{agentid}
 func (agency *Agency) handleDeleteAgentID(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
-	defer agency.logErrors(r.URL.Path, cmapErr, httpErr)
 	vars := mux.Vars(r)
 	agentID, cmapErr := strconv.Atoi(vars["agentid"])
 	if cmapErr != nil {
 		httpErr = httpreply.NotFoundError(w)
+		agency.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	// delete specified agent
 	cmapErr = agency.removeAgent(agentID)
 	httpErr = httpreply.Deleted(w, cmapErr)
+	agency.logErrors(r.URL.Path, cmapErr, httpErr)
 	return
 }
 
 // handleGetAgentStatus is the handler for get requests to path /api/agency/agents/{agentid}/status
 func (agency *Agency) handleGetAgentStatus(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
-	defer agency.logErrors(r.URL.Path, cmapErr, httpErr)
 	vars := mux.Vars(r)
 	agentID, cmapErr := strconv.Atoi(vars["agentid"])
 	if cmapErr != nil {
 		httpErr = httpreply.NotFoundError(w)
+		agency.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	// return status of specified agent
@@ -168,20 +176,22 @@ func (agency *Agency) handleGetAgentStatus(w http.ResponseWriter, r *http.Reques
 	agentStatus, cmapErr = agency.getAgentStatus(agentID)
 	if cmapErr != nil {
 		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		agency.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	httpErr = httpreply.Resource(w, agentStatus, cmapErr)
+	agency.logErrors(r.URL.Path, cmapErr, httpErr)
 	return
 }
 
 // handlePutAgentCustom is the handler for put requests to path /api/agency/agents/{agentid}/custom
 func (agency *Agency) handlePutAgentCustom(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
-	defer agency.logErrors(r.URL.Path, cmapErr, httpErr)
 	vars := mux.Vars(r)
 	agentID, cmapErr := strconv.Atoi(vars["agentid"])
 	if cmapErr != nil {
 		httpErr = httpreply.NotFoundError(w)
+		agency.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	// update custom of specified agent
@@ -189,15 +199,18 @@ func (agency *Agency) handlePutAgentCustom(w http.ResponseWriter, r *http.Reques
 	body, cmapErr = ioutil.ReadAll(r.Body)
 	if cmapErr != nil {
 		httpErr = httpreply.InvalidBodyError(w)
+		agency.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	custom := string(body)
 	cmapErr = agency.updateAgentCustom(agentID, custom)
 	if cmapErr != nil {
 		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		agency.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	httpErr = httpreply.Updated(w, cmapErr)
+	agency.logErrors(r.URL.Path, cmapErr, httpErr)
 	return
 }
 

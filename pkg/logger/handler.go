@@ -71,22 +71,24 @@ func (logger *Logger) handleAlive(w http.ResponseWriter, r *http.Request) {
 // /api/logging/{masid}/{agentid}/{topic}
 func (logger *Logger) handlePostLogMsg(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
-	defer logger.logErrors(r.URL.Path, cmapErr, httpErr)
 	// create new log message entry
 	var body []byte
 	body, cmapErr = ioutil.ReadAll(r.Body)
 	if cmapErr != nil {
 		httpErr = httpreply.InvalidBodyError(w)
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	var logmsg schemas.LogMessage
 	cmapErr = json.Unmarshal(body, &logmsg)
 	if cmapErr != nil {
 		httpErr = httpreply.JSONUnmarshalError(w)
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	go logger.addAgentLogMessage(logmsg)
 	httpErr = httpreply.Created(w, nil, "text/plain", []byte("Ressource Created"))
+	logger.logErrors(r.URL.Path, cmapErr, httpErr)
 	return
 }
 
@@ -94,19 +96,21 @@ func (logger *Logger) handlePostLogMsg(w http.ResponseWriter, r *http.Request) {
 // /api/logging/{masid}/{agentid}/comm
 func (logger *Logger) handleGetCommunication(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
-	defer logger.logErrors(r.URL.Path, cmapErr, httpErr)
 	masID, agentID, cmapErr := getAgentID(r)
 	if cmapErr != nil {
 		httpErr = httpreply.NotFoundError(w)
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	var comm []schemas.Communication
 	comm, cmapErr = logger.getCommunication(masID, agentID)
 	if cmapErr != nil {
 		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	httpErr = httpreply.Resource(w, comm, cmapErr)
+	logger.logErrors(r.URL.Path, cmapErr, httpErr)
 	return
 }
 
@@ -114,10 +118,10 @@ func (logger *Logger) handleGetCommunication(w http.ResponseWriter, r *http.Requ
 // /api/logging/{masid}/{agentid}/comm
 func (logger *Logger) handlePutCommunication(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
-	defer logger.logErrors(r.URL.Path, cmapErr, httpErr)
 	masID, agentID, cmapErr := getAgentID(r)
 	if cmapErr != nil {
 		httpErr = httpreply.NotFoundError(w)
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	// update communication data
@@ -125,38 +129,43 @@ func (logger *Logger) handlePutCommunication(w http.ResponseWriter, r *http.Requ
 	body, cmapErr = ioutil.ReadAll(r.Body)
 	if cmapErr != nil {
 		httpErr = httpreply.InvalidBodyError(w)
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	var comm []schemas.Communication
 	cmapErr = json.Unmarshal(body, &comm)
 	if cmapErr != nil {
 		httpErr = httpreply.JSONUnmarshalError(w)
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	go logger.updateCommunication(masID, agentID, comm)
 	httpErr = httpreply.Updated(w, nil)
+	logger.logErrors(r.URL.Path, cmapErr, httpErr)
 	return
 }
 
 // handlePostLogMsgList is the handler for post requests to path /api/logging/{masid}/list
 func (logger *Logger) handlePostLogMsgList(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
-	defer logger.logErrors(r.URL.Path, cmapErr, httpErr)
 	// create new log message entry
 	var body []byte
 	body, cmapErr = ioutil.ReadAll(r.Body)
 	if cmapErr != nil {
 		httpErr = httpreply.NotFoundError(w)
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	var logmsg []schemas.LogMessage
 	cmapErr = json.Unmarshal(body, &logmsg)
 	if cmapErr != nil {
 		httpErr = httpreply.JSONUnmarshalError(w)
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	go logger.addAgentLogMessageList(logmsg)
 	httpErr = httpreply.Created(w, nil, "text/plain", []byte("Ressource Created"))
+	logger.logErrors(r.URL.Path, cmapErr, httpErr)
 	return
 }
 
@@ -164,10 +173,10 @@ func (logger *Logger) handlePostLogMsgList(w http.ResponseWriter, r *http.Reques
 // /api/logging/{masid}/{agentid}/{topic}/latest/{num}
 func (logger *Logger) handleGetLogsLatest(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
-	defer logger.logErrors(r.URL.Path, cmapErr, httpErr)
 	masID, agentID, cmapErr := getAgentID(r)
 	if cmapErr != nil {
 		httpErr = httpreply.NotFoundError(w)
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	vars := mux.Vars(r)
@@ -175,15 +184,18 @@ func (logger *Logger) handleGetLogsLatest(w http.ResponseWriter, r *http.Request
 	num, cmapErr := strconv.Atoi(vars["num"])
 	if cmapErr != nil {
 		httpErr = httpreply.InvalidBodyError(w)
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	var logMsg []schemas.LogMessage
 	logMsg, cmapErr = logger.getLatestAgentLogMessages(masID, agentID, topic, num)
 	if cmapErr != nil {
 		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	httpErr = httpreply.Resource(w, logMsg, cmapErr)
+	logger.logErrors(r.URL.Path, cmapErr, httpErr)
 	return
 }
 
@@ -191,10 +203,10 @@ func (logger *Logger) handleGetLogsLatest(w http.ResponseWriter, r *http.Request
 // /api/logging/{masid}/{agentid}/{topic}/time/{start}/{end}
 func (logger *Logger) handleGetLogsTime(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
-	defer logger.logErrors(r.URL.Path, cmapErr, httpErr)
 	masID, agentID, cmapErr := getAgentID(r)
 	if cmapErr != nil {
 		httpErr = httpreply.NotFoundError(w)
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	vars := mux.Vars(r)
@@ -202,92 +214,104 @@ func (logger *Logger) handleGetLogsTime(w http.ResponseWriter, r *http.Request) 
 	start, cmapErr := time.Parse(time.RFC3339, vars["start"])
 	if cmapErr != nil {
 		httpErr = httpreply.NotFoundError(w)
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	end, cmapErr := time.Parse(time.RFC3339, vars["end"])
 	if cmapErr != nil {
 		httpErr = httpreply.NotFoundError(w)
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	var logMsg []schemas.LogMessage
 	logMsg, cmapErr = logger.getAgentLogMessagesInRange(masID, agentID, topic, start, end)
 	if cmapErr != nil {
 		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	httpErr = httpreply.Resource(w, logMsg, cmapErr)
+	logger.logErrors(r.URL.Path, cmapErr, httpErr)
 	return
 }
 
 // handleGetState is the handler for get requests to path /api/state/{masid}/{agentid}
 func (logger *Logger) handleGetState(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
-	defer logger.logErrors(r.URL.Path, cmapErr, httpErr)
 	masID, agentID, cmapErr := getAgentID(r)
 	if cmapErr != nil {
 		httpErr = httpreply.NotFoundError(w)
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	var state schemas.State
 	state, cmapErr = logger.getAgentState(masID, agentID)
 	if cmapErr != nil {
 		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	httpErr = httpreply.Resource(w, state, cmapErr)
+	logger.logErrors(r.URL.Path, cmapErr, httpErr)
 	return
 }
 
 // handlePutState is the handler for put requests to path /api/state/{masid}/{agentid}
 func (logger *Logger) handlePutState(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
-	defer logger.logErrors(r.URL.Path, cmapErr, httpErr)
 	masID, agentID, cmapErr := getAgentID(r)
 	if cmapErr != nil {
 		httpErr = httpreply.NotFoundError(w)
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	var body []byte
 	body, cmapErr = ioutil.ReadAll(r.Body)
 	if cmapErr != nil {
 		httpErr = httpreply.InvalidBodyError(w)
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	var state schemas.State
 	cmapErr = json.Unmarshal(body, &state)
 	if cmapErr != nil {
 		httpErr = httpreply.JSONUnmarshalError(w)
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	go logger.updateAgentState(masID, agentID, state)
 	httpErr = httpreply.Updated(w, nil)
+	logger.logErrors(r.URL.Path, cmapErr, httpErr)
 	return
 }
 
 // handlePutStateList is the handler for requests to path /api/state/{masid}/list
 func (logger *Logger) handlePutStateList(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
-	defer logger.logErrors(r.URL.Path, cmapErr, httpErr)
 	vars := mux.Vars(r)
 	masID, cmapErr := strconv.Atoi(vars["masid"])
 	if cmapErr != nil {
 		httpErr = httpreply.NotFoundError(w)
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	var body []byte
 	body, cmapErr = ioutil.ReadAll(r.Body)
 	if cmapErr != nil {
 		httpErr = httpreply.InvalidBodyError(w)
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	var states []schemas.State
 	cmapErr = json.Unmarshal(body, &states)
 	if cmapErr != nil {
 		httpErr = httpreply.JSONUnmarshalError(w)
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
 	go logger.updateAgentStatesList(masID, states)
 	httpErr = httpreply.Updated(w, nil)
+	logger.logErrors(r.URL.Path, cmapErr, httpErr)
 	return
 }
 
