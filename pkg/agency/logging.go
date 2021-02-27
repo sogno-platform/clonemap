@@ -163,7 +163,7 @@ type logHandler struct {
 	logIn    chan schemas.LogMessage // logging inbox
 	stateIn  chan schemas.State
 	active   bool // indicates if logging is active (switch via env)
-	client   *logclient.Client
+	client   *logclient.LoggerClient
 	logError *log.Logger
 	logInfo  *log.Logger
 }
@@ -241,8 +241,8 @@ func newLogHandler(masID int, logErr *log.Logger, logInf *log.Logger) (log *logH
 		active:   false,
 		logError: logErr,
 		logInfo:  logInf,
-		client:   logclient.New(time.Second*60, time.Second*1, 4),
 	}
+	log.client, _ = logclient.NewLoggerClient("logger", 11000, time.Second*60, time.Second*1, 4)
 	temp := os.Getenv("CLONEMAP_LOGGING")
 	if temp == "ON" {
 		log.active = true
