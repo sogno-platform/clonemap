@@ -44,6 +44,13 @@ THE SOFTWARE.
 
 package schemas
 
+// MQTTConfig contains the host and port configuration of the broker and indicates if it is active
+type MQTTConfig struct {
+	Active bool   `json:"active"`         // indicates if MQTT is active/usable
+	Host   string `json:"host,omitempty"` // hostname of MQTT
+	Port   int    `json:"port,omitempty"` // port of MQTT
+}
+
 // MQTTMessage struct representing mqtt message
 type MQTTMessage struct {
 	Topic   string // Topic of message

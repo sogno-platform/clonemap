@@ -56,11 +56,25 @@ type CloneMAP struct {
 	Uptime  time.Time `json:"uptime,omitempty"`  // uptime of clonemap instance
 }
 
+// ModuleConfig shows the config of all modules
+type ModuleConfig struct {
+	AMS    AMSConfig    `json:"ams"`    // AMS config
+	DF     DFConfig     `json:"df"`     // df config
+	Logger LoggerConfig `json:"logger"` // logger config
+	MQTT   MQTTConfig   `json:"mqtt"`   // MQTT config
+}
+
 // ModuleStatus shows the status of clonemaps modules
 type ModuleStatus struct {
 	Core   bool `json:"core"`   // Core module
 	DF     bool `json:"df"`     // DF module
 	Logger bool `json:"logger"` // Logging module
+}
+
+// AMSConfig contains the host and port configuration of the AMS
+type AMSConfig struct {
+	Host string `json:"host,omitempty"` // hostname of AMS
+	Port int    `json:"port,omitempty"` // port of AMS
 }
 
 // MASInfoShort contains info about MAS spec, agents in MAS
@@ -93,12 +107,11 @@ type MASSpec struct {
 
 // MASConfig contains configuration of MAS
 type MASConfig struct {
-	Name               string    `json:"name,omitempty"`            // name/description of MAS
-	NumAgentsPerAgency int       `json:"agentsperagency,omitempty"` // number of agents per agency
-	Logging            bool      `json:"logging"`                   // switch for logging module
-	MQTT               bool      `json:"mqtt"`                      //switch for mqtt
-	DF                 bool      `json:"df"`                        //switch for df
-	Logger             LogConfig `json:"logger"`                    // logger configuration
+	Name               string       `json:"name,omitempty"`  // name/description of MAS
+	NumAgentsPerAgency int          `json:"agentsperagency"` // number of agents per agency
+	MQTT               MQTTConfig   `json:"mqtt"`            //switch for mqtt
+	DF                 DFConfig     `json:"df"`              //switch for df
+	Logger             LoggerConfig `json:"logger"`          // logger configuration
 }
 
 // ImageGroupInfo contains information about all agents that have the same image
@@ -153,24 +166,24 @@ type Status struct {
 
 // AgencyInfo contains information about agency spec and status (for storage)
 type AgencyInfo struct {
-	MASID        int       `json:"masid"`  // ID of MAS
-	Name         string    `json:"name"`   // name of agency (hostname of pod given by kubernetes)
-	ID           int       `json:"id"`     // within image group unique ID (contained in name)
-	ImageGroupID int       `json:"imid"`   // ID of agency image group
-	Logger       LogConfig `json:"logger"` // logger configuration
-	Agents       []int     `json:"agents"`
-	Status       Status    `json:"status"`
+	MASID        int          `json:"masid"`  // ID of MAS
+	Name         string       `json:"name"`   // name of agency (hostname of pod given by kubernetes)
+	ID           int          `json:"id"`     // within image group unique ID (contained in name)
+	ImageGroupID int          `json:"imid"`   // ID of agency image group
+	Logger       LoggerConfig `json:"logger"` // logger configuration
+	Agents       []int        `json:"agents"`
+	Status       Status       `json:"status"`
 }
 
 // AgencyInfoFull contains information about agency and full info about agents it conatins (for api)
 type AgencyInfoFull struct {
-	MASID        int         `json:"masid"`  // ID of MAS
-	Name         string      `json:"name"`   // name of agency (hostname of pod given by kubernetes)
-	ID           int         `json:"id"`     // within image group unique ID (contained in name)
-	ImageGroupID int         `json:"imid"`   // ID of agency image group
-	Logger       LogConfig   `json:"logger"` // logger configuration
-	Agents       []AgentInfo `json:"agents"`
-	Status       Status      `json:"status"`
+	MASID        int          `json:"masid"`  // ID of MAS
+	Name         string       `json:"name"`   // name of agency (hostname of pod given by kubernetes)
+	ID           int          `json:"id"`     // within image group unique ID (contained in name)
+	ImageGroupID int          `json:"imid"`   // ID of agency image group
+	Logger       LoggerConfig `json:"logger"` // logger configuration
+	Agents       []AgentInfo  `json:"agents"`
+	Status       Status       `json:"status"`
 }
 
 // MASs contains informaton about how many MASs are running

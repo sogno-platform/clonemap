@@ -46,6 +46,13 @@ package schemas
 
 import "time"
 
+// DFConfig contains the host and port configuration of the DF and indicates if it is active
+type DFConfig struct {
+	Active bool   `json:"active"`         // indicates if DF is active/usable
+	Host   string `json:"host,omitempty"` // hostname of DF
+	Port   int    `json:"port,omitempty"` // port of DF
+}
+
 // Service holds information about an agent service that can be registered and searched with the DF
 type Service struct {
 	GUID      string    `json:"id"`        // unique svc id

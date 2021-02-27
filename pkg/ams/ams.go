@@ -300,8 +300,8 @@ func (ams *AMS) startMAS(masID int, masInfo schemas.MASInfo, numAgencies []int) 
 	}
 
 	// deploy containers
-	err = ams.depl.newMAS(masID, masInfo.ImageGroups, masInfo.Config.Logging,
-		masInfo.Config.MQTT, masInfo.Config.DF)
+	err = ams.depl.newMAS(masID, masInfo.ImageGroups, masInfo.Config.Logger.Active,
+		masInfo.Config.MQTT.Active, masInfo.Config.DF.Active)
 	if err != nil {
 		ams.logError.Println(err.Error())
 		return
@@ -470,8 +470,8 @@ func (ams *AMS) createAgents(masID int, groupSpecs []schemas.ImageGroupSpec) (er
 			if err != nil {
 				return
 			}
-			err = ams.depl.newImageGroup(masID, groupInfo, masInfo.Config.Logging,
-				masInfo.Config.MQTT, masInfo.Config.DF)
+			err = ams.depl.newImageGroup(masID, groupInfo, masInfo.Config.Logger.Active,
+				masInfo.Config.MQTT.Active, masInfo.Config.DF.Active)
 			if err != nil {
 				return
 			}

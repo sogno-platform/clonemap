@@ -48,12 +48,15 @@ import (
 	"time"
 )
 
-// LogConfig contains configuration of logging service
-type LogConfig struct {
-	Msg    bool `json:"msg"`    // activation of msg log topic
-	App    bool `json:"app"`    // activation of app log topic
-	Status bool `json:"status"` // activation of status log topic
-	Debug  bool `json:"debug"`  // activation of debug log topic
+// LoggerConfig contains configuration of logger service
+type LoggerConfig struct {
+	Active      bool   `json:"active"`           // indicates if logger is active/usable
+	TopicMsg    bool   `json:"msg,omitempty"`    // activation of msg log topic
+	TopicApp    bool   `json:"app,omitempty"`    // activation of app log topic
+	TopicStatus bool   `json:"status,omitempty"` // activation of status log topic
+	TopicDebug  bool   `json:"debug,omitempty"`  // activation of debug log topic
+	Host        string `json:"host,omitempty"`   // hostname of Logger
+	Port        int    `json:"port,omitempty"`   // port of Logger
 }
 
 // LogMessage contains data of a single agent log message

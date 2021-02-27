@@ -163,7 +163,7 @@ components:
           type: integer
         logger:
           description: configuration of logging
-          $ref: '#/components/schemas/LogConfig'
+          $ref: '#/components/schemas/LoggerConfig'
         agents:
           description: list of all agents in agency
           type: array
@@ -265,9 +265,12 @@ components:
         lastupdate:
           description: time of last update
           type: string
-    LogConfig:
+    LoggerConfig:
       description: contains information about agency
       properties:
+        active:
+          description: indicates if logger module is active and/or usable
+          type: boolean
         msg:
           description: activation of msg log topic
           type: boolean

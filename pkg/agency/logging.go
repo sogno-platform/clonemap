@@ -46,7 +46,6 @@ package agency
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"os"
 	"sync"
@@ -61,7 +60,7 @@ type Logger struct {
 	agentID  int
 	handler  *logHandler
 	mutex    *sync.Mutex
-	config   schemas.LogConfig
+	config   schemas.LoggerConfig
 	logError *log.Logger
 	logInfo  *log.Logger
 	active   bool
@@ -81,8 +80,9 @@ func (log *Logger) NewLog(topic string, message string, data string) (err error)
 		return
 	}
 	log.mutex.Lock()
-	if (topic == "msg" && !log.config.Msg) || (topic == "app" && !log.config.App) ||
-		(topic == "debug" && !log.config.Debug) || (topic == "status" && !log.config.Status) {
+	if (topic == "msg" && !log.config.TopicMsg) || (topic == "app" && !log.config.TopicApp) ||
+		(topic == "debug" && !log.config.TopicDebug) ||
+		(topic == "status" && !log.config.TopicStatus) {
 		log.mutex.Unlock()
 		return
 	}
@@ -134,7 +134,7 @@ func (log *Logger) RestoreState() (state string, err error) {
 }
 
 // newLogger craetes a new object of type Logger
-func newLogger(agentID int, handler *logHandler, config schemas.LogConfig, logErr *log.Logger,
+func newLogger(agentID int, handler *logHandler, config schemas.LoggerConfig, logErr *log.Logger,
 	logInf *log.Logger) (log *Logger) {
 	log = &Logger{
 		agentID:  agentID,
@@ -200,7 +200,7 @@ func (log *logHandler) storeLogs() (err error) {
 		for {
 			// print messages to stdout if logger is turned off
 			logMsg := <-log.logIn
-			fmt.Println(logMsg)
+			log.logInfo.Println(logMsg)
 		}
 	}
 }

@@ -109,7 +109,7 @@ func (agency *Agency) aclLookup(agentID int) (acl *ACL, err error) {
 	// check if remote agency is already known
 	if ok {
 		agency.logInfo.Println("New remote agent ", agentID, " in known agency ", address.Agency)
-		ag = newAgent(agentInfo, remAgency.msgIn, nil, nil, schemas.LogConfig{}, nil, nil,
+		ag = newAgent(agentInfo, remAgency.msgIn, nil, nil, schemas.LoggerConfig{}, nil, nil,
 			agency.logError, agency.logInfo)
 	} else {
 		agency.logInfo.Println("New remote agent ", agentID, " in unknown agency ", address.Agency)
@@ -131,7 +131,7 @@ func (agency *Agency) aclLookup(agentID int) (acl *ACL, err error) {
 			numRemAgencies < numLocalAgs {
 			go agency.receiveMsgs()
 		}
-		ag = newAgent(agentInfo, remAgency.msgIn, nil, nil, schemas.LogConfig{}, nil, nil,
+		ag = newAgent(agentInfo, remAgency.msgIn, nil, nil, schemas.LoggerConfig{}, nil, nil,
 			agency.logError, agency.logInfo)
 	}
 	agency.mutex.Lock()

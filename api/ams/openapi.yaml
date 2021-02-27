@@ -356,18 +356,15 @@ components:
         agentsperagency:
           description: number of agents per agency
           type: integer
-        logging:
-          description: switch for logging and state module
-          type: boolean
         mqtt:
           description: switch for iot module
-          type: boolean
+          $ref: '#/components/schemas/MQTTConfig'
         df:
           description: switch for df module
-          type: boolean
+          $ref: '#/components/schemas/DFConfig'
         logger:
           description: configuration of logging module
-          $ref: '#/components/schemas/LogConfig'
+          $ref: '#/components/schemas/LoggerConfig'
     ImageGroupInfo:
       description: information about an image groups
       properties:
@@ -417,7 +414,7 @@ components:
           type: integer
         logger:
           description: configuration of logging module
-          $ref: '#/components/schemas/LogConfig'
+          $ref: '#/components/schemas/LoggerConfig'
         status:
           description: status of agent
           $ref: '#/components/schemas/Status'
@@ -470,9 +467,12 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ImageGroupInfo'
-    LogConfig:
+    LoggerConfig:
       description: contains information about agency
       properties:
+        active:
+          description: indicates if logger module is active and/or usable
+          type: boolean
         msg:
           description: activation of msg log topic
           type: boolean
@@ -484,6 +484,18 @@ components:
           type: boolean
         debug:
           description: activation of debug log topic
+          type: boolean
+    DFConfig:
+      description: contains config of DF module
+      properties:
+        active:
+          description: indicates if df module is active and/or usable
+          type: boolean
+    MQTTConfig:
+      description: contains config of mqtt module
+      properties:
+        active:
+          description: indicates if mqtt module is active and/or usable
           type: boolean
     Graph:
       description: stores one mas graph for topological search
@@ -538,7 +550,7 @@ components:
           type: integer
         logger:
           description: configuration of logging
-          $ref: '#/components/schemas/LogConfig'
+          $ref: '#/components/schemas/LoggerConfig'
         agents:
           description: list of all agents in agency
           type: array

@@ -145,9 +145,15 @@ func dummyClient(s *http.Server, t *testing.T) {
 		Config: schemas.MASConfig{
 			Name:               "test",
 			NumAgentsPerAgency: 10,
-			Logging:            false,
-			MQTT:               false,
-			DF:                 false,
+			Logger: schemas.LoggerConfig{
+				Active: false,
+			},
+			MQTT: schemas.MQTTConfig{
+				Active: false,
+			},
+			DF: schemas.DFConfig{
+				Active: false,
+			},
 		},
 		ImageGroups: []schemas.ImageGroupSpec{
 			{

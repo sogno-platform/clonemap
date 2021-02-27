@@ -2,10 +2,14 @@
     "config":{
         "name":"test",
         "agentsperagency":1,
-        "logging":true,
-        "mqtt":true,
-        "df":false,
+        "mqtt":{
+            "active":true
+        },
+        "df":{
+            "active":true
+        },
         "logger":{
+            "active":true,
             "msg":true,
             "app":true,
             "status":true,
@@ -15,7 +19,7 @@
     "imagegroups":[
         {
             "config":{
-                "image":"agency"
+                "image":"cmapytest"
             },
             "agents":[
                 {

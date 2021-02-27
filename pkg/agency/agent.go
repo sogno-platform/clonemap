@@ -78,7 +78,7 @@ type Agent struct {
 
 // newAgent creates a new agent
 func newAgent(info schemas.AgentInfo, msgIn chan schemas.ACLMessage,
-	aclLookup func(int) (*ACL, error), log *logHandler, logConfig schemas.LogConfig,
+	aclLookup func(int) (*ACL, error), log *logHandler, logConfig schemas.LoggerConfig,
 	mqtt *mqttClient, dfClient *dfclient.Client, logErr *log.Logger, logInf *log.Logger) (ag *Agent) {
 	ag = &Agent{
 		id:       info.ID,
