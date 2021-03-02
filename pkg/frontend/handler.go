@@ -142,7 +142,10 @@ func (fe *Frontend) server(port int) (serv *http.Server) {
 	s.Path("/pf/modules").Methods("POST", "PUT", "POST").HandlerFunc(fe.methodNotAllowed)
 	s.PathPrefix("").HandlerFunc(fe.resourceNotFound)
 	s.Use(fe.loggingMiddleware)
-	r.HandleFunc("/", http.FileServer(http.Dir("./web")).ServeHTTP)
+	r.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("./web"))))
+	// r.HandleFunc("/", http.FileServer(http.Dir("./web")).ServeHTTP)
+	// r.HandleFunc("/css/", http.FileServer(http.Dir("./web/css")).ServeHTTP)
+	// r.HandleFunc("/js/", http.FileServer(http.Dir("./web/js")).ServeHTTP)
 	serv = &http.Server{
 		Addr:    ":" + strconv.Itoa(port),
 		Handler: r,
