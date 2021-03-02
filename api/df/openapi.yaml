@@ -273,7 +273,7 @@ components:
         masid:
           description: id of MAS
           type: integer
-        cretedat:
+        createdat:
           description: time of creation
           type: string
         changedat:
