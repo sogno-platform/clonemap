@@ -220,7 +220,7 @@ components:
           type: string
         perf:
           description: Denotes the type of the communicative act of the ACL message
-          type: string
+          type: integer
         sender:
           description: Denotes the identity of the sender of the message
           type: integer
@@ -255,7 +255,7 @@ components:
         prot:
           description: Denotes the interaction protocol that the sending agent is 
                         employing with this ACL message
-          type: string
+          type: integer
         convid:
           description: Introduces an expression which is used to identify the ongoing 
                         sequence of communicative acts that together form a conversation
