@@ -309,6 +309,12 @@ components:
         uptime:
           description: uptime of MAS
           type: string
+      required:
+      - id
+      - config
+      - numagents
+      - uptime
+      - status
     MASInfo:
       description: detailed information about MAS
       properties:
@@ -333,6 +339,14 @@ components:
         uptime:
           description: uptime of MAS
           type: string
+      required:
+      - id
+      - config
+      - imagegroups
+      - agents
+      - uptime
+      - status
+      - graph
     MASSpec:
       description: contains information about a MAS running in clonemap
       properties:
@@ -347,6 +361,10 @@ components:
         graph:
           description: graph of MAS
           $ref: '#/components/schemas/Graph'
+      required:
+      - config
+      - imagegroups
+      - graph
     MASConfig:
       description: contains information about mas to be started
       properties:
@@ -365,6 +383,12 @@ components:
         logger:
           description: configuration of logging module
           $ref: '#/components/schemas/LoggerConfig'
+      required:
+      - name
+      - agentsperagency
+      - mqtt
+      - df
+      - logger
     ImageGroupInfo:
       description: information about an image groups
       properties:
@@ -388,6 +412,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AgentSpec'
+      required:
+      - config
+      - agents
     ImageGroupConfig:
       description: configuration of image groups
       properties:
@@ -397,6 +424,9 @@ components:
         secret:
           description: pull secret to be used for image
           type: string
+      required:
+      - image
+      - secret
     AgencyInfoFull:
       description: information about agency
       properties:
@@ -423,6 +453,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AgentInfo'
+      required:
+      - masid
+      - name
+      - id
+      - imid
+      - logger
+      - agents
+      - status
     MASs:
       description: contains informaton about how many MASs are running
       properties:
@@ -434,6 +472,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MASInfo'
+      required:
+      - counter
+      - instances
     Agents:
       description: contains informaton about how many agents are running
       properties:
@@ -445,6 +486,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AgentInfo'
+      required:
+      - counter
+      - instances
     Agencies:
       description: contains informaton about how many agencies are running
       properties:
@@ -456,6 +500,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AgencyInfo'
+      required:
+      - counter
+      - instances
     ImageGroups:
       description: contains informaton about all image groups of a mas
       properties:
@@ -467,6 +514,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ImageGroupInfo'
+      required:
+      - counter
+      - instances
     LoggerConfig:
       description: contains information about agency
       properties:
@@ -485,18 +535,24 @@ components:
         debug:
           description: activation of debug log topic
           type: boolean
+      required:
+      - active
     DFConfig:
       description: contains config of DF module
       properties:
         active:
           description: indicates if df module is active and/or usable
           type: boolean
+      required:
+      - active
     MQTTConfig:
       description: contains config of mqtt module
       properties:
         active:
           description: indicates if mqtt module is active and/or usable
           type: boolean
+      required:
+      - active
     Graph:
       description: stores one mas graph for topological search
       properties:
@@ -510,6 +566,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Edge'
+      required:
+      - node
+      - edge
     Node:
       description: graph node
       properties:
@@ -521,6 +580,8 @@ components:
           type: array
           items:
             type: integer
+      required:
+      - id
     Edge:
       description: one edge of graph
       properties:
@@ -533,6 +594,10 @@ components:
         weight:
           description: weight of edge
           type: number
+      required:
+      - n1
+      - n2
+      - weight
     AgencyInfo:
       description: information about agency
       properties:
@@ -559,6 +624,14 @@ components:
         status:
           description: status of agency
           $ref: '#/components/schemas/Status'
+      required:
+      - masid
+      - name
+      - id
+      - imid
+      - logger
+      - agents
+      - status
     Status:
       description: information about an agent's or agency's status
       properties:
@@ -568,6 +641,9 @@ components:
         lastupdate:
           description: time of last update
           type: string
+      required:
+      - code
+      - lastupdate
     AgentInfo:
       description: detailed information about agent
       properties:
@@ -592,6 +668,14 @@ components:
         status:
           description: status of agent
           $ref: '#/components/schemas/Status'
+      required:
+      - spec
+      - masid
+      - agencyid
+      - imid
+      - id
+      - address
+      - status
     AgentSpec:
       description: contains information about a agent running in a MAS
       properties:
@@ -610,9 +694,14 @@ components:
         custom:
           description: custom agent specification
           type: string
+      required:
+      - nodeid
+      - name
     Address:
       description: holds the address information of an agent
       properties:
         agency:
           description: name of the agency
           type: string
+      required:
+      - address

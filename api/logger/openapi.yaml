@@ -262,6 +262,12 @@ components:
         data:
           description: additional data
           type: string
+      required:
+      - masid
+      - agentid
+      - topic
+      - timestamp
+      - msg
     State:
       description: state of agent
       properties:
@@ -277,6 +283,11 @@ components:
         state:
           description: state of agent
           type: string
+      required:
+      - masid
+      - agentid
+      - timestamp
+      - state
     Communication:
       description: communication data
       properties:
@@ -289,3 +300,7 @@ components:
         numrecv:
           description: number of messages recived from this agent
           type: integer
+      required:
+      - id
+      - numsent
+      - numrecv

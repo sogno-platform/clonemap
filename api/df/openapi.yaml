@@ -226,6 +226,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Edge'
+      required:
+      - node
+      - edge
     Node:
       description: graph node
       properties:
@@ -237,6 +240,8 @@ components:
           type: array
           items:
             type: integer
+      required:
+      - id
     Edge:
       description: one edge of graph
       properties:
@@ -249,6 +254,10 @@ components:
         weight:
           description: weight of edge
           type: number
+      required:
+      - n1
+      - n2
+      - weight
     Service:
       description: DF service
       properties:
@@ -276,3 +285,12 @@ components:
         dist:
           description: distance
           type: number
+      required:
+      - id
+      - agentid
+      - nodeid
+      - masid
+      - createdat
+      - changedat
+      - desc
+      - dist

@@ -172,6 +172,14 @@ components:
         status:
           description: status of agency
           $ref: '#/components/schemas/Status'
+      required:
+      - masid
+      - name
+      - id
+      - imid
+      - logger
+      - agents
+      - status
     AgentInfo:
       description: detailed information about agent
       properties:
@@ -196,6 +204,14 @@ components:
         status:
           description: status of agent
           $ref: '#/components/schemas/Status'
+      required:
+      - spec
+      - masid
+      - agencyid
+      - imid
+      - id
+      - address
+      - status
     ACLMessage:
       description: message for agent communication
       properties:
@@ -256,6 +272,15 @@ components:
           description: Denotes a time and/or date expression which indicates the latest 
                         time by which the sending agent would like to receive a reply
           type: string
+      required:
+      - ts
+      - perf
+      - sender
+      - agencys
+      - receiver
+      - agencyr
+      - content
+      - prot
     Status:
       description: information about an agent's or agency's status
       properties:
@@ -265,6 +290,9 @@ components:
         lastupdate:
           description: time of last update
           type: string
+      required:
+      - code
+      - lastupdate
     LoggerConfig:
       description: contains information about agency
       properties:
@@ -283,12 +311,16 @@ components:
         debug:
           description: activation of debug log topic
           type: boolean
+      required:
+      - active
     Address:
       description: holds the address information of an agent
       properties:
         agency:
           description: name of the agency
           type: string
+      required:
+      - agency
     AgentSpec:
       description: contains information about a agent running in a MAS
       properties:
@@ -307,3 +339,6 @@ components:
         custom:
           description: custom agent specification
           type: string
+      required:
+      - nodeid
+      - name
