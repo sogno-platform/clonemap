@@ -4,37 +4,78 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>cloneMAP UI</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Nunito:wght@400;700&display=swap" rel="stylesheet"> 
     <link rel="stylesheet" href="css/main.css">
     <script src="js/jquery.js"></script>
+    <script src="js/bootstrap.bundle.min.js"></script>
     <script type="module" src="js/main.js"></script>
 </head>
 <body>
-    <div class="maincontainer">
-        <div class="sidebar">
-            <a href="#" id="sideoverview"><img src="img/logo_tp.png" alt="cloneMAP"></a>
-            <hr>
-            <ul id="maslist">
-                <!-- <li><a href="#" class="masbutton" id="sidemas0">MAS0</a></li>
-                <li><a href="#" class="masbutton" id="sidemas1">MAS1</a></li> -->
+    <header>
+        <nav class="navbar navbar-expand-lg fixed-top navbar-light my-bg-primary ">
+            <a class="navbar-brand" href="#">
+                <img src="img/logo_tp.png" id="navoverview"s width="80" height="60" class="d-inline-block align-top" alt="cloneMAP" loading="lazy">
+            </a>
+            <ul class="navbar-nav nav-pills d-flex justify-content-between" style="width:100%;">
+              <li class="nav-item"  style="width:150px;">
+                <a class="nav-link" id="overview" href="#" style="width:150px;">Overview</a>
+              </li>
+              <li class="nav-item flex-fill modules">
+                <a class="nav-link" id="ams" href="#">AMS</a>
+              </li>
+              <li class="nav-item flex-fill modules">
+                <a class="nav-link" id="logger" href="#">Logger</a>
+              </li>
+              <li class="nav-item  flex-fill modules">
+                <a class="nav-link" id="df" href="#" >DF</a>
+              </li>
             </ul>
-        </div>
-        <div class="contentcontainer">
-            <div class="contentheader">
-                <div class="contentmenu">
-                    <div id="headertitle">Overview</div>
-                    <a href="#" class="modules">AMS</a>
-                    <a href="#" class="modules">Logger</a>
-                    <a href="#" class="modules">DF</a>
+        </nav>
+    </header>
+
+
+    <div class="modal fade" id="agencyModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="modalLabel">New Agency</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="newMAS">Uploaded Contents</label>
+                    <textarea class="form-control" id="newMAS" rows="10"></textarea>
+                </div>
+                
+                <div class="input-group mb-3">
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" id="inputMAS">
+                        <label class="custom-file-label" for="inputMAS" aria-describedby="uploadMAS">Choose file</label>
+                    </div>
+                </div>
+                <div class="modal-footer"> 
+                  <button type="button" class="btn my-btn" id="uploadMAS">Upload</button>
                 </div>
             </div>
-            <h2 class="contenttitle">Titel</h2>
-            <div class="content" id="textblock">
-                
-            </div>
-            <div class="footer">
-                Footer
-            </div>
+          </div>
+        </div>
+      </div>
+
+    <div class="maincontainer">
+        <div class="sidebar">
+            <ul class="nav nav-pills" id="maslist">
+<!--                 <li class='nav-item'><a href=#\ class="nav-link"></a></li>< -->
+            </ul>
+        </div>
+
+        <div id="contentContainer" class="contentcontainer">
+           
         </div>
     </div>
+    
 </body>
 </html>
