@@ -69,10 +69,10 @@ function contentOverview(mass) {
 
     $("#contentContainer").css("background-color", "rgb(240,240,240)");
     let startHtml = "<div class='contenttitle'><h2 class='lefttitle'>Overview</h2> \
-    <button type='button' class='btn my-btn '\
-    data-toggle='modal' data-target='#agencyModal'>\
-    + New Agency</button></div> \
-    <div class='container' id='tables'></div> ";
+        <button type='button' class='btn my-btn '\
+        data-toggle='modal' data-target='#agencyModal'>\
+        + New Agency</button></div> \
+        <div id='tables'></div> ";
     insertHtml("#contentContainer", startHtml);
     let finalhtml = "<div class='row'>";
     fetch("../snippets/MAS-card.html").then(response => {
@@ -172,19 +172,18 @@ function showAMSContent(masInfo) {
 
 // clear content field
 function clearContent() {
-    $(".contentcontainer").empty();
-    
+    $(".contentcontainer").empty(); 
 }
 
 // Convenience function for inserting innerHTML for the selector
 let insertHtml = function (selector, html) {
     let targetElem = document.querySelector(selector);
     targetElem.innerHTML = html;
-  };
+};
 
 let insertProperty = function (string, propName, propValue) {
     let propToReplace = "{{" + propName + "}}";
     string = string.replace(new RegExp(propToReplace, "g"), propValue);
     return string;
-  }
+}
 
