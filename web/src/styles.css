@@ -1,0 +1,77 @@
+/* You can add global styles to this file, and also import other style files */
+html,body {
+   font-family: 'Lato', sans-serif;
+/*     height: 100%;
+   width:100%; */
+   padding: 0;
+   margin: 0;
+}
+
+:root { 
+   --primary-color: rgb(102,102,255);
+   --light-primary-color: #9696f3;
+   --background-primary-color: #dadaf8;
+}
+
+
+
+/* style of sidebar 
+
+.sidebar {
+   display: flex;
+   flex-direction: column;
+   margin-top: 30px;
+   width: 110px;
+   background:white;
+}
+
+.sidebar .nav .nav-item {
+   width: 110px;
+   text-align: center;
+}
+
+.sidebar .nav .nav-item a {
+   color: var(--primary-color);
+}
+
+.sidebar .nav .nav-item :hover {
+   background: rgb(240, 240, 240);
+}
+
+.sidebar .nav .nav-item .nav-link.active{
+   background: var(--background-primary-color)!important;
+   color:var(--primary-color);
+   font-weight: bold;
+}
+ */
+
+
+#agents {
+   margin-bottom: 100px;
+}
+
+
+
+
+.my-row {
+   padding-bottom: 30px;
+}
+
+.my-btn {
+   background-color: var(--light-primary-color);
+   color: white;
+}
+
+.title {
+   padding-top: 100px;
+   padding-left: 100px;
+}
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,48 @@
+header {
+   height:60px;
+   position:absolute;
+   top:0;
+   left: 0;
+   width: 100%;
+}
+
+.navbar {
+   font-size: 20px;
+   color: white !important ;
+   font-family: 'Lato', sans-serif;
+   height: 60px;
+   background-color:white;
+}
+
+.navbar-nav .nav-item {
+   border-radius: 5px;
+}
+
+.navbar-nav .nav-item .nav-link {
+   font-size: 20px;
+   color: var(--primary-color);
+   font-family: 'Lato', sans-serif;
+}
+
+
+
+
+header >nav > ul> li:hover{
+   background: rgb(240, 240, 240);
+   color: var(--primary-color);
+}
+
+header >nav > ul> li > a {
+   text-align: center;
+}
+
+
+
+.nav-pills .nav-link.active{
+   color: white !important;
+   background-color:var(--primary-color);
+}
+
+.hidden {
+   visibility: hidden;
+}

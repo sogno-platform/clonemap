@@ -1,0 +1,96 @@
+<div class="maincontainer">
+    <div class="sidebar">
+        <div class="nav">
+            <div class="nav-item" *ngFor="let MAS of MASs" routerLinkActive="is-active" [ngClass]="MAS.id === selectedMASId ? 'active' : ''">
+                <a class="list-text"  [routerLink]="['/ams', MAS.id]" >
+                  <p > MAS {{ MAS.id }}</p>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="contentcontainer">
+        <h2 class="title">Config</h2>
+        <div class="config">
+            <table class="table">
+                <tbody>
+                    <tr>
+                        <th>Id</th>
+                        <td>{{selectedMAS.id}}</td>
+                    </tr>
+                    <tr>
+                        <th>Name</th>
+                        <td>{{ selectedMAS.config.name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Agents per agency</th>
+                        <td>{{ selectedMAS.config.agentsperagency}}</td>
+                    </tr>
+                    <tr>    
+                        <th>DF</th>
+                        <td>{{selectedMAS.config.df.active}}</td>
+                    </tr>
+                    <tr>
+                        <th>Logging</th>
+                        <td>{{selectedMAS.config.logger.active}}</td>
+                    </tr>
+                    <tr>
+                        <th>MQTT</th>
+                        <td>{{ selectedMAS.config.mqtt.active}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+
+        <h2 class="title">Containers</h2>
+        <div class="containers row">
+            <div class="col-md-4" *ngFor="let image of selectedMAS.imagegroups.instances">
+                <div class="card">
+                    <h5 class="card-header">{{image.id}}</h5>
+                    <div class="card-body">
+                        <table>
+                            <tr>
+                                <th>Image</th>
+                                <td>{{image.config.image}}</td>
+                            </tr>
+                            <tr>
+                                <th>Agencies</th>
+                                <td>{{image.agencies.counter}}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <h2 class="title">Agents</h2>
+        <div class="containers row">
+            <div class="col-md-4" *ngFor="let agent of selectedMAS.agents.instances">
+                <div class="card">
+                    <h5 class="card-header">{{agent.id}}</h5>
+                    <div class="card-body">
+                        <table>
+                            <tr>
+                                <th>Name</th>
+                                <td>{{agent.spec.name}}</td>
+                            </tr>
+                            <tr>
+                                <th>Agencies</th>
+                                <td>{{agent.spec.type}}</td>
+                            </tr>
+                            <tr>
+                                <th>Agencies</th>
+                                <td>{{agent.address.agency}}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>          
+        </div>
+
+    </div>
+</div>
+
+
+

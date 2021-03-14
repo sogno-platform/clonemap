@@ -1,63 +1,63 @@
 version: "3.7"
 
-services:
-  mqtt:
-    image: eclipse-mosquitto:1.6.13
-    ports:
-     - 30883:1883
-    depends_on: 
-      - kubestub
-      - ams
-    networks: 
-      - clonemap-net
+# services:
+#   mqtt:
+#     image: eclipse-mosquitto:1.6.13
+#     ports:
+#      - 30883:1883
+#     depends_on: 
+#       - kubestub
+#       - ams
+#     networks: 
+#       - clonemap-net
 
-  logger:
-    image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/logger
-    environment:
-      CLONEMAP_DEPLOYMENT_TYPE: ${CLONEMAP_DEPLOYMENT_TYPE}
-      CLONEMAP_LOG_LEVEL: ${CLONEMAP_LOG_LEVEL}
-    ports:
-      - 30011:11000
-    depends_on:
-      - kubestub
-      - ams
-    networks:
-      - clonemap-net
+#   logger:
+#     image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/logger
+#     environment:
+#       CLONEMAP_DEPLOYMENT_TYPE: ${CLONEMAP_DEPLOYMENT_TYPE}
+#       CLONEMAP_LOG_LEVEL: ${CLONEMAP_LOG_LEVEL}
+#     ports:
+#       - 30011:11000
+#     depends_on:
+#       - kubestub
+#       - ams
+#     networks:
+#       - clonemap-net
 
-  df:
-    image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/df
-    environment:
-      CLONEMAP_DEPLOYMENT_TYPE: ${CLONEMAP_DEPLOYMENT_TYPE}
-      CLONEMAP_LOG_LEVEL: ${CLONEMAP_LOG_LEVEL}
-    ports:
-      - 30012:12000
-    depends_on:
-      - kubestub
-      - ams
-    networks:
-      - clonemap-net
+#   df:
+#     image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/df
+#     environment:
+#       CLONEMAP_DEPLOYMENT_TYPE: ${CLONEMAP_DEPLOYMENT_TYPE}
+#       CLONEMAP_LOG_LEVEL: ${CLONEMAP_LOG_LEVEL}
+#     ports:
+#       - 30012:12000
+#     depends_on:
+#       - kubestub
+#       - ams
+#     networks:
+#       - clonemap-net
 
-  pnp:
-    image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/plugnplay
-    environment:
-      CLONEMAP_DEPLOYMENT_TYPE: ${CLONEMAP_DEPLOYMENT_TYPE}
-      CLONEMAP_LOG_LEVEL: ${CLONEMAP_LOG_LEVEL}
-    depends_on:
-      - kubestub
-      - ams
-      - mqtt
-    networks:
-      - clonemap-net
+#   pnp:
+#     image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/plugnplay
+#     environment:
+#       CLONEMAP_DEPLOYMENT_TYPE: ${CLONEMAP_DEPLOYMENT_TYPE}
+#       CLONEMAP_LOG_LEVEL: ${CLONEMAP_LOG_LEVEL}
+#     depends_on:
+#       - kubestub
+#       - ams
+#       - mqtt
+#     networks:
+#       - clonemap-net
 
-  fe:
-    image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/frontend
-    environment:
-      CLONEMAP_DEPLOYMENT_TYPE: ${CLONEMAP_DEPLOYMENT_TYPE}
-      CLONEMAP_LOG_LEVEL: ${CLONEMAP_LOG_LEVEL}
-    ports:
-      - 30013:13000
-    depends_on:
-      - kubestub
-      - ams
-    networks:
-      - clonemap-net
+#   fe:
+#     image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/frontend
+#     environment:
+#       CLONEMAP_DEPLOYMENT_TYPE: ${CLONEMAP_DEPLOYMENT_TYPE}
+#       CLONEMAP_LOG_LEVEL: ${CLONEMAP_LOG_LEVEL}
+#     ports:
+#       - 30013:13000
+#     depends_on:
+#       - kubestub
+#       - ams
+#     networks:
+#       - clonemap-net

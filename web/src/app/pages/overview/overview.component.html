@@ -1,0 +1,58 @@
+<!-- Agency Elements -->
+<div class="maincontainer">
+    <div class="sidebar">
+        <div class="nav">
+            <div class="nav-item" *ngFor="let MAS of MASs" routerLinkActive="is-active">
+                <a class="list-text" [routerLink]="['/ams', MAS.id]" >
+                    <p >MAS {{ MAS.id }}</p>
+                </a>
+            </div>
+        </div>
+    </div>   
+    <div class="contentcontainer" *ngIf="MASs.length !== 0" >
+        <div class = title>
+            <h2 >Overview</h2>
+            <button type='button' class='btn my-btn 'data-toggle='modal' data-target='#agencyModal'>+ New Agency</button>
+        </div>
+        <div id="tables">
+            <div class="row">
+                <div class="col-md-4 my-row" *ngFor="let MAS of MASs">
+                    <div class="card">
+                        <h5 class="card-header">MAS {{MAS.id }}</h5>
+                        <div class="card-body">
+                            <div class="table table-striped">
+                                <tr>
+                                    <th>Name</th>
+                                    <td>{{ MAS.config.name }}</td> 
+                                </tr>
+                                <tr>
+                                    <th>Number of agents per agency </th>
+                                    <td>{{ MAS.config.agentsperagency }} </td>
+                                </tr>
+                                <tr> 
+                                    <th> Status of df</th>
+                                    <td>{{ MAS.config.df.active }} </td>
+                                </tr>
+                                <tr> 
+                                    <th> Status of logger </th>
+                                    <td>{{ MAS.config.logger.active }} </td>
+                                </tr>
+                                <tr> 
+                                    <th> Status of MQTT</th>
+                                    <td> {{ MAS.config.mqtt.active }} </td>
+                                </tr>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="empty-overview" *ngIf="MASs.length === 0">       
+   <h1>Currently no agencies, upload one......</h1>
+   <button type='button' class="btn my-btn" data-toggle='modal' data-target='#agencyModal'>+ New Agency</button>      
+</div>
+
+
