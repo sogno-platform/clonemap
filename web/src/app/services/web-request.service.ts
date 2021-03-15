@@ -9,8 +9,6 @@ export class WebRequestService {
     readonly options;
     readonly headerDict = {
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Access-Control-Allow-Headers': 'Content-Type',
     };
 
     constructor(private http: HttpClient) {
@@ -27,8 +25,8 @@ export class WebRequestService {
         return this.http.get(`${this.ROOT_URL}/${uri}`);
     }
 
-    post(uri: string, payload: Object) {
-        return this.http.post(`${this.ROOT_URL}/${uri}`, payload);
+    post(uri: string, payload: object) {
+        return this.http.post<any>(`${this.ROOT_URL}/${uri}`, payload, this.options);
     }
 
     patch(uri: string, payload: Object) {

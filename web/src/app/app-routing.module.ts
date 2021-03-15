@@ -12,7 +12,7 @@ const routes: Routes = [
   { path: 'ams', component: AMSComponent},
   { path: 'ams/:masId', component: AMSComponent},
   { path: 'df', component: DFComponent},
-  { path: 'logger', component: LoggerComponent},
+  { path: 'logger', component: LoggerComponent}
 ];
 
 @NgModule({

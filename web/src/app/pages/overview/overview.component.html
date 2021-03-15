@@ -9,16 +9,55 @@
             </div>
         </div>
     </div>   
+
+
+    <ng-template #content let-modal>
+        <div class="modal-header">
+            <h4 class="modal-title">Add Agency</h4>
+            <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="newMAS">Uploaded Contents</label>
+                <textarea class="form-control" id="newMAS" [(ngModel)]="display" rows="20">{{display}}</textarea>
+            </div>                   
+            <div class="input-group mb-3">
+                <div class="custom-file">
+                    <input type="file" 
+                            class="custom-file-input" 
+                            id="inputMAS"
+                            (change)="handleFileInput($event.target.files)">
+                    <label class="custom-file-label" for="inputMAS" >{{filename}}</label>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn my-btn" (click)="onCreateMAS()">Upload</button>
+        </div>
+    </ng-template>
+
+
+
     <div class="contentcontainer" *ngIf="MASs.length !== 0" >
         <div class = title>
-            <h2 >Overview</h2>
-            <button type='button' class='btn my-btn 'data-toggle='modal' data-target='#agencyModal'>+ New Agency</button>
+            <h2 >Overview</h2>     
+            <button type='button' class='btn my-btn' (click)="openLg(content)">+ New Agency</button>
         </div>
         <div id="tables">
             <div class="row">
                 <div class="col-md-4 my-row" *ngFor="let MAS of MASs">
                     <div class="card">
-                        <h5 class="card-header">MAS {{MAS.id }}</h5>
+                        <div class="card-header">
+                            <h5>MAS {{MAS.id}}</h5>
+                            <button class="btn btn-delete" (click)="onDeleteMAS(MAS.id)">
+                                <div class="icon">
+                                  <i class="fas fa-trash"></i>
+                                </div>
+                            </button>
+                        </div>
+
                         <div class="card-body">
                             <div class="table table-striped">
                                 <tr>
@@ -52,7 +91,7 @@
 
 <div class="empty-overview" *ngIf="MASs.length === 0">       
    <h1>Currently no agencies, upload one......</h1>
-   <button type='button' class="btn my-btn" data-toggle='modal' data-target='#agencyModal'>+ New Agency</button>      
+   <button type='button' class="btn my-btn" (click)="openLg(content)">+ New Agency</button>      
 </div>
 
 

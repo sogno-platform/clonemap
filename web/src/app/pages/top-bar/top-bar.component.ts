@@ -13,7 +13,10 @@ export class TopBarComponent implements OnInit {
     constructor(private router: Router) { 
         this.router.events.subscribe((event: Event) => {
         if (event instanceof NavigationEnd) {
-            this.active = this.router.url.split("/")[1]
+            const nav: string = this.router.url.split("/")[1];
+            if (nav in ["overview", "ams", "logger", "df"]) {
+                this.active = nav;
+            }
         }
         });
     }

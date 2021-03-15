@@ -18,7 +18,7 @@ import { TopBarComponent } from './pages/top-bar/top-bar.component';
     AMSComponent,
     LoggerComponent,
     DFComponent,
-    TopBarComponent
+    TopBarComponent,
   ],
   imports: [
     BrowserModule,

@@ -108,5 +108,14 @@
 
 .card-header {
    color: var(--primary-color); 
+   display: flex;
 }
+
+.btn-delete {
+   margin-left:250px;
+   background-color: var(--light-primary-color);
+   color:white;
+}
+
+
 
