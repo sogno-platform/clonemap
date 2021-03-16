@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { LoggerService} from 'src/app/services/logger.service'
 
 @Component({
   selector: 'app-logger',
@@ -7,9 +8,16 @@ import { Component, OnInit } from '@angular/core';
 })
 export class LoggerComponent implements OnInit {
 
-  constructor() { }
+  status: string = "I am not alive";
+
+  constructor(private loggerService: LoggerService) { }
 
   ngOnInit(): void {
+    this.loggerService.getAlive().subscribe( res => {
+      this.status =  res.toString();
+  }, error => {
+      console.log(error);
+  });
   }
 
 }

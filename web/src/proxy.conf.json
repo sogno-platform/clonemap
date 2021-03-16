@@ -1,10 +1,33 @@
 {
- 
-   "/api/*": {
-    
-   "target": "http://localhost:30009",
-    
-   "secure": false
+   "/api/clonemap": {
+      "target": "http://localhost:30009",
+      "secure": false
+   },
+
+   "/api/logging": {
+      "target": "http://localhost:30011",
+      "secure": false
+   },
+
+   "/alive/logger": {     
+      "target": "http://localhost:30011",
+      "secure": false,
+      "pathRewrite": {
+         "^/alive/logger":"/api/alive"
+      }
+   },
+
+   "/api/df": {
+      "target": "http://localhost:30012",
+      "secure": false
+   },
+
+   "/alive/df": {
+      "target": "http://localhost:30012",
+      "secure": false,
+      "pathRewrite": {
+         "^/alive/df": "/api/alive"
+      }
    }
-    
+   
 }

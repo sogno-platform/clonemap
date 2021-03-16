@@ -46,3 +46,10 @@
    flex-grow: 1;
 }
 
+h1 {
+   padding-top: 30px;
+   color: var(--light-primary-color);
+   text-align: center;
+}
+
+

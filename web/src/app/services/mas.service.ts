@@ -9,11 +9,11 @@ export class MasService {
   constructor(private webReqService: WebRequestService) { }
 
     getAlive() {
-        return this.webReqService.get('api/alive')
+        return this.webReqService.get('api/alive');
     }
 
     getCloneMAP() {
-        return this.webReqService.get('api/clonemap')
+        return this.webReqService.get('api/clonemap');
     }
 
     getMAS() {

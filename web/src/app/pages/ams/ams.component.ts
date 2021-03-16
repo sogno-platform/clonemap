@@ -12,7 +12,7 @@ import { MASItem} from 'src/app/models/MAS-item.model'
 export class AMSComponent implements OnInit {
 
     MASs: MAS[];  
-    selectedMasId: number;
+    selectedMasId: number = -1;
     selectedMAS: MASItem;
 
     constructor(
@@ -22,6 +22,7 @@ export class AMSComponent implements OnInit {
 
     ngOnInit() {
         // get the information for the sidebar
+        this.selectedMasId = -1;
         this.masService.getMAS().subscribe((MASs: MAS[]) => {
             if (MASs === null) {
                     this.MASs = [];
@@ -39,6 +40,8 @@ export class AMSComponent implements OnInit {
                     this.masService.getMASById(params.masId).subscribe((selectedMAS: MASItem) => {
                         this.selectedMAS = selectedMAS;
                     });
+                } else {
+                    console.log("No masId");
                 }
             });
  

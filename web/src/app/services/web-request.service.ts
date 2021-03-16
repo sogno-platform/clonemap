@@ -6,17 +6,17 @@ import { HttpClient, HttpHeaders } from '@angular/common/http'
 })
 export class WebRequestService {
     readonly ROOT_URL;
-    readonly options;
     readonly headerDict = {
         'Content-Type': 'application/json',
+/*         'responseType': 'text/plain' */
     };
+
+
+
 
     constructor(private http: HttpClient) {
         this.ROOT_URL = 'http://localhost:4200';
           //this.contents = '';
-        this.options = {                                                                                                                                                                                 
-            headers: new HttpHeaders(this.headerDict), 
-        };
     }
 
 
@@ -25,8 +25,13 @@ export class WebRequestService {
         return this.http.get(`${this.ROOT_URL}/${uri}`);
     }
 
+    getText(uri: string) {
+        return this.http.get(`${this.ROOT_URL}/${uri}`, {responseType: 'text'})
+    }
+
+
     post(uri: string, payload: object) {
-        return this.http.post<any>(`${this.ROOT_URL}/${uri}`, payload, this.options);
+        return this.http.post<any>(`${this.ROOT_URL}/${uri}`, payload);
     }
 
     patch(uri: string, payload: Object) {

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { DfService} from "src/app/services/df.service"
 
 @Component({
   selector: 'app-df',
@@ -7,9 +8,28 @@ import { Component, OnInit } from '@angular/core';
 })
 export class DFComponent implements OnInit {
 
-  constructor() { }
+    status: string = "I am not alive";
 
-  ngOnInit(): void {
-  }
+    constructor(private dfService: DfService) { }
+
+    ngOnInit() {
+        this.dfService.getAlive().subscribe( res => {
+            this.status =  res.toString();
+        }, error => {
+            console.log(error);
+        });
+        
+        this.dfService.getAllSvcs(0).subscribe( res => {
+            console.log(res);
+        }, error => {
+            console.log(error);
+        })
+
+
+    }
+
+
+
+
 
 }
