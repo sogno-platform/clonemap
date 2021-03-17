@@ -57,11 +57,18 @@ COPY web web
 ENV PATH="/clonemap:${PATH}"
 RUN cd cmd/frontend; CGO_ENABLED=0 GOOS=linux go build -ldflags '-s' -o frontend; cp frontend /clonemap/
 
+FROM node:14.15.1 AS ANGULAR_BUILD
+RUN npm install -g @angular/cli@11.0.7
+COPY --from=fe_builder /clonemap/web /web
+WORKDIR web
+RUN npm install && ng build --prod
+
+
 FROM alpine:latest
 
 WORKDIR /root/
 #RUN apk add --update netbase ca-certificates
+COPY --from=ANGULAR_BUILD /web/dist/clonemap-frontend/* ./clonemap/web/clonemap-frontend/
 COPY --from=fe_builder /clonemap/frontend . 
-COPY --from=fe_builder /clonemap/web ./web
 EXPOSE 30013
 CMD ["./frontend"]

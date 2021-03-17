@@ -308,7 +308,7 @@ func (stub *LocalStub) deletePnP() (err error) {
 func (stub *LocalStub) createFrontend() (err error) {
 	com := "docker run -d"
 	com += " --name=fe"
-	com += " -p 30013:13000"
+	com += " -p 30013:4200"
 	com += " --hostname=fe"
 	com += " --network=clonemap-net"
 	com += " -e CLONEMAP_DEPLOYMENT_TYPE=\"local\""

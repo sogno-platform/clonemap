@@ -49,15 +49,17 @@ services:
     networks:
       - clonemap-net
 
-  # fe:
-  #   image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/frontend
-  #   environment:
-  #     CLONEMAP_DEPLOYMENT_TYPE: ${CLONEMAP_DEPLOYMENT_TYPE}
-  #     CLONEMAP_LOG_LEVEL: ${CLONEMAP_LOG_LEVEL}
-  #   ports:
-  #     - 30013:13000
-  #   depends_on:
-  #     - kubestub
-  #     - ams
-  #   networks:
-  #     - clonemap-net
+  fe:
+    # image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/frontend
+    image: qianwen12/frontend
+    environment:
+      CLONEMAP_DEPLOYMENT_TYPE: ${CLONEMAP_DEPLOYMENT_TYPE}
+      CLONEMAP_LOG_LEVEL: ${CLONEMAP_LOG_LEVEL}
+    ports:
+      # - 30013:13000
+      - 30013:4200
+    depends_on:
+      - kubestub
+      - ams
+    networks:
+      - clonemap-net
