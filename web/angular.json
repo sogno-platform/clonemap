@@ -71,7 +71,7 @@
           },
           "configurations": {
             "production": {
-              "browserTarget": "clonemap-frontend:build:production",
+              "browserTarget": "clonemap-frontend:build:production"
             }
           }
         },

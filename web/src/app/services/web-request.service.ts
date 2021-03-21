@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http'
-
+import { HttpClient } from '@angular/common/http'
+import { environment } from 'src/environments/environment.prod'
 @Injectable({
   providedIn: 'root'
 })
 export class WebRequestService {
-    readonly ROOT_URL;
+    readonly ROOT_URL = environment.gateway;
     readonly headerDict = {
         'Content-Type': 'application/json',
 /*         'responseType': 'text/plain' */
@@ -15,8 +15,7 @@ export class WebRequestService {
 
 
     constructor(private http: HttpClient) {
-        this.ROOT_URL = 'http://localhost:4200';
-          //this.contents = '';
+
     }
 
 

@@ -13,9 +13,10 @@
             <h1>No agency selected, select one...</h1>
         </div>
         <div *ngIf="selectedMasId !== -1">
-            <h2 class="title">Config</h2>
+
             <div class="config">
-                <table class="table">
+                <h2 class="title">Config</h2>
+                <table class="table table-striped">
                     <tbody>
                         <tr>
                             <th>Id</th>
@@ -46,13 +47,14 @@
             </div>
 
 
-            <h2 class="title">Containers</h2>
-            <div class="containers row">
-                <div class="col-md-4" *ngFor="let image of selectedMAS.imagegroups.instances">
+            
+            <div class="containers">
+                <h2 class="title">Containers</h2>
+                <div *ngFor="let image of selectedMAS.imagegroups.instances">
                     <div class="card">
-                        <h5 class="card-header">{{image.id}}</h5>
+                        <h5 class="card-header">IMAGE{{image.id}}</h5>
                         <div class="card-body">
-                            <table>
+                            <table class="table table-striped">
                                 <tr>
                                     <th>Image</th>
                                     <td>{{image.config.image}}</td>
@@ -68,13 +70,13 @@
             </div>
 
 
-            <h2 class="title">Agents</h2>
-            <div class="containers row">
-                <div class="col-md-4" *ngFor="let agent of selectedMAS.agents.instances">
+            <div class="containers">
+                <h2 class="title">Agents</h2>
+                <div *ngFor="let agent of selectedMAS.agents.instances">
                     <div class="card">
-                        <h5 class="card-header">{{agent.id}}</h5>
+                        <h5 class="card-header">AGENT{{agent.id}}</h5>
                         <div class="card-body">
-                            <table>
+                            <table  class="table table-striped">
                                 <tr>
                                     <th>Name</th>
                                     <td>{{agent.spec.name}}</td>
@@ -92,6 +94,7 @@
                     </div>
                 </div>          
             </div>
+        
         </div>
     </div>
 </div>

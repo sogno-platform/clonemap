@@ -1,16 +1,20 @@
 <!-- Agency Elements -->
 <div class="maincontainer">
+    <!--sidebar-->
     <div class="sidebar">
         <div class="nav">
+            <div *ngIf="MASs != null">
             <div class="nav-item" *ngFor="let MAS of MASs" routerLinkActive="is-active">
                 <a class="list-text" [routerLink]="['/ams', MAS.id]" >
                     <p >MAS {{ MAS.id }}</p>
                 </a>
             </div>
+            </div>
         </div>
     </div>   
 
 
+    <!--modal for uploading the agency-->
     <ng-template #content let-modal>
         <div class="modal-header">
             <h4 class="modal-title">Add Agency</h4>
@@ -21,7 +25,7 @@
         <div class="modal-body">
             <div class="form-group">
                 <label for="newMAS">Uploaded Contents</label>
-                <textarea class="form-control" id="newMAS" [(ngModel)]="display" rows="20">{{display}}</textarea>
+                <textarea class="form-control" id="newMAS" (change)="onUpdateContent($event.target.value)" [(ngModel)]="display" rows="20">{{display}}</textarea>
             </div>                   
             <div class="input-group mb-3">
                 <div class="custom-file">
@@ -40,14 +44,20 @@
 
 
 
-    <div class="contentcontainer" *ngIf="MASs.length !== 0" >
+    <div class="contentcontainer" *ngIf="MASs != null && MASs.length !== 0" >
         <div class = title>
-            <h2 >Overview</h2>     
-            <button type='button' class='btn my-btn' (click)="openLg(content)">+ New Agency</button>
+            <h2 >Overview</h2>              
+            <button type='button' class='btn my-btn btn-create' (click)="openLg(content)">+ New Agency</button>
+            <input type="text" #searchMAS class="input" id="searchMAS" placeholder="Enter the MAS ID"/>
+            <button class="search-btn" type="submit" (click)="onSearchMAS(searchMAS.value)">
+                <i class="fas fa-search"></i>
+            </button>        
         </div>
+
+        <!--display the overview of agencies with tables-->
         <div id="tables">
             <div class="row">
-                <div class="col-md-4 my-row" *ngFor="let MAS of MASs">
+                <div class="col-md-4 my-row" *ngFor="let MAS of MASsDisplay">
                     <div class="card">
                         <div class="card-header">
                             <h5>MAS {{MAS.id}}</h5>
@@ -59,7 +69,8 @@
                         </div>
 
                         <div class="card-body">
-                            <div class="table table-striped">
+                            <table class="table table-striped">
+                                <tbody>
                                 <tr>
                                     <th>Name</th>
                                     <td>{{ MAS.config.name }}</td> 
@@ -80,7 +91,8 @@
                                     <th> Status of MQTT</th>
                                     <td> {{ MAS.config.mqtt.active }} </td>
                                 </tr>
-                            </div>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -89,9 +101,11 @@
     </div>
 </div>
 
-<div class="empty-overview" *ngIf="MASs.length === 0">       
-   <h1>Currently no agencies, upload one......</h1>
-   <button type='button' class="btn my-btn" (click)="openLg(content)">+ New Agency</button>      
+<div class="empty-overview" *ngIf="MASs == null || MASs.length === 0">       
+   <h1>{{status}}</h1>
+   <button *ngIf="MASs !== null" type='button' class="btn my-btn" (click)="openLg(content)">+ New Agency</button>      
 </div>
+
+
 
 

@@ -1,8 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { MasService} from 'src/app/services/mas.service'
 import { ActivatedRoute, Params} from '@angular/router';
-import { MAS } from 'src/app/models/MAS.model';
-import { MASItem} from 'src/app/models/MAS-item.model'
 
 @Component({
   selector: 'app-ams',
@@ -11,9 +9,9 @@ import { MASItem} from 'src/app/models/MAS-item.model'
 })
 export class AMSComponent implements OnInit {
 
-    MASs: MAS[];  
+    MASs
     selectedMasId: number = -1;
-    selectedMAS: MASItem;
+    selectedMAS
 
     constructor(
         private masService: MasService,
@@ -23,7 +21,7 @@ export class AMSComponent implements OnInit {
     ngOnInit() {
         // get the information for the sidebar
         this.selectedMasId = -1;
-        this.masService.getMAS().subscribe((MASs: MAS[]) => {
+        this.masService.getMAS().subscribe((MASs: any) => {
             if (MASs === null) {
                     this.MASs = [];
             } else {
@@ -37,7 +35,7 @@ export class AMSComponent implements OnInit {
             (params: Params) => {
                 if (params.masId) {
                     this.selectedMasId = params.masId;
-                    this.masService.getMASById(params.masId).subscribe((selectedMAS: MASItem) => {
+                    this.masService.getMASById(params.masId).subscribe((selectedMAS) => {
                         this.selectedMAS = selectedMAS;
                     });
                 } else {

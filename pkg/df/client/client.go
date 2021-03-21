@@ -92,6 +92,18 @@ func (cli *Client) PostSvc(masID int, svc schemas.Service) (retSvc schemas.Servi
 	return
 }
 
+// GetSvcs gets all services
+func (cli *Client) GetSvcs(masID int) (svcs []schemas.Service, httpStatus int, err error) {
+	var body []byte
+	body, httpStatus, err = httpretry.Get(cli.httpClient, cli.prefix()+"/api/df/"+
+		strconv.Itoa(masID)+"/svc", time.Second*2, 2)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(body, &svcs)
+	return
+}
+
 // GetSvc requests mas information
 func (cli *Client) GetSvc(masID int, desc string) (svc []schemas.Service, httpStatus int,
 	err error) {

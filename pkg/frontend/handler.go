@@ -51,6 +51,7 @@ import (
 
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/common/httpreply"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -110,6 +111,36 @@ func getAgentID(r *http.Request) (masID int, agentID int, err error) {
 	return
 }
 
+/****************************** Handler part for the df ********************/
+// getDesc return the masID and description from the path
+func getDesc(r *http.Request) (masID int, desc string, err error) {
+	vars := mux.Vars(r)
+	masID, err = strconv.Atoi(vars["masid"])
+	if err != nil {
+		return
+	}
+	desc = vars["desc"]
+	return
+}
+
+func getDist(r *http.Request) (masID int, desc string, nodeID int, dist float64, err error) {
+	vars := mux.Vars(r)
+	masID, err = strconv.Atoi(vars["masid"])
+	if err != nil {
+		return
+	}
+	desc = vars["desc"]
+	nodeID, err = strconv.Atoi(vars["nodeid"])
+	if err != nil {
+		return
+	}
+	dist, err = strconv.ParseFloat(vars["dist"], 64)
+	if err != nil {
+		return
+	}
+	return
+}
+
 // loggingMiddleware logs request before calling final handler
 func (fe *Frontend) loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -125,6 +156,8 @@ func (fe *Frontend) server(port int) (serv *http.Server) {
 	s.Path("/overview").Methods("GET").HandlerFunc(fe.handleGetMASs)
 	s.Path("/overview").Methods("POST").HandlerFunc(fe.handlePostMAS)
 	s.Path("/overview").Methods("PUT", "DELETE").HandlerFunc(fe.methodNotAllowed)
+
+	// api for mas
 	s.Path("/ams/mas").Methods("GET").HandlerFunc(fe.handleGetMASs)
 	s.Path("/ams/mas").Methods("POST").HandlerFunc(fe.handlePostMAS)
 	s.Path("/ams/mas").Methods("PUT", "DELETE").HandlerFunc(fe.methodNotAllowed)
@@ -140,22 +173,38 @@ func (fe *Frontend) server(port int) (serv *http.Server) {
 		HandlerFunc(fe.methodNotAllowed)
 	s.Path("/pf/modules").Methods("GET").HandlerFunc(fe.handleGetModules)
 	s.Path("/pf/modules").Methods("POST", "PUT", "POST").HandlerFunc(fe.methodNotAllowed)
+
+	// api for df
+	s.Path("/df/{masid}/svc").Methods("GET").HandlerFunc(fe.handleGetSvcs)
+	s.Path("/df/{masid}/svc").Methods("POST").HandlerFunc(fe.handlePostSvc)
+	s.Path("/df/{masid}/svc/desc/{desc}").Methods("GET").HandlerFunc(fe.handleGetSvc)
+	s.Path("/df/{masid}/svc/desc/{desc}/node/{nodeid}/dist/{dist}").Methods("Get").HandlerFunc(fe.handleSvcWithDist)
+
+	// api for logger
+	s.Path("/df/{masid}/svc/desc/{desc}").Methods("Get").HandlerFunc(fe.handleGetSvc)
+
 	s.PathPrefix("").HandlerFunc(fe.resourceNotFound)
 	s.Use(fe.loggingMiddleware)
 	r.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("./web"))))
-	// r.HandleFunc("/", http.FileServer(http.Dir("./web")).ServeHTTP)
+	//r.HandleFunc("/", http.FileServer(http.Dir("./web")).ServeHTTP)
 	// r.HandleFunc("/css/", http.FileServer(http.Dir("./web/css")).ServeHTTP)
-	// r.HandleFunc("/js/", http.FileServer(http.Dir("./web/js")).ServeHTTP)
+	// r.HandleFunc("/js/", http.FileServer了(http.Dir("./web/js")).ServeHTTP)
+
+	headersOk := handlers.AllowedHeaders([]string{"X-Request-With"})
+	originsOk := handlers.AllowedOrigins([]string{"*"})
+	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
+
 	serv = &http.Server{
 		Addr:    ":" + strconv.Itoa(port),
-		Handler: r,
+		Handler: handlers.CORS(originsOk, headersOk, methodsOk)(r),
 	}
+
 	return
 }
 
 // listen opens a http server listening and serving request
 func (fe *Frontend) listen(serv *http.Server) (err error) {
 	fe.logInfo.Println("Frontend listening on " + serv.Addr)
-	err = serv.ListenAndServe()
+	err = http.ListenAndServe(serv.Addr, serv.Handler)
 	return
 }

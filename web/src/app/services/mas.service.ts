@@ -12,66 +12,66 @@ export class MasService {
         return this.webReqService.get('api/alive');
     }
 
-    getCloneMAP() {
-        return this.webReqService.get('api/clonemap');
+    getams() {
+        return this.webReqService.get('api/ams');
     }
 
     getMAS() {
-        return this.webReqService.get('api/clonemap/mas');
+        return this.webReqService.get('api/ams/mas');
     }
 
-    createMAP(payload: object) {
-        return this.webReqService.post('api/clonemap/mas', payload);
+    createMAS(payload: object) {
+        return this.webReqService.post('api/ams/mas', payload);
     }
 
-    getMASById(masid: number) {
-        return this.webReqService.get(`api/clonemap/mas/${masid}`);
+    getMASById(masid: string) {
+        return this.webReqService.get(`api/ams/mas/${masid}`);
     }
 
-    deleteMASById(masid: number) {
-        return this.webReqService.delete(`api/clonemap/mas/${masid}`);
+    deleteMASById(masid: string) {
+        return this.webReqService.delete(`api/ams/mas/${masid}`);
     }
 
-    getAgents(masid: number) {
-        return this.webReqService.get(`api/clonemap/mas/${masid}/agents`);
+    getAgents(masid: string) {
+        return this.webReqService.get(`api/ams/mas/${masid}/agents`);
     }
 
-    addAgents(masid: number, payload: object) {
-        return this.webReqService.post(`api/clonemap/mas/${masid}/agents`, payload );
+    addAgents(masid: string, payload: object) {
+        return this.webReqService.post(`api/ams/mas/${masid}/agents`, payload );
     }
 
-    getAgentById(masid:number, agentid: number) {
-        return this.webReqService.get(`api/clonemap/mas/${masid}/agents/${agentid}`);
+    getAgentById(masid:string, agentid: string) {
+        return this.webReqService.get(`api/ams/mas/${masid}/agents/${agentid}`);
     }
 
-    deleteAgentById(masid:number, agentid: number) {
-        return this.webReqService.delete(`api/clonemap/mas/${masid}/agents/${agentid}`);
+    deleteAgentById(masid:string, agentid: string) {
+        return this.webReqService.delete(`api/ams/mas/${masid}/agents/${agentid}`);
     }
 
-    getAgentAdress(masid:number, agentid: number) {
-        return this.webReqService.get(`api/clonemap/mas/${masid}/agents/${agentid}/address`);
+    getAgentAdress(masid:string, agentid: string) {
+        return this.webReqService.get(`api/ams/mas/${masid}/agents/${agentid}/address`);
     }
 
-    updateAgentAddress(masid: Number, agentid:number, payload: object) {
-        return this.webReqService.post(`api/clonemap/mas/${masid}/agents/${agentid}/address`, payload);
+    updateAgentAddress(masid: string, agentid:string, payload: object) {
+        return this.webReqService.post(`api/ams/mas/${masid}/agents/${agentid}/address`, payload);
     }
 
-    customUpdateAgentAddress(masid: Number, agentid: number, payload: object) {
-        return this.webReqService.post(`api/clonemap/mas/${masid}/agents/${agentid}/address`, payload);
+    customUpdateAgentAddress(masid: string, agentid: string, payload: object) {
+        return this.webReqService.post(`api/ams/mas/${masid}/agents/${agentid}/address`, payload);
         
     }
 
-    getAgentbyName(masid:number, name: string) {
-        return this.webReqService.get(`api/clonemap/mas/${masid}/agents/name/${name}`);
+    getAgentbyName(masid:string, name: string) {
+        return this.webReqService.get(`api/ams/mas/${masid}/agents/name/${name}`);
 
     }
 
-    getAllAgencies(masid: number) {
-        return this.webReqService.get(`api/clonemap/mas/${masid}/agencies`);
+    getAllAgencies(masid: string) {
+        return this.webReqService.get(`api/ams/mas/${masid}/agencies`);
     }
 
-    getAgencyInformation(masid: number, imid: number, agencyid: number) {
-        return this.webReqService.get(`api/clonemap/mas/${masid}/imgroup/${imid}/agencies/${agencyid}`);
+    getAgencyInformation(masid: string, imid: string, agencyid: string) {
+        return this.webReqService.get(`api/ams/mas/${masid}/imgroup/${imid}/agencies/${agencyid}`);
     }
 
 

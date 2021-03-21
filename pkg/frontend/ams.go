@@ -124,7 +124,26 @@ func (fe *Frontend) handleGetMASID(w http.ResponseWriter, r *http.Request) {
 
 // handleDeleteMASID is the handler for delete requests to path /api/ams/mas/{masid}
 func (fe *Frontend) handleDeleteMASID(w http.ResponseWriter, r *http.Request) {
+	var cmapErr, httpErr error
+	vars := mux.Vars(r)
+	masID, cmapErr := strconv.Atoi(vars["masid"])
+	if cmapErr != nil {
+		httpErr = httpreply.NotFoundError(w)
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
+	// return long information about specified MAS
+	var httpStatus int
+	httpStatus, cmapErr = fe.amsClient.DeleteMAS(masID)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
+	httpErr = httpreply.Resource(w, httpStatus, cmapErr)
+	fe.logErrors(r.URL.Path, cmapErr, httpErr)
 	return
+
 }
 
 // handlePostAgent is the handler for post requests to path /api/clonemap/mas/{masid}/agents
@@ -158,7 +177,7 @@ func (fe *Frontend) handlePostAgent(w http.ResponseWriter, r *http.Request) {
 		fe.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
-	httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Ressource Created"))
+	httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Resource Created"))
 	fe.logErrors(r.URL.Path, cmapErr, httpErr)
 	return
 }

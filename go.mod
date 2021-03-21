@@ -14,6 +14,7 @@ require (
 	github.com/google/gofuzz v0.0.0-20170612174753-24818f796faf // indirect
 	github.com/google/uuid v1.1.0 // indirect
 	github.com/googleapis/gnostic v0.2.0 // indirect
+	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/gregjones/httpcache v0.0.0-20181110185634-c63ab54fda8f // indirect
 	github.com/json-iterator/go v1.1.5 // indirect
@@ -21,6 +22,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
+	github.com/rs/cors v1.7.0
 	github.com/rs/xid v1.2.1
 	go.etcd.io/etcd v0.0.0-20181124034816-6c649de36e0b
 	golang.org/x/crypto v0.0.0-20181112202954-3d3f9f413869 // indirect

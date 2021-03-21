@@ -43,3 +43,35 @@ THE SOFTWARE.
 */
 
 package frontend
+
+import (
+	"net/http"
+	"strconv"
+
+	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/common/httpreply"
+	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
+	"github.com/gorilla/mux"
+)
+
+// handleGetLogs is the handler for get requests to path /api/ams/mas
+func (fe *Frontend) handleGetLogs(w http.ResponseWriter, r *http.Request) {
+	var cmapErr, httpErr error
+	// return short info of all MAS
+	var msgs []schemas.LogMessage
+	vars := mux.Vars(r)
+	masid, cmapErr := strconv.Atoi(vars["masid"])
+	agentid, cmapErr := strconv.Atoi(vars["agentid"])
+	topic := vars["topic"]
+	num, cmapErr := strconv.Atoi(vars["masid"])
+
+	msgs, _, cmapErr = fe.logClient.GetLatestLogs(masid, agentid, topic, num)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	httpErr = httpreply.Resource(w, msgs, cmapErr)
+	fe.logErrors(r.URL.Path, cmapErr, httpErr)
+	return
+}

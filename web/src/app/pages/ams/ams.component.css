@@ -19,33 +19,20 @@
    background:white;
 }
 
-
-
 .sidebar .nav .nav-item{
    padding-top:10px;
    border-radius: 10px;
    width: 110px;
    text-align: center;
- 
 }
-
-/* .sidebar .nav .nav-item .list-text {
-   height: 100%;
-   width: 110px;
-   
-
-}  */ 
 
 .sidebar .nav .nav-item a {
    color: var(--primary-color);
    text-decoration: none;
 }
 
-
-
 .sidebar .nav .nav-item:hover {
    background: rgb(240, 240, 240);
-
 }
 
 .sidebar > .nav > .nav-item.is-active{
@@ -64,20 +51,48 @@
    flex-grow: 1;
 }
 
-.config, .containers {
+.config {
    border: 2px solid var(--background-primary-color);
    border-radius: 10px;
-   padding: 50px;
    width: 1200px;
    margin-top:50px;
-   margin-left: 100px;;
-   
+   margin-left: 100px;; 
 }
+
+.containers {
+/*    border: 2px solid var(--background-primary-color); */
+   border-radius: 10px;
+   width: 1200px;
+   margin-top:50px;
+   margin-left: 100px;; 
+}
+
+
+
+/* .table-striped > tbody > tr:nth-child(2n+1) > td, .table-striped > tbody > tr:nth-child(2n+1) > th {
+   background-color: var(--background-primary-color);
+}
+*/
 
 h1 {
    padding-top: 30px;
    color: var(--light-primary-color);
    text-align: center;
 }
+
+.title {
+   padding-bottom: 30px;
+   padding-top: 20px;
+   padding-left: 20px;
+   color: var(--light-primary-color)
+}
+
+.card-body {
+   padding: 0px;
+}
+
+
+
+
 
 

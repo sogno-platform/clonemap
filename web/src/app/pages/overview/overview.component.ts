@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { MAS } from 'src/app/models/MAS.model'
 import { MasService } from 'src/app/services/mas.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { Router } from '@angular/router'
 
 @Component({
   selector: 'app-overview',
@@ -11,24 +11,37 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 export class OverviewComponent implements OnInit {
   
-    MASs: MAS[];
+    MASs = null;
+    MASsDisplay = null;
     fileToUpload: File = null;
     display: string = "";
     filename: string = "Choose a file...";
+    status: string ="Connecting......"
 
     constructor(
         private masService: MasService,
-        private modalService: NgbModal
+        private modalService: NgbModal,
+        private router: Router
+
     ) {} 
     
     ngOnInit() {
-        this.masService.getMAS().subscribe((MASs: MAS[]) => {
+        this.masService.getMAS().subscribe((MASs: any) => {
             if (MASs === null) {
+                this.status = "Currently no agencies, upload one......";
+                console.log(status);
                 this.MASs = [];
             } else {
-                this.MASs = MASs;
-                }   
-        });
+                this.MASs = MASs
+                this.MASsDisplay = MASs;
+            } 
+
+            }, 
+            err => {
+                this.status = "The CloneMAP platform can not be connected"
+                console.log(err)  
+            }
+        );
     }
 
     openLg(content) {
@@ -47,11 +60,15 @@ export class OverviewComponent implements OnInit {
         }
         fr.readAsText(this.fileToUpload);
     }
+
+    onUpdateContent(content:string) {
+        this.display=content;
+    }
     
 
     onCreateMAS() {
         const result = JSON.parse(this.display);
-        this.masService.createMAP(result).subscribe(
+        this.masService.createMAS(result).subscribe(
             (response) => {
             console.log(response);
             this.modalService.dismissAll("uploaded");
@@ -62,12 +79,12 @@ export class OverviewComponent implements OnInit {
         );
     }
 
-
-    onDeleteMAS(id: number) {
+    onDeleteMAS(id: string) {
         console.log(id);
         this.masService.deleteMASById(id).subscribe(
             (res: any) => {
                 console.log(res);
+                this.router.navigate['/overview']
             },
             (err) => {
                 console.log(err);
@@ -75,7 +92,26 @@ export class OverviewComponent implements OnInit {
         );
     }
 
- 
+    onSearchMAS(id: string) {
+        console.log(id);
+        if (id == "") {
+            this.MASsDisplay = this.MASs;
+            return;
+        }
+        this.masService.getMASById(id).subscribe(
+            (res: any) => {
+                console.log(res);
+                this.MASsDisplay = [res];
+                this.router.navigate['/overview']
+            },
+            (err) => {
+                //this.MASs = []
+                console.log(err);
+                this.MASsDisplay=[]
+            }
+        );
+    }
+
 
 
 }

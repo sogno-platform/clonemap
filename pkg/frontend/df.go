@@ -43,3 +43,119 @@ THE SOFTWARE.
 */
 
 package frontend
+
+import (
+	"encoding/json"
+	"io/ioutil"
+	"net/http"
+	"strconv"
+
+	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/common/httpreply"
+	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
+	"github.com/gorilla/mux"
+)
+
+// handleGetSvcs gets all the services of a specific MASid
+func (fe *Frontend) handleGetSvcs(w http.ResponseWriter, r *http.Request) {
+	var cmapErr, httpErr error
+	var svcs []schemas.Service
+	vars := mux.Vars(r)
+	masID, cmapErr := strconv.Atoi(vars["masid"])
+	if cmapErr != nil {
+		httpErr = httpreply.NotFoundError(w)
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
+	}
+	svcs, _, cmapErr = fe.dfClient.GetSvcs(masID)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
+	httpErr = httpreply.Resource(w, svcs, cmapErr)
+	fe.logErrors(r.URL.Path, cmapErr, httpErr)
+	return
+
+}
+
+// handleGetSvc searches for services in MAS with description
+func (fe *Frontend) handleGetSvc(w http.ResponseWriter, r *http.Request) {
+	var cmapErr, httpErr error
+	var svc []schemas.Service
+	masID, desc, cmapErr := getDesc(r)
+	if cmapErr != nil {
+		httpErr = httpreply.NotFoundError(w)
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
+	svc, _, cmapErr = fe.dfClient.GetSvc(masID, desc)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
+	httpErr = httpreply.Resource(w, svc, cmapErr)
+	fe.logErrors(r.URL.Path, cmapErr, httpErr)
+	return
+}
+
+//handlePostSvc create a new service
+func (fe *Frontend) handlePostSvc(w http.ResponseWriter, r *http.Request) {
+	var cmapErr, httpErr error
+	vars := mux.Vars(r)
+	masID, cmapErr := strconv.Atoi(vars["masid"])
+	if cmapErr != nil {
+		httpErr = httpreply.NotFoundError(w)
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
+
+	var body []byte
+	body, cmapErr = ioutil.ReadAll(r.Body)
+	if cmapErr != nil {
+		httpErr = httpreply.InvalidBodyError(w)
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
+
+	var svc schemas.Service
+	cmapErr = json.Unmarshal(body, &svc)
+	if cmapErr != nil {
+		httpErr = httpreply.JSONUnmarshalError(w)
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
+
+	_, _, cmapErr = fe.dfClient.PostSvc(masID, svc)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
+	httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Resource Created"))
+	fe.logErrors(r.URL.Path, cmapErr, httpErr)
+	return
+}
+
+// search for services in MAS with description and distance
+func (fe *Frontend) handleSvcWithDist(w http.ResponseWriter, r *http.Request) {
+	var cmapErr, httpErr error
+	var svc []schemas.Service
+	masID, desc, nodeID, dist, cmapErr := getDist(r)
+
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
+
+	svc, _, cmapErr = fe.dfClient.GetLocalSvc(masID, desc, nodeID, dist)
+
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
+	httpErr = httpreply.Resource(w, svc, cmapErr)
+	fe.logErrors(r.URL.Path, cmapErr, httpErr)
+	return
+}

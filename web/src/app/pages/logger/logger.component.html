@@ -1,15 +1,20 @@
 <div class="maincontainer">
-<!--    <div class="sidebar">
-       <div class="nav">
-           <div class="nav-item" *ngFor="let MAS of MASs" routerLinkActive="is-active">
-               <a class="list-text" [routerLink]="['/ams', MAS.id]" >
-                 <p >{{ MAS.id }}</p>
-               </a>
-           </div>
-       </div>
-   </div> -->
+    <!--sidebar-->
+    <div class="sidebar">
+        <div class="nav">
+            <div class="nav-item" *ngFor="let MAS of MASs" routerLinkActive="is-active" [ngClass]="MAS.id === selectedMASId ? 'active' : ''">
+                <a class="list-text"  [routerLink]="['/logger', MAS.id]" >
+                  <p > MAS {{ MAS.id }}</p>
+                </a>
+            </div>
+        </div>
+    </div> 
+
    <div class="contentcontainer">
-       <h1>{{status}}</h1>
+        <div class="notalive" *ngIf="!alive" >
+            <h1>Logger is not alive......</h1>
+        </div>
    </div>
+
 </div>
 
