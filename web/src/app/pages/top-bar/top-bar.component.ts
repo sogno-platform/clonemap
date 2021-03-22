@@ -8,13 +8,15 @@ import { Router, Event, NavigationEnd } from '@angular/router';
   styleUrls: ['./top-bar.component.css']
 })
 export class TopBarComponent implements OnInit {
-    active = 'overview';
+    active: string = 'overview';
+    id: number;
 
     constructor(private router: Router) { 
         this.router.events.subscribe((event: Event) => {
         if (event instanceof NavigationEnd) {
             const nav: string = this.router.url.split("/")[1];
             const navbar: string[] = ["overview", "ams", "logger", "df"];
+            this.id = Number(this.router.url.split("/")[2]);
              if (navbar.includes(nav) ) {
                 this.active = nav;
             }
@@ -23,6 +25,7 @@ export class TopBarComponent implements OnInit {
     }
 
     ngOnInit(){
+
     }
 
 }

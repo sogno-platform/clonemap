@@ -123,6 +123,11 @@
    padding: 0px;
 }
 
+.empty-service {
+   color: var(--light-primary-color);
+   text-align: center;
+}
+
 
 
 

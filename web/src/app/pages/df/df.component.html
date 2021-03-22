@@ -45,20 +45,22 @@
      
         <div *ngIf="alive">
         <div class="inputs">
-            <input #masid type="text" class="input" id="searchMAS" placeholder="Enter the MAS ID"/>
             <input #desc type="text" class="input" id="searchDesc" placeholder="Enter the description"/>
             <input #nodeid type="text" class="input"  id="searchNode" placeholder="Enter the node ID"/>
             <input #dist type="text" class="input" id="searchDist" placeholder="Enter the distance"/>
-            <button class="btn-search" type="submit" (click)="onSearchSvcs(masid.value, desc.value, nodeid.value, dist.value)">
+            <button class="btn-search" type="submit" (click)="onSearchSvcs(desc.value, nodeid.value, dist.value)">
                 <i class="fas fa-search"></i>
             </button>
             <button type='button' class='btn my-btn btn-create' (click)="openLg(content)">+</button>
         </div> 
 
         <div class="content">
-            <div *ngFor="let res of searched_results">
+            <div class="empty-service" *ngIf="searched_results === null">
+                <h1>No services found</h1>
+            </div>
+            <div *ngFor="let res of searched_results; index as i">
                 <div class="card">
-                    <h5 class="card-header">Result 0</h5>
+                    <h5 class="card-header">Service {{i+1}}</h5>
                     <div class="card-body">
                         <table class="table table-striped">
                             <tbody>

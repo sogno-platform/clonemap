@@ -12,7 +12,7 @@ import { ActivatedRoute, Params } from '@angular/router';
 export class DFComponent implements OnInit {
     selectedMASId:number = -1;
     MASs = null;
-    alive: boolean = false;
+    alive: boolean = true;
     fileToUpload: File = null;
     display: string = "";
     filename: string = "Choose a file...";
@@ -50,11 +50,14 @@ export class DFComponent implements OnInit {
             (params: Params) => {
                 if (params.masId) {
                     this.selectedMASId = params.masId;
-                   
+                    this.dfService.getAllSvcs(this.selectedMASId.toString()).subscribe( res => {
+                        this.searched_results = res;     
+                    })       
                 } else {
                     console.log("No masId");
                 }
             });
+        
     }
 
     openLg(content) {
@@ -88,9 +91,27 @@ export class DFComponent implements OnInit {
         );
     }
 
-    onSearchSvcs(masid:string, desc:string, nodeid:string, dist:string) {
-        
-        if (masid !== "" && desc != "" && nodeid != "" && dist != "") {
+    onSearchSvcs(desc:string, nodeid:string, dist:string) {
+        let masid: string = this.selectedMASId.toString();
+    
+        if (desc == "" && nodeid == "" && dist == "") {
+            this.dfService.getAllSvcs(masid).subscribe( res => {
+                this.searched_results = res;
+                console.log(res);               
+            },
+            err => console.log(err)
+            )
+        }
+
+        else if (desc !== "" && nodeid == "" && dist == "") {
+            this.dfService.searchSvc(masid, desc).subscribe( res => {
+                this.searched_results = res; 
+            },
+            err => console.log(err)
+            )
+        }
+
+        else if (desc != "" && nodeid != "" && dist != "") {
             this.dfService.searchSvcWithinDis(masid, desc, nodeid, dist).subscribe( 
                 res => {
                     this.searched_results = res;
@@ -99,28 +120,8 @@ export class DFComponent implements OnInit {
                     console.log(err);
                 });
             }
-
-        else if (masid !== "" && desc == "" && nodeid == "" && dist == "") {
-            this.dfService.getAllSvcs(masid).subscribe( res => {
-                this.searched_results = res;
-                console.log(res);
-                console.log("success");
-                
-            },
-            err => console.log(err)
-            )
-        }
-
-        else if (masid !== "" && desc !== "" && nodeid == "" && dist == "") {
-            this.dfService.searchSvc(masid, desc).subscribe( res => {
-                this.searched_results = res; 
-            },
-            err => console.log(err)
-            )
-        }
-
         else {
-            this.searched_results = []
+            this.searched_results = null;
         }
     }
 }

@@ -50,7 +50,8 @@ services:
       - clonemap-net
 
   fe:
-    image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/frontend
+    # image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/frontend
+    image: qianwen12/frontend
     environment:
       CLONEMAP_DEPLOYMENT_TYPE: ${CLONEMAP_DEPLOYMENT_TYPE}
       CLONEMAP_LOG_LEVEL: ${CLONEMAP_LOG_LEVEL}
