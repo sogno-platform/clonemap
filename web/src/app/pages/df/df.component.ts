@@ -12,7 +12,7 @@ import { ActivatedRoute, Params } from '@angular/router';
 export class DFComponent implements OnInit {
     selectedMASId:number = -1;
     MASs = null;
-    alive: boolean = true;
+    alive: boolean = false;
     fileToUpload: File = null;
     display: string = "";
     filename: string = "Choose a file...";
@@ -22,7 +22,7 @@ export class DFComponent implements OnInit {
         private masService: MasService,
         private modalService: NgbModal,
         private route: ActivatedRoute
-        ) { }
+        ) { }c
 
     ngOnInit() {
         this.dfService.getAlive().subscribe( (res: any) => {
