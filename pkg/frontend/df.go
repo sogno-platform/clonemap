@@ -55,7 +55,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// handleGetSvcs gets all the services of a specific MASid
+// handleGetSvcs is the handler of /api/df/{masid}/svc
 func (fe *Frontend) handleGetSvcs(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
 	var svcs []schemas.Service
@@ -77,7 +77,7 @@ func (fe *Frontend) handleGetSvcs(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// handleGetSvc searches for services in MAS with description
+// handleGetSvc is the handler of /api/df/{masid}/svc/desc/{desc}
 func (fe *Frontend) handleGetSvc(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
 	var svc []schemas.Service
@@ -98,7 +98,7 @@ func (fe *Frontend) handleGetSvc(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-//handlePostSvc create a new service
+//handlePostSvc is the handler of /api/df/{masid}/svc
 func (fe *Frontend) handlePostSvc(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
 	vars := mux.Vars(r)
@@ -136,7 +136,7 @@ func (fe *Frontend) handlePostSvc(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-// search for services in MAS with description and distance
+// handleSvcWithDist is the handler of /api/df/{masid}/svc/desc/{desc}/node/{nodeid}/dist/{dist}
 func (fe *Frontend) handleSvcWithDist(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
 	var svc []schemas.Service
