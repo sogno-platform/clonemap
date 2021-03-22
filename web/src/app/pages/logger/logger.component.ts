@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { LoggerService} from 'src/app/services/logger.service'
 import { MasService } from 'src/app/services/mas.service';
+import { ActivatedRoute, Params} from '@angular/router'
 
 @Component({
   selector: 'app-logger',
@@ -9,38 +10,44 @@ import { MasService } from 'src/app/services/mas.service';
 })
 export class LoggerComponent implements OnInit {
 
-  alive: boolean = false;
-  selectedMASId = -1;
-  MASs;
+    alive: boolean = false;
+    selectedMASId: number = -1;
+    MASs = null;
+    searched_results;
 
-  constructor(
-    private loggerService: LoggerService,
-    private masService: MasService
-    ) { }
+    constructor(
+        private loggerService: LoggerService,
+        private masService: MasService,
+        private route: ActivatedRoute
+        ) { }
 
-  ngOnInit(): void {
-    this.loggerService.getAlive().subscribe( (res: any) => {
-      if (res.logger) {
-        this.alive = res.logger ;
-      }
-    }, 
-    error => {
-      console.log(error);
-  });
+    ngOnInit(): void {
+
+        // check whether the logger is alive
+        this.loggerService.getAlive().subscribe( (res:any) => {
+            this.alive = res.logger;
+        });
+
         // update the sidebar
         this.masService.getMAS().subscribe((MASs: any) => {
-          if (MASs === null) {
-              console.log(status);
-              this.MASs = [];
-          } else {
-              this.MASs = MASs
-          } 
-          }, 
-          err => {
-              console.log(err)  
-          }
-      );
+            this.MASs = MASs;
+            },
+            err => {
+                console.log(err)  
+        });
+        
+        // get the selectedMASid from the current route
+        this.route.params.subscribe((params: Params) => {
+                this.selectedMASId = params.masId;             
+            });
+    }
 
-  }
-
+        onSearchLogs(agentid:string, topic:string, num: string) {
+            this.loggerService.getNLatestLogger(this.selectedMASId.toString(), agentid, topic, num)
+                .subscribe( res => {
+                    this.searched_results = res;
+                },
+                err => console.log(err)
+                )
+            }
 }

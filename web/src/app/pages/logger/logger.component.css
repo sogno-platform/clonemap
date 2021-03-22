@@ -65,3 +65,39 @@
    padding-bottom: 50px;
 }
 
+
+/* style of the search bar */
+.inputs {
+   padding-top: 30px;
+   padding-bottom: 40px;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+}
+.input {
+   color: var(--primary-color);
+   height: 50px;
+   margin-right:10px;
+}
+
+
+.btn-search {
+   background-color: var(--light-primary-color);
+   color:white;
+   height: 50px;
+   width: 50px;
+   border: none;
+   border-radius: 10px;
+}
+
+.btn-create {
+   background-color: var(--light-primary-color);
+   color:white;
+   height: 50px;
+   width: 50px;
+   border: none;
+   border-radius: 10px;
+   font-size: large;
+   font-weight: bold;
+   margin-left: 30px; 
+}

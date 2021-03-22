@@ -3,7 +3,7 @@
     <!--sidebar-->
     <div class="sidebar">
         <div class="nav">
-            <div *ngIf="MASs != null">
+            <div *ngIf="MASs !== null">
             <div class="nav-item" *ngFor="let MAS of MASs" routerLinkActive="is-active">
                 <a class="list-text" [routerLink]="['/ams', MAS.id]" >
                     <p >MAS {{ MAS.id }}</p>
@@ -43,9 +43,8 @@
     </ng-template>
 
 
-
-    <div class="contentcontainer" *ngIf="MASs != null && MASs.length !== 0" >
-        <div class = title>
+    <div class="contentcontainer" *ngIf="MASs !== null && MASs.length !== 0" >
+        <div class = "title">
             <h2 >Overview</h2>              
             <button type='button' class='btn my-btn btn-create' (click)="openLg(content)">+ New Agency</button>
             <input type="text" #searchMAS class="input" id="searchMAS" placeholder="Enter the MAS ID"/>
@@ -101,9 +100,9 @@
     </div>
 </div>
 
-<div class="empty-overview" *ngIf="MASs == null || MASs.length === 0">       
+<div class="empty-overview" *ngIf="MASs === null || MASs.length === 0">       
    <h1>{{status}}</h1>
-   <button *ngIf="MASs !== null" type='button' class="btn my-btn" (click)="openLg(content)">+ New Agency</button>      
+   <button *ngIf="MASs.length !== null" type='button' class="btn my-btn" (click)="openLg(content)">+ New Agency</button>      
 </div>
 
 

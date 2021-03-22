@@ -14,7 +14,60 @@
         <div class="notalive" *ngIf="!alive" >
             <h1>Logger is not alive......</h1>
         </div>
+        <div *ngIf="alive">
+            <div class="inputs">
+                <input #agentid type="text" class="input" id="searchAgentId" placeholder="Enter the agentid"/>
+                <input #topic type="text" class="input"  id="searchtopic" placeholder="Enter the topic"/>
+                <input #nums type="text" class="input" id="searchNumLogs" placeholder="Enter N lastest logs"/>
+<!--                 <input #start type="text" class="input" id="searchNumLogs" placeholder="Enter the start time"/>
+                <input #end type="text" class="input" id="searchNumLogs" placeholder="Enter the end time"/> -->
+                <button class="btn-search" type="submit" (click)="onSearchLogs(agentid, topic, nums)">
+                    <i class="fas fa-search"></i>
+                </button>
+<!--                 <button type='button' class='btn my-btn btn-create' (click)="openLg(content)">+</button> -->
+            </div> 
+    
+            <div class="content">
+                <div class="empty-service" *ngIf="searched_results === null">
+                    <h1>No logs found</h1>
+                </div>
+                <div *ngFor="let res of searched_results; index as i">
+                    <div class="card">
+                        <h5 class="card-header">Log {{i+1}}</h5>
+                        <div class="card-body">
+                            <table class="table table-striped">
+                                <tbody>
+                                <tr>
+                                    <th>MAS ID</th>
+                                    <td>{{res.masid}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Agent ID</th>
+                                    <td>{{res.agentid}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Time Stamp/<th>
+                                    <td>{{res.timestamp}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Topic</th>
+                                    <td>{{res.topic}}</td>
+                                </tr>
+                                <tr>
+                                    <th>Message</th>
+                                    <td>{{res.msg}}</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+             
+            </div>   
+            
+            </div>
    </div>
+   
 
 </div>
 

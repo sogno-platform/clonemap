@@ -22,7 +22,7 @@ export class DFComponent implements OnInit {
         private masService: MasService,
         private modalService: NgbModal,
         private route: ActivatedRoute
-        ) { }c
+        ) { }
 
     ngOnInit() {
         this.dfService.getAlive().subscribe( (res: any) => {
@@ -34,12 +34,7 @@ export class DFComponent implements OnInit {
 
         // update the sidebar
         this.masService.getMAS().subscribe((MASs: any) => {
-            if (MASs === null) {
-                console.log(status);
-                this.MASs = [];
-            } else {
-                this.MASs = MASs
-            } 
+            this.MASs = MASs;
             }, 
             err => {
                 console.log(err)  
@@ -94,7 +89,7 @@ export class DFComponent implements OnInit {
     onSearchSvcs(desc:string, nodeid:string, dist:string) {
         let masid: string = this.selectedMASId.toString();
     
-        if (desc == "" && nodeid == "" && dist == "") {
+        if (desc === "" && nodeid === "" && dist === "") {
             this.dfService.getAllSvcs(masid).subscribe( res => {
                 this.searched_results = res;
                 console.log(res);               
@@ -111,7 +106,7 @@ export class DFComponent implements OnInit {
             )
         }
 
-        else if (desc != "" && nodeid != "" && dist != "") {
+        else if (desc !== "" && nodeid !== "" && dist !== "") {
             this.dfService.searchSvcWithinDis(masid, desc, nodeid, dist).subscribe( 
                 res => {
                     this.searched_results = res;

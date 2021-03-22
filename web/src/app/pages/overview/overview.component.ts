@@ -29,16 +29,17 @@ export class OverviewComponent implements OnInit {
         this.masService.getMAS().subscribe((MASs: any) => {
             if (MASs === null) {
                 this.status = "Currently no agencies, upload one......";
-                console.log(status);
                 this.MASs = [];
+                this.MASsDisplay = [];
+                console.log(this.MASs);
+                
             } else {
-                this.MASs = MASs
+                this.MASs = MASs;
                 this.MASsDisplay = MASs;
-            } 
-
-            }, 
+            }
+            },
             err => {
-                this.status = "The CloneMAP platform can not be connected"
+                this.status = "The CloneMAP platform is not connected"
                 console.log(err)  
             }
         );

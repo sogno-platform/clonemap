@@ -123,6 +123,7 @@ func getDesc(r *http.Request) (masID int, desc string, err error) {
 	return
 }
 
+// getDist return the masId, description, nodeid and distance
 func getDist(r *http.Request) (masID int, desc string, nodeID int, dist float64, err error) {
 	vars := mux.Vars(r)
 	masID, err = strconv.Atoi(vars["masid"])
@@ -140,6 +141,50 @@ func getDist(r *http.Request) (masID int, desc string, nodeID int, dist float64,
 	}
 	return
 }
+
+// getNlogs return the masId, agentid, topic and number
+func getNLogs(r *http.Request) (masID int, agentid int, topic string, num int, err error) {
+	vars := mux.Vars(r)
+	masID, err = strconv.Atoi(vars["masid"])
+	if err != nil {
+		return
+	}
+
+	agentid, err = strconv.Atoi(vars["agentid"])
+	if err != nil {
+		return
+	}
+
+	topic = vars["topic"]
+
+	num, err = strconv.Atoi(vars["num"])
+	if err != nil {
+		return
+	}
+	return
+}
+
+// getRange return the masId, agentid, topic and start and end
+/* func getRange(r *http.Request) (masID int, agentid int, topic string, num int, err error) {
+	vars := mux.Vars(r)
+	masID, err = strconv.Atoi(vars["masid"])
+	if err != nil {
+		return
+	}
+
+	agentid, err = strconv.Atoi(vars["agentid"])
+	if err != nil {
+		return
+	}
+
+	topic = vars["topic"]
+
+	num, err = strconv.Atoi(vars["num"])
+	if err != nil {
+		return
+	}
+	return
+} */
 
 // loggingMiddleware logs request before calling final handler
 func (fe *Frontend) loggingMiddleware(next http.Handler) http.Handler {
@@ -181,7 +226,8 @@ func (fe *Frontend) server(port int) (serv *http.Server) {
 	s.Path("/df/{masid}/svc/desc/{desc}/node/{nodeid}/dist/{dist}").Methods("Get").HandlerFunc(fe.handleSvcWithDist)
 
 	// api for logger
-	s.Path("/df/{masid}/svc/desc/{desc}").Methods("Get").HandlerFunc(fe.handleGetSvc)
+	s.Path("/logging/{masid}/{agentid}/{topic}/latest/{num}").Methods("Get").HandlerFunc(fe.handleGetNLatestLogs)
+	/* 	s.Path("/logging/{masid}/{agentid}/{topic}/time/{begin}/{end}").Methods("Get").HandlerFunc(fe.handleGetLogsWithRange) */
 
 	s.PathPrefix("").HandlerFunc(fe.resourceNotFound)
 	s.Use(fe.loggingMiddleware)

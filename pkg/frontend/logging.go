@@ -53,10 +53,9 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// handleGetLogs is the handler for get requests to path /api/ams/mas
-func (fe *Frontend) handleGetLogs(w http.ResponseWriter, r *http.Request) {
+// handleGetLogs is the handler to /api/logging/{masid}/{agentid}/{topic}/latest/{num}
+func (fe *Frontend) handleGetNLatestLogs(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
-	// return short info of all MAS
 	var msgs []schemas.LogMessage
 	vars := mux.Vars(r)
 	masid, cmapErr := strconv.Atoi(vars["masid"])
@@ -70,8 +69,13 @@ func (fe *Frontend) handleGetLogs(w http.ResponseWriter, r *http.Request) {
 		fe.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
-	w.Header().Set("Access-Control-Allow-Origin", "*")
 	httpErr = httpreply.Resource(w, msgs, cmapErr)
 	fe.logErrors(r.URL.Path, cmapErr, httpErr)
 	return
 }
+
+// handleGetLogsWithRange is the handler to /api/logging/{masid}/{agentid}/{topic}/time/{start}/{end}
+/* func handleGetLogsWithRange(w http.ResponseWriter, r *http.Request) {
+	var cmapErr, httpErr error
+
+} */
