@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Renderer2, Inject } from '@angular/core';
 import { DfService} from "src/app/services/df.service";
 import { MasService} from "src/app/services/mas.service";
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -12,16 +12,27 @@ import { ActivatedRoute, Params } from '@angular/router';
 export class DFComponent implements OnInit {
     selectedMASId:number = -1;
     MASs = null;
-    alive: boolean = false;
+    alive: boolean = true;
     fileToUpload: File = null;
     display: string = "";
     filename: string = "Choose a file...";
     searched_results;
+    curr_state = "list";
+    dashed_connection = [];
+    services = [];
+    comms = [[1, 2], [2, 1], [1, 3], [5, 4], [7, 3], [8,1], [4, 6], [3, 6], [1, 7], [1, 3]]; // fake communications
+    margin: number = 50;
+    interactions = [];
+    rects = [];
+    texts = [];
+    gap_svc: number = 100;
+    gap_comm: number = 50;
     constructor(
         private dfService: DfService,
         private masService: MasService,
         private modalService: NgbModal,
-        private route: ActivatedRoute
+        private route: ActivatedRoute,
+        private renderer2: Renderer2
         ) { }
 
     ngOnInit() {
@@ -51,7 +62,22 @@ export class DFComponent implements OnInit {
                 } else {
                     console.log("No masId");
                 }
+                
             });
+
+        for (let i = 1; i <= 8; i++) {
+            let x = i * this.gap_svc;
+            this.dashed_connection.push({x1: x, y1: 150, x2:x, y2:200});
+            this.services.push({x1:x, y1: 200, x2:x, y2: 900,});
+            this.rects.push({x: 60+(i-1)*100, y: 70});
+            this.texts.push({x: 90+(i-1)*100, y: 110})
+        }
+        // create the interaction pairs
+        for (let i = 0; i < this.comms.length; i++) {
+            const top = 250;
+            this.interactions.push({x1:this.comms[i][0] * this.gap_svc, y1: top + i * this.gap_comm, 
+                x2:this.comms[i][1] * this.gap_svc, y2: top + i * this.gap_comm})
+        }
         
     }
 
@@ -59,6 +85,10 @@ export class DFComponent implements OnInit {
         this.modalService.open(content, { size: 'lg', centered: true });
     }
 
+    onUpdateContent(content:string) {
+        this.display=content;
+    }
+    
     handleFileInput(files: FileList) {
         if (files.length <= 0) {
             return false;
@@ -71,6 +101,8 @@ export class DFComponent implements OnInit {
         }
         fr.readAsText(this.fileToUpload);
     }
+
+
 
     onCreateSVC() {
         const result = JSON.parse(this.display);
@@ -85,6 +117,7 @@ export class DFComponent implements OnInit {
             }
         );
     }
+
 
     onSearchSvcs(desc:string, nodeid:string, dist:string) {
         let masid: string = this.selectedMASId.toString();
@@ -118,5 +151,15 @@ export class DFComponent implements OnInit {
         else {
             this.searched_results = null;
         }
+    }
+
+    onClickList() {
+        this.curr_state = "list";
+        console.log(this.curr_state);
+    }
+
+    onClickUML() {
+        this.curr_state = "UML";
+        console.log(this.curr_state);
     }
 }

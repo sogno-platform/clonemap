@@ -1,6 +1,6 @@
 <div class="maincontainer">
        <!--sidebar-->
-    <div class="sidebar">
+    <div class="sidebar" *ngIf="MASs !== null">
         <div class="nav">
             <div class="nav-item" *ngFor="let MAS of MASs" routerLinkActive="is-active" [ngClass]="MAS.id === selectedMASId ? 'active' : ''">
                 <a class="list-text"  [routerLink]="['/df', MAS.id]" >
@@ -21,7 +21,7 @@
         <div class="modal-body">
             <div class="form-group">
                 <label for="newMAS">Uploaded Contents</label>
-                <textarea class="form-control" id="newMAS" [(ngModel)]="display" rows="20">{{display}}</textarea>
+                <textarea class="form-control" id="newMAS" [(ngModel)]="display" (change)="onUpdateContent($event.target.value)" rows="20">{{display}}</textarea>
             </div>                   
             <div class="input-group mb-3">
                 <div class="custom-file">
@@ -38,11 +38,13 @@
         </div>
     </ng-template>
 
+
+
    <div class="contentcontainer">
         <div class="notalive" *ngIf="!alive" >
             <h1>DF is not alive......</h1>
         </div>
-     
+   
         <div *ngIf="alive">
         <div class="inputs">
             <input #desc type="text" class="input" id="searchDesc" placeholder="Enter the description"/>
@@ -54,7 +56,16 @@
             <button type='button' class='btn my-btn btn-create' (click)="openLg(content)">+</button>
         </div> 
 
-        <div class="content">
+        <ul class="nav nav-tabs justify-content-end">
+            <li class="nav-item">
+              <a class="nav-link" [class.active]="curr_state==='list'" (click)="onClickList()" >list</a>
+            </li>
+            <li class="nav-item" style="padding-right:100px;">
+              <a class="nav-link" [class.active]="curr_state==='UML'" (click)="onClickUML()">UML</a>
+            </li>
+        </ul>
+          
+        <div class="content" *ngIf="curr_state === 'list'">
             <div class="empty-service" *ngIf="searched_results === null">
                 <h1>No services found</h1>
             </div>
@@ -93,13 +104,24 @@
                     </div>
                 </div>
             </div>
-         
-        </div>   
+        </div>
+
+        <svg *ngIf="curr_state === 'UML'" width="1000" height="800">
+            <defs>
+            <marker id="arrow" viewBox="0 -5 10 10" refX="15" refY="0" markerWidth="4" markerHeight="4" orient="auto">
+                <path fill="gray" d="M0,-5L10,0L0,5"></path>
+            </marker>
+            </defs>
+            <rect *ngFor="let rect of rects" [attr.x]= "rect.x" [attr.y]="rect.y" width="80" height="70"/>
+            <text *ngFor="let t of texts;index as i" [attr.x]= "t.x" [attr.y]="t.y">S{{i+1}}</text>
+            <line stroke-dasharray="5, 5" stroke-width="4" class="dashed" stroke="var(--primary-color)" *ngFor="let line of dashed_connection" [attr.x1]="line.x1" [attr.y1]="line.y1" [attr.x2]="line.x2" [attr.y2]="line.y2"/> 
+            <line class="vertical" stroke="var(--primary-color)" *ngFor="let line of services" [attr.x1]="line.x1" [attr.y1]="line.y1" [attr.x2]="line.x2" [attr.y2]="line.y2"/>
+            <line stroke-dasharray="5, 5" stroke="gray" stroke-width="4" *ngFor="let line of interactions" [attr.x1]="line.x1" [attr.y1]="line.y1" [attr.x2]="line.x2" [attr.y2]="line.y2" marker-end="url(#arrow)"/> 
+        </svg>       
+
         
         </div>
     </div>
-
-
 
 </div>
 
