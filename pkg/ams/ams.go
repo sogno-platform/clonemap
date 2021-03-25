@@ -226,7 +226,11 @@ func (ams *AMS) updateAgentCustom(masID int, agentID int, custom string) (err er
 	var httpStatus int
 	httpStatus, err = ams.agencyClient.PutAgentCustom(agentAddress.Agency, agentID, custom)
 	if httpStatus != http.StatusOK || err != nil {
-		err = errors.New("error updating custom data " + err.Error())
+		if err != nil {
+			err = errors.New("error updating custom data " + err.Error())
+		} else {
+			err = errors.New("error updating custom data")
+		}
 	}
 	return
 }
