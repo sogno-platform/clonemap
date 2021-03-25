@@ -61,8 +61,15 @@ func main() {
 }
 
 func task(ag *agency.Agent) (err error) {
+	beh, err := ag.NewCustomUpdateBehavior(customUpdateHandler)
+	beh.Start()
 	time.Sleep(2 * time.Second)
 	id := ag.GetAgentID()
 	ag.Logger.NewLog("app", "This is agent "+strconv.Itoa(id), "")
+	return
+}
+
+func customUpdateHandler(custom string) (err error) {
+	fmt.Println(custom)
 	return
 }
