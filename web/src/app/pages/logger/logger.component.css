@@ -101,3 +101,146 @@
    font-weight: bold;
    margin-left: 30px; 
 }
+
+
+/*style of the selection board */
+
+/* .topics, .agentID {
+    display: flex;
+ }
+  */
+.tagname {
+   color: rgb(85, 81, 81);
+   font-size: 30px;
+   margin-left: 30px;
+   margin-top: -5px;
+   width: 180px;
+}
+
+
+.agents {
+    width:1500px;
+    margin-left:15px;
+}
+
+
+.tag {
+   height: 40px;
+   width: 80px;
+   text-align: center;
+   border: solid rgb(235, 229, 229);
+   border-radius: 40px;
+   margin-right: 30px;
+   margin-bottom: 10px;
+   color: gray;
+   font-size: 20px;
+   padding-top: 2px;
+}
+
+.active  {
+   background-color: var(--light-primary-color);
+   color: white;
+   border: none;
+}
+
+
+
+.topics .selected {
+   color: white;
+   border: none;
+}
+
+
+.topics .error.selected {   
+   background-color: rgb(230, 109, 109);
+}
+
+
+.topics .debug.selected {
+   background-color: rgb(216, 216, 110);
+
+}
+
+.topics .msg.selected {
+   background-color: var(--light-primary-color);
+}
+
+.topics .status.selected {
+   background-color: rgb(126, 235, 149);
+}
+
+.topics .app.selected {
+   background-color: rgb(56, 202, 221) ;
+}
+
+
+
+
+
+/* style of the nav tab */
+
+/* .nav-item>.active>a, .nav-item>.active>a:hover, .nav-item>.active>a:focus {
+   border-color: var(--background-primary-color);
+   border-bottom-color: transparent;
+}
+.nav-tabs {
+  border-bottom: 1px solid var(--background-primary-color);
+}
+
+.nav-link {
+   color: gray;
+}
+
+.nav-link.active {
+   color: var(--primary-color);
+   font-weight: bold;
+}
+ */
+
+/* style of the UML sequence diagram */
+svg {
+/*    border: 1px solid orange;  */
+   margin-top: 100px;
+   position: absolute;
+}
+   
+.vertical {
+stroke: var(--light-primary-color);
+stroke-width: 2;
+
+}
+
+.agentBox {
+    fill:white;
+    stroke:var(--primary-color);
+    stroke-width:5;
+}
+
+text {
+    fill: var(--primary-color);
+}
+
+.errorLogBox rect {
+   fill: rgb(230, 109, 109);
+}
+
+.debugLogBox rect {
+   fill: rgb(216, 216, 110);
+}
+
+.msgLogBox rect {
+   fill: var(--light-primary-color);
+}
+
+.statusLogBox rect {
+   fill: rgb(126, 235, 149);
+}
+
+.appLogBox rect {
+   fill: rgb(56, 202, 221);
+}
+
+
+      
+
+

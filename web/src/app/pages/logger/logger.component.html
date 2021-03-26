@@ -1,6 +1,6 @@
 <div class="maincontainer">
     <!--sidebar-->
-    <div class="sidebar">
+    <div class="sidebar" *ngIf="MASs !== null">
         <div class="nav">
             <div class="nav-item" *ngFor="let MAS of MASs" routerLinkActive="is-active" [ngClass]="MAS.id === selectedMASId ? 'active' : ''">
                 <a class="list-text"  [routerLink]="['/logger', MAS.id]" >
@@ -10,61 +10,127 @@
         </div>
     </div> 
 
+    <!--modal for uploading the log-->
+    <ng-template #content let-modal>
+        <div class="modal-header">
+            <h4 class="modal-title">Add Log</h4>
+            <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="newLogs">Uploaded Contents</label>
+                <textarea class="form-control" id="newLogs" [(ngModel)]="display" (change)="onUpdateContent($event.target.value)" rows="20">{{display}}</textarea>
+            </div>                   
+            <div class="input-group mb-3">
+                <div class="custom-file">
+                    <input type="file" 
+                            class="custom-file-input" 
+                            id="inputLog"
+                            (change)="handleFileInput($event.target.files)">
+                    <label class="custom-file-label" for="inputLog" >{{filename}}</label>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn my-btn" (click)="onCreateLogs()">Upload</button>
+        </div>
+    </ng-template>
+
+
    <div class="contentcontainer">
         <div class="notalive" *ngIf="!alive" >
             <h1>Logger is not alive......</h1>
         </div>
         <div *ngIf="alive">
             <div class="inputs">
-                <input #agentid type="text" class="input" id="searchAgentId" placeholder="Enter the agentid"/>
-                <input #topic type="text" class="input"  id="searchtopic" placeholder="Enter the topic"/>
                 <input #nums type="text" class="input" id="searchNumLogs" placeholder="Enter N lastest logs"/>
 <!--                 <input #start type="text" class="input" id="searchNumLogs" placeholder="Enter the start time"/>
                 <input #end type="text" class="input" id="searchNumLogs" placeholder="Enter the end time"/> -->
-                <button class="btn-search" type="submit" (click)="onSearchLogs(agentid, topic, nums)">
+                <button class="btn-search" type="submit" (click)="onSearchLogs(nums.value)">
                     <i class="fas fa-search"></i>
                 </button>
-<!--                 <button type='button' class='btn my-btn btn-create' (click)="openLg(content)">+</button> -->
-            </div> 
-    
-            <div class="content">
-                <div class="empty-service" *ngIf="searched_results === null">
-                    <h1>No logs found</h1>
-                </div>
-                <div *ngFor="let res of searched_results; index as i">
-                    <div class="card">
-                        <h5 class="card-header">Log {{i+1}}</h5>
-                        <div class="card-body">
-                            <table class="table table-striped">
-                                <tbody>
-                                <tr>
-                                    <th>MAS ID</th>
-                                    <td>{{res.masid}}</td>
-                                </tr>
-                                <tr>
-                                    <th>Agent ID</th>
-                                    <td>{{res.agentid}}</td>
-                                </tr>
-                                <tr>
-                                    <th>Time Stamp/<th>
-                                    <td>{{res.timestamp}}</td>
-                                </tr>
-                                <tr>
-                                    <th>Topic</th>
-                                    <td>{{res.topic}}</td>
-                                </tr>
-                                <tr>
-                                    <th>Message</th>
-                                    <td>{{res.msg}}</td>
-                                </tr>
-                                </tbody>
-                            </table>
+                <button type='button' class='btn my-btn btn-create' (click)="openLg(content)">+</button>
+            </div>
+            
+            <div class="agentID d-flex align-content-end">
+                <div class="tagname">agent ID</div>
+                <div class="agents">
+                    <div class="row">
+                        <div class="tag col-lg-1" *ngFor="let id of agentID, index as i" [ngValue]="i" [class.active]="isAgentSelected[i]" (click)="onSelectID(i)">
+                            agent {{id}}
                         </div>
                     </div>
-                </div>
-             
-            </div>   
+                </div>  
+            </div>
+  
             
+            <div class="topics d-flex">
+                <div class="tagname"> Topic </div>
+                <div [class.selected]="isTopicSelected[0]" class="error tag" (click)="onToggleTopic(0)">error</div>
+                <div [class.selected]="isTopicSelected[1]" class="debug tag" (click)="onToggleTopic(1)" >debug</div>
+                <div [class.selected]="isTopicSelected[2]"class="msg tag" (click)="onToggleTopic(2)">msg</div>
+                <div [class.selected]="isTopicSelected[3]" class="status tag" (click)="onToggleTopic(3)">status</div>
+                <div [class.selected]="isTopicSelected[4]" class="app tag" (click)="onToggleTopic(4)">app</div>
+            </div>
+  
+<!--             <ul class="nav nav-tabs justify-content-end">
+                <li class="nav-item">
+                  <a class="nav-link" [class.active]="curr_state==='list'" (click)="onClickList()" >list</a>
+                </li>
+                <li class="nav-item" style="padding-right:100px;">
+                  <a class="nav-link" [class.active]="curr_state==='UML'" (click)="onClickUML()">UML</a>
+                </li>
+            </ul> -->
+
+            <svg [attr.width]="width" [attr.height]="height">
+                <rect class="agentBox" *ngFor="let box of agentBox" [attr.x]="box.x" [attr.y]="box.y" [attr.width]="boxWidth" [attr.height]="boxHeight"></rect>
+                <text class="agentText" *ngFor="let text of texts, index as i" [attr.x]="text.x" [attr.y]="text.y"> Agent {{text.textID}} </text>
+                <line stroke-dasharray="5, 5" class="vertical" *ngFor="let line of timeline" [attr.x1]="line.x1" [attr.y1]="line.y1" [attr.x2]="line.x2" [attr.y2]="line.y2"/>          
+            </svg>    
+             
+            <div class="errorLogBox" *ngIf="isTopicSelected[0]">
+                <div *ngFor="let boxes of errLogBox">
+                    <svg [attr.width]="width" [attr.height]="height">
+                        <rect class="logBox" *ngFor="let box of boxes" [attr.x]="box.x" [attr.y]="box.y" [attr.width]="logBoxWidth" [attr.height]="logBoxHeight"></rect>
+                    </svg>
+                </div>
+            </div>
+            
+            <div class="debugLogBox" *ngIf="isTopicSelected[1]">
+                <div *ngFor="let boxes of debugLogBox">
+                    <svg [attr.width]="width" [attr.height]="height">
+                        <rect class="logBox" *ngFor="let box of boxes" [attr.x]="box.x" [attr.y]="box.y" [attr.width]="logBoxWidth" [attr.height]="logBoxHeight"></rect>
+                    </svg>
+                </div>
+            </div>
+            
+            <div class="msgLogBox" *ngIf="isTopicSelected[2]">
+                <div *ngFor="let boxes of msgLogBox">
+                    <svg [attr.width]="width" [attr.height]="height">
+                        <rect class="logBox" *ngFor="let box of boxes" [attr.x]="box.x" [attr.y]="box.y" [attr.width]="logBoxWidth" [attr.height]="logBoxHeight"></rect>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="statusLogBox" *ngIf="isTopicSelected[3]">
+                <div *ngFor="let boxes of statusLogBox">
+                    <svg [attr.width]="width" [attr.height]="height">
+                        <rect class="logBox" *ngFor="let box of boxes" [attr.x]="box.x" [attr.y]="box.y" [attr.width]="logBoxWidth" [attr.height]="logBoxHeight"></rect>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="appLogBox" *ngIf="isTopicSelected[4]">
+                <div *ngFor="let boxes of appLogBox">
+                    <svg [attr.width]="width" [attr.height]="height">
+                        <rect class="logBox" *ngFor="let box of boxes" [attr.x]="box.x" [attr.y]="box.y" [attr.width]="logBoxWidth" [attr.height]="logBoxHeight"></rect>
+                    </svg>
+                </div>
+            </div>
+             
+
             </div>
    </div>
    
