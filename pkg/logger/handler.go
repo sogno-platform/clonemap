@@ -169,6 +169,29 @@ func (logger *Logger) handlePostLogMsgList(w http.ResponseWriter, r *http.Reques
 	return
 }
 
+// handleGetAllLatestLogMessages is the handler for request to path
+// /api/logging/{masid}/latest/{num}
+func (logger *Logger) handleGetAllLatestLogMessages(w http.ResponseWriter, r *http.Request) {
+	var cmapErr, httpErr error
+	masID, num, cmapErr := getMasAndNum(r)
+	if cmapErr != nil {
+		httpErr = httpreply.NotFoundError(w)
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
+	var logMsgs []schemas.LogMessage
+	logMsgs, cmapErr = logger.getAllLatestLogMessages(masID, num)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
+	httpErr = httpreply.Resource(w, logMsgs, cmapErr)
+	logger.logErrors(r.URL.Path, cmapErr, httpErr)
+	return
+
+}
+
 // handleGetLogsLatest is the handler for requests to path
 // /api/logging/{masid}/{agentid}/{topic}/latest/{num}
 func (logger *Logger) handleGetLogsLatest(w http.ResponseWriter, r *http.Request) {
@@ -356,6 +379,20 @@ func getAgentID(r *http.Request) (masID int, agentID int, err error) {
 	return
 }
 
+// getMasAnd returns the masID and num of logs from the path
+func getMasAndNum(r *http.Request) (masID int, num int, err error) {
+	vars := mux.Vars(r)
+	masID, err = strconv.Atoi(vars["masid"])
+	if err != nil {
+		return
+	}
+	num, err = strconv.Atoi(vars["num"])
+	if err != nil {
+		return
+	}
+	return
+}
+
 // loggingMiddleware logs request before calling final handler
 func (logger *Logger) loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -370,6 +407,8 @@ func (logger *Logger) server(port int) (serv *http.Server) {
 	// r.HandleFunc("/api/", logger.handleAPI)
 	s := r.PathPrefix("/api").Subrouter()
 	s.Path("/alive").Methods("GET").HandlerFunc(logger.handleAlive)
+	s.Path("/logging/{masid}/latest/{num}").Methods("GET").
+		HandlerFunc(logger.handleGetAllLatestLogMessages)
 	s.Path("/logging/{masid}/{agentid}/{topic}").Methods("POST").HandlerFunc(logger.handlePostLogMsg)
 	s.Path("/logging/{masid}/{agentid}/{topic}").Methods("PUT", "GET", "DELETE").
 		HandlerFunc(logger.methodNotAllowed)
@@ -382,6 +421,7 @@ func (logger *Logger) server(port int) (serv *http.Server) {
 	s.Path("/logging/{masid}/list").Methods("POST").HandlerFunc(logger.handlePostLogMsgList)
 	s.Path("/logging/{masid}/list").Methods("PUT", "GET", "DELETE").
 		HandlerFunc(logger.methodNotAllowed)
+
 	s.Path("/logging/{masid}/{agentid}/{topic}/latest/{num}").Methods("GET").
 		HandlerFunc(logger.handleGetLogsLatest)
 	s.Path("/logging/{masid}/{agentid}/{topic}/latest/{num}").Methods("POST", "PUT", "DELETE").

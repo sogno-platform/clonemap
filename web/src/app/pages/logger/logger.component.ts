@@ -25,12 +25,11 @@ export class LoggerComponent implements OnInit {
     msgSelected: boolean = true;
     statusSelected: boolean = true;
     appSelected: boolean = true;
-    selectedAgentID: number[] = [1, 2, 3, 4];
-    agentID: number[] = [1, 2, 3, 4];
-    isAgentSelected: boolean[] = [true, true, true, true];
+    agentID: number[] = [0, 1, 2, 3, 4];
+    isAgentSelected: boolean[] = [true, true, true, true, true];
     isTopicSelected: boolean[] = [true, true, true, true, true];
 
-    numLogs: number  = 2;
+    numLogs: number  = 4;
 
     width: number = 1500;
     height: number = 2000;
@@ -49,6 +48,7 @@ export class LoggerComponent implements OnInit {
     msgLogBox = [];
     statusLogBox = [];
     appLogBox = [];
+    dates: string[][];
 
 
 
@@ -81,11 +81,15 @@ export class LoggerComponent implements OnInit {
                 this.selectedMASId = params.masId;             
             });
 
-        let Dates = this.generateRandomDates(); 
-        this.scaledDates = this.generateScaledDates(Dates);
-        this.drawAgentBox();
-        this.drawScaledDates(this.scaledDates);
-        this.drawTimeline();
+        this.loggerService.getAllLatestLogs(this.selectedMASId.toString(), this.numLogs.toString()).subscribe( (res: string[][]) => {
+            this.dates = res;
+            this.scaledDates = this.generateScaledDates(res);
+            console.log(this.scaledDates);
+            this.drawAgentBox();
+            this.drawScaledDates(this.scaledDates);
+            this.drawTimeline();
+        })
+
     }    
     
     
@@ -100,6 +104,9 @@ export class LoggerComponent implements OnInit {
         this.drawTimeline();
         
     }
+
+
+
 
     drawAgentBox() {
         this.agentBox = [];
@@ -137,14 +144,23 @@ export class LoggerComponent implements OnInit {
 
     }
 
-    generateScaledDates(dates: Date[][]) :number[][]{
+    generateScaledDates(res: string[][]) :number[][]{
         
-        // sort the dates from the latest to the oldest
+        
+        let dates: Date[][] = []
+        for (let i = 0; i < res.length; i++) {
+            let date: Date[] = []
+            for (let j = 0; j < res[i].length; j++) {
+                date.push(new Date(res[i][j]))
+            }
+            dates.push(date)
+        }
 
         // find the latest log of all the agents
         let globalLastest: Date = new Date("2015-03-25T12:00:00Z") ;
-        for (let i = 0; i < this.selectedAgentID.length * 5; i++) {
-            if (dates[i] != []) {
+        
+        for (let i = 0; i < this.agentID.length * 5; i++) {
+            if (dates[i].length !== 0) {
                 if (dates[i][0].getTime() - globalLastest.getTime() > 0) {
                     globalLastest = dates[i][0];
                 } 
@@ -154,10 +170,12 @@ export class LoggerComponent implements OnInit {
         // find the date differences
         let datesInterval: number[][] = [];
 
-        for (let j = 0; j < this.selectedAgentID.length * 5; j++) {
+        for (let j = 0; j < this.agentID.length * 5; j++) {
             datesInterval.push([]);
-            datesInterval[j].push(Math.round(globalLastest.getTime()/1000) - Math.round(dates[j][0].getTime()/1000));
-            for (let i = 1; i < this.numLogs; i++) {
+            if (dates[j].length !== 0) {
+                datesInterval[j].push(Math.round(globalLastest.getTime()/1000) - Math.round(dates[j][0].getTime()/1000));
+            }
+            for (let i = 1; i < dates[j].length; i++) {
                 datesInterval[j].push(Math.round(dates[j][i-1].getTime()/1000) - Math.round(dates[j][i].getTime()/1000));
                 }
             }
@@ -167,8 +185,8 @@ export class LoggerComponent implements OnInit {
         let smallestDiff : number = Number.MAX_SAFE_INTEGER;
         let largestDiff : number = 0
 
-        for (let j = 0; j < this.selectedAgentID.length * 5; j++) {
-            for (let i = 0; i < this.numLogs; i++) {
+        for (let j = 0; j < this.agentID.length * 5; j++) {
+            for (let i = 0; i < dates[j].length; i++) {
                 if (datesInterval[j][i] > largestDiff) {
                     largestDiff = datesInterval[j][i];
                 }
@@ -184,10 +202,13 @@ export class LoggerComponent implements OnInit {
         let scaledDates: number[][] = []
         for (let j = 0; j < this.agentID.length * 5; j++) {
             scaledDates.push([]);
-            scaledDates[j].push(Math.round(100 * ((20 - 1)  * (datesInterval[j][0] - smallestDiff)/(largestDiff - smallestDiff) + 1)) / 100);
-            for (let i = 0; i < this.numLogs; i++) {  
+            if (dates[j].length > 0) {
+                scaledDates[j].push(Math.round(100 * ((20 - 1)  * (datesInterval[j][0] - smallestDiff)/(largestDiff - smallestDiff) + 1)) / 100);
+            }
+            
+            for (let i = 1; i < dates[j].length; i++) {  
                 let scaledDiff: number = Math.round(100 * ((20 - 1)  * (datesInterval[j][i] - smallestDiff)/(largestDiff - smallestDiff) + 1)) / 100;
-                scaledDates[j].push(scaledDates[j][i] + scaledDiff);
+                scaledDates[j].push(scaledDates[j][i-1] + scaledDiff);
                 
             }
         }
@@ -195,7 +216,7 @@ export class LoggerComponent implements OnInit {
 
     }
 
-    drawScaledDates(resDates: number[][]) {
+    drawScaledDates(scaledDates: number[][]) {
         this.errLogBox = [];
         this.debugLogBox = [];
         this.msgLogBox = [];
@@ -204,21 +225,30 @@ export class LoggerComponent implements OnInit {
         let allBoxes = [this.errLogBox, this.debugLogBox, this.msgLogBox, this.statusLogBox, this.appLogBox];
         for (let k = 0; k < this.isTopicSelected.length; k++) {
             //allBoxes[k] = [];
-            let scaledDates =  resDates.slice(k * this.selectedAgentID.length, (k+1) * this.selectedAgentID.length);
+            let scaledDatesSlice =  scaledDates.slice(k * this.agentID.length, (k+1) * this.agentID.length);
+            let datesSlice =  this.dates.slice(k * this.agentID.length, (k+1) * this.agentID.length);           
             let cnt: number = 0;
             for (let j = 0; j < this.agentID.length; j++) {
                 if (this.isAgentSelected[j]) {
                     allBoxes[k].push([]);
-                    for (let i = 0; i < this.numLogs; i++) {
-                        allBoxes[k][cnt].push({x: this.interval * (cnt+1) - this.logBoxWidth / 2, y: 400 +  2 * this.logBoxHeight * scaledDates[j][i]});
+                    for (let i = 0; i < scaledDatesSlice[j].length; i++) {
+                        allBoxes[k][cnt].push({x: this.interval * (cnt+1) - this.logBoxWidth / 2, 
+                            y: 400 +  2 * this.logBoxHeight * scaledDatesSlice[j][i],
+                            msg: datesSlice[j][i]
+                        });
                     }
-                    if (allBoxes[k][cnt][this.numLogs-1].y > this.height) {
-                        this.height = allBoxes[k][cnt][this.numLogs-1].y + 300;
+
+                    if (allBoxes[k][cnt][scaledDatesSlice[j].length-1].y + 200  >= this.height) {
+                        this.height = allBoxes[k][cnt][scaledDatesSlice[j].length-1].y + 200;
                     }
                     cnt++;
                 }
             }
         }
+    }
+
+    showMsg(num: number) {
+        console.log(num);
     }
 
 
@@ -262,39 +292,17 @@ export class LoggerComponent implements OnInit {
        
     onSearchLogs(num: string) {
         this.numLogs = parseInt(num);    
-        this.drawAgentBox();
-        const dates = this.generateRandomDates();
-        this.scaledDates = this.generateScaledDates(dates);
-        this.drawScaledDates(this.scaledDates);
-        this.drawTimeline();   
+        this.loggerService.getAllLatestLogs(this.selectedMASId.toString(), this.numLogs.toString()).subscribe( (res: string[][]) => {
+            this.dates = res;
+            this.scaledDates = this.generateScaledDates(res);
+            console.log(this.scaledDates);
+            this.drawAgentBox();
+            this.drawScaledDates(this.scaledDates);
+            this.drawTimeline();
+        }) 
     }
 
-    randomDate(start: Date, end: Date) : Date {
-        return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
-    }
 
-    generateRandomDates() :Date[][] {
-
-        
-        let dates: Date[][] = [];
-        const k: number = this.isTopicSelected.length;
-        for (let j = 0; j < k * this.selectedAgentID.length; j++) {
-            dates.push([]);
-            for (let i = 0; i < this.numLogs; i++) {
-                dates[j].push(this.randomDate(new Date("2015-03-25T12:00:00Z"), 
-                new Date(Date.now()) ));
-            }   
-        }
-
-
-
-        for (let date of dates) {
-            date.sort( function (date1:Date, date2: Date) {
-                return date2.getTime() - date1.getTime();
-            })
-        }
-        return dates;
-    }
 
 
 

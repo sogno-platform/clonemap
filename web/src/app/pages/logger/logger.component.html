@@ -67,7 +67,7 @@
   
             
             <div class="topics d-flex">
-                <div class="tagname"> Topic </div>
+                <div class="tagname"> topic </div>
                 <div [class.selected]="isTopicSelected[0]" class="error tag" (click)="onToggleTopic(0)">error</div>
                 <div [class.selected]="isTopicSelected[1]" class="debug tag" (click)="onToggleTopic(1)" >debug</div>
                 <div [class.selected]="isTopicSelected[2]"class="msg tag" (click)="onToggleTopic(2)">msg</div>
@@ -87,13 +87,14 @@
             <svg [attr.width]="width" [attr.height]="height">
                 <rect class="agentBox" *ngFor="let box of agentBox" [attr.x]="box.x" [attr.y]="box.y" [attr.width]="boxWidth" [attr.height]="boxHeight"></rect>
                 <text class="agentText" *ngFor="let text of texts, index as i" [attr.x]="text.x" [attr.y]="text.y"> Agent {{text.textID}} </text>
-                <line stroke-dasharray="5, 5" class="vertical" *ngFor="let line of timeline" [attr.x1]="line.x1" [attr.y1]="line.y1" [attr.x2]="line.x2" [attr.y2]="line.y2"/>          
+                <line stroke-dasharray="5, 5" class="vertical" *ngFor="let line of timeline" [attr.x1]="line.x1" [attr.y1]="line.y1" [attr.x2]="line.x2" [attr.y2]="height"/>          
             </svg>    
              
             <div class="errorLogBox" *ngIf="isTopicSelected[0]">
                 <div *ngFor="let boxes of errLogBox">
                     <svg [attr.width]="width" [attr.height]="height">
-                        <rect class="logBox" *ngFor="let box of boxes" [attr.x]="box.x" [attr.y]="box.y" [attr.width]="logBoxWidth" [attr.height]="logBoxHeight"></rect>
+                        <rect class="logBox" *ngFor="let box of boxes"  (click)="showMsg(box.msg)" [attr.x]="box.x" [attr.y]="box.y" [attr.width]="logBoxWidth" [attr.height]="logBoxHeight"></rect>
+                        <text *ngFor="let box of boxes, index as i" [attr.x]="box.x + logBoxWidth " [attr.y]="box.y + logBoxWidth/3"> {{box.msg}}</text>                       
                     </svg>
                 </div>
             </div>
@@ -101,7 +102,8 @@
             <div class="debugLogBox" *ngIf="isTopicSelected[1]">
                 <div *ngFor="let boxes of debugLogBox">
                     <svg [attr.width]="width" [attr.height]="height">
-                        <rect class="logBox" *ngFor="let box of boxes" [attr.x]="box.x" [attr.y]="box.y" [attr.width]="logBoxWidth" [attr.height]="logBoxHeight"></rect>
+                        <rect class="logBox" *ngFor="let box of boxes" (click)="showMsg(box.msg)" [attr.x]="box.x" [attr.y]="box.y" [attr.width]="logBoxWidth" [attr.height]="logBoxHeight"></rect>
+                        <text *ngFor="let box of boxes, index as i" [attr.x]="box.x + logBoxWidth " [attr.y]="box.y + logBoxWidth/3"> {{box.msg}}</text>                      
                     </svg>
                 </div>
             </div>
@@ -109,7 +111,8 @@
             <div class="msgLogBox" *ngIf="isTopicSelected[2]">
                 <div *ngFor="let boxes of msgLogBox">
                     <svg [attr.width]="width" [attr.height]="height">
-                        <rect class="logBox" *ngFor="let box of boxes" [attr.x]="box.x" [attr.y]="box.y" [attr.width]="logBoxWidth" [attr.height]="logBoxHeight"></rect>
+                        <text *ngFor="let box of boxes, index as i" [attr.x]="box.x + logBoxWidth " [attr.y]="box.y + logBoxWidth/3"> {{box.msg}}</text>  
+                        <rect class="logBox" *ngFor="let box of boxes" (click)="showMsg(box.msg)" [attr.x]="box.x" [attr.y]="box.y" [attr.width]="logBoxWidth" [attr.height]="logBoxHeight"></rect>
                     </svg>
                 </div>
             </div>
@@ -117,7 +120,8 @@
             <div class="statusLogBox" *ngIf="isTopicSelected[3]">
                 <div *ngFor="let boxes of statusLogBox">
                     <svg [attr.width]="width" [attr.height]="height">
-                        <rect class="logBox" *ngFor="let box of boxes" [attr.x]="box.x" [attr.y]="box.y" [attr.width]="logBoxWidth" [attr.height]="logBoxHeight"></rect>
+                        <rect class="logBox" *ngFor="let box of boxes"  [attr.x]="box.x" [attr.y]="box.y" [attr.width]="logBoxWidth" [attr.height]="logBoxHeight"></rect>
+                        <text *ngFor="let box of boxes, index as i" [attr.x]="box.x + logBoxWidth " [attr.y]="box.y + logBoxWidth/3"> {{box.msg}}</text>  
                     </svg>
                 </div>
             </div>
@@ -125,7 +129,8 @@
             <div class="appLogBox" *ngIf="isTopicSelected[4]">
                 <div *ngFor="let boxes of appLogBox">
                     <svg [attr.width]="width" [attr.height]="height">
-                        <rect class="logBox" *ngFor="let box of boxes" [attr.x]="box.x" [attr.y]="box.y" [attr.width]="logBoxWidth" [attr.height]="logBoxHeight"></rect>
+                        <rect class="logBox" *ngFor="let box of boxes" [attr.x]="box.x" (click)="showMsg(0)" [attr.y]="box.y" [attr.width]="logBoxWidth" [attr.height]="logBoxHeight"></rect>
+                        <text *ngFor="let box of boxes, index as i" [attr.x]="box.x + logBoxWidth " [attr.y]="box.y + logBoxWidth/3"> {{box.msg}}</text>    
                     </svg>
                 </div>
             </div>

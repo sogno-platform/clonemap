@@ -135,6 +135,7 @@
    color: gray;
    font-size: 20px;
    padding-top: 2px;
+   cursor: pointer; 
 }
 
 .active  {
@@ -220,25 +221,27 @@ text {
     fill: var(--primary-color);
 }
 
-.errorLogBox rect {
+.errorLogBox rect, .errorLogBox text {
    fill: rgb(230, 109, 109);
 }
 
-.debugLogBox rect {
+.debugLogBox rect, .debugLogBox text {
    fill: rgb(216, 216, 110);
 }
 
-.msgLogBox rect {
+.msgLogBox rect, .msgLogBox text {
    fill: var(--light-primary-color);
 }
 
-.statusLogBox rect {
+.statusLogBox rect, .statusLogBox text {
    fill: rgb(126, 235, 149);
 }
 
-.appLogBox rect {
+.appLogBox rect, .appLogBox text {
    fill: rgb(56, 202, 221);
 }
+
+
 
 
       

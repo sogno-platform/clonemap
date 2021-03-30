@@ -85,6 +85,22 @@ func (cli *LoggerClient) PostLogs(masID int, logs []schemas.LogMessage) (httpSta
 	return
 }
 
+// GetAllLatestLogs gets log messages
+func (cli *LoggerClient) GetAllLatestLogs(masID int, num int) (msgs []schemas.LogMessage, httpStatus int, err error) {
+	var body []byte
+	body, httpStatus, err = httpretry.Get(cli.httpClient, cli.prefix()+"/api/logging/"+
+		strconv.Itoa(masID)+"/latest/"+
+		strconv.Itoa(num), time.Second*2, 4)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(body, &msgs)
+	if err != nil {
+		msgs = []schemas.LogMessage{}
+	}
+	return
+}
+
 // GetLatestLogs gets log messages
 func (cli *LoggerClient) GetLatestLogs(masID int, agentID int, topic string,
 	num int) (msgs []schemas.LogMessage, httpStatus int, err error) {

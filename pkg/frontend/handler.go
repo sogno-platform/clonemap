@@ -142,6 +142,8 @@ func getDist(r *http.Request) (masID int, desc string, nodeID int, dist float64,
 	return
 }
 
+/****************************** Handler part for the logger ********************/
+
 // getNlogs return the masId, agentid, topic and number
 func getNLogs(r *http.Request) (masID int, agentid int, topic string, num int, err error) {
 	vars := mux.Vars(r)
@@ -157,6 +159,20 @@ func getNLogs(r *http.Request) (masID int, agentid int, topic string, num int, e
 
 	topic = vars["topic"]
 
+	num, err = strconv.Atoi(vars["num"])
+	if err != nil {
+		return
+	}
+	return
+}
+
+// getMasAnd returns the masID and num of logs from the path
+func getMasAndNum(r *http.Request) (masID int, num int, err error) {
+	vars := mux.Vars(r)
+	masID, err = strconv.Atoi(vars["masid"])
+	if err != nil {
+		return
+	}
 	num, err = strconv.Atoi(vars["num"])
 	if err != nil {
 		return
@@ -226,7 +242,9 @@ func (fe *Frontend) server(port int) (serv *http.Server) {
 	s.Path("/df/{masid}/svc/desc/{desc}/node/{nodeid}/dist/{dist}").Methods("Get").HandlerFunc(fe.handleSvcWithDist)
 
 	// api for logger
-	s.Path("/logging/{masid}/{agentid}/{topic}/latest/{num}").Methods("Get").HandlerFunc(fe.handleGetNLatestLogs)
+	s.Path("/logging/{masid}/latest/{num}").Methods("GET").HandlerFunc(fe.handleGetAllLatestLogMessages)
+	s.Path("/logging/{masid}/{agentid}/{topic}/latest/{num}").Methods("GET").HandlerFunc(fe.handleGetNLatestLogs)
+	s.Path("/logging/{masid}/list").Methods("Post").HandlerFunc(fe.handlePostLogs)
 	/* 	s.Path("/logging/{masid}/{agentid}/{topic}/time/{begin}/{end}").Methods("Get").HandlerFunc(fe.handleGetLogsWithRange) */
 
 	s.PathPrefix("").HandlerFunc(fe.resourceNotFound)

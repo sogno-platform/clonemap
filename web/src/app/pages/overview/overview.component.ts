@@ -16,8 +16,7 @@ export class OverviewComponent implements OnInit {
     fileToUpload: File = null;
     display: string = "";
     filename: string = "Choose a file...";
-    status: string ="Connecting......"
-
+    status: string ="Connecting......";
     constructor(
         private masService: MasService,
         private modalService: NgbModal,
@@ -26,6 +25,7 @@ export class OverviewComponent implements OnInit {
     ) {} 
     
     ngOnInit() {
+    
         this.masService.getMAS().subscribe((MASs: any) => {
             if (MASs === null) {
                 this.status = "Currently no agencies, upload one......";
@@ -43,7 +43,10 @@ export class OverviewComponent implements OnInit {
                 console.log(err)  
             }
         );
+
+
     }
+
 
     openLg(content) {
         this.modalService.open(content, { size: 'lg', centered: true });
