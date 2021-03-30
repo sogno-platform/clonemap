@@ -104,24 +104,7 @@
    color:white;
 }
 
-/* style of the nav tab */
 
-.nav-item>.active>a, .nav-item>.active>a:hover, .nav-item>.active>a:focus {
-   border-color: var(--background-primary-color);
-   border-bottom-color: transparent;
-}
-.nav-tabs {
-  border-bottom: 1px solid var(--background-primary-color);
-}
-
-.nav-link {
-   color: gray;
-}
-
-.nav-link.active {
-   color: var(--primary-color);
-   font-weight: bold;
-}
 
 /* style of the card */ 
 .empty-service {
@@ -147,28 +130,6 @@
 .card-body {
    padding: 0px;
 }
-
-/* style of the UML sequence diagram */
-
-svg {
-   /*    border: 1px solid var(--primary-color); */
-   /*    margin-top: 100px; */
-      margin-left: 300px;
-   }
-      
-.vertical {
-   stroke: var(--primary-color);
-   stroke-width: 20;
-}
-
-rect {
-   fill: var(--background-primary-color);
-   stroke: var(--primary-color);
-   stroke-width:5;
-   fill-opacity:0.1;
-   stroke-opacity:0.9;
-}
-
 
 
 

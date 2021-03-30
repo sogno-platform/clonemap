@@ -10,7 +10,7 @@
         </div>
     </div>   
     
-    <!--modal for uploading the agency-->
+    <!--modal for uploading the service-->
     <ng-template #content let-modal>
         <div class="modal-header">
             <h4 class="modal-title">Add Service</h4>
@@ -27,9 +27,9 @@
                 <div class="custom-file">
                     <input type="file" 
                             class="custom-file-input" 
-                            id="inputMAS"
+                            id="inputService"
                             (change)="handleFileInput($event.target.files)">
-                    <label class="custom-file-label" for="inputMAS" >{{filename}}</label>
+                    <label class="custom-file-label" for="inputService" >{{filename}}</label>
                 </div>
             </div>
         </div>
@@ -55,17 +55,8 @@
             </button>
             <button type='button' class='btn my-btn btn-create' (click)="openLg(content)">+</button>
         </div> 
-
-        <ul class="nav nav-tabs justify-content-end">
-            <li class="nav-item">
-              <a class="nav-link" [class.active]="curr_state==='list'" (click)="onClickList()" >list</a>
-            </li>
-            <li class="nav-item" style="padding-right:100px;">
-              <a class="nav-link" [class.active]="curr_state==='UML'" (click)="onClickUML()">UML</a>
-            </li>
-        </ul>
-          
-        <div class="content" *ngIf="curr_state === 'list'">
+  
+        <div class="content">
             <div class="empty-service" *ngIf="searched_results === null">
                 <h1>No services found</h1>
             </div>
@@ -105,19 +96,7 @@
                 </div>
             </div>
         </div>
-
-        <svg *ngIf="curr_state === 'UML'" width="1000" height="800">
-            <defs>
-            <marker id="arrow" viewBox="0 -5 10 10" refX="15" refY="0" markerWidth="4" markerHeight="4" orient="auto">
-                <path fill="gray" d="M0,-5L10,0L0,5"></path>
-            </marker>
-            </defs>
-            <rect *ngFor="let rect of rects" [attr.x]= "rect.x" [attr.y]="rect.y" width="80" height="70"/>
-            <text *ngFor="let t of texts;index as i" [attr.x]= "t.x" [attr.y]="t.y">S{{i+1}}</text>
-            <line stroke-dasharray="5, 5" stroke-width="4" class="dashed" stroke="var(--primary-color)" *ngFor="let line of dashed_connection" [attr.x1]="line.x1" [attr.y1]="line.y1" [attr.x2]="line.x2" [attr.y2]="line.y2"/> 
-            <line class="vertical" stroke="var(--primary-color)" *ngFor="let line of services" [attr.x1]="line.x1" [attr.y1]="line.y1" [attr.x2]="line.x2" [attr.y2]="line.y2"/>
-            <line stroke-dasharray="5, 5" stroke="gray" stroke-width="4" *ngFor="let line of interactions" [attr.x1]="line.x1" [attr.y1]="line.y1" [attr.x2]="line.x2" [attr.y2]="line.y2" marker-end="url(#arrow)"/> 
-        </svg>       
+       
 
         
         </div>
