@@ -63,6 +63,9 @@ func main() {
 func task(ag *agency.Agent) (err error) {
 	time.Sleep(2 * time.Second)
 	id := ag.GetAgentID()
+	recv := (id + 1) % 2
+	msg, _ := ag.ACL.NewMessage(recv, 0, 0, "test message")
+	ag.ACL.SendMessage(msg)
 	ag.Logger.NewLog("app", "This is agent "+strconv.Itoa(id), "")
 	return
 }

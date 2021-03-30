@@ -64,11 +64,12 @@ type ACL struct {
 	mutex         *sync.Mutex                     // mutex for address book
 	// commIn        chan int                        // ID of agents that have sent messages
 	// commOut       chan int                        // ID of agents that messages have been sent to
-	agentID   int
-	active    bool
-	aclLookup func(int) (*ACL, error)
-	logError  *log.Logger
-	logInfo   *log.Logger
+	agentID    int
+	active     bool
+	aclLookup  func(int) (*ACL, error)
+	cmapLogger *Logger
+	logError   *log.Logger
+	logInfo    *log.Logger
 }
 
 // commData stores data about communication with other agent
@@ -79,19 +80,21 @@ type commData struct {
 
 // newACL creates a new ACL object
 func newACL(agentID int, msgIn chan schemas.ACLMessage,
-	aclLookup func(int) (*ACL, error), logErr *log.Logger, logInf *log.Logger) (acl *ACL) {
+	aclLookup func(int) (*ACL, error), cmaplog *Logger, logErr *log.Logger,
+	logInf *log.Logger) (acl *ACL) {
 	acl = &ACL{
 		mutex:         &sync.Mutex{},
 		msgIn:         msgIn,
 		msgInProtocol: make(map[int]chan schemas.ACLMessage),
 		// commIn:        make(chan int, 5000),
 		// commOut:       make(chan int, 5000),
-		addrBook:  make(map[int]*ACL),
-		agentID:   agentID,
-		active:    true,
-		aclLookup: aclLookup,
-		logError:  logErr,
-		logInfo:   logInf,
+		addrBook:   make(map[int]*ACL),
+		agentID:    agentID,
+		active:     true,
+		aclLookup:  aclLookup,
+		cmapLogger: cmaplog,
+		logError:   logErr,
+		logInfo:    logInf,
 	}
 	return
 }
@@ -203,6 +206,10 @@ func (acl *ACL) SendMessage(msg schemas.ACLMessage) (err error) {
 		acl.mutex.Unlock()
 		err = aclRecv.newIncomingMessage(msg)
 	}
+	if err != nil {
+		return
+	}
+	err = acl.cmapLogger.NewLog("msg", "ACL send", msg.String())
 	// acl.mutex.Lock()
 	// if acl.analysis {
 	// 	acl.commOut <- msg.Receiver
@@ -228,6 +235,7 @@ func (acl *ACL) newIncomingMessage(msg schemas.ACLMessage) (err error) {
 	} else {
 		acl.msgIn <- msg
 	}
+	err = acl.cmapLogger.NewLog("msg", "ACL receive", msg.String())
 	// acl.mutex.Lock()
 	// if acl.analysis {
 	// 	acl.commIn <- msg.Sender

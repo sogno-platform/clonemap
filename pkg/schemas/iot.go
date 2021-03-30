@@ -56,3 +56,9 @@ type MQTTMessage struct {
 	Topic   string // Topic of message
 	Content []byte // Denotes the content of the message
 }
+
+// String outputs message
+func (msg MQTTMessage) String() (ret string) {
+	ret = "Topic: " + msg.Topic + "; Content: " + string(msg.Content)
+	return
+}

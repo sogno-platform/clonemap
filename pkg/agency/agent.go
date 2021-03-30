@@ -48,6 +48,7 @@ THE SOFTWARE.
 package agency
 
 import (
+	"errors"
 	"log"
 	"sync"
 
@@ -58,22 +59,23 @@ import (
 
 // Agent holds information about an agent and implements functionality for agent execution
 type Agent struct {
-	mutex    *sync.Mutex
-	id       int // unique id of agent
-	nodeID   int
-	name     string  // Name of agent
-	aType    string  // Type of agent
-	aSubtype string  // Subtype of agent
-	custom   string  // custom data
-	masID    int     // ID of MAS agent is belongs to
-	status   int     // Status of agent
-	ACL      *ACL    // agent communication
-	Logger   *Logger // logger object
-	MQTT     *MQTT   // mqtt object
-	DF       *DF
-	logError *log.Logger
-	logInfo  *log.Logger
-	active   bool
+	mutex      *sync.Mutex
+	id         int // unique id of agent
+	nodeID     int
+	name       string      // Name of agent
+	aType      string      // Type of agent
+	aSubtype   string      // Subtype of agent
+	custom     string      // custom data
+	customChan chan string // channel for custom update behavior
+	masID      int         // ID of MAS agent is belongs to
+	status     int         // Status of agent
+	ACL        *ACL        // agent communication
+	Logger     *Logger     // logger object
+	MQTT       *MQTT       // mqtt object
+	DF         *DF
+	logError   *log.Logger
+	logInfo    *log.Logger
+	active     bool
 }
 
 // newAgent creates a new agent
@@ -81,21 +83,22 @@ func newAgent(info schemas.AgentInfo, msgIn chan schemas.ACLMessage,
 	aclLookup func(int) (*ACL, error), log *logHandler, logConfig schemas.LoggerConfig,
 	mqtt *mqttClient, dfClient *dfclient.Client, logErr *log.Logger, logInf *log.Logger) (ag *Agent) {
 	ag = &Agent{
-		id:       info.ID,
-		nodeID:   info.Spec.NodeID,
-		name:     info.Spec.Name,
-		aType:    info.Spec.AType,
-		aSubtype: info.Spec.ASubtype,
-		masID:    info.MASID,
-		custom:   info.Spec.Custom,
-		mutex:    &sync.Mutex{},
-		ACL:      newACL(info.ID, msgIn, aclLookup, logErr, logInf),
-		logError: logErr,
-		logInfo:  logInf,
-		active:   true,
+		id:         info.ID,
+		nodeID:     info.Spec.NodeID,
+		name:       info.Spec.Name,
+		aType:      info.Spec.AType,
+		aSubtype:   info.Spec.ASubtype,
+		masID:      info.MASID,
+		custom:     info.Spec.Custom,
+		customChan: nil,
+		mutex:      &sync.Mutex{},
+		logError:   logErr,
+		logInfo:    logInf,
+		active:     true,
 	}
 	// in, out := ag.ACL.getCommDataChannels()
 	ag.Logger = newLogger(ag.id, log, logConfig, ag.logError, ag.logInfo)
+	ag.ACL = newACL(info.ID, msgIn, aclLookup, ag.Logger, logErr, logInf)
 	ag.MQTT = newMQTT(ag.id, mqtt, ag.Logger, ag.logError, ag.logInfo)
 	ag.DF = newDF(ag.masID, ag.id, ag.nodeID, dfClient, ag.logError, ag.logInfo)
 	return
@@ -142,12 +145,42 @@ func (agent *Agent) GetCustomData() (ret string) {
 	return
 }
 
+// registerCustomUpdateChannel sets the channel for a custom config update behavior if not already
+// set
+func (agent *Agent) registerCustomUpdateChannel(custChan chan string) (err error) {
+	agent.mutex.Lock()
+	if !agent.active {
+		agent.mutex.Unlock()
+		return errors.New("agent not active")
+	}
+	if agent.customChan != nil {
+		agent.mutex.Unlock()
+		return errors.New("custom config update is already handled")
+	}
+	agent.customChan = custChan
+	agent.mutex.Unlock()
+	return
+}
+
 // updateCustomData updates custom data
 func (agent *Agent) updateCustomData(custom string) {
 	agent.mutex.Lock()
 	agent.custom = custom
-	agent.mutex.Unlock()
+	if agent.customChan != nil {
+		agent.mutex.Unlock()
+		agent.customChan <- custom
+	} else {
+		agent.mutex.Unlock()
+	}
 	agent.logInfo.Println("Updated config of agent ", agent.GetAgentID())
+	return
+}
+
+// deregisterCustomUpdateChannel deletes the channel for a custom config update behavior
+func (agent *Agent) deregisterCustomUpdateChannel() (err error) {
+	agent.mutex.Lock()
+	agent.customChan = nil
+	agent.mutex.Unlock()
 	return
 }
 

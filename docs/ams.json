@@ -23,10 +23,10 @@
             },
             "agents":[
                 {
-                    "nodeid":0,
-                    "name":"agentnotask",
-                    "type":"NoTask",
-                    "custom":""
+                    "nodeid":0
+                },
+                {
+                    "nodeid":0
                 }
             ]
         }

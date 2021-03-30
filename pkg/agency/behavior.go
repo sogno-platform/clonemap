@@ -268,3 +268,70 @@ func (periodBehavior *periodicBehavior) Stop() {
 	// stop message handling
 	periodBehavior.ctrl <- -1
 }
+
+// customUpdateBehavior describes an action that should be performed when the custom configuration
+// is updated
+type customUpdateBehavior struct {
+	ag       *Agent                    // agent
+	handle   func(custom string) error // handler function
+	ctrl     chan int                  // control signals
+	customIn chan string               // custom config inbox
+	logInfo  *log.Logger
+}
+
+// NewCustomUpdateBehavior creates a new handler for custom config update actions
+func (agent *Agent) NewCustomUpdateBehavior(
+	handle func(custom string) error) (behavior Behavior, err error) {
+	if handle == nil {
+		err = errors.New("illegal handler")
+		return
+	}
+	custUpBehavior := &customUpdateBehavior{
+		ag:       agent,
+		handle:   handle,
+		ctrl:     make(chan int, 10),
+		customIn: make(chan string, 10),
+		logInfo:  agent.logInfo,
+	}
+	behavior = custUpBehavior
+	return
+}
+
+// Start initiates the handling of messages
+func (custUpBehavior *customUpdateBehavior) Start() {
+	custUpBehavior.ag.registerCustomUpdateChannel(custUpBehavior.customIn)
+	// execute
+	go custUpBehavior.task()
+}
+
+// task performs the execution of the handle function
+func (custUpBehavior *customUpdateBehavior) task() {
+	custUpBehavior.logInfo.Println("Starting custom configuration update behavior for agent ",
+		custUpBehavior.ag.GetAgentID())
+	for {
+		custUpBehavior.ag.mutex.Lock()
+		act := custUpBehavior.ag.active
+		custUpBehavior.ag.mutex.Unlock()
+		if !act {
+			custUpBehavior.Stop()
+		}
+		select {
+		case custom := <-custUpBehavior.customIn:
+			custUpBehavior.handle(custom)
+		case command := <-custUpBehavior.ctrl:
+			switch command {
+			case -1:
+				custUpBehavior.logInfo.Println("Terminating custom configuration update ",
+					"behavior for agent ", custUpBehavior.ag.GetAgentID())
+				return
+			}
+		}
+	}
+}
+
+// Stop terminates the behavior
+func (custUpBehavior *customUpdateBehavior) Stop() {
+	custUpBehavior.ag.deregisterCustomUpdateChannel()
+	// stop behavior
+	custUpBehavior.ctrl <- -1
+}
