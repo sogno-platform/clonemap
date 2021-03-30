@@ -152,7 +152,7 @@ func (mq *MQTT) SendMessage(msg schemas.MQTTMessage, qos int) (err error) {
 	if err != nil {
 		return
 	}
-	err = mq.cmapLogger.NewLog("msg", "Sent MQTT message: "+string(msg.Content), string(msg.Content))
+	err = mq.cmapLogger.NewLog("msg", "MQTT publish", msg.String())
 	return
 }
 
@@ -208,7 +208,7 @@ func (mq *MQTT) newIncomingMQTTMessage(msg schemas.MQTTMessage) {
 		return
 	}
 	mq.mutex.Unlock()
-	mq.cmapLogger.NewLog("msg", "Received MQTT message: "+string(msg.Content), string(msg.Content))
+	mq.cmapLogger.NewLog("msg", "MQTT receive", msg.String())
 	mq.mutex.Lock()
 	inbox, ok := mq.msgInTopic[msg.Topic]
 	mq.mutex.Unlock()

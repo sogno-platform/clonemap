@@ -92,13 +92,13 @@ func newAgent(info schemas.AgentInfo, msgIn chan schemas.ACLMessage,
 		custom:     info.Spec.Custom,
 		customChan: nil,
 		mutex:      &sync.Mutex{},
-		ACL:        newACL(info.ID, msgIn, aclLookup, logErr, logInf),
 		logError:   logErr,
 		logInfo:    logInf,
 		active:     true,
 	}
 	// in, out := ag.ACL.getCommDataChannels()
 	ag.Logger = newLogger(ag.id, log, logConfig, ag.logError, ag.logInfo)
+	ag.ACL = newACL(info.ID, msgIn, aclLookup, ag.Logger, logErr, logInf)
 	ag.MQTT = newMQTT(ag.id, mqtt, ag.Logger, ag.logError, ag.logInfo)
 	ag.DF = newDF(ag.masID, ag.id, ag.nodeID, dfClient, ag.logError, ag.logInfo)
 	return
