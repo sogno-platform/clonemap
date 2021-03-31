@@ -275,13 +275,13 @@ func (stor *localStorage) getAgentLogMessagesInRange(masID int, agentID int, top
 				if length > 0 {
 					startIndex := sort.Search(length,
 						func(i int) bool {
-							return start.After(stor.mas[masID].agents[agentID].errLogs[i].Timestamp)
+							return stor.mas[masID].agents[agentID].errLogs[i].Timestamp.After(start)
 						})
 					endIndex := sort.Search(length,
 						func(i int) bool {
-							return end.After(stor.mas[masID].agents[agentID].errLogs[i].Timestamp)
+							return stor.mas[masID].agents[agentID].errLogs[i].Timestamp.After(end)
 						})
-					if endIndex >= 0 {
+					if endIndex-startIndex >= 0 {
 						logs = make([]schemas.LogMessage, endIndex-startIndex, endIndex-startIndex)
 						copy(logs, stor.mas[masID].agents[agentID].errLogs[startIndex:endIndex])
 					}
@@ -291,13 +291,13 @@ func (stor *localStorage) getAgentLogMessagesInRange(masID int, agentID int, top
 				if length > 0 {
 					startIndex := sort.Search(length,
 						func(i int) bool {
-							return start.After(stor.mas[masID].agents[agentID].dbgLogs[i].Timestamp)
+							return stor.mas[masID].agents[agentID].dbgLogs[i].Timestamp.After(start)
 						})
 					endIndex := sort.Search(length,
 						func(i int) bool {
-							return end.After(stor.mas[masID].agents[agentID].dbgLogs[i].Timestamp)
+							return stor.mas[masID].agents[agentID].dbgLogs[i].Timestamp.After(end)
 						})
-					if endIndex >= 0 {
+					if endIndex-startIndex >= 0 {
 						logs = make([]schemas.LogMessage, endIndex-startIndex, endIndex-startIndex)
 						copy(logs, stor.mas[masID].agents[agentID].dbgLogs[startIndex:endIndex])
 					}
@@ -307,13 +307,13 @@ func (stor *localStorage) getAgentLogMessagesInRange(masID int, agentID int, top
 				if length > 0 {
 					startIndex := sort.Search(length,
 						func(i int) bool {
-							return start.After(stor.mas[masID].agents[agentID].msgLogs[i].Timestamp)
+							return stor.mas[masID].agents[agentID].msgLogs[i].Timestamp.After(start)
 						})
 					endIndex := sort.Search(length,
 						func(i int) bool {
-							return end.After(stor.mas[masID].agents[agentID].msgLogs[i].Timestamp)
+							return stor.mas[masID].agents[agentID].msgLogs[i].Timestamp.After(end)
 						})
-					if endIndex >= 0 {
+					if endIndex-startIndex >= 0 {
 						logs = make([]schemas.LogMessage, endIndex-startIndex, endIndex-startIndex)
 						copy(logs, stor.mas[masID].agents[agentID].msgLogs[startIndex:endIndex])
 					}
@@ -323,14 +323,14 @@ func (stor *localStorage) getAgentLogMessagesInRange(masID int, agentID int, top
 				if length > 0 {
 					startIndex := sort.Search(length,
 						func(i int) bool {
-							return start.After(
-								stor.mas[masID].agents[agentID].statLogs[i].Timestamp)
+							return stor.mas[masID].agents[agentID].statLogs[i].Timestamp.
+								After(start)
 						})
 					endIndex := sort.Search(length,
 						func(i int) bool {
-							return end.After(stor.mas[masID].agents[agentID].statLogs[i].Timestamp)
+							return stor.mas[masID].agents[agentID].statLogs[i].Timestamp.After(end)
 						})
-					if endIndex >= 0 {
+					if endIndex-startIndex >= 0 {
 						logs = make([]schemas.LogMessage, endIndex-startIndex, endIndex-startIndex)
 						copy(logs, stor.mas[masID].agents[agentID].statLogs[startIndex:endIndex])
 					}
@@ -346,7 +346,7 @@ func (stor *localStorage) getAgentLogMessagesInRange(masID int, agentID int, top
 						func(i int) bool {
 							return stor.mas[masID].agents[agentID].appLogs[i].Timestamp.After(end)
 						})
-					if endIndex >= 0 {
+					if endIndex-startIndex >= 0 {
 						logs = make([]schemas.LogMessage, endIndex-startIndex, endIndex-startIndex)
 						copy(logs, stor.mas[masID].agents[agentID].appLogs[startIndex:endIndex])
 					}

@@ -234,13 +234,14 @@ func (logger *Logger) handleGetLogsTime(w http.ResponseWriter, r *http.Request) 
 	}
 	vars := mux.Vars(r)
 	topic := vars["topic"]
-	start, cmapErr := time.Parse(time.RFC3339, vars["start"])
+	// start, cmapErr := time.Parse(time.RFC3339, vars["start"])
+	start, cmapErr := time.Parse("20060102150405", vars["start"])
 	if cmapErr != nil {
 		httpErr = httpreply.NotFoundError(w)
 		logger.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
-	end, cmapErr := time.Parse(time.RFC3339, vars["end"])
+	end, cmapErr := time.Parse("20060102150405", vars["end"])
 	if cmapErr != nil {
 		httpErr = httpreply.NotFoundError(w)
 		logger.logErrors(r.URL.Path, cmapErr, httpErr)
