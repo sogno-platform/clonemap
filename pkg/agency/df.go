@@ -51,7 +51,7 @@ import (
 	"sync"
 	"time"
 
-	dfclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/df/client"
+	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 )
 
@@ -63,7 +63,7 @@ type DF struct {
 	mutex              *sync.Mutex
 	registeredServices map[string]schemas.Service
 	active             bool // indicates if df is active (switch via env)
-	dfClient           *dfclient.Client
+	dfClient           *client.DFClient
 	logError           *log.Logger
 	logInfo            *log.Logger
 }
@@ -184,7 +184,7 @@ func (df *DF) DeregisterService(svcID string) (err error) {
 }
 
 // newDF creates a new DF object
-func newDF(masID int, agentID int, nodeID int, dfCli *dfclient.Client, logErr *log.Logger,
+func newDF(masID int, agentID int, nodeID int, dfCli *client.DFClient, logErr *log.Logger,
 	logInf *log.Logger) (df *DF) {
 	df = &DF{
 		agentID:  agentID,

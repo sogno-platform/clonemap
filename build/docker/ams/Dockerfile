@@ -48,8 +48,7 @@ COPY go.sum .
 RUN go mod download
 COPY cmd/ams cmd/ams
 COPY pkg/ams pkg/ams
-COPY pkg/agency/client pkg/agency/client
-COPY pkg/df/client pkg/df/client
+COPY pkg/client pkg/client
 COPY pkg/schemas pkg/schemas
 COPY pkg/status pkg/status
 COPY pkg/common pkg/common

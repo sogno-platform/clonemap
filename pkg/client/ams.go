@@ -42,7 +42,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-// Package client contains code for interaction with ams
+// Package client contains code for interaction with clonemap modules
 package client
 
 import (
@@ -57,8 +57,8 @@ import (
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 )
 
-// Client is the ams client
-type Client struct {
+// AMSClient is the ams client
+type AMSClient struct {
 	httpClient *http.Client  // http client
 	Host       string        // ams host name
 	Port       int           // ams port
@@ -67,7 +67,7 @@ type Client struct {
 }
 
 // Alive tests if alive
-func (cli *Client) Alive() (alive bool) {
+func (cli *AMSClient) Alive() (alive bool) {
 	alive = false
 	_, httpStatus, err := httpretry.Get(cli.httpClient, cli.prefix()+"/api/alive",
 		time.Second*2, 2)
@@ -78,7 +78,7 @@ func (cli *Client) Alive() (alive bool) {
 }
 
 // GetCloneMAP requests CloneMAP information
-func (cli *Client) GetCloneMAP() (cmap schemas.CloneMAP, httpStatus int, err error) {
+func (cli *AMSClient) GetCloneMAP() (cmap schemas.CloneMAP, httpStatus int, err error) {
 	var body []byte
 	body, httpStatus, err = httpretry.Get(cli.httpClient, cli.prefix()+"/api/clonemap",
 		time.Second*2, 2)
@@ -93,7 +93,7 @@ func (cli *Client) GetCloneMAP() (cmap schemas.CloneMAP, httpStatus int, err err
 }
 
 // GetMASsShort requests mas information
-func (cli *Client) GetMASsShort() (mass []schemas.MASInfoShort, httpStatus int, err error) {
+func (cli *AMSClient) GetMASsShort() (mass []schemas.MASInfoShort, httpStatus int, err error) {
 	var body []byte
 	body, httpStatus, err = httpretry.Get(cli.httpClient, cli.prefix()+"/api/clonemap/mas",
 		time.Second*2, 2)
@@ -108,7 +108,7 @@ func (cli *Client) GetMASsShort() (mass []schemas.MASInfoShort, httpStatus int, 
 }
 
 // PostMAS post an mas
-func (cli *Client) PostMAS(mas schemas.MASSpec) (httpStatus int, err error) {
+func (cli *AMSClient) PostMAS(mas schemas.MASSpec) (httpStatus int, err error) {
 	js, _ := json.Marshal(mas)
 	_, httpStatus, err = httpretry.Post(cli.httpClient, cli.prefix()+"/api/clonemap/mas",
 		"application/json", js, time.Second*2, 2)
@@ -116,7 +116,7 @@ func (cli *Client) PostMAS(mas schemas.MASSpec) (httpStatus int, err error) {
 }
 
 // GetMAS requests mas information
-func (cli *Client) GetMAS(masID int) (mas schemas.MASInfo, httpStatus int, err error) {
+func (cli *AMSClient) GetMAS(masID int) (mas schemas.MASInfo, httpStatus int, err error) {
 	var body []byte
 	body, httpStatus, err = httpretry.Get(cli.httpClient, cli.prefix()+"/api/clonemap/mas/"+
 		strconv.Itoa(masID), time.Second*2, 2)
@@ -131,7 +131,7 @@ func (cli *Client) GetMAS(masID int) (mas schemas.MASInfo, httpStatus int, err e
 }
 
 // DeleteMAS deletes a MAS
-func (cli *Client) DeleteMAS(masID int) (httpStatus int, err error) {
+func (cli *AMSClient) DeleteMAS(masID int) (httpStatus int, err error) {
 	httpStatus, err = httpretry.Delete(cli.httpClient, cli.prefix()+"/api/clonemap/mas/"+
 		strconv.Itoa(masID), nil,
 		time.Second*2, 2)
@@ -139,7 +139,7 @@ func (cli *Client) DeleteMAS(masID int) (httpStatus int, err error) {
 }
 
 // GetAgents requests agent information
-func (cli *Client) GetAgents(masID int) (agents schemas.Agents, httpStatus int, err error) {
+func (cli *AMSClient) GetAgents(masID int) (agents schemas.Agents, httpStatus int, err error) {
 	var body []byte
 	body, httpStatus, err = httpretry.Get(cli.httpClient, cli.prefix()+"/api/clonemap/mas/"+
 		strconv.Itoa(masID)+"/agents", time.Second*2, 2)
@@ -154,7 +154,7 @@ func (cli *Client) GetAgents(masID int) (agents schemas.Agents, httpStatus int, 
 }
 
 // PostAgents post agents to mas
-func (cli *Client) PostAgents(masID int, ags []schemas.ImageGroupSpec) (httpStatus int, err error) {
+func (cli *AMSClient) PostAgents(masID int, ags []schemas.ImageGroupSpec) (httpStatus int, err error) {
 	js, _ := json.Marshal(ags)
 	_, httpStatus, err = httpretry.Post(cli.httpClient, cli.prefix()+"/api/clonemap/mas/"+
 		strconv.Itoa(masID)+"/agents", "application/json", js, time.Second*2,
@@ -163,7 +163,7 @@ func (cli *Client) PostAgents(masID int, ags []schemas.ImageGroupSpec) (httpStat
 }
 
 // GetAgent requests agent information
-func (cli *Client) GetAgent(masID int, agentID int) (agent schemas.AgentInfo, httpStatus int,
+func (cli *AMSClient) GetAgent(masID int, agentID int) (agent schemas.AgentInfo, httpStatus int,
 	err error) {
 	var body []byte
 	body, httpStatus, err = httpretry.Get(cli.httpClient, cli.prefix()+"/api/clonemap/mas/"+
@@ -179,7 +179,7 @@ func (cli *Client) GetAgent(masID int, agentID int) (agent schemas.AgentInfo, ht
 }
 
 // GetAgentAddress requests agent address
-func (cli *Client) GetAgentAddress(masID int, agentID int) (address schemas.Address, httpStatus int,
+func (cli *AMSClient) GetAgentAddress(masID int, agentID int) (address schemas.Address, httpStatus int,
 	err error) {
 	var body []byte
 	ip := cli.getIP()
@@ -197,7 +197,7 @@ func (cli *Client) GetAgentAddress(masID int, agentID int) (address schemas.Addr
 }
 
 // DeleteAgent deletes an agent
-func (cli *Client) DeleteAgent(masID int, agentID int) (httpStatus int, err error) {
+func (cli *AMSClient) DeleteAgent(masID int, agentID int) (httpStatus int, err error) {
 	httpStatus, err = httpretry.Delete(cli.httpClient, cli.prefix()+"/api/clonemap/mas/"+
 		strconv.Itoa(masID)+"/agents/"+strconv.Itoa(agentID), nil,
 		time.Second*2, 2)
@@ -205,7 +205,7 @@ func (cli *Client) DeleteAgent(masID int, agentID int) (httpStatus int, err erro
 }
 
 // GetAgencies requests agency information
-func (cli *Client) GetAgencies(masID int) (agencies schemas.Agencies, httpStatus int, err error) {
+func (cli *AMSClient) GetAgencies(masID int) (agencies schemas.Agencies, httpStatus int, err error) {
 	var body []byte
 	body, httpStatus, err = httpretry.Get(cli.httpClient, cli.prefix()+"/api/clonemap/mas/"+
 		strconv.Itoa(masID)+"/agencies", time.Second*2, 2)
@@ -220,7 +220,7 @@ func (cli *Client) GetAgencies(masID int) (agencies schemas.Agencies, httpStatus
 }
 
 // GetAgencyInfo requests agency information
-func (cli *Client) GetAgencyInfo(masID int, imID int, agencyID int) (agency schemas.AgencyInfoFull,
+func (cli *AMSClient) GetAgencyInfo(masID int, imID int, agencyID int) (agency schemas.AgencyInfoFull,
 	httpStatus int, err error) {
 	var body []byte
 	body, httpStatus, err = httpretry.Get(cli.httpClient, cli.prefix()+"/api/clonemap/mas/"+
@@ -237,7 +237,7 @@ func (cli *Client) GetAgencyInfo(masID int, imID int, agencyID int) (agency sche
 	return
 }
 
-func (cli *Client) getIP() (ret string) {
+func (cli *AMSClient) getIP() (ret string) {
 	for {
 		ips, err := net.LookupHost(cli.Host)
 		if len(ips) > 0 && err == nil {
@@ -248,14 +248,14 @@ func (cli *Client) getIP() (ret string) {
 	return
 }
 
-func (cli *Client) prefix() (ret string) {
+func (cli *AMSClient) prefix() (ret string) {
 	ret = "http://" + cli.Host + ":" + strconv.Itoa(cli.Port)
 	return
 }
 
-// New creates a new AMS client
-func New(timeout time.Duration, del time.Duration, numRet int) (cli *Client) {
-	cli = &Client{
+// AMSClient creates a new AMS client
+func NewAMSClient(timeout time.Duration, del time.Duration, numRet int) (cli *AMSClient) {
+	cli = &AMSClient{
 		httpClient: &http.Client{Timeout: timeout},
 		Host:       "ams",
 		Port:       9000,
