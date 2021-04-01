@@ -98,7 +98,9 @@ func newAgent(info schemas.AgentInfo, msgIn chan schemas.ACLMessage,
 		active:     true,
 	}
 	// in, out := ag.ACL.getCommDataChannels()
-	ag.Logger = logCol.NewAgentLogger(ag.id, logConfig, ag.logError, ag.logInfo)
+	if logCol != nil {
+		ag.Logger = logCol.NewAgentLogger(ag.id, logConfig, ag.logError, ag.logInfo)
+	}
 	ag.ACL = newACL(info.ID, msgIn, aclLookup, ag.Logger, logErr, logInf)
 	ag.MQTT = newMQTT(ag.id, mqtt, ag.Logger, ag.logError, ag.logInfo)
 	ag.DF = newDF(ag.masID, ag.id, ag.nodeID, dfClient, ag.logError, ag.logInfo)

@@ -105,7 +105,6 @@ func StartAgency(task func(*Agent) error) (err error) {
 		return
 	}
 	go agency.receiveMsgs()
-	go agency.startAgents()
 
 	// catch kill signal in order to terminate agency and agents before exiting
 	var gracefulStop = make(chan os.Signal, 10)
@@ -149,26 +148,57 @@ func (agency *Agency) init() (err error) {
 	agency.mutex.Lock()
 	if len(hostname) < 6 {
 		err = errors.New("incorrect hostname")
+		agency.mutex.Unlock()
 		return
 	}
 	agency.info.MASID, err = strconv.Atoi(hostname[1])
 	if err != nil {
+		agency.mutex.Unlock()
 		return
 	}
 	agency.info.ImageGroupID, err = strconv.Atoi(hostname[3])
 	if err != nil {
+		agency.mutex.Unlock()
 		return
 	}
 	agency.info.ID, err = strconv.Atoi(hostname[5])
 	if err != nil {
+		agency.mutex.Unlock()
 		return
 	}
 	agency.info.Name = temp + ".mas" + hostname[1] + "agencies"
+	agency.mutex.Unlock()
+
+	// request configuration
+	var agencyInfoFull schemas.AgencyInfoFull
+	agencyInfoFull, _, err = agency.amsClient.GetAgencyInfo(agency.info.MASID,
+		agency.info.ImageGroupID, agency.info.ID)
+	agency.mutex.Lock()
+	agency.info.ID = agencyInfoFull.ID
+	agency.info.Logger = agencyInfoFull.Logger
+	agency.info.Logger.Host = "logger"
+	agency.info.Logger.Port = 11000
+	agency.mutex.Unlock()
+	if err != nil {
+		agency.info.Status = schemas.Status{
+			Code:       status.Error,
+			LastUpdate: time.Now(),
+		}
+		return
+	}
+
+	agency.mutex.Lock()
 	agency.logCollector, err = client.NewLogCollector(agency.info.MASID, agency.info.Logger,
 		agency.logError, agency.logInfo)
+	if err != nil {
+		agency.mutex.Unlock()
+		return
+	}
 	agency.mqttClient = newMQTTClient("mqtt", 1883, agency.info.Name, agency.logError,
 		agency.logInfo)
 	agency.mutex.Unlock()
+
+	go agency.startAgents(agencyInfoFull)
 	return
 }
 
@@ -189,22 +219,7 @@ func (agency *Agency) terminate(gracefulStop chan os.Signal) {
 }
 
 // startAgents starts all the agents
-func (agency *Agency) startAgents() (err error) {
-	// request configuration
-	var agencyInfoFull schemas.AgencyInfoFull
-	agencyInfoFull, _, err = agency.amsClient.GetAgencyInfo(agency.info.MASID,
-		agency.info.ImageGroupID, agency.info.ID)
-	agency.mutex.Lock()
-	agency.info.ID = agencyInfoFull.ID
-	agency.info.Logger = agencyInfoFull.Logger
-	agency.mutex.Unlock()
-	if err != nil {
-		agency.info.Status = schemas.Status{
-			Code:       status.Error,
-			LastUpdate: time.Now(),
-		}
-		return
-	}
+func (agency *Agency) startAgents(agencyInfoFull schemas.AgencyInfoFull) (err error) {
 	agency.logInfo.Println("Starting agents")
 	for i := 0; i < len(agencyInfoFull.Agents); i++ {
 		err = agency.createAgent(agencyInfoFull.Agents[i])

@@ -280,6 +280,7 @@ func NewLogCollector(masID int, config schemas.LoggerConfig, logErr *log.Logger,
 			time.Second*1, 4)
 		if err != nil {
 			logCol.config.Active = false
+			return
 		}
 	}
 	logCol.logIn = make(chan schemas.LogMessage, 10000)
@@ -305,6 +306,9 @@ type AgentLogger struct {
 
 // NewLog sends a new logging message to the logging service
 func (agLog *AgentLogger) NewLog(topic string, message string, data string) (err error) {
+	if agLog == nil {
+		return
+	}
 	agLog.mutex.Lock()
 	if !agLog.active {
 		agLog.mutex.Unlock()
