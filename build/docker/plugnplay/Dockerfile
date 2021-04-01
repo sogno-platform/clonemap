@@ -50,6 +50,7 @@ COPY cmd/plugnplay cmd/plugnplay
 COPY pkg/plugnplay pkg/plugnplay
 COPY pkg/client pkg/client
 COPY pkg/schemas pkg/schemas
+COPY pkg/status pkg/status
 COPY pkg/common pkg/common
 ENV PATH="/clonemap:${PATH}"
 RUN cd cmd/plugnplay; CGO_ENABLED=0 GOOS=linux go build -ldflags '-s' -o plugnplay; cp plugnplay /clonemap/
