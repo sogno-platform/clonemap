@@ -53,7 +53,6 @@ import (
 	"sync"
 
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/client"
-	dfclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/df/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/status"
 )
@@ -82,7 +81,7 @@ type Agent struct {
 // newAgent creates a new agent
 func newAgent(info schemas.AgentInfo, msgIn chan schemas.ACLMessage,
 	aclLookup func(int) (*ACL, error), logCol *client.LogCollector, logConfig schemas.LoggerConfig,
-	mqtt *mqttClient, dfClient *dfclient.Client, logErr *log.Logger, logInf *log.Logger) (ag *Agent) {
+	mqtt *mqttClient, dfClient *client.DFClient, logErr *log.Logger, logInf *log.Logger) (ag *Agent) {
 	ag = &Agent{
 		id:         info.ID,
 		nodeID:     info.Spec.NodeID,

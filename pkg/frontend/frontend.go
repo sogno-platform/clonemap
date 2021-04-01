@@ -52,14 +52,13 @@ import (
 	"time"
 
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/client"
-	dfclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/df/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 )
 
 // Frontend frontend
 type Frontend struct {
 	amsClient *client.AMSClient
-	dfClient  *dfclient.Client
+	dfClient  *client.DFClient
 	logClient *client.LoggerClient
 	logInfo   *log.Logger // logger for info logging
 	logError  *log.Logger // logger for error logging
@@ -69,7 +68,7 @@ type Frontend struct {
 func StartFrontend() (err error) {
 	fe := &Frontend{
 		amsClient: client.NewAMSClient(time.Second*60, time.Second*1, 4),
-		dfClient:  dfclient.New(time.Second*60, time.Second*1, 4),
+		dfClient:  client.NewDFClient(time.Second*60, time.Second*1, 4),
 		logError:  log.New(os.Stderr, "[ERROR] ", log.LstdFlags),
 	}
 	fe.logClient, _ = client.NewLoggerClient("logger", 11000, time.Second*60, time.Second*1, 4)

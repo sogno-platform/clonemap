@@ -50,7 +50,6 @@ COPY cmd/frontend cmd/frontend
 COPY pkg/frontend pkg/frontend
 COPY pkg/common pkg/common
 COPY pkg/schemas pkg/schemas
-COPY pkg/df/client pkg/df/client
 COPY pkg/client pkg/client
 COPY web web
 ENV PATH="/clonemap:${PATH}"

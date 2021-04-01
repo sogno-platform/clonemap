@@ -60,7 +60,6 @@ import (
 
 	agencyclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/agency/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/client"
-	dfclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/df/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/status"
 )
@@ -77,7 +76,7 @@ type Agency struct {
 	msgIn          chan []schemas.ACLMessage
 	logCollector   *client.LogCollector
 	mqttClient     *mqttClient
-	dfClient       *dfclient.Client
+	dfClient       *client.DFClient
 	amsClient      *client.AMSClient
 	agencyClient   *agencyclient.Client
 	logInfo        *log.Logger // logger for info logging
@@ -93,7 +92,7 @@ func StartAgency(task func(*Agent) error) (err error) {
 		remoteAgents:   make(map[int]*Agent),
 		remoteAgencies: make(map[string]*remoteAgency),
 		msgIn:          make(chan []schemas.ACLMessage, 1000),
-		dfClient:       dfclient.New(time.Second*60, time.Second*1, 4),
+		dfClient:       client.NewDFClient(time.Second*60, time.Second*1, 4),
 		amsClient:      client.NewAMSClient(time.Second*60, time.Second*1, 4),
 		agencyClient:   agencyclient.New(time.Second*60, time.Second*1, 4),
 		logError:       log.New(os.Stderr, "[ERROR] ", log.LstdFlags),

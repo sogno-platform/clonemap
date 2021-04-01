@@ -57,7 +57,7 @@ import (
 	"time"
 
 	agclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/agency/client"
-	dfclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/df/client"
+	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 )
 
@@ -68,7 +68,7 @@ type AMS struct {
 	logInfo      *log.Logger // logger for info logging
 	logError     *log.Logger // logger for error logging
 	agencyClient *agclient.Client
-	dfClient     *dfclient.Client
+	dfClient     *client.DFClient
 }
 
 // StartAMS starts an AMS instance. It initializes the cluster and storage object and starts API
@@ -77,7 +77,7 @@ func StartAMS() (err error) {
 	ams := &AMS{
 		logError:     log.New(os.Stderr, "[ERROR] ", log.LstdFlags),
 		agencyClient: agclient.New(time.Second*60, time.Second*1, 4),
-		dfClient:     dfclient.New(time.Second*60, time.Second*1, 4),
+		dfClient:     client.NewDFClient(time.Second*60, time.Second*1, 4),
 	}
 	// create storage and deployment object according to specified deployment type
 	err = ams.init()
