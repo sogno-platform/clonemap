@@ -54,7 +54,7 @@ import (
 	"time"
 
 	agclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/agency/client"
-	amscli "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/ams/client"
+	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/common/httpreply"
 	dfclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/df/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
@@ -127,7 +127,7 @@ func stubHandler(w http.ResponseWriter, r *http.Request) {
 // dummyClient makes requests to ams and terminates ams server at end
 func dummyClient(s *http.Server, t *testing.T) {
 	time.Sleep(time.Second * 1)
-	amsClient := amscli.New(time.Second*60, time.Second*1, 4)
+	amsClient := client.NewAMSClient(time.Second*60, time.Second*1, 4)
 	amsClient.Host = "localhost"
 	amsClient.Port = 10001
 
