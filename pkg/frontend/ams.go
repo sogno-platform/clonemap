@@ -68,7 +68,6 @@ func (fe *Frontend) handleGetMASs(w http.ResponseWriter, r *http.Request) {
 	}
 	httpErr = httpreply.Resource(w, mass, cmapErr)
 	fe.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handlePostMASs is the handler for post requests to path /api/ams/mas
@@ -96,7 +95,6 @@ func (fe *Frontend) handlePostMAS(w http.ResponseWriter, r *http.Request) {
 	}
 	httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Ressource Created"))
 	fe.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handleGetMASID is the handler for get requests to path /api/ams/mas/{masid}
@@ -119,7 +117,6 @@ func (fe *Frontend) handleGetMASID(w http.ResponseWriter, r *http.Request) {
 	}
 	httpErr = httpreply.Resource(w, masInfo, cmapErr)
 	fe.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handleDeleteMASID is the handler for delete requests to path /api/ams/mas/{masid}
@@ -142,8 +139,6 @@ func (fe *Frontend) handleDeleteMASID(w http.ResponseWriter, r *http.Request) {
 	}
 	httpErr = httpreply.Resource(w, httpStatus, cmapErr)
 	fe.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
-
 }
 
 // handlePostAgent is the handler for post requests to path /api/clonemap/mas/{masid}/agents
@@ -179,7 +174,6 @@ func (fe *Frontend) handlePostAgent(w http.ResponseWriter, r *http.Request) {
 	}
 	httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Resource Created"))
 	fe.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handleGetAgentID is the handler for get requests to path /api/ams/mas/{masid}/agents/{agentid}
@@ -201,7 +195,6 @@ func (fe *Frontend) handleGetAgentID(w http.ResponseWriter, r *http.Request) {
 	}
 	httpErr = httpreply.Resource(w, agentInfo, cmapErr)
 	fe.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handleDeleteAgentID is the handler for delete requests to path
@@ -223,5 +216,4 @@ func (fe *Frontend) handleDeleteAgentID(w http.ResponseWriter, r *http.Request) 
 	}
 	httpErr = httpreply.Deleted(w, cmapErr)
 	fe.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }

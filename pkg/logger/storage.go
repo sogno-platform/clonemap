@@ -147,7 +147,7 @@ func (stor *localStorage) addAgentLogMessage(log schemas.LogMessage) (err error)
 		stor.mas[log.MASID].agents[log.AgentID].appLogs = append(stor.mas[log.MASID].agents[log.AgentID].appLogs,
 			log)
 	default:
-		err = errors.New("Wrong topic")
+		err = errors.New("wrong topic")
 	}
 	stor.mutex.Unlock()
 	return
@@ -224,38 +224,38 @@ func (stor *localStorage) getLatestAgentLogMessages(masID int, agentID int, topi
 				if length < num {
 					num = length
 				}
-				logs = make([]schemas.LogMessage, num, num)
+				logs = make([]schemas.LogMessage, num)
 				copy(logs, stor.mas[masID].agents[agentID].errLogs[length-num:length])
 			case "debug":
 				length := len(stor.mas[masID].agents[agentID].dbgLogs)
 				if length < num {
 					num = length
 				}
-				logs = make([]schemas.LogMessage, num, num)
+				logs = make([]schemas.LogMessage, num)
 				copy(logs, stor.mas[masID].agents[agentID].dbgLogs[length-num:length])
 			case "msg":
 				length := len(stor.mas[masID].agents[agentID].msgLogs)
 				if length < num {
 					num = length
 				}
-				logs = make([]schemas.LogMessage, num, num)
+				logs = make([]schemas.LogMessage, num)
 				copy(logs, stor.mas[masID].agents[agentID].msgLogs[length-num:length])
 			case "status":
 				length := len(stor.mas[masID].agents[agentID].statLogs)
 				if length < num {
 					num = length
 				}
-				logs = make([]schemas.LogMessage, num, num)
+				logs = make([]schemas.LogMessage, num)
 				copy(logs, stor.mas[masID].agents[agentID].statLogs[length-num:length])
 			case "app":
 				length := len(stor.mas[masID].agents[agentID].appLogs)
 				if length < num {
 					num = length
 				}
-				logs = make([]schemas.LogMessage, num, num)
+				logs = make([]schemas.LogMessage, num)
 				copy(logs, stor.mas[masID].agents[agentID].appLogs[length-num:length])
 			default:
-				err = errors.New("Wrong topic")
+				err = errors.New("wrong topic")
 			}
 		}
 	}
@@ -282,7 +282,7 @@ func (stor *localStorage) getAgentLogMessagesInRange(masID int, agentID int, top
 							return stor.mas[masID].agents[agentID].errLogs[i].Timestamp.After(end)
 						})
 					if endIndex-startIndex >= 0 {
-						logs = make([]schemas.LogMessage, endIndex-startIndex, endIndex-startIndex)
+						logs = make([]schemas.LogMessage, endIndex-startIndex)
 						copy(logs, stor.mas[masID].agents[agentID].errLogs[startIndex:endIndex])
 					}
 				}
@@ -298,7 +298,7 @@ func (stor *localStorage) getAgentLogMessagesInRange(masID int, agentID int, top
 							return stor.mas[masID].agents[agentID].dbgLogs[i].Timestamp.After(end)
 						})
 					if endIndex-startIndex >= 0 {
-						logs = make([]schemas.LogMessage, endIndex-startIndex, endIndex-startIndex)
+						logs = make([]schemas.LogMessage, endIndex-startIndex)
 						copy(logs, stor.mas[masID].agents[agentID].dbgLogs[startIndex:endIndex])
 					}
 				}
@@ -314,7 +314,7 @@ func (stor *localStorage) getAgentLogMessagesInRange(masID int, agentID int, top
 							return stor.mas[masID].agents[agentID].msgLogs[i].Timestamp.After(end)
 						})
 					if endIndex-startIndex >= 0 {
-						logs = make([]schemas.LogMessage, endIndex-startIndex, endIndex-startIndex)
+						logs = make([]schemas.LogMessage, endIndex-startIndex)
 						copy(logs, stor.mas[masID].agents[agentID].msgLogs[startIndex:endIndex])
 					}
 				}
@@ -331,7 +331,7 @@ func (stor *localStorage) getAgentLogMessagesInRange(masID int, agentID int, top
 							return stor.mas[masID].agents[agentID].statLogs[i].Timestamp.After(end)
 						})
 					if endIndex-startIndex >= 0 {
-						logs = make([]schemas.LogMessage, endIndex-startIndex, endIndex-startIndex)
+						logs = make([]schemas.LogMessage, endIndex-startIndex)
 						copy(logs, stor.mas[masID].agents[agentID].statLogs[startIndex:endIndex])
 					}
 				}
@@ -347,12 +347,12 @@ func (stor *localStorage) getAgentLogMessagesInRange(masID int, agentID int, top
 							return stor.mas[masID].agents[agentID].appLogs[i].Timestamp.After(end)
 						})
 					if endIndex-startIndex >= 0 {
-						logs = make([]schemas.LogMessage, endIndex-startIndex, endIndex-startIndex)
+						logs = make([]schemas.LogMessage, endIndex-startIndex)
 						copy(logs, stor.mas[masID].agents[agentID].appLogs[startIndex:endIndex])
 					}
 				}
 			default:
-				err = errors.New("Wrong topic")
+				err = errors.New("wrong topic")
 			}
 		}
 	}

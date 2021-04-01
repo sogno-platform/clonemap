@@ -117,7 +117,6 @@ func (cli *mqttClient) newIncomingMQTTMessage(client mqtt.Client, msg mqtt.Messa
 	if err != nil {
 		cli.logError.Println(err)
 	}
-	return
 }
 
 // subscribe subscribes to specified topics

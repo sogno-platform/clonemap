@@ -223,7 +223,7 @@ func (stor *etcdStorage) uploadAgentInfo(newMAS schemas.MASInfo) (err error) {
 		if newMAS.Agents.Counter-agentIndex < numAgInTrans {
 			numAgInTrans = newMAS.Agents.Counter - agentIndex
 		}
-		Ops := make([]clientv3.Op, numAgInTrans, numAgInTrans)
+		Ops := make([]clientv3.Op, numAgInTrans)
 		// put all agent structs together
 		for i := 0; i < numAgInTrans; i++ {
 			var res []byte
@@ -270,7 +270,7 @@ func (stor *etcdStorage) uploadImGroupInfo(newMAS schemas.MASInfo) (err error) {
 			if newMAS.ImageGroups.Inst[i].Agencies.Counter-agencyIndex < numAgInTrans {
 				numAgInTrans = newMAS.ImageGroups.Inst[i].Agencies.Counter - agencyIndex
 			}
-			Ops := make([]clientv3.Op, numAgInTrans, numAgInTrans)
+			Ops := make([]clientv3.Op, numAgInTrans)
 			// put all agencies structs together
 			for j := 0; j < numAgInTrans; j++ {
 				var res []byte
@@ -573,6 +573,10 @@ func (stor *etcdStorage) initEtcd() (err error) {
 	cloneMAP := schemas.CloneMAP{Version: "v0.1", Uptime: time.Now()}
 	var res []byte
 	res, err = json.Marshal(cloneMAP)
+	if err != nil {
+		cancel()
+		return
+	}
 	req := clientv3.OpPut("ams/data", string(res))
 	cond := clientv3.Compare(clientv3.Version("ams/data"), "=", 0)
 	_, err = stor.client.Txn(ctx).If(cond).Then(req).Commit()
@@ -597,8 +601,8 @@ func (stor *etcdStorage) initCache() (err error) {
 	if err != nil {
 		return
 	}
-	stor.mas = make([]schemas.MASInfo, stor.masCounter, stor.masCounter)
-	stor.verMAS = make([]masVersion, stor.masCounter, stor.masCounter)
+	stor.mas = make([]schemas.MASInfo, stor.masCounter)
+	stor.verMAS = make([]masVersion, stor.masCounter)
 	// get data for each mas
 	for i := 0; i < stor.masCounter; i++ {
 		// MAS config
@@ -636,15 +640,14 @@ func (stor *etcdStorage) initCache() (err error) {
 // initMASImGroups retrieves data of agencies in a mas from etcd
 func (stor *etcdStorage) initMASImGroups(masID int) (err error) {
 	// MAS im group counter
-	stor.verMAS[masID].groupCounter, err = stor.etcdGetResource("ams/mas/"+strconv.Itoa(masID)+"/imcounter",
-		&stor.mas[masID].ImageGroups.Counter)
+	stor.verMAS[masID].groupCounter, err = stor.etcdGetResource("ams/mas/"+strconv.Itoa(masID)+
+		"/imcounter", &stor.mas[masID].ImageGroups.Counter)
 	if err != nil {
 		return
 	}
 	stor.mas[masID].ImageGroups.Inst = make([]schemas.ImageGroupInfo,
-		stor.mas[masID].ImageGroups.Counter, stor.mas[masID].ImageGroups.Counter)
-	stor.verMAS[masID].imGroups = make([]imGroupVersion, stor.mas[masID].ImageGroups.Counter,
 		stor.mas[masID].ImageGroups.Counter)
+	stor.verMAS[masID].imGroups = make([]imGroupVersion, stor.mas[masID].ImageGroups.Counter)
 
 	for i := 0; i < stor.mas[masID].ImageGroups.Counter; i++ {
 		stor.verMAS[masID].imGroups[i].agencyCounter, err = stor.etcdGetResource("ams/mas/"+
@@ -660,15 +663,13 @@ func (stor *etcdStorage) initMASImGroups(masID int) (err error) {
 			return
 		}
 		stor.mas[masID].ImageGroups.Inst[i].Agencies.Inst = make([]schemas.AgencyInfo,
-			stor.mas[masID].ImageGroups.Inst[i].Agencies.Counter,
 			stor.mas[masID].ImageGroups.Inst[i].Agencies.Counter)
 		stor.verMAS[masID].imGroups[i].agencies = make([]int,
-			stor.mas[masID].ImageGroups.Inst[i].Agencies.Counter,
 			stor.mas[masID].ImageGroups.Inst[i].Agencies.Counter)
 
 		// get info of all agencies and loop through
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		resp := &clientv3.GetResponse{}
+		var resp *clientv3.GetResponse
 		resp, err = stor.client.Get(ctx, "ams/mas/"+strconv.Itoa(masID)+"/im/"+strconv.Itoa(i)+
 			"/agency", clientv3.WithPrefix())
 		if err != nil {
@@ -720,14 +721,12 @@ func (stor *etcdStorage) initMASAgents(masID int) (err error) {
 	if err != nil {
 		return
 	}
-	stor.mas[masID].Agents.Inst = make([]schemas.AgentInfo, stor.mas[masID].Agents.Counter,
-		stor.mas[masID].Agents.Counter)
-	stor.verMAS[masID].agents = make([]int, stor.mas[masID].Agents.Counter,
-		stor.mas[masID].Agents.Counter)
+	stor.mas[masID].Agents.Inst = make([]schemas.AgentInfo, stor.mas[masID].Agents.Counter)
+	stor.verMAS[masID].agents = make([]int, stor.mas[masID].Agents.Counter)
 
 	// get info of all agents and loop through
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	resp := &clientv3.GetResponse{}
+	var resp *clientv3.GetResponse
 	resp, err = stor.client.Get(ctx, "ams/mas/"+strconv.Itoa(masID)+"/agent", clientv3.WithPrefix())
 	if err != nil {
 		cancel()
@@ -1039,7 +1038,6 @@ func (stor *etcdStorage) adjustMASStorage(masID int) {
 		}
 	}
 	stor.mutex.Unlock()
-	return
 }
 
 // adjustImGroupStorage adjusts the size of the image group storage to the imID
@@ -1060,7 +1058,6 @@ func (stor *etcdStorage) adjustImGroupStorage(masID int, imID int) {
 		}
 	}
 	stor.mutex.Unlock()
-	return
 }
 
 // adjustAgencyStorage adjusts the size of the agency storage to the agencyID
@@ -1082,7 +1079,6 @@ func (stor *etcdStorage) adjustAgencyStorage(masID int, imID int, agencyID int) 
 		}
 	}
 	stor.mutex.Unlock()
-	return
 }
 
 // adjustAgentStorage adjusts the size of the agent storage to the agentID
@@ -1102,14 +1098,13 @@ func (stor *etcdStorage) adjustAgentStorage(masID int, agentID int) {
 		}
 	}
 	stor.mutex.Unlock()
-	return
 }
 
 // etcdGetResource requests resourcefrom etcd and unmarshalls it
 func (stor *etcdStorage) etcdGetResource(key string, v interface{}) (ver int, err error) {
 	ver = 0
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	resp := &clientv3.GetResponse{}
+	var resp *clientv3.GetResponse
 	resp, err = stor.client.Get(ctx, key)
 	if err == nil {
 		if len(resp.Kvs) > 0 {

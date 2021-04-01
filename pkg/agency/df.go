@@ -78,14 +78,14 @@ func (df *DF) RegisterService(svc schemas.Service) (id string, err error) {
 	df.mutex.Unlock()
 	id = "-1"
 	if svc.Desc == "" {
-		err = errors.New("Empty description not allowed")
+		err = errors.New("empty description not allowed")
 		return
 	}
 	df.mutex.Lock()
 	_, ok := df.registeredServices[svc.Desc]
 	df.mutex.Unlock()
 	if ok {
-		err = errors.New("Service already registered")
+		err = errors.New("service already registered")
 		return
 	}
 	df.mutex.Lock()
@@ -173,7 +173,7 @@ func (df *DF) DeregisterService(svcID string) (err error) {
 	}
 	df.mutex.Unlock()
 	if desc == "" {
-		err = errors.New("No such service")
+		err = errors.New("no such service")
 		return
 	}
 	df.mutex.Lock()
@@ -213,5 +213,4 @@ func (df *DF) close() {
 	df.logInfo.Println("Closing DF of agent ", df.agentID)
 	df.active = false
 	df.mutex.Unlock()
-	return
 }

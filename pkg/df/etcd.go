@@ -93,7 +93,7 @@ func (stor *etcdStorage) registerService(svc schemas.Service) (svcID string, err
 		if ok {
 			for i := range agSvc {
 				if agSvc[i].Desc == svc.Desc {
-					err = errors.New("Service already exists")
+					err = errors.New("service already exists")
 					return
 				}
 			}
@@ -117,19 +117,19 @@ func (stor *etcdStorage) deregisterService(masID int, svcID string) (err error) 
 	numMAS := len(stor.mas)
 	stor.mutex.Unlock()
 	if numMAS <= masID {
-		err = errors.New("Service does not exists")
+		err = errors.New("service does not exists")
 		return
 	}
 	stor.mutex.Lock()
 	svc, ok = stor.mas[masID].service[svcID]
 	stor.mutex.Unlock()
 	if !ok {
-		err = errors.New("Service does not exists")
+		err = errors.New("service does not exists")
 		return
 	}
 	// check if service has not been deleted yet
 	if svc.GUID == "-1" {
-		err = errors.New("Service does not exists")
+		err = errors.New("service does not exists")
 		return
 	}
 	svc.GUID = "-1"
@@ -174,7 +174,7 @@ func (stor *etcdStorage) initCache() (err error) {
 	stor.mutex = &sync.Mutex{}
 	// get info of all svcs and loop through
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	resp := &clientv3.GetResponse{}
+	var resp *clientv3.GetResponse
 	resp, err = stor.client.Get(ctx, "df/mas")
 	if err == nil {
 		for i := range resp.Kvs {
@@ -226,7 +226,6 @@ func (stor *etcdStorage) initCache() (err error) {
 
 	// get graphs
 	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
-	resp = &clientv3.GetResponse{}
 	resp, err = stor.client.Get(ctx, "df/graph")
 	if err != nil {
 		for i := range resp.Kvs {
@@ -368,7 +367,7 @@ func (stor *etcdStorage) handleSvcEvents(masID int, svcID string, kv *mvccpb.Key
 				}
 			}
 			if svcIndex == -1 {
-				err = errors.New("Service does not exists")
+				err = errors.New("service does not exists")
 				return
 			}
 			// delete service from slice of corresponding agent
@@ -394,7 +393,7 @@ func (stor *etcdStorage) handleSvcEvents(masID int, svcID string, kv *mvccpb.Key
 				}
 			}
 			if svcIndex == -1 {
-				err = errors.New("Service does not exists")
+				err = errors.New("service does not exists")
 				return
 			}
 			// delete service from slice of corresponding desc entry
@@ -422,7 +421,7 @@ func (stor *etcdStorage) handleSvcEvents(masID int, svcID string, kv *mvccpb.Key
 func (stor *etcdStorage) etcdGetResource(key string, v interface{}) (ver int, err error) {
 	ver = 0
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	resp := &clientv3.GetResponse{}
+	var resp *clientv3.GetResponse
 	resp, err = stor.client.Get(ctx, key)
 	if err == nil {
 		if len(resp.Kvs) > 0 {
