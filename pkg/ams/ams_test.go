@@ -53,7 +53,6 @@ import (
 	"testing"
 	"time"
 
-	agclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/agency/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/common/httpreply"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
@@ -70,7 +69,7 @@ func TestAMS(t *testing.T) {
 	ams := &AMS{
 		logError:     log.New(os.Stderr, "[ERROR] ", log.LstdFlags),
 		logInfo:      log.New(os.Stdout, "[INFO] ", log.LstdFlags),
-		agencyClient: agclient.New(time.Second*60, time.Second*1, 4),
+		agencyClient: client.NewAgencyClient(time.Second*60, time.Second*1, 4),
 		dfClient:     client.NewDFClient(time.Second*60, time.Second*1, 4),
 	}
 	// create storage and deployment object according to specified deployment type

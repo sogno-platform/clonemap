@@ -51,14 +51,14 @@ import (
 	"net/http"
 	"strconv"
 
-	agencyclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/agency/client"
+	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 )
 
 // remoteAgency holds the channel used for sending messages to remot agency
 type remoteAgency struct {
 	msgIn        chan schemas.ACLMessage // ACL message inbox
-	agencyClient *agencyclient.Client
+	agencyClient *client.AgencyClient
 	// agents map[int]*agent.Agent
 }
 
