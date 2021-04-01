@@ -71,7 +71,6 @@ func (agency *Agency) handleGetAgency(w http.ResponseWriter, r *http.Request) {
 	}
 	httpErr = httpreply.Resource(w, agencyInfo, cmapErr)
 	agency.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handlePostAgent is the handler for post requests to path /api/agency/agents
@@ -95,7 +94,6 @@ func (agency *Agency) handlePostAgent(w http.ResponseWriter, r *http.Request) {
 	go agency.createAgent(agentInfo)
 	httpErr = httpreply.Created(w, nil, "text/plain", []byte("Ressource Created"))
 	agency.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handlePostMsgs is the handler for post requests to path /api/agency/msgs
@@ -118,7 +116,6 @@ func (agency *Agency) handlePostMsgs(w http.ResponseWriter, r *http.Request) {
 	agency.msgIn <- msgs
 	httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Ressource Created"))
 	agency.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handlePostUndeliverableMsg is the handler for post requests to path /api/agency/msgundeliv
@@ -141,7 +138,6 @@ func (agency *Agency) handlePostUndeliverableMsg(w http.ResponseWriter, r *http.
 	go agency.resendUndeliverableMsg(msg)
 	httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Ressource Created"))
 	agency.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handleDeleteAgentID is the handler for delete requests to path /api/agency/agents/{agentid}
@@ -158,7 +154,6 @@ func (agency *Agency) handleDeleteAgentID(w http.ResponseWriter, r *http.Request
 	cmapErr = agency.removeAgent(agentID)
 	httpErr = httpreply.Deleted(w, cmapErr)
 	agency.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handleGetAgentStatus is the handler for get requests to path /api/agency/agents/{agentid}/status
@@ -181,7 +176,6 @@ func (agency *Agency) handleGetAgentStatus(w http.ResponseWriter, r *http.Reques
 	}
 	httpErr = httpreply.Resource(w, agentStatus, cmapErr)
 	agency.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handlePutAgentCustom is the handler for put requests to path /api/agency/agents/{agentid}/custom
@@ -211,7 +205,6 @@ func (agency *Agency) handlePutAgentCustom(w http.ResponseWriter, r *http.Reques
 	}
 	httpErr = httpreply.Updated(w, cmapErr)
 	agency.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // methodNotAllowed is the default handler for valid paths but invalid methods
@@ -219,15 +212,13 @@ func (agency *Agency) methodNotAllowed(w http.ResponseWriter, r *http.Request) {
 	httpErr := httpreply.MethodNotAllowed(w)
 	cmapErr := errors.New("Error: Method not allowed on path " + r.URL.Path)
 	agency.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // resourceNotFound is the default handler for invalid paths
 func (agency *Agency) resourceNotFound(w http.ResponseWriter, r *http.Request) {
 	httpErr := httpreply.NotFoundError(w)
-	cmapErr := errors.New("Resource not found")
+	cmapErr := errors.New("resource not found")
 	agency.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // logErrors logs errors if any
@@ -238,7 +229,6 @@ func (agency *Agency) logErrors(path string, cmapErr error, httpErr error) {
 	if httpErr != nil {
 		agency.logError.Println(path, httpErr)
 	}
-	return
 }
 
 // loggingMiddleware logs request before calling final handler

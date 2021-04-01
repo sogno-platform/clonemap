@@ -341,20 +341,18 @@ func (ams *AMS) configureMAS(masSpec schemas.MASSpec) (masInfo schemas.MASInfo,
 
 	// total number of agents and total number of agencies
 	masInfo.Agents.Counter = 0
-	numAgencies = make([]int, masInfo.ImageGroups.Counter, masInfo.ImageGroups.Counter)
+	numAgencies = make([]int, masInfo.ImageGroups.Counter)
 	for i := range masSpec.ImageGroups {
 		masInfo.Agents.Counter += len(masSpec.ImageGroups[i].Agents)
 		num := len(masSpec.ImageGroups[i].Agents) / masSpec.Config.NumAgentsPerAgency
 		if len(masSpec.ImageGroups[i].Agents)%masSpec.Config.NumAgentsPerAgency > 0 {
 			num++
 		}
-		masInfo.ImageGroups.Inst[i].Agencies.Inst = make([]schemas.AgencyInfo, num,
-			num)
+		masInfo.ImageGroups.Inst[i].Agencies.Inst = make([]schemas.AgencyInfo, num)
 		masInfo.ImageGroups.Inst[i].Agencies.Counter = num
 		numAgencies[i] = num
 	}
-	masInfo.Agents.Inst = make([]schemas.AgentInfo, masInfo.Agents.Counter,
-		masInfo.Agents.Counter)
+	masInfo.Agents.Inst = make([]schemas.AgentInfo, masInfo.Agents.Counter)
 
 	// empty graph?
 	if len(masInfo.Graph.Node) == 0 {
@@ -487,11 +485,6 @@ func (ams *AMS) createAgents(masID int, groupSpecs []schemas.ImageGroupSpec) (er
 			}
 		}
 	}
-	return
-}
-
-// createAgent creates a new agent and adds it to an existing mas
-func (ams *AMS) createAgent(masID int, agentSpec schemas.AgentSpec) (err error) {
 	return
 }
 

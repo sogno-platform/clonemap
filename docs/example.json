@@ -23,10 +23,12 @@
             },
             "agents":[
                 {
-                    "nodeid":0
+                    "nodeid":0,
+                    "name":"test"
                 },
                 {
-                    "nodeid":0
+                    "nodeid":0,
+                    "name":"test"
                 }
             ]
         }

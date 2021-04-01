@@ -102,7 +102,7 @@ func (stor *localStorage) registerService(svc schemas.Service) (svcID string, er
 	if ok {
 		for i := range agSvc {
 			if agSvc[i].Desc == svc.Desc {
-				err = errors.New("Service already exists")
+				err = errors.New("service already exists")
 				return
 			}
 		}
@@ -144,7 +144,7 @@ func (stor *localStorage) deregisterService(masID int, svcID string) (err error)
 	stor.mutex.Unlock()
 	// check if mas and service exist
 	if numMAS <= masID {
-		err = errors.New("Service does not exists")
+		err = errors.New("service does not exists")
 		return
 	}
 	stor.mutex.Lock()
@@ -152,7 +152,7 @@ func (stor *localStorage) deregisterService(masID int, svcID string) (err error)
 	stor.mutex.Unlock()
 	// check if service has not been deleted yet
 	if !ok || svc.GUID == "-1" {
-		err = errors.New("Service does not exists")
+		err = errors.New("service does not exists")
 		return
 	}
 	// mark service as deleted
@@ -170,7 +170,7 @@ func (stor *localStorage) deregisterService(masID int, svcID string) (err error)
 		}
 	}
 	if svcIndex == -1 {
-		err = errors.New("Service does not exists")
+		err = errors.New("service does not exists")
 		return
 	}
 	// delete service from slice of corresponding agent
@@ -199,7 +199,7 @@ func (stor *localStorage) deregisterService(masID int, svcID string) (err error)
 		}
 	}
 	if svcIndex == -1 {
-		err = errors.New("Service does not exists")
+		err = errors.New("service does not exists")
 		return
 	}
 	// delete service from slice of corresponding desc entry
@@ -279,14 +279,14 @@ func (stor *localStorage) getService(masID int, svcID string) (svc schemas.Servi
 	numMAS := len(stor.mas)
 	stor.mutex.Unlock()
 	if numMAS <= masID {
-		err = errors.New("Service does not exists")
+		err = errors.New("service does not exists")
 		return
 	}
 	stor.mutex.Lock()
 	svc, ok = stor.mas[masID].service[svcID]
 	stor.mutex.Unlock()
 	if !ok {
-		err = errors.New("Service does not exists")
+		err = errors.New("service does not exists")
 		return
 	}
 	return
@@ -321,7 +321,7 @@ func (stor *localStorage) getGraph(masID int) (g schemas.Graph, err error) {
 	numMAS := len(stor.mas)
 	stor.mutex.Unlock()
 	if numMAS <= masID {
-		err = errors.New("Graph does not exists")
+		err = errors.New("graph does not exists")
 		return
 	}
 	stor.mutex.Lock()

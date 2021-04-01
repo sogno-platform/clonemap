@@ -82,5 +82,4 @@ func dummyClient(s *http.Server, t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	s.Shutdown(ctx)
-	return
 }

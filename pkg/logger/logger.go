@@ -79,7 +79,6 @@ func StartLogger() {
 	if err != nil {
 		log.logError.Println(err)
 	}
-	return
 }
 
 func (logger *Logger) init() (err error) {
@@ -90,7 +89,7 @@ func (logger *Logger) init() (err error) {
 	case "error":
 		logger.logInfo = log.New(ioutil.Discard, "", log.LstdFlags)
 	default:
-		err = errors.New("Wrong log type: " + logType)
+		err = errors.New("wrong log type: " + logType)
 		return
 	}
 	logger.logInfo.Println("Starting Logger")

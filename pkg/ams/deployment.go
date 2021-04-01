@@ -133,7 +133,7 @@ func (localdepl *localDeployment) newImageGroup(masID int,
 			":8000/api/container", " ", js, time.Second*2, 2)
 		if err == nil {
 			if statusCode != http.StatusCreated {
-				err = errors.New("Cannot create agency")
+				err = errors.New("cannot create agency")
 				return
 			}
 		}
@@ -156,7 +156,7 @@ func (localdepl *localDeployment) scaleImageGroup(masID int, imID int,
 			":8000/api/container", " ", js, time.Second*2, 2)
 		if err == nil {
 			if statusCode != http.StatusCreated {
-				err = errors.New("Cannot create agency")
+				err = errors.New("cannot create agency")
 				return
 			}
 		}

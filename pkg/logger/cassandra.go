@@ -100,7 +100,7 @@ func (stor *cassStorage) addAgentLogMessage(log schemas.LogMessage) (err error) 
 		// err = stor.session.Query("INSERT INTO logging_app (masid, agentid, t, log) "+
 		// 	"VALUES (?, ?, ?, ?)", masID, agentID, log.Timestamp, js).Exec()
 	default:
-		err = errors.New("Wrong topic")
+		err = errors.New("wrong topic")
 	}
 	return
 }
@@ -126,7 +126,7 @@ func (stor *cassStorage) getLatestAgentLogMessages(masID int, agentID int, topic
 		iter = stor.session.Query("SELECT log FROM logging_app WHERE masid = ? AND "+
 			"agentid = ? LIMIT ?", masID, agentID, num).Iter()
 	default:
-		err = errors.New("Wrong topic")
+		err = errors.New("wrong topic")
 	}
 	if err != nil {
 		return
@@ -164,7 +164,7 @@ func (stor *cassStorage) getAgentLogMessagesInRange(masID int, agentID int, topi
 		iter = stor.session.Query("SELECT log FROM logging_app WHERE masid = ? AND "+
 			"agentid = ? AND t > ? AND t < ?", masID, agentID, start, end).Iter()
 	default:
-		err = errors.New("Wrong topic")
+		err = errors.New("wrong topic")
 	}
 	if err != nil {
 		return
@@ -204,8 +204,7 @@ func (stor *cassStorage) updateCommunication(masID int, agentID int,
 // getCommunication returns communication data
 func (stor *cassStorage) getCommunication(masID int,
 	agentID int) (commData []schemas.Communication, err error) {
-	var iter *gocql.Iter
-	iter = stor.session.Query("SELECT comm FROM communication WHERE masid = ? AND agentid = ?",
+	iter := stor.session.Query("SELECT comm FROM communication WHERE masid = ? AND agentid = ?",
 		masID, agentID).Iter()
 	if iter.NumRows() == 1 {
 		var js []byte

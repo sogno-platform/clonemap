@@ -58,10 +58,8 @@ import (
 
 // handleAlive is the handler for requests to path /api/alive
 func (df *DF) handleAlive(w http.ResponseWriter, r *http.Request) {
-	var httpErr error
-	httpErr = httpreply.Alive(w, nil)
+	httpErr := httpreply.Alive(w, nil)
 	df.logErrors(r.URL.Path, nil, httpErr)
-	return
 }
 
 // handleGetMASService is the handler for get requests to path /api/df/{masid}/svc
@@ -83,7 +81,6 @@ func (df *DF) handleGetMASService(w http.ResponseWriter, r *http.Request) {
 	}
 	httpErr = httpreply.Resource(w, svc, cmapErr)
 	df.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handlePostMASService is the handler for post requests to path /api/df/{masid}/svc
@@ -105,6 +102,11 @@ func (df *DF) handlePostMASService(w http.ResponseWriter, r *http.Request) {
 	}
 	var id string
 	id, cmapErr = df.stor.registerService(svc)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		df.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
 	svc.GUID = id
 	var res []byte
 	res, cmapErr = json.Marshal(svc)
@@ -115,7 +117,6 @@ func (df *DF) handlePostMASService(w http.ResponseWriter, r *http.Request) {
 	}
 	httpErr = httpreply.Created(w, cmapErr, "application/json", res)
 	df.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handleGetMASGraph is the handler for get requests to path /api/df/{masid}/graph
@@ -137,7 +138,6 @@ func (df *DF) handleGetMASGraph(w http.ResponseWriter, r *http.Request) {
 	}
 	httpErr = httpreply.Resource(w, gr, cmapErr)
 	df.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handlePostMASGraph is the handler for post and put requests to path /api/df/{masid}/graph
@@ -172,7 +172,6 @@ func (df *DF) handlePostMASGraph(w http.ResponseWriter, r *http.Request) {
 	}
 	httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Ressource Created"))
 	df.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handleGetSvcDesc is the handler for get requests to path /api/df/{masid}/svc/desc/{desc}
@@ -195,7 +194,6 @@ func (df *DF) handleGetSvcDesc(w http.ResponseWriter, r *http.Request) {
 	}
 	httpErr = httpreply.Resource(w, svc, cmapErr)
 	df.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handleGetSvcNode is the handler for get requests to path
@@ -231,7 +229,6 @@ func (df *DF) handleGetSvcNodeDist(w http.ResponseWriter, r *http.Request) {
 	}
 	httpErr = httpreply.Resource(w, svc, cmapErr)
 	df.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handleGetSvcID is the handler for get requests to path /api/df/{masid}/svc/id/{svcid}
@@ -254,7 +251,6 @@ func (df *DF) handleGetSvcID(w http.ResponseWriter, r *http.Request) {
 	}
 	httpErr = httpreply.Resource(w, svc, cmapErr)
 	df.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handleDeleteSvcID is the handler for delete requests to path /api/df/{masid}/svc/id/{svcid}
@@ -276,7 +272,6 @@ func (df *DF) handleDeleteSvcID(w http.ResponseWriter, r *http.Request) {
 	}
 	httpErr = httpreply.Deleted(w, cmapErr)
 	df.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // methodNotAllowed is the default handler for valid paths but invalid methods
@@ -284,15 +279,13 @@ func (df *DF) methodNotAllowed(w http.ResponseWriter, r *http.Request) {
 	httpErr := httpreply.MethodNotAllowed(w)
 	cmapErr := errors.New("Error: Method not allowed on path " + r.URL.Path)
 	df.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // resourceNotFound is the default handler for invalid paths
 func (df *DF) resourceNotFound(w http.ResponseWriter, r *http.Request) {
 	httpErr := httpreply.NotFoundError(w)
-	cmapErr := errors.New("Resource not found")
+	cmapErr := errors.New("resource not found")
 	df.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // logErrors logs errors if any
@@ -303,7 +296,6 @@ func (df *DF) logErrors(path string, cmapErr error, httpErr error) {
 	if httpErr != nil {
 		df.logError.Println(path, httpErr)
 	}
-	return
 }
 
 // loggingMiddleware logs request before calling final handler

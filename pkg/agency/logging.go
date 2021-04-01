@@ -51,7 +51,7 @@ import (
 	"sync"
 	"time"
 
-	logclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/logger/client"
+	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 )
 
@@ -76,7 +76,7 @@ func (log *Logger) NewLog(topic string, message string, data string) (err error)
 	log.mutex.Unlock()
 	if topic != "error" && topic != "debug" && topic != "status" && topic != "msg" &&
 		topic != "app" {
-		err = errors.New("Unknown topic")
+		err = errors.New("unknown topic")
 		return
 	}
 	log.mutex.Lock()
@@ -163,7 +163,7 @@ type logHandler struct {
 	logIn    chan schemas.LogMessage // logging inbox
 	stateIn  chan schemas.State
 	active   bool // indicates if logging is active (switch via env)
-	client   *logclient.LoggerClient
+	client   *client.LoggerClient
 	logError *log.Logger
 	logInfo  *log.Logger
 }
@@ -242,7 +242,7 @@ func newLogHandler(masID int, logErr *log.Logger, logInf *log.Logger) (log *logH
 		logError: logErr,
 		logInfo:  logInf,
 	}
-	log.client, _ = logclient.NewLoggerClient("logger", 11000, time.Second*60, time.Second*1, 4)
+	log.client, _ = client.NewLoggerClient("logger", 11000, time.Second*60, time.Second*1, 4)
 	temp := os.Getenv("CLONEMAP_LOGGING")
 	if temp == "ON" {
 		log.active = true

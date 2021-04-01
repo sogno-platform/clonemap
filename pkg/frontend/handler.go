@@ -66,7 +66,6 @@ func (fe *Frontend) handleGetModules(w http.ResponseWriter, r *http.Request) {
 	}
 	httpErr = httpreply.Resource(w, mods, cmapErr)
 	fe.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // methodNotAllowed is the default handler for valid paths but invalid methods
@@ -74,15 +73,13 @@ func (fe *Frontend) methodNotAllowed(w http.ResponseWriter, r *http.Request) {
 	httpErr := httpreply.MethodNotAllowed(w)
 	cmapErr := errors.New("Error: Method not allowed on path " + r.URL.Path)
 	fe.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // resourceNotFound is the default handler for invalid paths
 func (fe *Frontend) resourceNotFound(w http.ResponseWriter, r *http.Request) {
 	httpErr := httpreply.NotFoundError(w)
-	cmapErr := errors.New("Resource not found")
+	cmapErr := errors.New("resource not found")
 	fe.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // logErrors logs errors if any
@@ -93,7 +90,6 @@ func (fe *Frontend) logErrors(path string, cmapErr error, httpErr error) {
 	if httpErr != nil {
 		fe.logError.Println(path, httpErr)
 	}
-	return
 }
 
 // getAgentID returns the masID and agentID from the path

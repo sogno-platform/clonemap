@@ -60,6 +60,7 @@ import (
 
 	agencyclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/agency/client"
 	amsclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/ams/client"
+	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/client"
 	dfclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/df/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/status"
@@ -75,7 +76,7 @@ type Agency struct {
 	mutex          *sync.Mutex // mutex to protect agents from concurrent reads and writes
 	agentTask      func(*Agent) error
 	msgIn          chan []schemas.ACLMessage
-	logHandler     *logHandler
+	logCollector   *client.LogCollector
 	mqttClient     *mqttClient
 	dfClient       *dfclient.Client
 	amsClient      *amsclient.Client
@@ -107,7 +108,7 @@ func StartAgency(task func(*Agent) error) (err error) {
 	go agency.startAgents()
 
 	// catch kill signal in order to terminate agency and agents before exiting
-	var gracefulStop = make(chan os.Signal)
+	var gracefulStop = make(chan os.Signal, 10)
 	signal.Notify(gracefulStop, syscall.SIGTERM)
 	signal.Notify(gracefulStop, syscall.SIGINT)
 	go agency.terminate(gracefulStop)
@@ -151,11 +152,22 @@ func (agency *Agency) init() (err error) {
 		return
 	}
 	agency.info.MASID, err = strconv.Atoi(hostname[1])
+	if err != nil {
+		return
+	}
 	agency.info.ImageGroupID, err = strconv.Atoi(hostname[3])
+	if err != nil {
+		return
+	}
 	agency.info.ID, err = strconv.Atoi(hostname[5])
+	if err != nil {
+		return
+	}
 	agency.info.Name = temp + ".mas" + hostname[1] + "agencies"
-	agency.logHandler = newLogHandler(agency.info.MASID, agency.logError, agency.logInfo)
-	agency.mqttClient = newMQTTClient("mqtt", 1883, agency.info.Name, agency.logError, agency.logInfo)
+	agency.logCollector, err = client.NewLogCollector(agency.info.MASID, agency.info.Logger,
+		agency.logError, agency.logInfo)
+	agency.mqttClient = newMQTTClient("mqtt", 1883, agency.info.Name, agency.logError,
+		agency.logInfo)
 	agency.mutex.Unlock()
 	return
 }
@@ -164,7 +176,7 @@ func (agency *Agency) init() (err error) {
 // goroutine and waits until an OS signal is inserted into the channel gracefulStop
 func (agency *Agency) terminate(gracefulStop chan os.Signal) {
 	// var err error
-	_ = <-gracefulStop
+	<-gracefulStop
 	agency.logInfo.Println("Terminating agency")
 	agency.mutex.Lock()
 	for i := range agency.localAgents {
@@ -180,8 +192,8 @@ func (agency *Agency) terminate(gracefulStop chan os.Signal) {
 func (agency *Agency) startAgents() (err error) {
 	// request configuration
 	var agencyInfoFull schemas.AgencyInfoFull
-	agencyInfoFull, _, err = agency.amsClient.GetAgencyInfo(agency.info.MASID, agency.info.ImageGroupID,
-		agency.info.ID)
+	agencyInfoFull, _, err = agency.amsClient.GetAgencyInfo(agency.info.MASID,
+		agency.info.ImageGroupID, agency.info.ID)
 	agency.mutex.Lock()
 	agency.info.ID = agencyInfoFull.ID
 	agency.info.Logger = agencyInfoFull.Logger
@@ -223,7 +235,7 @@ func (agency *Agency) createAgent(agentInfo schemas.AgentInfo) (err error) {
 	agentInfo.Status.Code = status.Starting
 	msgIn := make(chan schemas.ACLMessage, 1000)
 	agency.mutex.Lock()
-	ag := newAgent(agentInfo, msgIn, agency.aclLookup, agency.logHandler, agency.info.Logger,
+	ag := newAgent(agentInfo, msgIn, agency.aclLookup, agency.logCollector, agency.info.Logger,
 		agency.mqttClient, agency.dfClient, agency.logError, agency.logInfo)
 	agency.localAgents[agentInfo.ID] = ag
 	agency.mutex.Unlock()
