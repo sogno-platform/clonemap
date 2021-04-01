@@ -49,7 +49,7 @@ RUN go mod download
 COPY cmd/agency cmd/agency
 COPY pkg/agency pkg/agency
 COPY pkg/ams/client pkg/ams/client
-COPY pkg/logger/client pkg/logger/client
+COPY pkg/client pkg/client
 COPY pkg/df/client pkg/df/client
 COPY pkg/schemas pkg/schemas
 COPY pkg/status pkg/status
