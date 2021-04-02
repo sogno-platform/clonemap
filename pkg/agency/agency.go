@@ -172,8 +172,8 @@ func (agency *Agency) init() (err error) {
 	agency.mutex.Lock()
 	agency.info.ID = agencyInfoFull.ID
 	agency.info.Logger = agencyInfoFull.Logger
-	agency.info.Logger.Host = "logger"
-	agency.info.Logger.Port = 11000
+	agency.info.DF = agencyInfoFull.DF
+	agency.info.MQTT = agencyInfoFull.MQTT
 	agency.mutex.Unlock()
 	if err != nil {
 		agency.info.Status = schemas.Status{
@@ -249,7 +249,7 @@ func (agency *Agency) createAgent(agentInfo schemas.AgentInfo) (err error) {
 	msgIn := make(chan schemas.ACLMessage, 1000)
 	agency.mutex.Lock()
 	ag := newAgent(agentInfo, msgIn, agency.aclLookup, agency.logCollector, agency.info.Logger,
-		agency.mqttClient, agency.dfClient, agency.logError, agency.logInfo)
+		agency.mqttClient, agency.info.DF.Active, agency.dfClient, agency.logError, agency.logInfo)
 	agency.localAgents[agentInfo.ID] = ag
 	agency.mutex.Unlock()
 	ag.startAgent(agency.agentTask)

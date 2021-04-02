@@ -71,6 +71,9 @@ func task(ag *agency.Agent) (err error) {
 	svc := schemas.Service{
 		Desc: "agent" + strconv.Itoa(id),
 	}
-	ag.DF.RegisterService(svc)
+	_, err = ag.DF.RegisterService(svc)
+	if err != nil {
+		fmt.Println(err)
+	}
 	return
 }

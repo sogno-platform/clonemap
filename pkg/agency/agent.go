@@ -81,7 +81,8 @@ type Agent struct {
 // newAgent creates a new agent
 func newAgent(info schemas.AgentInfo, msgIn chan schemas.ACLMessage,
 	aclLookup func(int) (*ACL, error), logCol *client.LogCollector, logConfig schemas.LoggerConfig,
-	mqtt *mqttClient, dfClient *client.DFClient, logErr *log.Logger, logInf *log.Logger) (ag *Agent) {
+	mqtt *mqttClient, dfActive bool, dfClient *client.DFClient, logErr *log.Logger,
+	logInf *log.Logger) (ag *Agent) {
 	ag = &Agent{
 		id:         info.ID,
 		nodeID:     info.Spec.NodeID,
@@ -102,7 +103,8 @@ func newAgent(info schemas.AgentInfo, msgIn chan schemas.ACLMessage,
 	}
 	ag.ACL = newACL(info.ID, msgIn, aclLookup, ag.Logger, logErr, logInf)
 	ag.MQTT = newMQTT(ag.id, mqtt, ag.Logger, ag.logError, ag.logInfo)
-	ag.DF = client.NewAgentDF(ag.masID, ag.id, ag.nodeID, dfClient, ag.logError, ag.logInfo)
+	ag.DF = client.NewAgentDF(ag.masID, ag.id, ag.nodeID, dfActive, dfClient, ag.logError,
+		ag.logInfo)
 	return
 }
 

@@ -53,7 +53,6 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"os"
 	"strconv"
 	"sync"
 	"time"
@@ -307,21 +306,22 @@ func (df *AgentDF) DeregisterService(svcID string) (err error) {
 }
 
 // NewAgentDF creates a new DF object
-func NewAgentDF(masID int, agentID int, nodeID int, dfCli *DFClient, logErr *log.Logger,
+func NewAgentDF(masID int, agentID int, nodeID int, active bool, dfCli *DFClient, logErr *log.Logger,
 	logInf *log.Logger) (df *AgentDF) {
 	df = &AgentDF{
 		agentID:  agentID,
 		masID:    masID,
 		nodeID:   nodeID,
 		mutex:    &sync.Mutex{},
-		active:   false,
+		active:   active,
 		logError: logErr,
 		logInfo:  logInf,
+		dfClient: dfCli,
 	}
-	act := os.Getenv("CLONEMAP_DF")
-	if act == "ON" {
-		df.active = true
-	}
+	// act := os.Getenv("CLONEMAP_DF")
+	// if act == "ON" {
+	// 	df.active = true
+	// }
 	df.registeredServices = make(map[string]schemas.Service)
 	return
 }
