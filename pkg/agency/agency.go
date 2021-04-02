@@ -74,7 +74,7 @@ type Agency struct {
 	agentTask      func(*Agent) error
 	msgIn          chan []schemas.ACLMessage
 	logCollector   *client.LogCollector
-	mqttClient     *mqttClient
+	mqttCollector  *mqttCollector
 	dfClient       *client.DFClient
 	amsClient      *client.AMSClient
 	agencyClient   *client.AgencyClient
@@ -91,7 +91,6 @@ func StartAgency(task func(*Agent) error) (err error) {
 		remoteAgents:   make(map[int]*Agent),
 		remoteAgencies: make(map[string]*remoteAgency),
 		msgIn:          make(chan []schemas.ACLMessage, 1000),
-		dfClient:       client.NewDFClient(time.Second*60, time.Second*1, 4),
 		amsClient:      client.NewAMSClient(time.Second*60, time.Second*1, 4),
 		agencyClient:   client.NewAgencyClient(time.Second*60, time.Second*1, 4),
 		logError:       log.New(os.Stderr, "[ERROR] ", log.LstdFlags),
@@ -173,8 +172,8 @@ func (agency *Agency) init() (err error) {
 	agency.mutex.Lock()
 	agency.info.ID = agencyInfoFull.ID
 	agency.info.Logger = agencyInfoFull.Logger
-	agency.info.Logger.Host = "logger"
-	agency.info.Logger.Port = 11000
+	agency.info.DF = agencyInfoFull.DF
+	agency.info.MQTT = agencyInfoFull.MQTT
 	agency.mutex.Unlock()
 	if err != nil {
 		agency.info.Status = schemas.Status{
@@ -185,13 +184,11 @@ func (agency *Agency) init() (err error) {
 	}
 
 	agency.mutex.Lock()
-	agency.logCollector, err = client.NewLogCollector(agency.info.MASID, agency.info.Logger,
+	agency.logCollector = client.NewLogCollector(agency.info.MASID, agency.info.Logger,
 		agency.logError, agency.logInfo)
-	if err != nil {
-		agency.mutex.Unlock()
-		return
-	}
-	agency.mqttClient = newMQTTClient("mqtt", 1883, agency.info.Name, agency.logError,
+	agency.dfClient = client.NewDFClient(agency.info.DF.Host, agency.info.DF.Port,
+		time.Second*60, time.Second*1, 4)
+	agency.mqttCollector = newMQTTCollector(agency.info.MQTT, agency.info.Name, agency.logError,
 		agency.logInfo)
 	agency.mutex.Unlock()
 
@@ -210,7 +207,7 @@ func (agency *Agency) terminate(gracefulStop chan os.Signal) {
 		agency.localAgents[i].Terminate()
 	}
 	agency.mutex.Unlock()
-	agency.mqttClient.close()
+	agency.mqttCollector.close()
 	time.Sleep(time.Second * 2)
 	os.Exit(0)
 }
@@ -248,7 +245,8 @@ func (agency *Agency) createAgent(agentInfo schemas.AgentInfo) (err error) {
 	msgIn := make(chan schemas.ACLMessage, 1000)
 	agency.mutex.Lock()
 	ag := newAgent(agentInfo, msgIn, agency.aclLookup, agency.logCollector, agency.info.Logger,
-		agency.mqttClient, agency.dfClient, agency.logError, agency.logInfo)
+		agency.mqttCollector, agency.info.DF.Active, agency.dfClient, agency.logError,
+		agency.logInfo)
 	agency.localAgents[agentInfo.ID] = ag
 	agency.mutex.Unlock()
 	ag.startAgent(agency.agentTask)

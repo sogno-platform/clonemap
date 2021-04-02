@@ -171,6 +171,8 @@ type AgencyInfo struct {
 	ID           int          `json:"id"`     // within image group unique ID (contained in name)
 	ImageGroupID int          `json:"imid"`   // ID of agency image group
 	Logger       LoggerConfig `json:"logger"` // logger configuration
+	MQTT         MQTTConfig   `json:"mqtt"`   // MQTT configuration
+	DF           DFConfig     `json:"df"`     // DF configuration
 	Agents       []int        `json:"agents"`
 	Status       Status       `json:"status"`
 }
@@ -182,6 +184,8 @@ type AgencyInfoFull struct {
 	ID           int          `json:"id"`     // within image group unique ID (contained in name)
 	ImageGroupID int          `json:"imid"`   // ID of agency image group
 	Logger       LoggerConfig `json:"logger"` // logger configuration
+	MQTT         MQTTConfig   `json:"mqtt"`   // MQTT configuration
+	DF           DFConfig     `json:"df"`     // DF configuration
 	Agents       []AgentInfo  `json:"agents"`
 	Status       Status       `json:"status"`
 }

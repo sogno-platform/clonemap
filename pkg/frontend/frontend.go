@@ -68,10 +68,10 @@ type Frontend struct {
 func StartFrontend() (err error) {
 	fe := &Frontend{
 		amsClient: client.NewAMSClient(time.Second*60, time.Second*1, 4),
-		dfClient:  client.NewDFClient(time.Second*60, time.Second*1, 4),
+		dfClient:  client.NewDFClient("df", 12000, time.Second*60, time.Second*1, 4),
 		logError:  log.New(os.Stderr, "[ERROR] ", log.LstdFlags),
 	}
-	fe.logClient, _ = client.NewLoggerClient("logger", 11000, time.Second*60, time.Second*1, 4)
+	fe.logClient = client.NewLoggerClient("logger", 11000, time.Second*60, time.Second*1, 4)
 	logType := os.Getenv("CLONEMAP_LOG_LEVEL")
 	switch logType {
 	case "info":

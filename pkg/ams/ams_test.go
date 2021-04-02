@@ -70,7 +70,7 @@ func TestAMS(t *testing.T) {
 		logError:     log.New(os.Stderr, "[ERROR] ", log.LstdFlags),
 		logInfo:      log.New(os.Stdout, "[INFO] ", log.LstdFlags),
 		agencyClient: client.NewAgencyClient(time.Second*60, time.Second*1, 4),
-		dfClient:     client.NewDFClient(time.Second*60, time.Second*1, 4),
+		dfClient:     client.NewDFClient("df", 12000, time.Second*60, time.Second*1, 4),
 	}
 	// create storage and deployment object according to specified deployment type
 	err := ams.init()
