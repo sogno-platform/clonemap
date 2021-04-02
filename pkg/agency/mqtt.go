@@ -51,6 +51,7 @@ import (
 	"strconv"
 	"sync"
 
+	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
@@ -63,23 +64,23 @@ type MQTT struct {
 	msgInTopic map[string]chan schemas.MQTTMessage // message inbox for messages with specified topic
 	msgIn      chan schemas.MQTTMessage            // mqtt message inbox
 	agentID    int
-	cmapLogger *Logger
+	logger     *client.AgentLogger
 	logError   *log.Logger
 	logInfo    *log.Logger
 	active     bool
 }
 
 // newMQTT returns a new pubsub connector of type mqtt
-func newMQTT(agentID int, cli *mqttClient, cmaplog *Logger, logErr *log.Logger,
+func newMQTT(agentID int, cli *mqttClient, cmaplog *client.AgentLogger, logErr *log.Logger,
 	logInf *log.Logger) (mq *MQTT) {
 	mq = &MQTT{
-		client:     cli,
-		mutex:      &sync.Mutex{},
-		agentID:    agentID,
-		cmapLogger: cmaplog,
-		logError:   logErr,
-		logInfo:    logInf,
-		active:     true,
+		client:   cli,
+		mutex:    &sync.Mutex{},
+		agentID:  agentID,
+		logger:   cmaplog,
+		logError: logErr,
+		logInfo:  logInf,
+		active:   true,
 	}
 	mq.subTopic = make(map[string]interface{})
 	mq.msgInTopic = make(map[string]chan schemas.MQTTMessage)
@@ -96,7 +97,6 @@ func (mq *MQTT) close() {
 	mq.logInfo.Println("Closing MQTT of agent ", mq.agentID)
 	mq.active = false
 	mq.mutex.Unlock()
-	return
 }
 
 // Subscribe subscribes to a topic
@@ -152,7 +152,7 @@ func (mq *MQTT) SendMessage(msg schemas.MQTTMessage, qos int) (err error) {
 	if err != nil {
 		return
 	}
-	err = mq.cmapLogger.NewLog("msg", "MQTT publish", msg.String())
+	err = mq.logger.NewLog("msg", "MQTT publish", msg.String())
 	return
 }
 
@@ -208,7 +208,7 @@ func (mq *MQTT) newIncomingMQTTMessage(msg schemas.MQTTMessage) {
 		return
 	}
 	mq.mutex.Unlock()
-	mq.cmapLogger.NewLog("msg", "MQTT receive", msg.String())
+	mq.logger.NewLog("msg", "MQTT receive", msg.String())
 	mq.mutex.Lock()
 	inbox, ok := mq.msgInTopic[msg.Topic]
 	mq.mutex.Unlock()
@@ -217,7 +217,6 @@ func (mq *MQTT) newIncomingMQTTMessage(msg schemas.MQTTMessage) {
 	} else {
 		mq.msgIn <- msg
 	}
-	return
 }
 
 func (mq *MQTT) registerTopicChannel(topic string, topicChan chan schemas.MQTTMessage) (err error) {
@@ -319,7 +318,6 @@ func (cli *mqttClient) newIncomingMQTTMessage(client mqtt.Client, msg mqtt.Messa
 	mqttMsg.Content = msg.Payload()
 	mqttMsg.Topic = msg.Topic()
 	cli.msgIn <- mqttMsg
-	return
 }
 
 // subscribe subscribes to specified topics

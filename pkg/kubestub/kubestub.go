@@ -59,8 +59,6 @@ import (
 
 // LocalStub holds context information such as a list of all started agencies
 type LocalStub struct {
-	// address of the local stub
-	address string
 	// list of all agencies; necessary in order to prevent from starting agencies with same name
 	// and to stop all agencies upon termination
 	agencies     []schemas.StubAgencyConfig
@@ -157,7 +155,7 @@ func StartLocalStub() {
 	fmt.Println("Ready")
 
 	// catch kill signal in order to terminate MAP parts before exiting
-	var gracefulStop = make(chan os.Signal)
+	var gracefulStop = make(chan os.Signal, 10)
 	signal.Notify(gracefulStop, syscall.SIGTERM)
 	signal.Notify(gracefulStop, syscall.SIGINT)
 	go cntxt.terminate(gracefulStop)

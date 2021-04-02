@@ -56,8 +56,7 @@ import (
 	"strconv"
 	"time"
 
-	agclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/agency/client"
-	dfclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/df/client"
+	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 )
 
@@ -67,8 +66,8 @@ type AMS struct {
 	depl         deployment  // interface for local or cloud deployment
 	logInfo      *log.Logger // logger for info logging
 	logError     *log.Logger // logger for error logging
-	agencyClient *agclient.Client
-	dfClient     *dfclient.Client
+	agencyClient *client.AgencyClient
+	dfClient     *client.DFClient
 }
 
 // StartAMS starts an AMS instance. It initializes the cluster and storage object and starts API
@@ -76,8 +75,8 @@ type AMS struct {
 func StartAMS() (err error) {
 	ams := &AMS{
 		logError:     log.New(os.Stderr, "[ERROR] ", log.LstdFlags),
-		agencyClient: agclient.New(time.Second*60, time.Second*1, 4),
-		dfClient:     dfclient.New(time.Second*60, time.Second*1, 4),
+		agencyClient: client.NewAgencyClient(time.Second*60, time.Second*1, 4),
+		dfClient:     client.NewDFClient(time.Second*60, time.Second*1, 4),
 	}
 	// create storage and deployment object according to specified deployment type
 	err = ams.init()
@@ -341,20 +340,18 @@ func (ams *AMS) configureMAS(masSpec schemas.MASSpec) (masInfo schemas.MASInfo,
 
 	// total number of agents and total number of agencies
 	masInfo.Agents.Counter = 0
-	numAgencies = make([]int, masInfo.ImageGroups.Counter, masInfo.ImageGroups.Counter)
+	numAgencies = make([]int, masInfo.ImageGroups.Counter)
 	for i := range masSpec.ImageGroups {
 		masInfo.Agents.Counter += len(masSpec.ImageGroups[i].Agents)
 		num := len(masSpec.ImageGroups[i].Agents) / masSpec.Config.NumAgentsPerAgency
 		if len(masSpec.ImageGroups[i].Agents)%masSpec.Config.NumAgentsPerAgency > 0 {
 			num++
 		}
-		masInfo.ImageGroups.Inst[i].Agencies.Inst = make([]schemas.AgencyInfo, num,
-			num)
+		masInfo.ImageGroups.Inst[i].Agencies.Inst = make([]schemas.AgencyInfo, num)
 		masInfo.ImageGroups.Inst[i].Agencies.Counter = num
 		numAgencies[i] = num
 	}
-	masInfo.Agents.Inst = make([]schemas.AgentInfo, masInfo.Agents.Counter,
-		masInfo.Agents.Counter)
+	masInfo.Agents.Inst = make([]schemas.AgentInfo, masInfo.Agents.Counter)
 
 	// empty graph?
 	if len(masInfo.Graph.Node) == 0 {
@@ -487,11 +484,6 @@ func (ams *AMS) createAgents(masID int, groupSpecs []schemas.ImageGroupSpec) (er
 			}
 		}
 	}
-	return
-}
-
-// createAgent creates a new agent and adds it to an existing mas
-func (ams *AMS) createAgent(masID int, agentSpec schemas.AgentSpec) (err error) {
 	return
 }
 

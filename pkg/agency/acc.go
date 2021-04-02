@@ -51,14 +51,14 @@ import (
 	"net/http"
 	"strconv"
 
-	agencyclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/agency/client"
+	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 )
 
 // remoteAgency holds the channel used for sending messages to remot agency
 type remoteAgency struct {
 	msgIn        chan schemas.ACLMessage // ACL message inbox
-	agencyClient *agencyclient.Client
+	agencyClient *client.AgencyClient
 	// agents map[int]*agent.Agent
 }
 
@@ -99,7 +99,7 @@ func (agency *Agency) aclLookup(agentID int) (acl *ACL, err error) {
 		return
 	}
 	if address.Agency == "" {
-		err = errors.New("Receiver is not active")
+		err = errors.New("receiver is not active")
 		return
 	}
 	var remAgency *remoteAgency
@@ -167,7 +167,7 @@ func (remAgency *remoteAgency) sendMsgs(remName string, localName string, logErr
 		if num > 99 {
 			num = 99
 		}
-		msgs := make([]schemas.ACLMessage, num+1, num+1)
+		msgs := make([]schemas.ACLMessage, num+1)
 		msgs[0] = msg
 		msgs[0].AgencySender = localName
 		msgs[0].AgencyReceiver = remName

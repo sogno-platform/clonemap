@@ -60,10 +60,8 @@ import (
 
 // handleAlive is the handler for requests to path /api/alive
 func (ams *AMS) handleAlive(w http.ResponseWriter, r *http.Request) {
-	var httpErr error
-	httpErr = httpreply.Alive(w, nil)
+	httpErr := httpreply.Alive(w, nil)
 	ams.logErrors(r.URL.Path, nil, httpErr)
-	return
 }
 
 // handleCloneMAP is the handler for requests to path /api/clonemap
@@ -79,7 +77,6 @@ func (ams *AMS) handleCloneMAP(w http.ResponseWriter, r *http.Request) {
 	}
 	httpErr = httpreply.Resource(w, cmapInfo, cmapErr)
 	ams.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handleGetMAS is the handler for get requests to path /api/clonemap/mas
@@ -94,7 +91,6 @@ func (ams *AMS) handleGetMAS(w http.ResponseWriter, r *http.Request) {
 	}
 	httpErr = httpreply.Resource(w, mass, cmapErr)
 	ams.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handlePostMAS is the handler for post requests to path /api/clonemap/mas
@@ -123,7 +119,6 @@ func (ams *AMS) handlePostMAS(w http.ResponseWriter, r *http.Request) {
 	}
 	httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Ressource Created"))
 	ams.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handleGetMASID is the handler for get requests to path /api/clonemap/mas/{masid}
@@ -146,7 +141,6 @@ func (ams *AMS) handleGetMASID(w http.ResponseWriter, r *http.Request) {
 	}
 	httpErr = httpreply.Resource(w, masInfo, cmapErr)
 	ams.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handleDeleteMASID is the handler for delete requests to path /api/clonemap/mas/{masid}
@@ -168,7 +162,6 @@ func (ams *AMS) handleDeleteMASID(w http.ResponseWriter, r *http.Request) {
 	}
 	httpErr = httpreply.Deleted(w, cmapErr)
 	ams.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handleGetMASName is the handler for get requests to path /api/clonemap/mas/name/{name}
@@ -186,7 +179,6 @@ func (ams *AMS) handleGetMASName(w http.ResponseWriter, r *http.Request) {
 	}
 	httpErr = httpreply.Resource(w, ids, cmapErr)
 	ams.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handleGetAgents is the handler for get requests to path /api/clonemap/mas/{masid}/agents
@@ -209,7 +201,6 @@ func (ams *AMS) handleGetAgents(w http.ResponseWriter, r *http.Request) {
 	}
 	httpErr = httpreply.Resource(w, agents, cmapErr)
 	ams.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handlePostAgent is the handler for post requests to path /api/clonemap/mas/{masid}/agents
@@ -245,7 +236,6 @@ func (ams *AMS) handlePostAgent(w http.ResponseWriter, r *http.Request) {
 	}
 	httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Ressource Created"))
 	ams.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handleGetAgentID is the handler for get requests to path
@@ -267,7 +257,6 @@ func (ams *AMS) handleGetAgentID(w http.ResponseWriter, r *http.Request) {
 	}
 	httpErr = httpreply.Resource(w, agentInfo, cmapErr)
 	ams.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handleDeleteAgentID is the handler for delete requests to path
@@ -289,7 +278,6 @@ func (ams *AMS) handleDeleteAgentID(w http.ResponseWriter, r *http.Request) {
 	}
 	httpErr = httpreply.Deleted(w, cmapErr)
 	ams.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handleGetAgentAddress is the handler for get requests to path
@@ -312,7 +300,6 @@ func (ams *AMS) handleGetAgentAddress(w http.ResponseWriter, r *http.Request) {
 	}
 	httpErr = httpreply.Resource(w, agentAddr, cmapErr)
 	ams.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handlePutAgentAddress is the handler for put requests to path
@@ -348,7 +335,6 @@ func (ams *AMS) handlePutAgentAddress(w http.ResponseWriter, r *http.Request) {
 	}
 	httpErr = httpreply.Updated(w, cmapErr)
 	ams.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handlePutAgentCustom is the put handler for requests to path
@@ -378,7 +364,6 @@ func (ams *AMS) handlePutAgentCustom(w http.ResponseWriter, r *http.Request) {
 	}
 	httpErr = httpreply.Updated(w, cmapErr)
 	ams.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handleGetAgentName is the handler for get requests to path
@@ -403,7 +388,6 @@ func (ams *AMS) handleGetAgentName(w http.ResponseWriter, r *http.Request) {
 	}
 	httpErr = httpreply.Resource(w, ids, cmapErr)
 	ams.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handleGetAgencies is the handler for get requests to path /api/cloumap/mas/{masid}/agencies
@@ -426,7 +410,6 @@ func (ams *AMS) handleGetAgencies(w http.ResponseWriter, r *http.Request) {
 	}
 	httpErr = httpreply.Resource(w, agencies, cmapErr)
 	ams.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handleGetAgencyID is the handler for get requests to path
@@ -461,7 +444,6 @@ func (ams *AMS) handleGetAgencyID(w http.ResponseWriter, r *http.Request) {
 	}
 	httpErr = httpreply.Resource(w, agencySpec, cmapErr)
 	ams.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // methodNotAllowed is the default handler for valid paths but invalid methods
@@ -469,15 +451,13 @@ func (ams *AMS) methodNotAllowed(w http.ResponseWriter, r *http.Request) {
 	httpErr := httpreply.MethodNotAllowed(w)
 	cmapErr := errors.New("Error: Method not allowed on path " + r.URL.Path)
 	ams.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // resourceNotFound is the default handler for invalid paths
 func (ams *AMS) resourceNotFound(w http.ResponseWriter, r *http.Request) {
 	httpErr := httpreply.NotFoundError(w)
-	cmapErr := errors.New("Resource not found")
+	cmapErr := errors.New("resource not found")
 	ams.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // logErrors logs errors if any
@@ -488,7 +468,6 @@ func (ams *AMS) logErrors(path string, cmapErr error, httpErr error) {
 	if httpErr != nil {
 		ams.logError.Println(path, httpErr)
 	}
-	return
 }
 
 // getAgentID returns the masID and agentID from the path

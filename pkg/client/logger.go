@@ -42,7 +42,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-// Package client contains code for interaction with agent
 package client
 
 import (
@@ -190,7 +189,7 @@ func (logCol *LogCollector) storeLogs() (err error) {
 		for {
 			if len(logCol.logIn) > 0 {
 				numMsg := len(logCol.logIn)
-				logMsgs := make([]schemas.LogMessage, numMsg, numMsg)
+				logMsgs := make([]schemas.LogMessage, numMsg)
 				index := 0
 				for i := 0; i < numMsg; i++ {
 					logMsg := <-logCol.logIn
@@ -280,6 +279,7 @@ func NewLogCollector(masID int, config schemas.LoggerConfig, logErr *log.Logger,
 			time.Second*1, 4)
 		if err != nil {
 			logCol.config.Active = false
+			return
 		}
 	}
 	logCol.logIn = make(chan schemas.LogMessage, 10000)
@@ -305,15 +305,18 @@ type AgentLogger struct {
 
 // NewLog sends a new logging message to the logging service
 func (agLog *AgentLogger) NewLog(topic string, message string, data string) (err error) {
+	if agLog == nil {
+		return
+	}
 	agLog.mutex.Lock()
 	if !agLog.active {
 		agLog.mutex.Unlock()
-		return errors.New("Logger not active")
+		return errors.New("logger not active")
 	}
 	agLog.mutex.Unlock()
 	if topic != "error" && topic != "debug" && topic != "status" && topic != "msg" &&
 		topic != "app" {
-		err = errors.New("Unknown topic")
+		err = errors.New("unknown topic")
 		return
 	}
 	agLog.mutex.Lock()
@@ -380,10 +383,9 @@ func (logCol *LogCollector) NewAgentLogger(agentID int, config schemas.LoggerCon
 }
 
 // close closes the logger
-func (agLog *AgentLogger) close() {
+func (agLog *AgentLogger) Close() {
 	agLog.mutex.Lock()
 	agLog.logInfo.Println("Closing Logger of agent ", agLog.agentID)
 	agLog.active = false
 	agLog.mutex.Unlock()
-	return
 }

@@ -53,10 +53,8 @@ import (
 	"testing"
 	"time"
 
-	agclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/agency/client"
-	amscli "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/ams/client"
+	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/common/httpreply"
-	dfclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/df/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 )
 
@@ -71,8 +69,8 @@ func TestAMS(t *testing.T) {
 	ams := &AMS{
 		logError:     log.New(os.Stderr, "[ERROR] ", log.LstdFlags),
 		logInfo:      log.New(os.Stdout, "[INFO] ", log.LstdFlags),
-		agencyClient: agclient.New(time.Second*60, time.Second*1, 4),
-		dfClient:     dfclient.New(time.Second*60, time.Second*1, 4),
+		agencyClient: client.NewAgencyClient(time.Second*60, time.Second*1, 4),
+		dfClient:     client.NewDFClient(time.Second*60, time.Second*1, 4),
 	}
 	// create storage and deployment object according to specified deployment type
 	err := ams.init()
@@ -122,13 +120,12 @@ func stubListen() (err error) {
 // stubHandler answers with created
 func stubHandler(w http.ResponseWriter, r *http.Request) {
 	httpreply.Created(w, nil, "text/plain", []byte("Ressource Created"))
-	return
 }
 
 // dummyClient makes requests to ams and terminates ams server at end
 func dummyClient(s *http.Server, t *testing.T) {
 	time.Sleep(time.Second * 1)
-	amsClient := amscli.New(time.Second*60, time.Second*1, 4)
+	amsClient := client.NewAMSClient(time.Second*60, time.Second*1, 4)
 	amsClient.Host = "localhost"
 	amsClient.Port = 10001
 
@@ -241,5 +238,4 @@ func dummyClient(s *http.Server, t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	s.Shutdown(ctx)
-	return
 }

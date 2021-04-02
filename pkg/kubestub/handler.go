@@ -68,9 +68,9 @@ func (stub *LocalStub) handleAPI(w http.ResponseWriter, r *http.Request) {
 
 	switch len(respath) {
 	case 1:
-		err = errors.New("Error - wrong path: /")
+		err = errors.New("error - wrong path: /")
 	case 2:
-		err = errors.New("Error - wrong path: /api")
+		err = errors.New("error - wrong path: /api")
 	case 3:
 		if respath[2] == "container" {
 			if r.Method == "GET" {

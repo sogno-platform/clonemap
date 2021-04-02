@@ -107,7 +107,7 @@ func (kube *kubeDeployment) newMAS(masID int, images schemas.ImageGroups, loggin
 					return
 				}
 			}
-		} else {
+			// } else {
 			// error
 		}
 	}
@@ -146,7 +146,7 @@ func (kube *kubeDeployment) scaleImageGroup(masID int, imID int, deltaAgencies i
 	if err == nil {
 		if exist {
 			err = kube.scaleStatefulSet(masID, imID, deltaAgencies)
-		} else {
+			// } else {
 			// error
 		}
 	}
@@ -162,6 +162,9 @@ func (kube *kubeDeployment) deleteMAS(masID int) (err error) {
 			statefulSetClient := kube.clientset.Apps().StatefulSets(kube.namespace)
 			var statefulSetList *apiappsv1.StatefulSetList
 			statefulSetList, err = statefulSetClient.List(metav1.ListOptions{})
+			if err != nil {
+				return
+			}
 			var statefulSet apiappsv1.StatefulSet
 			for i := range statefulSetList.Items {
 				l, ok := statefulSetList.Items[i].Spec.Template.ObjectMeta.Labels["app"]

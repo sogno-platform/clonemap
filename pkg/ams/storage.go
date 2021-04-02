@@ -178,7 +178,7 @@ func (stor *localStorage) getMASsShort() (ret []schemas.MASInfoShort, err error)
 // getMASs returns specs of all MAS
 func (stor *localStorage) getMASs() (ret schemas.MASs, err error) {
 	stor.mutex.Lock()
-	ret.Inst = make([]schemas.MASInfo, len(stor.mas), len(stor.mas))
+	ret.Inst = make([]schemas.MASInfo, len(stor.mas))
 	ret.Counter = stor.masCounter
 	for i := 0; i < len(stor.mas); i++ {
 		ret.Inst[i] = stor.mas[i]
@@ -261,11 +261,11 @@ func (stor *localStorage) getAgentInfo(masID int, agentID int) (ret schemas.Agen
 func (stor *localStorage) getAgentInfoNolock(masID int,
 	agentID int) (ret schemas.AgentInfo, err error) {
 	if len(stor.mas)-1 < masID {
-		err = errors.New("Agent does not exist")
+		err = errors.New("agent does not exist")
 		return
 	}
 	if len(stor.mas[masID].Agents.Inst)-1 < agentID {
-		err = errors.New("Agent does not exist")
+		err = errors.New("agent does not exist")
 		return
 	}
 	ret = stor.mas[masID].Agents.Inst[agentID]
@@ -277,12 +277,12 @@ func (stor *localStorage) getAgentAddress(masID int, agentID int) (ret schemas.A
 	stor.mutex.Lock()
 	if len(stor.mas)-1 < masID {
 		stor.mutex.Unlock()
-		err = errors.New("Agent does not exist")
+		err = errors.New("agent does not exist")
 		return
 	}
 	if len(stor.mas[masID].Agents.Inst)-1 < agentID {
 		stor.mutex.Unlock()
-		err = errors.New("Agent does not exist")
+		err = errors.New("agent does not exist")
 		return
 	}
 	ret = stor.mas[masID].Agents.Inst[agentID].Address
@@ -296,12 +296,12 @@ func (stor *localStorage) setAgentAddress(masID int, agentID int,
 	stor.mutex.Lock()
 	if len(stor.mas)-1 < masID {
 		stor.mutex.Unlock()
-		err = errors.New("Agent does not exist")
+		err = errors.New("agent does not exist")
 		return
 	}
 	if len(stor.mas[masID].Agents.Inst)-1 < agentID {
 		stor.mutex.Unlock()
-		err = errors.New("Agent does not exist")
+		err = errors.New("agent does not exist")
 		return
 	}
 	stor.mas[masID].Agents.Inst[agentID].Address = address
@@ -314,12 +314,12 @@ func (stor *localStorage) setAgentCustom(masID int, agentID int, custom string) 
 	stor.mutex.Lock()
 	if len(stor.mas)-1 < masID {
 		stor.mutex.Unlock()
-		err = errors.New("Agent does not exist")
+		err = errors.New("agent does not exist")
 		return
 	}
 	if len(stor.mas[masID].Agents.Inst)-1 < agentID {
 		stor.mutex.Unlock()
-		err = errors.New("Agent does not exist")
+		err = errors.New("agent does not exist")
 		return
 	}
 	stor.mas[masID].Agents.Inst[agentID].Spec.Custom = custom
@@ -333,12 +333,12 @@ func (stor *localStorage) setAgentStatus(masID int, agentID int,
 	stor.mutex.Lock()
 	if len(stor.mas)-1 < masID {
 		stor.mutex.Unlock()
-		err = errors.New("Agent does not exist")
+		err = errors.New("agent does not exist")
 		return
 	}
 	if len(stor.mas[masID].Agents.Inst)-1 < agentID {
 		stor.mutex.Unlock()
-		err = errors.New("Agent does not exist")
+		err = errors.New("agent does not exist")
 		return
 	}
 	stor.mas[masID].Agents.Inst[agentID].Status = status
@@ -351,7 +351,7 @@ func (stor *localStorage) getAgencies(masID int) (ret schemas.Agencies, err erro
 	stor.mutex.Lock()
 	if len(stor.mas)-1 < masID {
 		stor.mutex.Unlock()
-		err = errors.New("Agency does not exist")
+		err = errors.New("agency does not exist")
 		return
 	}
 	ret.Counter = 0
@@ -370,17 +370,17 @@ func (stor *localStorage) getAgencyInfoFull(masID int, imID int,
 	stor.mutex.Lock()
 	if len(stor.mas)-1 < masID {
 		stor.mutex.Unlock()
-		err = errors.New("Agency does not exist")
+		err = errors.New("agency does not exist")
 		return
 	}
 	if len(stor.mas[masID].ImageGroups.Inst)-1 < imID {
 		stor.mutex.Unlock()
-		err = errors.New("Agency does not exist")
+		err = errors.New("agency does not exist")
 		return
 	}
 	if len(stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst)-1 < agencyID {
 		stor.mutex.Unlock()
-		err = errors.New("Agency does not exist")
+		err = errors.New("agency does not exist")
 		return
 	}
 	ret.MASID = masID
@@ -390,7 +390,6 @@ func (stor *localStorage) getAgencyInfoFull(masID int, imID int,
 	ret.Logger = stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Logger
 	ret.Status = stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Status
 	ret.Agents = make([]schemas.AgentInfo,
-		len(stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Agents),
 		len(stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Agents))
 	for i := 0; i < len(ret.Agents); i++ {
 		var temp schemas.AgentInfo

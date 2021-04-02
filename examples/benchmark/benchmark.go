@@ -335,9 +335,9 @@ func cpuLoad(ag *agency.Agent, config CustomAgentData) (err error) {
 	}
 	T := float32(config.T)
 	Tr := config.Tr
-	a := make([]float64, 100, 100)
-	b := make([]float64, 100, 100)
-	c := make([]float64, 100, 100)
+	a := make([]float64, 100)
+	b := make([]float64, 100)
+	c := make([]float64, 100)
 	for i := 0; i < 100; i++ {
 		a[i] = rand.Float64()
 		b[i] = rand.Float64()

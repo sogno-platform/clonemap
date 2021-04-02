@@ -51,7 +51,7 @@ import (
 	"sync"
 	"time"
 
-	dfclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/df/client"
+	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 )
 
@@ -63,7 +63,7 @@ type DF struct {
 	mutex              *sync.Mutex
 	registeredServices map[string]schemas.Service
 	active             bool // indicates if df is active (switch via env)
-	dfClient           *dfclient.Client
+	dfClient           *client.DFClient
 	logError           *log.Logger
 	logInfo            *log.Logger
 }
@@ -78,14 +78,14 @@ func (df *DF) RegisterService(svc schemas.Service) (id string, err error) {
 	df.mutex.Unlock()
 	id = "-1"
 	if svc.Desc == "" {
-		err = errors.New("Empty description not allowed")
+		err = errors.New("empty description not allowed")
 		return
 	}
 	df.mutex.Lock()
 	_, ok := df.registeredServices[svc.Desc]
 	df.mutex.Unlock()
 	if ok {
-		err = errors.New("Service already registered")
+		err = errors.New("service already registered")
 		return
 	}
 	df.mutex.Lock()
@@ -173,7 +173,7 @@ func (df *DF) DeregisterService(svcID string) (err error) {
 	}
 	df.mutex.Unlock()
 	if desc == "" {
-		err = errors.New("No such service")
+		err = errors.New("no such service")
 		return
 	}
 	df.mutex.Lock()
@@ -184,7 +184,7 @@ func (df *DF) DeregisterService(svcID string) (err error) {
 }
 
 // newDF creates a new DF object
-func newDF(masID int, agentID int, nodeID int, dfCli *dfclient.Client, logErr *log.Logger,
+func newDF(masID int, agentID int, nodeID int, dfCli *client.DFClient, logErr *log.Logger,
 	logInf *log.Logger) (df *DF) {
 	df = &DF{
 		agentID:  agentID,
@@ -213,5 +213,4 @@ func (df *DF) close() {
 	df.logInfo.Println("Closing DF of agent ", df.agentID)
 	df.active = false
 	df.mutex.Unlock()
-	return
 }

@@ -42,7 +42,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-// Package client implements a df client
 package client
 
 import (
@@ -59,8 +58,8 @@ import (
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 )
 
-// Client is the ams client
-type Client struct {
+// DFClient is the ams client
+type DFClient struct {
 	httpClient *http.Client  // http client
 	Host       string        // ams host name
 	Port       int           // ams port
@@ -69,7 +68,7 @@ type Client struct {
 }
 
 // Alive tests if alive
-func (cli *Client) Alive() (alive bool) {
+func (cli *DFClient) Alive() (alive bool) {
 	alive = false
 	_, httpStatus, err := httpretry.Get(cli.httpClient, cli.prefix()+"/api/alive", time.Second*2, 2)
 	if err == nil && httpStatus == http.StatusOK {
@@ -79,7 +78,7 @@ func (cli *Client) Alive() (alive bool) {
 }
 
 // PostSvc post an mas
-func (cli *Client) PostSvc(masID int, svc schemas.Service) (retSvc schemas.Service, httpStatus int,
+func (cli *DFClient) PostSvc(masID int, svc schemas.Service) (retSvc schemas.Service, httpStatus int,
 	err error) {
 	var body []byte
 	js, _ := json.Marshal(svc)
@@ -93,7 +92,7 @@ func (cli *Client) PostSvc(masID int, svc schemas.Service) (retSvc schemas.Servi
 }
 
 // GetSvcs gets all services
-func (cli *Client) GetSvcs(masID int) (svcs []schemas.Service, httpStatus int, err error) {
+func (cli *DFClient) GetSvcs(masID int) (svcs []schemas.Service, httpStatus int, err error) {
 	var body []byte
 	body, httpStatus, err = httpretry.Get(cli.httpClient, cli.prefix()+"/api/df/"+
 		strconv.Itoa(masID)+"/svc", time.Second*2, 2)
@@ -105,7 +104,7 @@ func (cli *Client) GetSvcs(masID int) (svcs []schemas.Service, httpStatus int, e
 }
 
 // GetSvc requests mas information
-func (cli *Client) GetSvc(masID int, desc string) (svc []schemas.Service, httpStatus int,
+func (cli *DFClient) GetSvc(masID int, desc string) (svc []schemas.Service, httpStatus int,
 	err error) {
 	var body []byte
 	body, httpStatus, err = httpretry.Get(cli.httpClient, cli.prefix()+"/api/df/"+
@@ -118,7 +117,7 @@ func (cli *Client) GetSvc(masID int, desc string) (svc []schemas.Service, httpSt
 }
 
 // GetLocalSvc requests mas information
-func (cli *Client) GetLocalSvc(masID int, desc string, nodeID int,
+func (cli *DFClient) GetLocalSvc(masID int, desc string, nodeID int,
 	dist float64) (svc []schemas.Service, httpStatus int, err error) {
 	var body []byte
 	body, httpStatus, err = httpretry.Get(cli.httpClient, cli.prefix()+"/api/df/"+
@@ -132,14 +131,14 @@ func (cli *Client) GetLocalSvc(masID int, desc string, nodeID int,
 }
 
 // DeleteSvc removes service from df
-func (cli *Client) DeleteSvc(masID int, svcID string) (httpStatus int, err error) {
+func (cli *DFClient) DeleteSvc(masID int, svcID string) (httpStatus int, err error) {
 	httpStatus, err = httpretry.Delete(cli.httpClient, cli.prefix()+"/api/df/"+strconv.Itoa(masID)+
 		"/svc/id/"+svcID, nil, time.Second*2, 2)
 	return
 }
 
 // PostGraph  post the graph of a mas
-func (cli *Client) PostGraph(masID int, gr schemas.Graph) (httpStatus int, err error) {
+func (cli *DFClient) PostGraph(masID int, gr schemas.Graph) (httpStatus int, err error) {
 	js, _ := json.Marshal(gr)
 	_, httpStatus, err = httpretry.Post(cli.httpClient, cli.prefix()+"/api/df/"+
 		strconv.Itoa(masID)+"/graph", "application/json", js, time.Second*2, 2)
@@ -147,7 +146,7 @@ func (cli *Client) PostGraph(masID int, gr schemas.Graph) (httpStatus int, err e
 }
 
 // GetGraph returns graph of mas
-func (cli *Client) GetGraph(masID int) (graph schemas.Graph, httpStatus int, err error) {
+func (cli *DFClient) GetGraph(masID int) (graph schemas.Graph, httpStatus int, err error) {
 	var body []byte
 	body, httpStatus, err = httpretry.Get(cli.httpClient, cli.prefix()+"/api/df/"+
 		strconv.Itoa(masID)+"/graph", time.Second*2, 2)
@@ -158,7 +157,7 @@ func (cli *Client) GetGraph(masID int) (graph schemas.Graph, httpStatus int, err
 	return
 }
 
-func (cli *Client) getIP() (ret string) {
+func (cli *DFClient) getIP() (ret string) {
 	for {
 		ips, err := net.LookupHost(cli.Host)
 		if len(ips) > 0 && err == nil {
@@ -169,14 +168,14 @@ func (cli *Client) getIP() (ret string) {
 	return
 }
 
-func (cli *Client) prefix() (ret string) {
+func (cli *DFClient) prefix() (ret string) {
 	ret = "http://" + cli.Host + ":" + strconv.Itoa(cli.Port)
 	return
 }
 
-// New creates a new AMS client
-func New(timeout time.Duration, del time.Duration, numRet int) (cli *Client) {
-	cli = &Client{
+// NewDFClient creates a new AMS client
+func NewDFClient(timeout time.Duration, del time.Duration, numRet int) (cli *DFClient) {
+	cli = &DFClient{
 		httpClient: &http.Client{Timeout: timeout},
 		Host:       "df",
 		Port:       12000,

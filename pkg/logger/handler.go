@@ -61,10 +61,8 @@ import (
 
 // handleAlive is the handler for requests to path /api/alive
 func (logger *Logger) handleAlive(w http.ResponseWriter, r *http.Request) {
-	var httpErr error
-	httpErr = httpreply.Alive(w, nil)
+	httpErr := httpreply.Alive(w, nil)
 	logger.logErrors(r.URL.Path, nil, httpErr)
-	return
 }
 
 // handlePostLogMsg is the handler for post requests to path
@@ -89,7 +87,6 @@ func (logger *Logger) handlePostLogMsg(w http.ResponseWriter, r *http.Request) {
 	go logger.addAgentLogMessage(logmsg)
 	httpErr = httpreply.Created(w, nil, "text/plain", []byte("Ressource Created"))
 	logger.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handleGetCommunication is the handler for get requests to path
@@ -111,7 +108,6 @@ func (logger *Logger) handleGetCommunication(w http.ResponseWriter, r *http.Requ
 	}
 	httpErr = httpreply.Resource(w, comm, cmapErr)
 	logger.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handlePutCommunication is the handler for put requests to path
@@ -142,7 +138,6 @@ func (logger *Logger) handlePutCommunication(w http.ResponseWriter, r *http.Requ
 	go logger.updateCommunication(masID, agentID, comm)
 	httpErr = httpreply.Updated(w, nil)
 	logger.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handlePostLogMsgList is the handler for post requests to path /api/logging/{masid}/list
@@ -166,7 +161,6 @@ func (logger *Logger) handlePostLogMsgList(w http.ResponseWriter, r *http.Reques
 	go logger.addAgentLogMessageList(logmsg)
 	httpErr = httpreply.Created(w, nil, "text/plain", []byte("Ressource Created"))
 	logger.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handleGetAllLatestLogMessages is the handler for request to path
@@ -219,7 +213,6 @@ func (logger *Logger) handleGetLogsLatest(w http.ResponseWriter, r *http.Request
 	}
 	httpErr = httpreply.Resource(w, logMsg, cmapErr)
 	logger.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handleGetLogsTime is the handler for get requests to path
@@ -256,7 +249,6 @@ func (logger *Logger) handleGetLogsTime(w http.ResponseWriter, r *http.Request) 
 	}
 	httpErr = httpreply.Resource(w, logMsg, cmapErr)
 	logger.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handleGetState is the handler for get requests to path /api/state/{masid}/{agentid}
@@ -277,7 +269,6 @@ func (logger *Logger) handleGetState(w http.ResponseWriter, r *http.Request) {
 	}
 	httpErr = httpreply.Resource(w, state, cmapErr)
 	logger.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handlePutState is the handler for put requests to path /api/state/{masid}/{agentid}
@@ -306,7 +297,6 @@ func (logger *Logger) handlePutState(w http.ResponseWriter, r *http.Request) {
 	go logger.updateAgentState(masID, agentID, state)
 	httpErr = httpreply.Updated(w, nil)
 	logger.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // handlePutStateList is the handler for requests to path /api/state/{masid}/list
@@ -336,7 +326,6 @@ func (logger *Logger) handlePutStateList(w http.ResponseWriter, r *http.Request)
 	go logger.updateAgentStatesList(masID, states)
 	httpErr = httpreply.Updated(w, nil)
 	logger.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // methodNotAllowed is the default handler for valid paths but invalid methods
@@ -344,15 +333,13 @@ func (logger *Logger) methodNotAllowed(w http.ResponseWriter, r *http.Request) {
 	httpErr := httpreply.MethodNotAllowed(w)
 	cmapErr := errors.New("Error: Method not allowed on path " + r.URL.Path)
 	logger.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // resourceNotFound is the default handler for invalid paths
 func (logger *Logger) resourceNotFound(w http.ResponseWriter, r *http.Request) {
 	httpErr := httpreply.NotFoundError(w)
-	cmapErr := errors.New("Resource not found")
+	cmapErr := errors.New("resource not found")
 	logger.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
 }
 
 // logErrors logs errors if any
@@ -363,7 +350,6 @@ func (logger *Logger) logErrors(path string, cmapErr error, httpErr error) {
 	if httpErr != nil {
 		logger.logError.Println(path, httpErr)
 	}
-	return
 }
 
 // getAgentID returns the masID and agentID from the path

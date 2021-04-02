@@ -48,5 +48,4 @@ import "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/frontend"
 
 func main() {
 	frontend.StartFrontend()
-	return
 }

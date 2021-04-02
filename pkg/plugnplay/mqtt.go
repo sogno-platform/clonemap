@@ -51,7 +51,7 @@ import (
 	"strconv"
 	"sync"
 
-	amscli "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/ams/client"
+	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
@@ -65,12 +65,12 @@ type mqttClient struct {
 	mutex      *sync.Mutex // mutex for message inbox map
 	logError   *log.Logger
 	logInfo    *log.Logger
-	amsClient  *amscli.Client
+	amsClient  *client.AMSClient
 }
 
 // newMQTTClient creates a new mqtt agency client
 func newMQTTClient(svc string, port int, name string, logErr *log.Logger,
-	logInf *log.Logger, amsClient *amscli.Client) (cli *mqttClient) {
+	logInf *log.Logger, amsClient *client.AMSClient) (cli *mqttClient) {
 	cli = &mqttClient{
 		brokerSvc:  svc,
 		brokerPort: port,
@@ -117,7 +117,6 @@ func (cli *mqttClient) newIncomingMQTTMessage(client mqtt.Client, msg mqtt.Messa
 	if err != nil {
 		cli.logError.Println(err)
 	}
-	return
 }
 
 // subscribe subscribes to specified topics

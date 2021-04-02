@@ -51,17 +51,15 @@ import (
 	"os"
 	"time"
 
-	amsclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/ams/client"
-	dfclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/df/client"
-	logclient "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/logger/client"
+	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 )
 
 // Frontend frontend
 type Frontend struct {
-	amsClient *amsclient.Client
-	dfClient  *dfclient.Client
-	logClient *logclient.LoggerClient
+	amsClient *client.AMSClient
+	dfClient  *client.DFClient
+	logClient *client.LoggerClient
 	logInfo   *log.Logger // logger for info logging
 	logError  *log.Logger // logger for error logging
 }
@@ -69,11 +67,11 @@ type Frontend struct {
 // StartFrontend start
 func StartFrontend() (err error) {
 	fe := &Frontend{
-		amsClient: amsclient.New(time.Second*60, time.Second*1, 4),
-		dfClient:  dfclient.New(time.Second*60, time.Second*1, 4),
+		amsClient: client.NewAMSClient(time.Second*60, time.Second*1, 4),
+		dfClient:  client.NewDFClient(time.Second*60, time.Second*1, 4),
 		logError:  log.New(os.Stderr, "[ERROR] ", log.LstdFlags),
 	}
-	fe.logClient, _ = logclient.NewLoggerClient("logger", 11000, time.Second*60, time.Second*1, 4)
+	fe.logClient, _ = client.NewLoggerClient("logger", 11000, time.Second*60, time.Second*1, 4)
 	logType := os.Getenv("CLONEMAP_LOG_LEVEL")
 	switch logType {
 	case "info":

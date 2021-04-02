@@ -82,7 +82,7 @@ func graphFromSchema(masID int, gIn schemas.Graph) (gOut graph, err error) {
 	gTemp.node = make(map[int]*node)
 	for i := range gIn.Node {
 		if _, ok := gTemp.node[gIn.Node[i].ID]; ok {
-			err = errors.New("Invalid graph")
+			err = errors.New("invalid graph")
 			return
 		}
 		gTemp.node[gIn.Node[i].ID] = &node{
@@ -94,21 +94,21 @@ func graphFromSchema(masID int, gIn schemas.Graph) (gOut graph, err error) {
 	for i := range gIn.Edge {
 		e := &edge{weight: gIn.Edge[i].Weight}
 		if _, ok := gTemp.node[gIn.Edge[i].Node1]; !ok {
-			err = errors.New("Invalid graph")
+			err = errors.New("invalid graph")
 			return
 		}
 		if _, ok := gTemp.node[gIn.Edge[i].Node2]; !ok {
-			err = errors.New("Invalid graph")
+			err = errors.New("invalid graph")
 			return
 		}
 		e.node1 = gTemp.node[gIn.Edge[i].Node1]
 		e.node2 = gTemp.node[gIn.Edge[i].Node2]
 		if _, ok := e.node1.neighbor[e.node2.id]; ok {
-			err = errors.New("Invalid graph")
+			err = errors.New("invalid graph")
 			return
 		}
 		if _, ok := e.node2.neighbor[e.node1.id]; ok {
-			err = errors.New("Invalid graph")
+			err = errors.New("invalid graph")
 			return
 		}
 		e.node1.neighbor[e.node2.id] = e
