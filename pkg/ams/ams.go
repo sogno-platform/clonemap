@@ -76,7 +76,7 @@ func StartAMS() (err error) {
 	ams := &AMS{
 		logError:     log.New(os.Stderr, "[ERROR] ", log.LstdFlags),
 		agencyClient: client.NewAgencyClient(time.Second*60, time.Second*1, 4),
-		dfClient:     client.NewDFClient(time.Second*60, time.Second*1, 4),
+		dfClient:     client.NewDFClient("df", 12000, time.Second*60, time.Second*1, 4),
 	}
 	// create storage and deployment object according to specified deployment type
 	err = ams.init()
@@ -335,7 +335,7 @@ func (ams *AMS) configureMAS(masSpec schemas.MASSpec) (masInfo schemas.MASInfo,
 	}
 
 	// MAS configuration
-	masInfo.Config = masSpec.Config
+	masInfo.Config = ams.checkModules(masSpec.Config)
 	masInfo.Graph = masSpec.Graph
 
 	// total number of agents and total number of agencies
@@ -387,7 +387,9 @@ func (ams *AMS) configureMAS(masSpec schemas.MASSpec) (masInfo schemas.MASInfo,
 			agencyInfo := schemas.AgencyInfo{
 				ImageGroupID: i,
 				ID:           j,
-				Logger:       masSpec.Config.Logger,
+				Logger:       masInfo.Config.Logger,
+				DF:           masInfo.Config.DF,
+				MQTT:         masInfo.Config.MQTT,
 				Name:         "-im-" + strconv.Itoa(i) + "-agency-" + strconv.Itoa(j),
 			}
 			for k := 0; k < masSpec.Config.NumAgentsPerAgency; k++ {
@@ -400,6 +402,34 @@ func (ams *AMS) configureMAS(masSpec schemas.MASSpec) (masInfo schemas.MASInfo,
 			}
 			masInfo.ImageGroups.Inst[i].Agencies.Inst[j] = agencyInfo
 		}
+	}
+	return
+}
+
+// checkModules checks if used modules are active
+func (ams *AMS) checkModules(configIn schemas.MASConfig) (configOut schemas.MASConfig) {
+	configOut = configIn
+	if configOut.DF.Active {
+		if configOut.DF.Host == "" {
+			configOut.DF.Host = "df"
+		}
+		if configOut.DF.Port == 0 {
+			configOut.DF.Port = 12000
+		}
+		dfClient := client.NewDFClient(configOut.DF.Host, configOut.DF.Port, time.Second,
+			time.Second, 3)
+		configOut.DF.Active = dfClient.Alive()
+	}
+	if configOut.Logger.Active {
+		if configOut.Logger.Host == "" {
+			configOut.Logger.Host = "logger"
+		}
+		if configOut.Logger.Port == 0 {
+			configOut.Logger.Port = 11000
+		}
+		logClient := client.NewLoggerClient(configOut.Logger.Host, configOut.Logger.Port,
+			time.Second, time.Second, 3)
+		configOut.Logger.Active = logClient.Alive()
 	}
 	return
 }

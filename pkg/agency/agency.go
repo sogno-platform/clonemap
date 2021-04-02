@@ -91,7 +91,6 @@ func StartAgency(task func(*Agent) error) (err error) {
 		remoteAgents:   make(map[int]*Agent),
 		remoteAgencies: make(map[string]*remoteAgency),
 		msgIn:          make(chan []schemas.ACLMessage, 1000),
-		dfClient:       client.NewDFClient(time.Second*60, time.Second*1, 4),
 		amsClient:      client.NewAMSClient(time.Second*60, time.Second*1, 4),
 		agencyClient:   client.NewAgencyClient(time.Second*60, time.Second*1, 4),
 		logError:       log.New(os.Stderr, "[ERROR] ", log.LstdFlags),
@@ -191,6 +190,8 @@ func (agency *Agency) init() (err error) {
 		agency.mutex.Unlock()
 		return
 	}
+	agency.dfClient = client.NewDFClient(agency.info.DF.Host, agency.info.DF.Port,
+		time.Second*60, time.Second*1, 4)
 	agency.mqttClient = newMQTTClient("mqtt", 1883, agency.info.Name, agency.logError,
 		agency.logInfo)
 	agency.mutex.Unlock()

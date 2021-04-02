@@ -141,16 +141,13 @@ func (cli *LoggerClient) prefix() (ret string) {
 
 // NewLoggerClient creates a new Logger client
 func NewLoggerClient(host string, port int, timeout time.Duration, del time.Duration,
-	numRet int) (cli *LoggerClient, err error) {
+	numRet int) (cli *LoggerClient) {
 	cli = &LoggerClient{
 		httpClient: &http.Client{Timeout: timeout},
 		host:       host,
 		port:       port,
 		delay:      del,
 		numRetries: numRet,
-	}
-	if !cli.Alive() {
-		err = errors.New("Logger Module is not running on " + host + ":" + strconv.Itoa(port))
 	}
 	return
 }
@@ -259,12 +256,7 @@ func NewLogCollector(masID int, config schemas.LoggerConfig, logErr *log.Logger,
 		config:   config,
 	}
 	if logCol.config.Active {
-		logCol.client, err = NewLoggerClient(config.Host, config.Port, time.Second*60,
-			time.Second*1, 4)
-		if err != nil {
-			logCol.config.Active = false
-			return
-		}
+		logCol.client = NewLoggerClient(config.Host, config.Port, time.Second*60, time.Second*1, 4)
 	}
 	logCol.logIn = make(chan schemas.LogMessage, 10000)
 	logCol.stateIn = make(chan schemas.State, 10000)

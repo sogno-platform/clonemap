@@ -72,7 +72,7 @@ type Agent struct {
 	ACL        *ACL                // agent communication
 	Logger     *client.AgentLogger // logger object
 	MQTT       *MQTT               // mqtt object
-	DF         *DF
+	DF         *client.AgentDF
 	logError   *log.Logger
 	logInfo    *log.Logger
 	active     bool
@@ -102,7 +102,7 @@ func newAgent(info schemas.AgentInfo, msgIn chan schemas.ACLMessage,
 	}
 	ag.ACL = newACL(info.ID, msgIn, aclLookup, ag.Logger, logErr, logInf)
 	ag.MQTT = newMQTT(ag.id, mqtt, ag.Logger, ag.logError, ag.logInfo)
-	ag.DF = newDF(ag.masID, ag.id, ag.nodeID, dfClient, ag.logError, ag.logInfo)
+	ag.DF = client.NewAgentDF(ag.masID, ag.id, ag.nodeID, dfClient, ag.logError, ag.logInfo)
 	return
 }
 
@@ -194,5 +194,5 @@ func (agent *Agent) Terminate() {
 	agent.ACL.close()
 	agent.Logger.Close()
 	agent.MQTT.close()
-	agent.DF.close()
+	agent.DF.Close()
 }
