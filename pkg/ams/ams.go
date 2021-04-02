@@ -431,6 +431,14 @@ func (ams *AMS) checkModules(configIn schemas.MASConfig) (configOut schemas.MASC
 			time.Second, time.Second, 3)
 		configOut.Logger.Active = logClient.Alive()
 	}
+	if configOut.MQTT.Active {
+		if configOut.MQTT.Host == "" {
+			configOut.MQTT.Host = "mqtt"
+		}
+		if configOut.MQTT.Port == 0 {
+			configOut.MQTT.Port = 1883
+		}
+	}
 	return
 }
 

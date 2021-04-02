@@ -318,10 +318,6 @@ func NewAgentDF(masID int, agentID int, nodeID int, active bool, dfCli *DFClient
 		logInfo:  logInf,
 		dfClient: dfCli,
 	}
-	// act := os.Getenv("CLONEMAP_DF")
-	// if act == "ON" {
-	// 	df.active = true
-	// }
 	df.registeredServices = make(map[string]schemas.Service)
 	return
 }

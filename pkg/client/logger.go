@@ -248,7 +248,7 @@ func (logCol *LogCollector) storeState() (err error) {
 
 // NewLogCollector creates an agency logger client
 func NewLogCollector(masID int, config schemas.LoggerConfig, logErr *log.Logger,
-	logInf *log.Logger) (logCol *LogCollector, err error) {
+	logInf *log.Logger) (logCol *LogCollector) {
 	logCol = &LogCollector{
 		masID:    masID,
 		logError: logErr,
@@ -342,8 +342,8 @@ func (agLog *AgentLogger) RestoreState() (state string, err error) {
 }
 
 // NewAgentLogger craetes a new object of type AgentLogger
-func (logCol *LogCollector) NewAgentLogger(agentID int, config schemas.LoggerConfig,
-	logErr *log.Logger, logInf *log.Logger) (agLog *AgentLogger) {
+func (logCol *LogCollector) NewAgentLogger(agentID int, logErr *log.Logger,
+	logInf *log.Logger) (agLog *AgentLogger) {
 	agLog = &AgentLogger{
 		agentID:  agentID,
 		masID:    logCol.masID,
@@ -353,7 +353,7 @@ func (logCol *LogCollector) NewAgentLogger(agentID int, config schemas.LoggerCon
 		mutex:    &sync.Mutex{},
 		logError: logErr,
 		logInfo:  logInf,
-		active:   true,
+		active:   logCol.config.Active,
 	}
 	return
 }
