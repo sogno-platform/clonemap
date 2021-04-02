@@ -123,7 +123,7 @@ func getDesc(r *http.Request) (masID int, desc string, err error) {
 	return
 }
 
-// getDist return the masId, description, nodeid and distance
+// getDist return the masid, description, nodeid and distance
 func getDist(r *http.Request) (masID int, desc string, nodeID int, dist float64, err error) {
 	vars := mux.Vars(r)
 	masID, err = strconv.Atoi(vars["masid"])
@@ -144,7 +144,7 @@ func getDist(r *http.Request) (masID int, desc string, nodeID int, dist float64,
 
 /****************************** Handler part for the logger ********************/
 
-// getNlogs return the masId, agentid, topic and number
+// getNlogs return the masid, agentid, topic and number
 func getNLogs(r *http.Request) (masID int, agentid int, topic string, num int, err error) {
 	vars := mux.Vars(r)
 	masID, err = strconv.Atoi(vars["masid"])
@@ -180,7 +180,7 @@ func getMasAndNum(r *http.Request) (masID int, num int, err error) {
 	return
 }
 
-// getRange return the masId, agentid, topic and start and end
+// getRange return the masid, agentid, topic and start and end
 /* func getRange(r *http.Request) (masID int, agentid int, topic string, num int, err error) {
 	vars := mux.Vars(r)
 	masID, err = strconv.Atoi(vars["masid"])
@@ -242,7 +242,7 @@ func (fe *Frontend) server(port int) (serv *http.Server) {
 	s.Path("/df/{masid}/svc/desc/{desc}/node/{nodeid}/dist/{dist}").Methods("Get").HandlerFunc(fe.handleSvcWithDist)
 
 	// api for logger
-	s.Path("/logging/{masid}/latest/{num}").Methods("GET").HandlerFunc(fe.handleGetAllLatestLogMessages)
+	s.Path("/logging/{masid}/latest/{num}").Methods("GET").HandlerFunc(fe.handleGetAllLatestLogs)
 	s.Path("/logging/{masid}/{agentid}/{topic}/latest/{num}").Methods("GET").HandlerFunc(fe.handleGetNLatestLogs)
 	s.Path("/logging/{masid}/list").Methods("Post").HandlerFunc(fe.handlePostLogs)
 	/* 	s.Path("/logging/{masid}/{agentid}/{topic}/time/{begin}/{end}").Methods("Get").HandlerFunc(fe.handleGetLogsWithRange) */
