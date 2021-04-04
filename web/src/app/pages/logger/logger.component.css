@@ -124,7 +124,80 @@
 }
 
 
-.tag {
+.agent-selected {
+   height: 40px;
+   width: 80px;
+   text-align: center;
+   border-radius: 40px;
+   margin-right: 30px;
+   margin-bottom: 10px;
+   color:white;
+   background-color: var(--light-primary-color);
+   font-size: 20px;
+   padding-top: 2px;
+   cursor: pointer; 
+}
+
+.agent-not-selected {
+   height: 40px;
+   width: 120px;
+   text-align: center;
+   border: solid rgb(226, 224, 224);
+   border-radius: 40px;
+   margin-right: 30px;
+   margin-bottom: 10px;
+   color: gray;
+   font-size: 20px;
+   cursor: pointer; 
+}
+
+.agent-not-selected:hover {
+   border: none;
+   background: var(--light-primary-color);
+   color:white;
+}
+
+.more {
+   height: 40px;
+   width: 80px;
+   text-align: center;
+   border: dashed gray;
+   border-radius: 40px;
+   margin-right: 30px;
+   margin-bottom: 10px;
+   color: grey;
+   font-size: 20px;
+   font-weight: bold;
+   padding-top: 2px;
+   cursor: pointer; 
+}
+
+
+.agent-selected:hover {
+   color: var(--background-primary-color);   
+   background-color: var(--background-primary-color);
+}
+
+.agent-selected:hover p {
+   display: none;
+}
+
+.delete {
+   display: none;
+}
+
+.hidden {
+   display: none;
+}
+
+.agent-selected:hover .delete {
+   display: initial;
+   color: var(--light-primary-color);
+}
+
+
+
+.tag{
    height: 40px;
    width: 80px;
    text-align: center;
@@ -137,6 +210,8 @@
    padding-top: 2px;
    cursor: pointer; 
 }
+
+
 
 .active  {
    background-color: var(--light-primary-color);
@@ -152,25 +227,25 @@
 }
 
 
-.topics .error.selected {   
+.topics .error-tag.selected {   
    background-color: rgb(230, 109, 109);
 }
 
 
-.topics .debug.selected {
+.topics .debug-tag.selected {
    background-color: rgb(216, 216, 110);
 
 }
 
-.topics .msg.selected {
+.topics .msg-tag.selected {
    background-color: var(--light-primary-color);
 }
 
-.topics .status.selected {
+.topics .status-tag.selected {
    background-color: rgb(126, 235, 149);
 }
 
-.topics .app.selected {
+.topics .app-tag.selected {
    background-color: rgb(56, 202, 221) ;
 }
 
@@ -219,25 +294,32 @@ stroke-width: 2;
 
 text {
     fill: var(--primary-color);
+    color: var(--primary-color);
 }
 
-.errorLogBox rect, .errorLogBox text {
+.text-title {
+   font: bold 30px; 
+}
+
+
+
+.error {
    fill: rgb(230, 109, 109);
 }
 
-.debugLogBox rect, .debugLogBox text {
+.debug {
    fill: rgb(216, 216, 110);
 }
 
-.msgLogBox rect, .msgLogBox text {
+.msg {
    fill: var(--light-primary-color);
 }
 
-.statusLogBox rect, .statusLogBox text {
+.status {
    fill: rgb(126, 235, 149);
 }
 
-.appLogBox rect, .appLogBox text {
+.app {
    fill: rgb(56, 202, 221);
 }
 

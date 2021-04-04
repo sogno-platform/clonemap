@@ -2,7 +2,7 @@
     <!--sidebar-->
     <div class="sidebar" *ngIf="MASs !== null">
         <div class="nav">
-            <div class="nav-item" *ngFor="let MAS of MASs" routerLinkActive="is-active" [ngClass]="MAS.id === selectedMASId ? 'active' : ''">
+            <div class="nav-item" *ngFor="let MAS of MASs" routerLinkActive="is-active" [ngClass]="MAS.id === selectedMASID ? 'active' : ''">
                 <a class="list-text"  [routerLink]="['/logger', MAS.id]" >
                   <p > MAS {{ MAS.id }}</p>
                 </a>
@@ -13,28 +13,22 @@
     <!--modal for uploading the log-->
     <ng-template #content let-modal>
         <div class="modal-header">
-            <h4 class="modal-title">Add Log</h4>
+            <h4 class="modal-title">Add Agent</h4>
             <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
             <span aria-hidden="true">&times;</span>
             </button>
         </div>
         <div class="modal-body">
-            <div class="form-group">
-                <label for="newLogs">Uploaded Contents</label>
-                <textarea class="form-control" id="newLogs" [(ngModel)]="display" (change)="onUpdateContent($event.target.value)" rows="20">{{display}}</textarea>
-            </div>                   
-            <div class="input-group mb-3">
-                <div class="custom-file">
-                    <input type="file" 
-                            class="custom-file-input" 
-                            id="inputLog"
-                            (change)="handleFileInput($event.target.files)">
-                    <label class="custom-file-label" for="inputLog" >{{filename}}</label>
+            <div class="row">
+                <div *ngFor="let id of notSelectedID">
+                    <div class="agent-not-selected"  [ngValue]="id" (click)="onSelectID(id)">
+                        agent {{id}}
+                    </div>
                 </div>
-            </div>
+            </div>       
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn my-btn" (click)="onCreateLogs()">Upload</button>
+            <button type="button" class="btn my-btn" (click)="onHandleSelectAgent()">OK</button>
         </div>
     </ng-template>
 
@@ -51,16 +45,19 @@
                 <button class="btn-search" type="submit" (click)="onSearchLogs(nums.value)">
                     <i class="fas fa-search"></i>
                 </button>
-                <button type='button' class='btn my-btn btn-create' (click)="openLg(content)">+</button>
+
             </div>
             
             <div class="agentID d-flex align-content-end">
-                <div class="tagname">agent ID</div>
+                <div class="tagname">Selected Agents</div>
                 <div class="agents">
                     <div class="row">
-                        <div class="tag col-lg-1" *ngFor="let id of agentID, index as i" [ngValue]="i" [class.active]="isAgentSelected[i]" (click)="onSelectID(i)">
-                            agent {{id}}
+                        <div *ngFor="let id of selectedID" class="agent-selected col-lg-1 active" (click)="onDeleteID(id)" [ngValue]="id" >
+                            <p>agent {{id}} </p>
+                            <div class="delete"><i class="fas fa-trash"></i></div>
                         </div>
+                        <div class="more col-lg-1" (click)="openLg(content)">+ </div>
+
                     </div>
                 </div>  
             </div>
@@ -68,11 +65,11 @@
             
             <div class="topics d-flex">
                 <div class="tagname"> topic </div>
-                <div [class.selected]="isTopicSelected[0]" class="error tag" (click)="onToggleTopic(0)">error</div>
-                <div [class.selected]="isTopicSelected[1]" class="debug tag" (click)="onToggleTopic(1)" >debug</div>
-                <div [class.selected]="isTopicSelected[2]"class="msg tag" (click)="onToggleTopic(2)">msg</div>
-                <div [class.selected]="isTopicSelected[3]" class="status tag" (click)="onToggleTopic(3)">status</div>
-                <div [class.selected]="isTopicSelected[4]" class="app tag" (click)="onToggleTopic(4)">app</div>
+                <div [class.selected]="isTopicSelected[0]" class="error-tag tag" (click)="onToggleTopic(0)">error</div>
+                <div [class.selected]="isTopicSelected[1]" class="debug-tag tag" (click)="onToggleTopic(1)" >debug</div>
+                <div [class.selected]="isTopicSelected[2]"class="msg-tag tag" (click)="onToggleTopic(2)">msg</div>
+                <div [class.selected]="isTopicSelected[3]" class="status-tag tag" (click)="onToggleTopic(3)">status</div>
+                <div [class.selected]="isTopicSelected[4]" class="app-tag tag" (click)="onToggleTopic(4)">app</div>
             </div>
   
 <!--             <ul class="nav nav-tabs justify-content-end">
@@ -83,60 +80,34 @@
                   <a class="nav-link" [class.active]="curr_state==='UML'" (click)="onClickUML()">UML</a>
                 </li>
             </ul> -->
+            <ng-template #popContent [ngClass]="popoverTopic"> {{popoverContent}} </ng-template>
+
 
             <svg [attr.width]="width" [attr.height]="height">
+                   <marker id="arrow" viewBox="0 -5 10 10" refX="8" refY="0" markerWidth="4" markerHeight="4" orient="auto">
+                        <path fill="var(--light-primary-color)" d="M0,-5L10,0L0,5"></path>
+                    </marker>
                 <rect class="agentBox" *ngFor="let box of agentBox" [attr.x]="box.x" [attr.y]="box.y" [attr.width]="boxWidth" [attr.height]="boxHeight"></rect>
-                <text class="agentText" *ngFor="let text of texts, index as i" [attr.x]="text.x" [attr.y]="text.y"> Agent {{text.textID}} </text>
-                <line stroke-dasharray="5, 5" class="vertical" *ngFor="let line of timeline" [attr.x1]="line.x1" [attr.y1]="line.y1" [attr.x2]="line.x2" [attr.y2]="height"/>          
-            </svg>    
-             
-            <div class="errorLogBox" *ngIf="isTopicSelected[0]">
-                <div *ngFor="let boxes of errLogBox">
-                    <svg [attr.width]="width" [attr.height]="height">
-                        <rect class="logBox" *ngFor="let box of boxes"  (click)="showMsg(box.msg)" [attr.x]="box.x" [attr.y]="box.y" [attr.width]="logBoxWidth" [attr.height]="logBoxHeight"></rect>
-                        <text *ngFor="let box of boxes, index as i" [attr.x]="box.x + logBoxWidth " [attr.y]="box.y + logBoxWidth/3"> {{box.msg}}</text>                       
-                    </svg>
-                </div>
-            </div>
+                <text class="agentText" font-size="40px"  *ngFor="let text of texts, index as i" [attr.x]="text.x" [attr.y]="text.y"> Agent {{text.textID}} </text>
+                <line stroke-dasharray="5, 5" class="vertical" *ngFor="let line of timeline" [attr.x1]="line.x1" [attr.y1]="line.y1" [attr.x2]="line.x2" [attr.y2]="height"/>     
+                <line stroke="var(--light-primary-color)" stroke-width="4" *ngFor="let line of communications" [class.hidden]="line.hidden" [attr.x1]="line.x1" [attr.y1]="line.y1" [attr.x2]="line.x2" [attr.y2]="line.y2" marker-end="url(#arrow)"/> 
+                <rect class="logBox" *ngFor="let box of logBoxes, index as i" [class.hidden]="box.hidden" (click)="onChangePopoverContent(i)" [ngbPopover]="popContent" placement="right" container="body" [attr.x]="box.x" [attr.y]="box.y" [attr.width]="logBoxWidth" [attr.height]="logBoxHeight"
+                [ngClass]="box.topic"
+                ></rect>    
+ 
+            </svg> 
             
-            <div class="debugLogBox" *ngIf="isTopicSelected[1]">
-                <div *ngFor="let boxes of debugLogBox">
-                    <svg [attr.width]="width" [attr.height]="height">
-                        <rect class="logBox" *ngFor="let box of boxes" (click)="showMsg(box.msg)" [attr.x]="box.x" [attr.y]="box.y" [attr.width]="logBoxWidth" [attr.height]="logBoxHeight"></rect>
-                        <text *ngFor="let box of boxes, index as i" [attr.x]="box.x + logBoxWidth " [attr.y]="box.y + logBoxWidth/3"> {{box.msg}}</text>                      
-                    </svg>
-                </div>
-            </div>
+          
+
+
+                  
             
-            <div class="msgLogBox" *ngIf="isTopicSelected[2]">
-                <div *ngFor="let boxes of msgLogBox">
-                    <svg [attr.width]="width" [attr.height]="height">
-                        <text *ngFor="let box of boxes, index as i" [attr.x]="box.x + logBoxWidth " [attr.y]="box.y + logBoxWidth/3"> {{box.msg}}</text>  
-                        <rect class="logBox" *ngFor="let box of boxes" (click)="showMsg(box.msg)" [attr.x]="box.x" [attr.y]="box.y" [attr.width]="logBoxWidth" [attr.height]="logBoxHeight"></rect>
-                    </svg>
-                </div>
-            </div>
+  
 
-            <div class="statusLogBox" *ngIf="isTopicSelected[3]">
-                <div *ngFor="let boxes of statusLogBox">
-                    <svg [attr.width]="width" [attr.height]="height">
-                        <rect class="logBox" *ngFor="let box of boxes"  [attr.x]="box.x" [attr.y]="box.y" [attr.width]="logBoxWidth" [attr.height]="logBoxHeight"></rect>
-                        <text *ngFor="let box of boxes, index as i" [attr.x]="box.x + logBoxWidth " [attr.y]="box.y + logBoxWidth/3"> {{box.msg}}</text>  
-                    </svg>
-                </div>
-            </div>
-
-            <div class="appLogBox" *ngIf="isTopicSelected[4]">
-                <div *ngFor="let boxes of appLogBox">
-                    <svg [attr.width]="width" [attr.height]="height">
-                        <rect class="logBox" *ngFor="let box of boxes" [attr.x]="box.x" (click)="showMsg(0)" [attr.y]="box.y" [attr.width]="logBoxWidth" [attr.height]="logBoxHeight"></rect>
-                        <text *ngFor="let box of boxes, index as i" [attr.x]="box.x + logBoxWidth " [attr.y]="box.y + logBoxWidth/3"> {{box.msg}}</text>    
-                    </svg>
-                </div>
-            </div>
+      
              
 
-            </div>
+        </div>
    </div>
    
 
