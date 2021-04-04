@@ -17,7 +17,7 @@
     <!--modal for uploading the agency-->
     <ng-template #content let-modal>
         <div class="modal-header">
-            <h4 class="modal-title">Add Agency</h4>
+            <h4 class="modal-title">Start new MAS</h4>
             <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
             <span aria-hidden="true">&times;</span>
             </button>
@@ -46,7 +46,7 @@
     <div class="contentcontainer" *ngIf="MASs !== null && MASs.length !== 0" >
         <div class = "title">
             <h2 >Overview</h2>              
-            <button type='button' class='btn my-btn btn-create' (click)="openLg(content)">+ New Agency</button>
+            <button type='button' class='btn my-btn btn-create' (click)="openLg(content)">+ New MAS</button>
             <input type="text" #searchMAS class="input" id="searchMAS" placeholder="Enter the MAS ID"/>
             <button class="search-btn" type="submit" (click)="onSearchMAS(searchMAS.value)">
                 <i class="fas fa-search"></i>
@@ -102,7 +102,7 @@
 
 <div class="empty-overview" *ngIf="MASs === null || MASs.length === 0">       
    <h1>{{status}}</h1>
-   <button *ngIf="MASs.length !== null" type='button' class="btn my-btn" (click)="openLg(content)">+ New Agency</button>      
+   <button *ngIf="MASs.length !== null" type='button' class="btn my-btn" (click)="openLg(content)">+ New MAS</button>      
 </div>
 
 

@@ -23,12 +23,14 @@ export class OverviewComponent implements OnInit {
         private router: Router
 
     ) {} 
+
+
     
     ngOnInit() {
     
         this.masService.getMAS().subscribe((MASs: any) => {
             if (MASs === null) {
-                this.status = "Currently no agencies, upload one......";
+                this.status = "Currently no MASs, create one......";
                 this.MASs = [];
                 this.MASsDisplay = [];
                 console.log(this.MASs);
@@ -74,10 +76,10 @@ export class OverviewComponent implements OnInit {
         const result = JSON.parse(this.display);
         this.masService.createMAS(result).subscribe(
             (response) => {
-            console.log(response);
-            this.modalService.dismissAll("uploaded");
+            this.modalService.dismissAll();
             },
             error => {
+                this.modalService.dismissAll();
                 console.log(error);
             }
         );

@@ -127,6 +127,7 @@
 
 .card {
    width: 400px;
+   margin-bottom: 50px;
 }
 
 .card-header {
@@ -142,6 +143,10 @@
    margin-left:250px;
    background-color: var(--light-primary-color);
    color:white;
+}
+
+.hidden {
+   display: none;
 }
 
 

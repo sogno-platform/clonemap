@@ -1,7 +1,7 @@
 <div class="maincontainer">
     <div class="sidebar">
         <div class="nav">
-            <div class="nav-item" *ngFor="let MAS of MASs" routerLinkActive="is-active" [ngClass]="MAS.id === selectedMASId ? 'active' : ''">
+            <div class="nav-item" *ngFor="let MAS of MASs" routerLinkActive="is-active" [ngClass]="MAS.id === selectedMASID ? 'active' : ''">
                 <a class="list-text"  [routerLink]="['/ams', MAS.id]" >
                   <p > MAS {{ MAS.id }}</p>
                 </a>
@@ -10,7 +10,7 @@
     </div>
     <div class="contentcontainer">
         <div *ngIf="selectedMasId === -1">
-            <h1>No agency selected, select one...</h1>
+            <h1>No MAS selected, select one...</h1>
         </div>
         <div *ngIf="selectedMasId !== -1">
 
