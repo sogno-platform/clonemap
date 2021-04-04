@@ -99,7 +99,7 @@ export class LoggerComponent implements OnInit {
                 }); */
             });
 
-        this.http.get("http://localhost:4200/assets/logs.json").subscribe( (res: LogMessage[] ) => {
+        this.http.get("logs.json").subscribe( (res: LogMessage[] ) => {
             this.allMsgs = res;
         });
         this.agentID = [0, 1, 2, 3, 4];
