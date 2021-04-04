@@ -388,6 +388,8 @@ func (stor *localStorage) getAgencyInfoFull(masID int, imID int,
 	ret.ID = agencyID
 	ret.ImageGroupID = imID
 	ret.Logger = stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Logger
+	ret.DF = stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].DF
+	ret.MQTT = stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].MQTT
 	ret.Status = stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Status
 	ret.Agents = make([]schemas.AgentInfo,
 		len(stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Agents))

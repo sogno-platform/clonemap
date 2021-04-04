@@ -50,6 +50,7 @@ import (
 	"time"
 
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/agency"
+	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 	// "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
 )
 
@@ -67,5 +68,12 @@ func task(ag *agency.Agent) (err error) {
 	msg, _ := ag.ACL.NewMessage(recv, 0, 0, "test message")
 	ag.ACL.SendMessage(msg)
 	ag.Logger.NewLog("app", "This is agent "+strconv.Itoa(id), "")
+	svc := schemas.Service{
+		Desc: "agent" + strconv.Itoa(id),
+	}
+	_, err = ag.DF.RegisterService(svc)
+	if err != nil {
+		fmt.Println(err)
+	}
 	return
 }

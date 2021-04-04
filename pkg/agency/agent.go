@@ -71,8 +71,8 @@ type Agent struct {
 	status     int                 // Status of agent
 	ACL        *ACL                // agent communication
 	Logger     *client.AgentLogger // logger object
-	MQTT       *MQTT               // mqtt object
-	DF         *DF
+	MQTT       *AgentMQTT          // mqtt object
+	DF         *client.AgentDF
 	logError   *log.Logger
 	logInfo    *log.Logger
 	active     bool
@@ -81,7 +81,8 @@ type Agent struct {
 // newAgent creates a new agent
 func newAgent(info schemas.AgentInfo, msgIn chan schemas.ACLMessage,
 	aclLookup func(int) (*ACL, error), logCol *client.LogCollector, logConfig schemas.LoggerConfig,
-	mqtt *mqttClient, dfClient *client.DFClient, logErr *log.Logger, logInf *log.Logger) (ag *Agent) {
+	mqttCol *mqttCollector, dfActive bool, dfClient *client.DFClient, logErr *log.Logger,
+	logInf *log.Logger) (ag *Agent) {
 	ag = &Agent{
 		id:         info.ID,
 		nodeID:     info.Spec.NodeID,
@@ -98,11 +99,16 @@ func newAgent(info schemas.AgentInfo, msgIn chan schemas.ACLMessage,
 	}
 	// in, out := ag.ACL.getCommDataChannels()
 	if logCol != nil {
-		ag.Logger = logCol.NewAgentLogger(ag.id, logConfig, ag.logError, ag.logInfo)
+		ag.Logger = logCol.NewAgentLogger(ag.id, ag.logError, ag.logInfo)
 	}
 	ag.ACL = newACL(info.ID, msgIn, aclLookup, ag.Logger, logErr, logInf)
-	ag.MQTT = newMQTT(ag.id, mqtt, ag.Logger, ag.logError, ag.logInfo)
-	ag.DF = newDF(ag.masID, ag.id, ag.nodeID, dfClient, ag.logError, ag.logInfo)
+	if mqttCol != nil {
+		ag.MQTT = mqttCol.newAgentMQTT(ag.id, ag.Logger, ag.logError, ag.logInfo)
+	}
+	if dfClient != nil {
+		ag.DF = client.NewAgentDF(ag.masID, ag.id, ag.nodeID, dfActive, dfClient, ag.logError,
+			ag.logInfo)
+	}
 	return
 }
 
@@ -194,5 +200,5 @@ func (agent *Agent) Terminate() {
 	agent.ACL.close()
 	agent.Logger.Close()
 	agent.MQTT.close()
-	agent.DF.close()
+	agent.DF.Close()
 }

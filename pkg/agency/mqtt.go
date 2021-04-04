@@ -47,7 +47,6 @@ package agency
 import (
 	"errors"
 	"log"
-	"os"
 	"strconv"
 	"sync"
 
@@ -56,9 +55,189 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-// MQTT provides functions to subscribe and publish via mqtt
-type MQTT struct {
-	client     *mqttClient
+// mqttCollector is the agency client for mqtt
+type mqttCollector struct {
+	client       mqtt.Client              // mqtt client
+	msgIn        chan schemas.MQTTMessage // mqtt message inbox
+	name         string                   // agency name
+	config       schemas.MQTTConfig       // indicates if mqtt is active (switch via env)
+	mutex        *sync.Mutex              // mutex for message inbox map
+	subscription map[string][]*AgentMQTT  // map for subscription topics to agents' mqtt object
+	// numDeliverer int                      // number of go routines for delivery
+	logError *log.Logger
+	logInfo  *log.Logger
+}
+
+// newMQTTCollector creates a new mqtt agency client
+func newMQTTCollector(config schemas.MQTTConfig, name string, logErr *log.Logger,
+	logInf *log.Logger) (col *mqttCollector) {
+	col = &mqttCollector{
+		name:     name,
+		mutex:    &sync.Mutex{},
+		logError: logErr,
+		logInfo:  logInf,
+		config:   config,
+	}
+	col.msgIn = make(chan schemas.MQTTMessage, 1000)
+	col.subscription = make(map[string][]*AgentMQTT)
+	col.logInfo.Println("Created new MQTT client; status: ", col.config.Active)
+	col.init()
+	return
+}
+
+func (mqttCol *mqttCollector) init() (err error) {
+	if mqttCol.config.Active {
+		opts := mqtt.NewClientOptions().AddBroker("tcp://" + mqttCol.config.Host + ":" +
+			strconv.Itoa(mqttCol.config.Port)).SetClientID(mqttCol.name)
+		opts.SetDefaultPublishHandler(mqttCol.newIncomingMQTTMessage)
+		mqttCol.client = mqtt.NewClient(opts)
+		if token := mqttCol.client.Connect(); token.Wait() && token.Error() != nil {
+			err = errors.New("MQTTInitError")
+			return
+		}
+		for i := 0; i < 3; i++ {
+			go mqttCol.deliverMsgs()
+		}
+		// cli.numDeliverer = 3
+	}
+	return
+}
+
+func (mqttCol *mqttCollector) close() (err error) {
+	if mqttCol.config.Active {
+		mqttCol.logInfo.Println("Disconnecting MQTT client")
+		mqttCol.client.Disconnect(250)
+	}
+	err = nil
+	return
+}
+
+// newIncomingMQTTMessage adds message to channel for incoming messages
+func (mqttCol *mqttCollector) newIncomingMQTTMessage(client mqtt.Client, msg mqtt.Message) {
+	var mqttMsg schemas.MQTTMessage
+	mqttMsg.Content = msg.Payload()
+	mqttMsg.Topic = msg.Topic()
+	mqttCol.msgIn <- mqttMsg
+}
+
+// subscribe subscribes to specified topics
+func (mqttCol *mqttCollector) subscribe(mq *AgentMQTT, topic string, qos int) (err error) {
+	if !mqttCol.config.Active {
+		return
+	}
+	mqttCol.mutex.Lock()
+	ag, ok := mqttCol.subscription[topic]
+	mqttCol.mutex.Unlock()
+	if ok {
+		subscribed := false
+		for i := range ag {
+			if ag[i].agentID == mq.agentID {
+				subscribed = true
+				break
+			}
+		}
+		if !subscribed {
+			ag = append(ag, mq)
+			mqttCol.mutex.Lock()
+			mqttCol.subscription[topic] = ag
+			mqttCol.mutex.Unlock()
+		}
+	} else {
+		mqttCol.mutex.Lock()
+		token := mqttCol.client.Subscribe(topic, byte(qos), nil)
+		mqttCol.mutex.Unlock()
+		if token.Wait() && token.Error() != nil {
+			err = token.Error()
+			return
+		}
+		ag = make([]*AgentMQTT, 0)
+		ag = append(ag, mq)
+		mqttCol.mutex.Lock()
+		mqttCol.subscription[topic] = ag
+		mqttCol.mutex.Unlock()
+	}
+	// cli.mutex.Lock()
+	// numDel := len(cli.subscription) / 25
+	// if numDel > cli.numDeliverer {
+	// 	for i := 0; i < numDel-cli.numDeliverer; i++ {
+	// 		go cli.deliverMsgs()
+	// 	}
+	// 	cli.numDeliverer = numDel
+	// }
+	// cli.mutex.Unlock()
+
+	return
+}
+
+// unsubscribe to a topic
+func (mqttCol *mqttCollector) unsubscribe(mq *AgentMQTT, topic string) (err error) {
+	if !mqttCol.config.Active {
+		return
+	}
+	mqttCol.mutex.Lock()
+	ag, ok := mqttCol.subscription[topic]
+	mqttCol.mutex.Unlock()
+	if !ok {
+		return
+	}
+	index := -1
+	for i := range ag {
+		if mq.agentID == ag[i].agentID {
+			index = i
+			break
+		}
+	}
+	if index == -1 {
+		return
+	}
+	if index == 0 && len(ag) == 1 {
+		// agent is the only one who has subscribed -> unsubscribe
+		delete(mqttCol.subscription, topic)
+		token := mqttCol.client.Unsubscribe(topic)
+		if token.Wait() && token.Error() != nil {
+			err = token.Error()
+			return
+		}
+	} else {
+		// remove agent from list of subscribed agents
+		ag[index] = ag[len(ag)-1]
+		ag[len(ag)-1] = nil
+		ag = ag[:len(ag)-1]
+		mqttCol.mutex.Lock()
+		mqttCol.subscription[topic] = ag
+		mqttCol.mutex.Unlock()
+	}
+	return
+}
+
+// publish sends a message
+func (mqttCol *mqttCollector) publish(msg schemas.MQTTMessage, qos int) (err error) {
+	if mqttCol.config.Active {
+		token := mqttCol.client.Publish(msg.Topic, byte(qos), false, msg.Content)
+		token.Wait()
+	}
+	return
+}
+
+// deliverMsg delivers incoming messages to agents according to their topic
+func (mqttCol *mqttCollector) deliverMsgs() {
+	var msg schemas.MQTTMessage
+	for {
+		msg = <-mqttCol.msgIn
+		mqttCol.mutex.Lock()
+		ag, ok := mqttCol.subscription[msg.Topic]
+		mqttCol.mutex.Unlock()
+		if ok {
+			for i := range ag {
+				ag[i].newIncomingMQTTMessage(msg)
+			}
+		}
+	}
+}
+
+// AgentMQTT provides functions to subscribe and publish via mqtt
+type AgentMQTT struct {
+	collector  *mqttCollector
 	mutex      *sync.Mutex                         // mutex for message inbox map
 	subTopic   map[string]interface{}              // subscribed topics
 	msgInTopic map[string]chan schemas.MQTTMessage // message inbox for messages with specified topic
@@ -70,17 +249,17 @@ type MQTT struct {
 	active     bool
 }
 
-// newMQTT returns a new pubsub connector of type mqtt
-func newMQTT(agentID int, cli *mqttClient, cmaplog *client.AgentLogger, logErr *log.Logger,
-	logInf *log.Logger) (mq *MQTT) {
-	mq = &MQTT{
-		client:   cli,
-		mutex:    &sync.Mutex{},
-		agentID:  agentID,
-		logger:   cmaplog,
-		logError: logErr,
-		logInfo:  logInf,
-		active:   true,
+// newAgentMQTT returns a new pubsub connector of type mqtt
+func (mqttCol *mqttCollector) newAgentMQTT(agentID int, cmaplog *client.AgentLogger,
+	logErr *log.Logger, logInf *log.Logger) (mq *AgentMQTT) {
+	mq = &AgentMQTT{
+		collector: mqttCol,
+		mutex:     &sync.Mutex{},
+		agentID:   agentID,
+		logger:    cmaplog,
+		logError:  logErr,
+		logInfo:   logInf,
+		active:    mqttCol.config.Active,
 	}
 	mq.subTopic = make(map[string]interface{})
 	mq.msgInTopic = make(map[string]chan schemas.MQTTMessage)
@@ -89,7 +268,7 @@ func newMQTT(agentID int, cli *mqttClient, cmaplog *client.AgentLogger, logErr *
 }
 
 // close closes the mqtt
-func (mq *MQTT) close() {
+func (mq *AgentMQTT) close() {
 	for t := range mq.subTopic {
 		mq.Unsubscribe(t)
 	}
@@ -100,7 +279,7 @@ func (mq *MQTT) close() {
 }
 
 // Subscribe subscribes to a topic
-func (mq *MQTT) Subscribe(topic string, qos int) (err error) {
+func (mq *AgentMQTT) Subscribe(topic string, qos int) (err error) {
 	mq.mutex.Lock()
 	if !mq.active {
 		mq.mutex.Unlock()
@@ -115,12 +294,12 @@ func (mq *MQTT) Subscribe(topic string, qos int) (err error) {
 	mq.mutex.Lock()
 	mq.subTopic[topic] = nil
 	mq.mutex.Unlock()
-	err = mq.client.subscribe(mq, topic, qos)
+	err = mq.collector.subscribe(mq, topic, qos)
 	return
 }
 
 // Unsubscribe unsubscribes a topic
-func (mq *MQTT) Unsubscribe(topic string) (err error) {
+func (mq *AgentMQTT) Unsubscribe(topic string) (err error) {
 	mq.mutex.Lock()
 	if !mq.active {
 		mq.mutex.Unlock()
@@ -135,12 +314,12 @@ func (mq *MQTT) Unsubscribe(topic string) (err error) {
 	mq.mutex.Lock()
 	delete(mq.subTopic, topic)
 	mq.mutex.Unlock()
-	err = mq.client.unsubscribe(mq, topic)
+	err = mq.collector.unsubscribe(mq, topic)
 	return
 }
 
 // SendMessage sends a message
-func (mq *MQTT) SendMessage(msg schemas.MQTTMessage, qos int) (err error) {
+func (mq *AgentMQTT) SendMessage(msg schemas.MQTTMessage, qos int) (err error) {
 	mq.mutex.Lock()
 	if !mq.active {
 		mq.mutex.Unlock()
@@ -148,7 +327,7 @@ func (mq *MQTT) SendMessage(msg schemas.MQTTMessage, qos int) (err error) {
 		return
 	}
 	mq.mutex.Unlock()
-	err = mq.client.publish(msg, qos)
+	err = mq.collector.publish(msg, qos)
 	if err != nil {
 		return
 	}
@@ -157,7 +336,7 @@ func (mq *MQTT) SendMessage(msg schemas.MQTTMessage, qos int) (err error) {
 }
 
 // NewMessage returns a new initiaized message
-func (mq *MQTT) NewMessage(topic string, content []byte) (msg schemas.MQTTMessage, err error) {
+func (mq *AgentMQTT) NewMessage(topic string, content []byte) (msg schemas.MQTTMessage, err error) {
 	msg.Topic = topic
 	msg.Content = content
 	err = nil
@@ -165,7 +344,7 @@ func (mq *MQTT) NewMessage(topic string, content []byte) (msg schemas.MQTTMessag
 }
 
 // RecvMessages retrieves all messages since last call of this function
-func (mq *MQTT) RecvMessages() (num int, msgs []schemas.MQTTMessage, err error) {
+func (mq *AgentMQTT) RecvMessages() (num int, msgs []schemas.MQTTMessage, err error) {
 	mq.mutex.Lock()
 	if !mq.active {
 		mq.mutex.Unlock()
@@ -187,7 +366,7 @@ func (mq *MQTT) RecvMessages() (num int, msgs []schemas.MQTTMessage, err error) 
 }
 
 // RecvMessageWait retrieves next message and blocks if no message is available
-func (mq *MQTT) RecvMessageWait() (msg schemas.MQTTMessage, err error) {
+func (mq *AgentMQTT) RecvMessageWait() (msg schemas.MQTTMessage, err error) {
 	mq.mutex.Lock()
 	if !mq.active {
 		mq.mutex.Unlock()
@@ -201,7 +380,7 @@ func (mq *MQTT) RecvMessageWait() (msg schemas.MQTTMessage, err error) {
 }
 
 // newIncomingMQTTMessage adds message to channel for incoming messages
-func (mq *MQTT) newIncomingMQTTMessage(msg schemas.MQTTMessage) {
+func (mq *AgentMQTT) newIncomingMQTTMessage(msg schemas.MQTTMessage) {
 	mq.mutex.Lock()
 	if !mq.active {
 		mq.mutex.Unlock()
@@ -219,7 +398,8 @@ func (mq *MQTT) newIncomingMQTTMessage(msg schemas.MQTTMessage) {
 	}
 }
 
-func (mq *MQTT) registerTopicChannel(topic string, topicChan chan schemas.MQTTMessage) (err error) {
+func (mq *AgentMQTT) registerTopicChannel(topic string,
+	topicChan chan schemas.MQTTMessage) (err error) {
 	mq.mutex.Lock()
 	if !mq.active {
 		mq.mutex.Unlock()
@@ -236,7 +416,7 @@ func (mq *MQTT) registerTopicChannel(topic string, topicChan chan schemas.MQTTMe
 	return
 }
 
-func (mq *MQTT) deregisterTopicChannel(topic string) (err error) {
+func (mq *AgentMQTT) deregisterTopicChannel(topic string) (err error) {
 	mq.mutex.Lock()
 	if _, ok := mq.msgInTopic[topic]; ok {
 		delete(mq.msgInTopic, topic)
@@ -245,192 +425,4 @@ func (mq *MQTT) deregisterTopicChannel(topic string) (err error) {
 	}
 	mq.mutex.Unlock()
 	return
-}
-
-// mqttClient is the agency client for mqtt
-type mqttClient struct {
-	client       mqtt.Client              // mqtt client
-	brokerSvc    string                   // name of the mqtt broker service
-	brokerPort   int                      // port of the mqtt broker
-	msgIn        chan schemas.MQTTMessage // mqtt message inbox
-	name         string                   // agency name
-	active       bool                     // indicates if mqtt is active (switch via env)
-	mutex        *sync.Mutex              // mutex for message inbox map
-	subscription map[string][]*MQTT       // map for subscription topics to agents' mqtt object
-	// numDeliverer int                      // number of go routines for delivery
-	logError *log.Logger
-	logInfo  *log.Logger
-}
-
-// newMQTTClient creates a new mqtt agency client
-func newMQTTClient(svc string, port int, name string, logErr *log.Logger,
-	logInf *log.Logger) (cli *mqttClient) {
-	cli = &mqttClient{
-		brokerSvc:  svc,
-		brokerPort: port,
-		name:       name,
-		mutex:      &sync.Mutex{},
-		active:     false,
-		logError:   logErr,
-		logInfo:    logInf,
-	}
-	act := os.Getenv("CLONEMAP_MQTT")
-	if act == "ON" {
-		cli.active = true
-	}
-	cli.msgIn = make(chan schemas.MQTTMessage, 1000)
-	cli.subscription = make(map[string][]*MQTT)
-	cli.logInfo.Println("Created new MQTT client; status: ", cli.active)
-	cli.init()
-	return
-}
-
-func (cli *mqttClient) init() (err error) {
-	if cli.active {
-		opts := mqtt.NewClientOptions().AddBroker("tcp://" + cli.brokerSvc + ":" +
-			strconv.Itoa(cli.brokerPort)).SetClientID(cli.name)
-		opts.SetDefaultPublishHandler(cli.newIncomingMQTTMessage)
-		cli.client = mqtt.NewClient(opts)
-		if token := cli.client.Connect(); token.Wait() && token.Error() != nil {
-			err = errors.New("MQTTInitError")
-			return
-		}
-		for i := 0; i < 3; i++ {
-			go cli.deliverMsgs()
-		}
-		// cli.numDeliverer = 3
-	}
-	return
-}
-
-func (cli *mqttClient) close() (err error) {
-	if cli.active {
-		cli.logInfo.Println("Disconnecting MQTT client")
-		cli.client.Disconnect(250)
-	}
-	err = nil
-	return
-}
-
-// newIncomingMQTTMessage adds message to channel for incoming messages
-func (cli *mqttClient) newIncomingMQTTMessage(client mqtt.Client, msg mqtt.Message) {
-	var mqttMsg schemas.MQTTMessage
-	mqttMsg.Content = msg.Payload()
-	mqttMsg.Topic = msg.Topic()
-	cli.msgIn <- mqttMsg
-}
-
-// subscribe subscribes to specified topics
-func (cli *mqttClient) subscribe(mq *MQTT, topic string, qos int) (err error) {
-	if !cli.active {
-		return
-	}
-	cli.mutex.Lock()
-	ag, ok := cli.subscription[topic]
-	cli.mutex.Unlock()
-	if ok {
-		subscribed := false
-		for i := range ag {
-			if ag[i].agentID == mq.agentID {
-				subscribed = true
-				break
-			}
-		}
-		if !subscribed {
-			ag = append(ag, mq)
-			cli.mutex.Lock()
-			cli.subscription[topic] = ag
-			cli.mutex.Unlock()
-		}
-	} else {
-		cli.mutex.Lock()
-		token := cli.client.Subscribe(topic, byte(qos), nil)
-		cli.mutex.Unlock()
-		if token.Wait() && token.Error() != nil {
-			err = token.Error()
-			return
-		}
-		ag = make([]*MQTT, 0)
-		ag = append(ag, mq)
-		cli.mutex.Lock()
-		cli.subscription[topic] = ag
-		cli.mutex.Unlock()
-	}
-	// cli.mutex.Lock()
-	// numDel := len(cli.subscription) / 25
-	// if numDel > cli.numDeliverer {
-	// 	for i := 0; i < numDel-cli.numDeliverer; i++ {
-	// 		go cli.deliverMsgs()
-	// 	}
-	// 	cli.numDeliverer = numDel
-	// }
-	// cli.mutex.Unlock()
-
-	return
-}
-
-// unsubscribe to a topic
-func (cli *mqttClient) unsubscribe(mq *MQTT, topic string) (err error) {
-	if !cli.active {
-		return
-	}
-	cli.mutex.Lock()
-	ag, ok := cli.subscription[topic]
-	cli.mutex.Unlock()
-	if !ok {
-		return
-	}
-	index := -1
-	for i := range ag {
-		if mq.agentID == ag[i].agentID {
-			index = i
-			break
-		}
-	}
-	if index == -1 {
-		return
-	}
-	if index == 0 && len(ag) == 1 {
-		// agent is the only one who has subscribed -> unsubscribe
-		delete(cli.subscription, topic)
-		token := cli.client.Unsubscribe(topic)
-		if token.Wait() && token.Error() != nil {
-			err = token.Error()
-			return
-		}
-	} else {
-		// remove agent from list of subscribed agents
-		ag[index] = ag[len(ag)-1]
-		ag[len(ag)-1] = nil
-		ag = ag[:len(ag)-1]
-		cli.mutex.Lock()
-		cli.subscription[topic] = ag
-		cli.mutex.Unlock()
-	}
-	return
-}
-
-// publish sends a message
-func (cli *mqttClient) publish(msg schemas.MQTTMessage, qos int) (err error) {
-	if cli.active {
-		token := cli.client.Publish(msg.Topic, byte(qos), false, msg.Content)
-		token.Wait()
-	}
-	return
-}
-
-// deliverMsg delivers incoming messages to agents according to their topic
-func (cli *mqttClient) deliverMsgs() {
-	var msg schemas.MQTTMessage
-	for {
-		msg = <-cli.msgIn
-		cli.mutex.Lock()
-		ag, ok := cli.subscription[msg.Topic]
-		cli.mutex.Unlock()
-		if ok {
-			for i := range ag {
-				ag[i].newIncomingMQTTMessage(msg)
-			}
-		}
-	}
 }

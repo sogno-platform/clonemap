@@ -48,10 +48,13 @@ import (
 
 	//"fmt"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	"strconv"
+	"sync"
 	"time"
 
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/common/httpretry"
@@ -61,8 +64,8 @@ import (
 // DFClient is the ams client
 type DFClient struct {
 	httpClient *http.Client  // http client
-	Host       string        // ams host name
-	Port       int           // ams port
+	host       string        // ams host name
+	port       int           // ams port
 	delay      time.Duration // delay between two retries
 	numRetries int           // number of retries
 }
@@ -159,7 +162,7 @@ func (cli *DFClient) GetGraph(masID int) (graph schemas.Graph, httpStatus int, e
 
 func (cli *DFClient) getIP() (ret string) {
 	for {
-		ips, err := net.LookupHost(cli.Host)
+		ips, err := net.LookupHost(cli.host)
 		if len(ips) > 0 && err == nil {
 			ret = ips[0]
 			break
@@ -169,18 +172,176 @@ func (cli *DFClient) getIP() (ret string) {
 }
 
 func (cli *DFClient) prefix() (ret string) {
-	ret = "http://" + cli.Host + ":" + strconv.Itoa(cli.Port)
+	ret = "http://" + cli.host + ":" + strconv.Itoa(cli.port)
 	return
 }
 
 // NewDFClient creates a new AMS client
-func NewDFClient(timeout time.Duration, del time.Duration, numRet int) (cli *DFClient) {
+func NewDFClient(host string, port int, timeout time.Duration, del time.Duration,
+	numRet int) (cli *DFClient) {
 	cli = &DFClient{
 		httpClient: &http.Client{Timeout: timeout},
-		Host:       "df",
-		Port:       12000,
+		host:       host,
+		port:       port,
 		delay:      del,
 		numRetries: numRet,
 	}
 	return
+}
+
+// AgentDF provides access to the functionality of the DF
+type AgentDF struct {
+	agentID            int
+	masID              int
+	nodeID             int
+	mutex              *sync.Mutex
+	registeredServices map[string]schemas.Service
+	active             bool // indicates if df is active (switch via env)
+	dfClient           *DFClient
+	logError           *log.Logger
+	logInfo            *log.Logger
+}
+
+// RegisterService registers a new service with the DF
+func (df *AgentDF) RegisterService(svc schemas.Service) (id string, err error) {
+	df.mutex.Lock()
+	if !df.active {
+		df.mutex.Unlock()
+		return
+	}
+	df.mutex.Unlock()
+	id = "-1"
+	if svc.Desc == "" {
+		err = errors.New("empty description not allowed")
+		return
+	}
+	df.mutex.Lock()
+	_, ok := df.registeredServices[svc.Desc]
+	df.mutex.Unlock()
+	if ok {
+		err = errors.New("service already registered")
+		return
+	}
+	df.mutex.Lock()
+	masID := df.masID
+	agentID := df.agentID
+	nodeID := df.nodeID
+	df.mutex.Unlock()
+	svc.MASID = masID
+	svc.AgentID = agentID
+	svc.NodeID = nodeID
+	svc.CreatedAt = time.Now()
+	svc.ChangedAt = svc.CreatedAt
+	svc, _, err = df.dfClient.PostSvc(masID, svc)
+	id = svc.GUID
+	if err != nil {
+		return
+	}
+	df.mutex.Lock()
+	df.registeredServices[svc.Desc] = svc
+	df.mutex.Unlock()
+	return
+}
+
+// SearchForService search for a service with given description
+func (df *AgentDF) SearchForService(desc string) (svc []schemas.Service, err error) {
+	df.mutex.Lock()
+	if !df.active {
+		df.mutex.Unlock()
+		return
+	}
+	masID := df.masID
+	df.mutex.Unlock()
+	var temp []schemas.Service
+	temp, _, err = df.dfClient.GetSvc(masID, desc)
+	if err != nil {
+		return
+	}
+	for i := range temp {
+		if temp[i].AgentID != df.agentID {
+			svc = append(svc, temp[i])
+		}
+	}
+	return
+}
+
+// SearchForLocalService search for a service with given description
+func (df *AgentDF) SearchForLocalService(desc string, dist float64) (svc []schemas.Service, err error) {
+	df.mutex.Lock()
+	if !df.active {
+		df.mutex.Unlock()
+		return
+	}
+	masID := df.masID
+	nodeID := df.nodeID
+	df.mutex.Unlock()
+	var temp []schemas.Service
+	temp, _, err = df.dfClient.GetLocalSvc(masID, desc, nodeID, dist)
+	if err != nil {
+		return
+	}
+	for i := range temp {
+		if temp[i].AgentID != df.agentID {
+			svc = append(svc, temp[i])
+		}
+	}
+	return
+}
+
+// DeregisterService registers a new service with the DF
+func (df *AgentDF) DeregisterService(svcID string) (err error) {
+	df.mutex.Lock()
+	if !df.active {
+		df.mutex.Unlock()
+		return
+	}
+	df.mutex.Unlock()
+	desc := ""
+	df.mutex.Lock()
+	masID := df.masID
+	for i := range df.registeredServices {
+		if df.registeredServices[i].GUID == svcID {
+			desc = i
+			break
+		}
+	}
+	df.mutex.Unlock()
+	if desc == "" {
+		err = errors.New("no such service")
+		return
+	}
+	df.mutex.Lock()
+	delete(df.registeredServices, desc)
+	df.mutex.Unlock()
+	_, err = df.dfClient.DeleteSvc(masID, svcID)
+	return
+}
+
+// NewAgentDF creates a new DF object
+func NewAgentDF(masID int, agentID int, nodeID int, active bool, dfCli *DFClient, logErr *log.Logger,
+	logInf *log.Logger) (df *AgentDF) {
+	df = &AgentDF{
+		agentID:  agentID,
+		masID:    masID,
+		nodeID:   nodeID,
+		mutex:    &sync.Mutex{},
+		active:   active,
+		logError: logErr,
+		logInfo:  logInf,
+		dfClient: dfCli,
+	}
+	df.registeredServices = make(map[string]schemas.Service)
+	return
+}
+
+// close closes the DF module
+func (df *AgentDF) Close() {
+	for d := range df.registeredServices {
+		svc := df.registeredServices[d]
+		df.DeregisterService(svc.GUID)
+	}
+	df.mutex.Lock()
+	df.logInfo.Println("Closing DF of agent ", df.agentID)
+	df.active = false
+	df.mutex.Unlock()
 }
