@@ -10,7 +10,7 @@ import { ActivatedRoute, Params } from '@angular/router';
   styleUrls: ['./df.component.css']
 })
 export class DFComponent implements OnInit {
-    selectedMASId:number = -1;
+    selectedMASID:number = -1;
     MASs = null;
     alive: boolean = true;
     fileToUpload: File = null;
@@ -43,13 +43,13 @@ export class DFComponent implements OnInit {
 
         this.route.params.subscribe(
             (params: Params) => {
-                if (params.masId) {
-                    this.selectedMASId = params.masId;
-                    this.dfService.getAllSvcs(this.selectedMASId.toString()).subscribe( res => {
+                if (params.masid) {
+                    this.selectedMASID = params.masid;
+                    this.dfService.getAllSvcs(this.selectedMASID.toString()).subscribe( res => {
                         this.searched_results = res;     
                     })       
                 } else {
-                    console.log("No masId");
+                    console.log("No masid");
                 }
                 
             });
@@ -81,7 +81,7 @@ export class DFComponent implements OnInit {
 
     onCreateSVC() {
         const result = JSON.parse(this.display);
-        this.dfService.createSvc(this.selectedMASId.toString(),result).subscribe(
+        this.dfService.createSvc(this.selectedMASID.toString(),result).subscribe(
             (res) => {
             console.log("success");
             console.log(res);
@@ -95,7 +95,7 @@ export class DFComponent implements OnInit {
 
 
     onSearchSvcs(desc:string, nodeid:string, dist:string) {
-        let masid: string = this.selectedMASId.toString();
+        let masid: string = this.selectedMASID.toString();
     
         if (desc === "" && nodeid === "" && dist === "") {
             this.dfService.getAllSvcs(masid).subscribe( res => {

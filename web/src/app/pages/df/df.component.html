@@ -2,7 +2,7 @@
        <!--sidebar-->
     <div class="sidebar" *ngIf="MASs !== null">
         <div class="nav">
-            <div class="nav-item" *ngFor="let MAS of MASs" routerLinkActive="is-active" [ngClass]="MAS.id === selectedMASId ? 'active' : ''">
+            <div class="nav-item" *ngFor="let MAS of MASs" routerLinkActive="is-active" [ngClass]="MAS.id === selectedMASID ? 'active' : ''">
                 <a class="list-text"  [routerLink]="['/df', MAS.id]" >
                   <p > MAS {{ MAS.id }}</p>
                 </a>
