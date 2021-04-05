@@ -105,17 +105,23 @@
 
 /*style of the selection board */
 
-/* .topics, .agentID {
-    display: flex;
- }
-  */
-.tagname {
+
+.agent-title {
    color: rgb(85, 81, 81);
    font-size: 30px;
    margin-left: 30px;
-   margin-top: -5px;
+   margin-top: -20px;
    width: 180px;
 }
+
+.topic-title {
+   color: rgb(85, 81, 81);
+   font-size: 30px;
+   width: 180px;
+   margin-bottom: 40px;
+}
+
+
 
 
 .agents {
@@ -221,33 +227,6 @@
 
 
 
-.topics .selected {
-   color: white;
-   border: none;
-}
-
-
-.topics .error-tag.selected {   
-   background-color: rgb(230, 109, 109);
-}
-
-
-.topics .debug-tag.selected {
-   background-color: rgb(216, 216, 110);
-
-}
-
-.topics .msg-tag.selected {
-   background-color: var(--light-primary-color);
-}
-
-.topics .status-tag.selected {
-   background-color: rgb(126, 235, 149);
-}
-
-.topics .app-tag.selected {
-   background-color: rgb(56, 202, 221) ;
-}
 
 
 
@@ -274,6 +253,9 @@
  */
 
 /* style of the UML sequence diagram */
+
+
+
 svg {
 /*    border: 1px solid orange;  */
    margin-top: 100px;
@@ -322,6 +304,42 @@ text {
 .app {
    fill: rgb(56, 202, 221);
 }
+
+
+.topics .selected {
+   color: white;
+   border: none;
+}
+
+.topics {
+   position: fixed;
+   right: 100px;
+   top: 300px;
+}
+
+
+.topics .error-tag.selected {   
+   background-color: rgb(230, 109, 109);
+}
+
+
+.topics .debug-tag.selected {
+   background-color: rgb(216, 216, 110);
+
+}
+
+.topics .msg-tag.selected {
+   background-color: var(--light-primary-color);
+}
+
+.topics .status-tag.selected {
+   background-color: rgb(126, 235, 149);
+}
+
+.topics .app-tag.selected {
+   background-color: rgb(56, 202, 221) ;
+}
+
 
 
 

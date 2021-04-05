@@ -49,7 +49,7 @@
             </div>
             
             <div class="agentID d-flex align-content-end">
-                <div class="tagname">Selected Agents</div>
+                <div class="agent-title">Selected agents</div>
                 <div class="agents">
                     <div class="row">
                         <div *ngFor="let id of selectedID" class="agent-selected col-lg-1 active" (click)="onDeleteID(id)" [ngValue]="id" >
@@ -63,14 +63,7 @@
             </div>
   
             
-            <div class="topics d-flex">
-                <div class="tagname"> topic </div>
-                <div [class.selected]="isTopicSelected[0]" class="error-tag tag" (click)="onToggleTopic(0)">error</div>
-                <div [class.selected]="isTopicSelected[1]" class="debug-tag tag" (click)="onToggleTopic(1)" >debug</div>
-                <div [class.selected]="isTopicSelected[2]"class="msg-tag tag" (click)="onToggleTopic(2)">msg</div>
-                <div [class.selected]="isTopicSelected[3]" class="status-tag tag" (click)="onToggleTopic(3)">status</div>
-                <div [class.selected]="isTopicSelected[4]" class="app-tag tag" (click)="onToggleTopic(4)">app</div>
-            </div>
+
   
 <!--             <ul class="nav nav-tabs justify-content-end">
                 <li class="nav-item">
@@ -97,7 +90,14 @@
  
             </svg> 
             
-          
+            <div class="topics d-flex-column">
+                <div class="topic-title"> Topic </div>
+                <div [class.selected]="isTopicSelected[0]" class="error-tag tag" (click)="onToggleTopic(0)">error</div>
+                <div [class.selected]="isTopicSelected[1]" class="debug-tag tag" (click)="onToggleTopic(1)" >debug</div>
+                <div [class.selected]="isTopicSelected[2]"class="msg-tag tag" (click)="onToggleTopic(2)">msg</div>
+                <div [class.selected]="isTopicSelected[3]" class="status-tag tag" (click)="onToggleTopic(3)">status</div>
+                <div [class.selected]="isTopicSelected[4]" class="app-tag tag" (click)="onToggleTopic(4)">app</div>
+            </div>       
 
 
                   
