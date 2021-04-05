@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MasService } from 'src/app/services/mas.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { Router } from '@angular/router'
+import { Router, ActivatedRouteSnapshot } from '@angular/router'
 
 @Component({
   selector: 'app-overview',
@@ -27,28 +27,11 @@ export class OverviewComponent implements OnInit {
 
     
     ngOnInit() {
-    
-        this.masService.getMAS().subscribe((MASs: any) => {
-            if (MASs === null) {
-                this.status = "Currently no MASs, create one......";
-                this.MASs = [];
-                this.MASsDisplay = [];
-                console.log(this.MASs);
-                
-            } else {
-                this.MASs = MASs;
-                this.MASsDisplay = MASs;
-            }
-            },
-            err => {
-                this.status = "The CloneMAP platform is not connected"
-                console.log(err)  
-            }
-        );
-
-
+        this.updateMAS();
     }
 
+
+/********************   create new MAS *************************/
 
     openLg(content) {
         this.modalService.open(content, { size: 'lg', centered: true });
@@ -71,19 +54,42 @@ export class OverviewComponent implements OnInit {
         this.display=content;
     }
     
-
     onCreateMAS() {
         const result = JSON.parse(this.display);
         this.masService.createMAS(result).subscribe(
             (response) => {
             this.modalService.dismissAll();
+            this.updateMAS();
             },
             error => {
                 this.modalService.dismissAll();
+                this.updateMAS();
                 console.log(error);
             }
         );
     }
+
+    updateMAS() {
+        this.masService.getMAS().subscribe((MASs: any) => {
+            if (MASs === null) {
+                this.status = "Currently no MASs, create one......";
+                this.MASs = [];
+                this.MASsDisplay = [];
+                console.log(this.MASs);
+                
+            } else {
+                this.MASs = MASs;
+                this.MASsDisplay = MASs;
+            }
+            },
+            err => {
+                this.status = "The CloneMAP platform is not connected"
+                console.log(err)  
+            }
+        );
+    }
+
+
 
     onDeleteMAS(id: string) {
         console.log(id);
@@ -117,6 +123,11 @@ export class OverviewComponent implements OnInit {
             }
         );
     }
+
+    onOpenMAS(i: number) {
+        this.router.navigate(['/ams', i]);
+    }
+
 
 
 
