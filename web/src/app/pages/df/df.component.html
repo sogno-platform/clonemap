@@ -62,8 +62,12 @@
             </div>
             <div *ngFor="let res of searched_results; index as i">
                 <div class="card">
-                    <h5 class="card-header">Service {{i+1}}</h5>
-                    <div class="card-body">
+                    <div class="card-header d-flex justify-content-between">
+                        <h5>Service {{i+1}}</h5>
+                        <i class="fas fa-angle-right" *ngIf="collapsed[i]" (click)="onToggleCollapsed(i)"></i>
+                        <i class="fas fa-angle-down" *ngIf="!collapsed[i]" (click)="onToggleCollapsed(i)"></i>
+                    </div>
+                    <div class="card-body" *ngIf="!collapsed[i]">
                         <table class="table table-striped">
                             <tbody>
                             <tr>

@@ -32,6 +32,7 @@
 
 .sidebar .nav .nav-item{
    padding-top:10px;
+   padding-bottom:5px; 
    border-radius: 10px;
    width: 110px;
    text-align: center;
@@ -128,6 +129,12 @@
 .card {
    width: 400px;
    margin-bottom: 50px;
+}
+
+
+.card:hover {
+   cursor: pointer;
+   background-color: rgb(236, 232, 232);
 }
 
 .card-header {

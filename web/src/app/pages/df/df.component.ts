@@ -16,6 +16,7 @@ export class DFComponent implements OnInit {
     fileToUpload: File = null;
     display: string = "";
     filename: string = "Choose a file...";
+    collapsed: boolean[] = [];
     searched_results;
     constructor(
         private dfService: DfService,
@@ -45,8 +46,11 @@ export class DFComponent implements OnInit {
             (params: Params) => {
                 if (params.masid) {
                     this.selectedMASID = params.masid;
-                    this.dfService.getAllSvcs(this.selectedMASID.toString()).subscribe( res => {
-                        this.searched_results = res;     
+                    this.dfService.getAllSvcs(this.selectedMASID.toString()).subscribe( (res:any) => {
+                        this.searched_results = res;   
+                        for (let i = 0; i < res.length; i++) {
+                            this.collapsed.push(true);
+                        }  
                     })       
                 } else {
                     console.log("No masid");
@@ -55,27 +59,31 @@ export class DFComponent implements OnInit {
             });
     }
 
-        // functions for update the services
-        openLg(content) {
-            this.modalService.open(content, { size: 'lg', centered: true });
-        }
+    // functions for update the services
+    openLg(content) {
+        this.modalService.open(content, { size: 'lg', centered: true });
+    }
 
-        onUpdateContent(content:string) {
-            this.display=content;
+    onUpdateContent(content:string) {
+        this.display=content;
+    }
+    
+    handleFileInput(files: FileList) {
+        if (files.length <= 0) {
+            return false;
         }
-        
-        handleFileInput(files: FileList) {
-            if (files.length <= 0) {
-                return false;
-            }
-            this.fileToUpload = files.item(0);
-            let fr = new FileReader();
-            fr.onload = () => {
-                this.display = fr.result.toString();
-                this.filename = this.fileToUpload.name;
-            }
-            fr.readAsText(this.fileToUpload);
+        this.fileToUpload = files.item(0);
+        let fr = new FileReader();
+        fr.onload = () => {
+            this.display = fr.result.toString();
+            this.filename = this.fileToUpload.name;
         }
+        fr.readAsText(this.fileToUpload);
+    }
+
+    onToggleCollapsed(i: number) {
+        this.collapsed[i] = !this.collapsed[i];
+    }
 
 
 
@@ -125,6 +133,11 @@ export class DFComponent implements OnInit {
             }
         else {
             this.searched_results = null;
+        }
+
+        this.collapsed = [];
+        for (let i = 0; i < this.searched_results.length; i++) {
+            this.collapsed.push(true);
         }
     }
 }

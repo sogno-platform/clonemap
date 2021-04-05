@@ -57,7 +57,7 @@
         <div id="tables">
             <div class="row">
                 <div class="col-md-4 my-row" *ngFor="let MAS of MASsDisplay">
-                    <div class="card">
+                    <div class="card" (click)="onOpenMAS(MAS.id)">
                         <div class="card-header">
                             <h5>MAS {{MAS.id}}</h5>
                             <button class="btn btn-delete" (click)="onDeleteMAS(MAS.id)">
