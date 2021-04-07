@@ -21,9 +21,9 @@ export class LoggerService {
     return this.webReqService.post(`api/logging/${masid}/list`, payload);
   }
  
-  getAllLatestLogs(masid: string, num: string, params: HttpParams) {
+/*   getAllLatestLogs(masid: string, num: string, params: HttpParams) {
     return this.webReqService.getWithParam(`api/logger/${masid}/latest/${num}`, params);
-  }
+  } */
 
   getNLatestLogs(masid: string, agentid: string, topic:string, num: string) {
     return this.webReqService.get(`api/logging/${masid}/${agentid}/${topic}/latest/${num}`);

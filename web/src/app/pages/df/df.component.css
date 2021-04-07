@@ -116,20 +116,32 @@
    margin-top: 100px;
 }
 
-.card {
+
+.service {
+   border: 2px solid var(--background-primary-color);
    width: 1200px;
-   margin-left: 200px;
-   margin-bottom: 30px;
+   border-radius: 10px;
+   margin-top:50px;
+   margin-left: 200px; 
 }
 
-.card-header {
+
+.service-header {
    color: var(--light-primary-color);
    font-size: 30px;
+   height:70px;
 }
 
-.card-body {
-   padding: 0px;
+.service-header h2 {
+   padding-top: 20px;
+   padding-left: 20px;
 }
+
+.service-header i {
+   padding-top: 20px;
+   padding-right: 40px;
+}
+
 
 
 

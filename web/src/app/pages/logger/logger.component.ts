@@ -313,7 +313,7 @@ export class LoggerComponent implements OnInit {
 
        
     onSearchLogs(num: string) {
-        this.numLogs = parseInt(num); 
+/*         this.numLogs = parseInt(num); 
         let params = new HttpParams();
         for (let i = 0; i < this.agentID.length; i++) {
             if (this.isAgentSelected[i]) {
@@ -322,7 +322,7 @@ export class LoggerComponent implements OnInit {
         }   
         this.loggerService.getAllLatestLogs(this.selectedMASID.toString(), this.numLogs.toString(), params).subscribe( (res: string[][]) => {
       
-        }) 
+        })  */
     }
 
 
