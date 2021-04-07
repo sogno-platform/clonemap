@@ -10,11 +10,11 @@ const routes: Routes = [
   { path: '', redirectTo: '/overview', pathMatch: 'full'},
   { path: 'overview', component: OverviewComponent },
   { path: 'ams', component: AMSComponent},
-  { path: 'ams/:masId', component: AMSComponent},
+  { path: 'ams/:masid', component: AMSComponent},
   { path: 'df', component: DFComponent},
-  { path: 'df/:masId', component: DFComponent},
+  { path: 'df/:masid', component: DFComponent},
   { path: 'logger', component: LoggerComponent},
-  { path: 'logger/:masId', component: LoggerComponent}
+  { path: 'logger/:masid', component: LoggerComponent}
 ];
 
 @NgModule({

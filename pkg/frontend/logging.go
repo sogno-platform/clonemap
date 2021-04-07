@@ -118,7 +118,7 @@ func (fe *Frontend) handlePostLogs(w http.ResponseWriter, r *http.Request) {
 }
 
 // handleGetAllLatestLogMessages is the handler to /api/logging/{masid}/latest/{num}
-func (fe *Frontend) handleGetAllLatestLogMessages(w http.ResponseWriter, r *http.Request) {
+func (fe *Frontend) handleGetAllLatestLogs(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
 	masID, num, cmapErr := getMasAndNum(r)
 	if cmapErr != nil {

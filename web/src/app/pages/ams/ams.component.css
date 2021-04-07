@@ -56,13 +56,24 @@
    border-radius: 10px;
    width: 1200px;
    margin-top:50px;
-   margin-left: 100px;; 
+   margin-left: 100px; 
+}
+
+.config-header {
+   height:80px;
+   color: var(--light-primary-color);
+   font-size: 30px;
+}
+
+.config-header i {
+   padding-top: 30px;
+   padding-right: 30px;
 }
 
 .containers {
 /*    border: 2px solid var(--background-primary-color); */
    border-radius: 10px;
-   width: 1200px;
+   width: 1500px;
    margin-top:50px;
    margin-left: 100px;; 
 }
@@ -87,10 +98,22 @@ h1 {
    color: var(--light-primary-color)
 }
 
+.card {
+   width: 400px;
+   margin-bottom: 50px;
+   padding: 0px;
+
+}
+
+
 .card-body {
    padding: 0px;
 }
 
+
+table {
+   margin-bottom: 0px;
+}
 
 table th {
    width: 500px;

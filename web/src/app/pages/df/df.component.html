@@ -60,44 +60,40 @@
             <div class="empty-service" *ngIf="searched_results === null">
                 <h1>No services found</h1>
             </div>
-            <div *ngFor="let res of searched_results; index as i">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between">
-                        <h5>Service {{i+1}}</h5>
-                        <i class="fas fa-angle-right" *ngIf="collapsed[i]" (click)="onToggleCollapsed(i)"></i>
-                        <i class="fas fa-angle-down" *ngIf="!collapsed[i]" (click)="onToggleCollapsed(i)"></i>
-                    </div>
-                    <div class="card-body" *ngIf="!collapsed[i]">
-                        <table class="table table-striped">
-                            <tbody>
-                            <tr>
-                                <th>MAS ID</th>
-                                <td>{{res.masid}}</td>
-                            </tr>
-                            <tr>
-                                <th>Agent ID</th>
-                                <td>{{res.agentid}}</td>
-                            </tr>
-                            <tr>
-                                <th>NODE ID</th>
-                                <td>{{res.nodeid}}</td>
-                            </tr>
-                            <tr>
-                                <th>Create Date</th>
-                                <td>{{res.createdat}}</td>
-                            </tr>
-                            <tr>
-                                <th>Change Date</th>
-                                <td>{{res.changedat}}</td>
-                            </tr>
-                            <tr>
-                                <th>Dist</th>
-                                <td>{{res.dist}}</td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
+            <div class="service" *ngFor="let res of searched_results; index as i">
+                <div class="service-header d-flex justify-content-between">
+                    <h2>Service {{i+1}}</h2>
+                    <i class="fas fa-angle-right" *ngIf="collapsed[i]" (click)="onToggleCollapsed(i)"></i>
+                    <i class="fas fa-angle-down" *ngIf="!collapsed[i]" (click)="onToggleCollapsed(i)"></i>
                 </div>
+                <table class="table table-striped" *ngIf="!collapsed[i]">
+                    <tbody>
+                    <tr>
+                        <th>MAS ID</th>
+                        <td>{{res.masid}}</td>
+                    </tr>
+                    <tr>
+                        <th>Agent ID</th>
+                        <td>{{res.agentid}}</td>
+                    </tr>
+                    <tr>
+                        <th>NODE ID</th>
+                        <td>{{res.nodeid}}</td>
+                    </tr>
+                    <tr>
+                        <th>Create Date</th>
+                        <td>{{res.createdat}}</td>
+                    </tr>
+                    <tr>
+                        <th>Change Date</th>
+                        <td>{{res.changedat}}</td>
+                    </tr>
+                    <tr>
+                        <th>Dist</th>
+                        <td>{{res.dist}}</td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
        

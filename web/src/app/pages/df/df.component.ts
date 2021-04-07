@@ -49,7 +49,7 @@ export class DFComponent implements OnInit {
                     this.dfService.getAllSvcs(this.selectedMASID.toString()).subscribe( (res:any) => {
                         this.searched_results = res;   
                         for (let i = 0; i < res.length; i++) {
-                            this.collapsed.push(true);
+                            this.collapsed.push(false);
                         }  
                     })       
                 } else {

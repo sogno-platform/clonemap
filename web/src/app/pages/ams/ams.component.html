@@ -9,14 +9,18 @@
         </div>
     </div>
     <div class="contentcontainer">
-        <div *ngIf="selectedMasId === -1">
+        <div *ngIf="selectedMASID === -1">
             <h1>No MAS selected, select one...</h1>
         </div>
-        <div *ngIf="selectedMasId !== -1">
+        <div *ngIf="selectedMASID !== -1">
 
             <div class="config">
-                <h2 class="title">Config</h2>
-                <table class="table table-striped">
+                <div class="config-header d-flex justify-content-between"> 
+                    <h2 class="title">Config</h2>
+                    <i class="fas fa-angle-right" *ngIf="collapsed" (click)="onToggleCollapsed()"></i>
+                    <i class="fas fa-angle-down" *ngIf="!collapsed" (click)="onToggleCollapsed()"></i>
+                </div>
+                <table *ngIf="!collapsed" class="table table-striped">
                     <tbody>
                         <tr>
                             <th>Id</th>
@@ -52,7 +56,7 @@
                 <h2 class="title">Containers</h2>
                 <div *ngFor="let image of selectedMAS.imagegroups.instances">
                     <div class="card">
-                        <h5 class="card-header">IMAGE{{image.id}}</h5>
+                        <h5 class="card-header">Image {{image.id}}</h5>
                         <div class="card-body">
                             <table class="table table-striped">
                                 <tbody>
@@ -74,31 +78,32 @@
 
             <div class="containers">
                 <h2 class="title">Agents</h2>
-                <div *ngFor="let agent of selectedMAS.agents.instances">
-                    <div class="card">
-                        <h5 class="card-header">AGENT{{agent.id}}</h5>
-                        <div class="card-body">
-                            <table  class="table table-striped">
-                                <tbody>
-                                <tr>
-                                    <th>Name</th>
-                                    <td>{{agent.spec.name}}</td>
-                                </tr>
-                                <tr>
-                                    <th>Agencies</th>
-                                    <td>{{agent.spec.type}}</td>
-                                </tr>
-                                <tr>
-                                    <th>Agencies</th>
-                                    <td>{{agent.address.agency}}</td>
-                                </tr>
-                                </tbody>
-                            </table>
+                <div class="row">   
+                    <div class="col-md-4 my-row" *ngFor="let agent of selectedMAS.agents.instances">
+                        <div class="card">
+                            <h5 class="card-header">Agent {{agent.id}}</h5>
+                            <div class="card-body">
+                                <table  class="table table-striped">
+                                    <tbody>
+                                    <tr>
+                                        <th>Name</th>
+                                        <td>{{agent.spec.name}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Type</th>
+                                        <td>{{agent.spec.type}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Agency</th>
+                                        <td>{{agent.address.agency}}</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                    </div>
-                </div>          
-            </div>
-        
+                    </div> 
+                </div>
+            </div>         
         </div>
     </div>
 </div>

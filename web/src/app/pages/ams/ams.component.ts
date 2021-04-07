@@ -9,9 +9,11 @@ import { ActivatedRoute, Params} from '@angular/router';
 })
 export class AMSComponent implements OnInit {
 
-    MASs
-    selectedMasId: number = -1;
-    selectedMAS
+    MASs;
+    selectedMASID: number = -1;
+    selectedMAS;
+    collapsed: boolean = false;
+
 
     constructor(
         private masService: MasService,
@@ -34,15 +36,19 @@ export class AMSComponent implements OnInit {
         this.route.params.subscribe(
             (params: Params) => {
                 if (params.masid) {
-                    this.selectedMasId = params.masid;
+                    this.selectedMASID = params.masid;
                     this.masService.getMASById(params.masid).subscribe((selectedMAS: any) => {
                         this.selectedMAS = selectedMAS;
                     });
                 } else {
-                    console.log("No masid");
+                    console.log("No MASID");
                 }
             });
  
+    }
+
+    onToggleCollapsed() {
+        this.collapsed = !this.collapsed;
     }
 
         
