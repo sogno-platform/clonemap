@@ -6,6 +6,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Agents} from 'src/app/models/agents.model';
 import { LogMessage } from 'src/app/models/logMessage.model';
+import { forkJoin, Observable } from 'rxjs';
 
 
 
@@ -37,7 +38,7 @@ export class LoggerComponent implements OnInit {
     selectedID: number[] = [];
     selectedIDMap;
     notSelectedID: number[] = [];
-    isAgentSelected: boolean[];
+    isAgentSelected: boolean[] = [];
 
     isTopicSelected: boolean[] = [true, true, true, true, true];
     topics: string[] = ["error", "debug", "msg", "status", "app"];
@@ -58,8 +59,6 @@ export class LoggerComponent implements OnInit {
     texts = [];  
     popoverContent: string = "This is the content of the popover";
     popoverTopic: string;
-
-    allMsgs: LogMessage[] = [];
     msgs: LogMessage[] = [];
 
     constructor(
@@ -88,7 +87,7 @@ export class LoggerComponent implements OnInit {
         // get the selectedMASid from the current route
         this.route.params.subscribe((params: Params) => {
                 this.selectedMASID = params.masid;  
-/*                 this.masService.getAgents(params.masid).subscribe((res: Agents) => {
+                this.masService.getAgents(params.masid).subscribe((res: Agents) => {
                     if (res.counter !== 0) {
                         this.agentID = res.instances.map(item => item.id);
                         for (let i = 0; i < res.counter; i++) {
@@ -96,16 +95,8 @@ export class LoggerComponent implements OnInit {
                         }
                         this.updateSelectedID();
                     }
-                }); */
-            });
-
-        this.http.get("logs.json").subscribe( (res: LogMessage[] ) => {
-            this.allMsgs = res;
-        });
-        this.agentID = [0, 1, 2, 3, 4];
-        this.isAgentSelected = [false, false, false, false, false];
-        this.updateSelectedID();
-        
+                });
+            });   
     }  
     
     
@@ -128,26 +119,44 @@ export class LoggerComponent implements OnInit {
                 this.notSelectedID.push(i);
             }
         }
-        this.msgs = [];
-        for (let msg of this.allMsgs) {
-            if (this.selectedID.includes(msg.agentid)) {
-                this.msgs.push(msg);
+
+
+        this.multiLogs().subscribe( logss => {
+            this.msgs = [];
+            for (let logs of logss) {
+                for (let log of logs) {
+                    this.msgs.push(log);
+                }
+            }
+            this.msgs.sort((a, b) => {
+                let date1 = new Date(a.timestamp);
+                let date2 = new Date(b.timestamp);
+                return date2.getTime() - date1.getTime();
+            } )
+            console.log(this.msgs);
+            this.drawAllElements();
+         })
+
+
+    }
+
+
+    multiLogs(): Observable<any[]> {
+        let res = [];
+        console.log(this.selectedID);
+        for (let id of this.selectedID) {
+            for (let topic of this.topics) {
+                res.push(this.loggerService.getNLatestLogs(this.selectedMASID.toString(),
+                id.toString(), topic, this.numLogs.toString()));
             }
         }
-    }
+        return forkJoin(res);
+    } 
 
-    onDeleteID(i : number) {
+
+    onToggleID(i : number) {
         this.isAgentSelected[i] = !this.isAgentSelected[i];
         this.updateSelectedID();
-        this.drawAllElements();
-
-       
-    }
-
-    onSelectID(i : number) {
-        this.isAgentSelected[i] = !this.isAgentSelected[i];
-        this.updateSelectedID();
-        this.drawAllElements();
     }
 
     drawAgentBox() {
@@ -217,7 +226,7 @@ export class LoggerComponent implements OnInit {
                 scaledDates.push(curr); 
         }
 
-        this.height = 800 +  2 * this.logBoxHeight * scaledDates[scaledDates.length-1];
+        this.height = 800 + this.logBoxHeight * scaledDates[scaledDates.length-1];
         return scaledDates;
     }
 
@@ -229,7 +238,7 @@ export class LoggerComponent implements OnInit {
             let idx = this.selectedID.indexOf(currMsg.agentid) + 1;        
             this.logBoxes.push({
                 x: this.interval *idx - this.logBoxWidth / 2, 
-                y: 400 +  2 * this.logBoxHeight * scaledDates[i],
+                y: 400 + this.logBoxHeight * scaledDates[i],
                 topic: currMsg.topic,
                 timestamp: currMsg.timestamp,
                 msg: currMsg.msg,
@@ -296,20 +305,6 @@ export class LoggerComponent implements OnInit {
     }
 
 
-
-    onCreateLogs() {
-        const result = JSON.parse(this.display);
-        this.loggerService.createLogger(this.selectedMASID.toString(),result).subscribe(
-            (res) => {
-            console.log("success");
-            console.log(res);
-            this.modalService.dismissAll();
-            },
-            error => {
-                console.log(error);
-            }
-        );
-    }
 
        
     onSearchLogs(num: string) {

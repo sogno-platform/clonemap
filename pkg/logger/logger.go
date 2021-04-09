@@ -129,12 +129,6 @@ func (logger *Logger) addAgentLogMessageList(logmsg []schemas.LogMessage) (err e
 	return
 }
 
-// getAllLatestLogMessages return the lastest num log messages with all agents and topics
-func (logger *Logger) getAllLatestLogMessages(masID int, num int) (logs []schemas.LogMessage, err error) {
-	logs, err = logger.stor.getAllLatestLogMessages(masID, num)
-	return
-}
-
 // getLatestAgentLogMessages return the latest num log messages
 func (logger *Logger) getLatestAgentLogMessages(masID int, agentID int, topic string,
 	num int) (logs []schemas.LogMessage, err error) {
