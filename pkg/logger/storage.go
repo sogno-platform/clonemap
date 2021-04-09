@@ -58,9 +58,6 @@ type storage interface {
 	// addAgentLogMessage adds an entry to specified logging entry
 	addAgentLogMessage(log schemas.LogMessage) (err error)
 
-	// getAllLatestLogMessages return the latest num log messages with all agents and topics
-	getAllLatestLogMessages(masID int, num int) (logs []schemas.LogMessage, err error)
-
 	// getLatestAgentLogMessages return the latest num log messages
 	getLatestAgentLogMessages(masID int, agentID int, topic string,
 		num int) (logs []schemas.LogMessage, err error)
@@ -148,65 +145,6 @@ func (stor *localStorage) addAgentLogMessage(log schemas.LogMessage) (err error)
 			log)
 	default:
 		err = errors.New("wrong topic")
-	}
-	stor.mutex.Unlock()
-	return
-}
-
-// getAllLatestLogMessages return the latest log messages of all agents
-func (stor *localStorage) getAllLatestLogMessages(masID int, num int) (logs []schemas.LogMessage, err error) {
-	stor.mutex.Lock()
-	topics := [5]string{"error", "debug", "msg", "status", "app"}
-	var logs1, logs2, logs3, logs4, logs5 []schemas.LogMessage
-	if masID < len(stor.mas) {
-		for agentID := 0; agentID < len(stor.mas[masID].agents); agentID++ {
-			for _, topic := range topics {
-				switch topic {
-				case "error":
-					length := len(stor.mas[masID].agents[agentID].errLogs)
-					if length < num {
-						num = length
-					}
-					logs1 = make([]schemas.LogMessage, num, num)
-					copy(logs1, stor.mas[masID].agents[agentID].errLogs[length-num:length])
-					logs = append(logs, logs1...)
-				case "debug":
-					length := len(stor.mas[masID].agents[agentID].dbgLogs)
-					if length < num {
-						num = length
-					}
-					logs2 = make([]schemas.LogMessage, num, num)
-					copy(logs2, stor.mas[masID].agents[agentID].dbgLogs[length-num:length])
-					logs = append(logs, logs2...)
-				case "msg":
-					length := len(stor.mas[masID].agents[agentID].msgLogs)
-					if length < num {
-						num = length
-					}
-					logs3 = make([]schemas.LogMessage, num, num)
-					copy(logs3, stor.mas[masID].agents[agentID].msgLogs[length-num:length])
-					logs = append(logs, logs3...)
-				case "status":
-					length := len(stor.mas[masID].agents[agentID].statLogs)
-					if length < num {
-						num = length
-					}
-					logs4 = make([]schemas.LogMessage, num, num)
-					copy(logs4, stor.mas[masID].agents[agentID].statLogs[length-num:length])
-					logs = append(logs, logs4...)
-				case "app":
-					length := len(stor.mas[masID].agents[agentID].appLogs)
-					if length < num {
-						num = length
-					}
-					logs5 = make([]schemas.LogMessage, num, num)
-					copy(logs5, stor.mas[masID].agents[agentID].appLogs[length-num:length])
-					logs = append(logs, logs5...)
-				}
-			}
-		}
-	} else {
-		err = errors.New("masID not exist")
 	}
 	stor.mutex.Unlock()
 	return

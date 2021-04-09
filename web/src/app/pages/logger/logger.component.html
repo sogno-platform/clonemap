@@ -21,7 +21,7 @@
         <div class="modal-body">
             <div class="row">
                 <div *ngFor="let id of notSelectedID">
-                    <div class="agent-not-selected"  [ngValue]="id" (click)="onSelectID(id)">
+                    <div class="agent-not-selected"  [ngValue]="id" (click)="onToggleID(id)">
                         agent {{id}}
                     </div>
                 </div>
@@ -52,7 +52,7 @@
                 <div class="agent-title">Selected agents</div>
                 <div class="agents">
                     <div class="row">
-                        <div *ngFor="let id of selectedID" class="agent-selected col-lg-1 active" (click)="onDeleteID(id)" [ngValue]="id" >
+                        <div *ngFor="let id of selectedID" class="agent-selected col-lg-1 active" (click)="onToggleID(id)" [ngValue]="id" >
                             <p>agent {{id}} </p>
                             <div class="delete"><i class="fas fa-trash"></i></div>
                         </div>
