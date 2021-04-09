@@ -105,24 +105,6 @@ func (stor *cassStorage) addAgentLogMessage(log schemas.LogMessage) (err error) 
 	return
 }
 
-// getAllLatestLogMessages return latest num log messages from all agents and with all topics
-func (stor *cassStorage) getAllLatestLogMessages(masID int, num int) (logs []schemas.LogMessage, err error) {
-	var iter *gocql.Iter
-	iter = stor.session.Query("SELECT log WHERE masid = ? AND"+
-		"LIMIT ?", masID, num).Iter()
-
-	var js []byte
-	for iter.Scan(&js) {
-		var logmsg schemas.LogMessage
-		err = json.Unmarshal(js, &logmsg)
-		if err != nil {
-			return
-		}
-		logs = append(logs, logmsg)
-	}
-	return
-}
-
 // getLatestAgentLogMessages return the latest num log messages
 func (stor *cassStorage) getLatestAgentLogMessages(masID int, agentID int, topic string,
 	num int) (logs []schemas.LogMessage, err error) {
