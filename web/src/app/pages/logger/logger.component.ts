@@ -256,9 +256,9 @@ export class LoggerComponent implements OnInit {
                 if (this.selectedID.includes(receiver)) {
                     this.communications.push({
                         x1: this.interval * senderIdx + direction * this.logBoxWidth / 2,
-                        y1: 400 +  2 * this.logBoxHeight * scaledDates[i] + this.logBoxHeight / 2,
+                        y1: 400 + this.logBoxHeight * scaledDates[i] + this.logBoxHeight / 2,
                         x2: this.interval * receiverIdx - direction * this.logBoxWidth / 2,
-                        y2: 400 +  2 * this.logBoxHeight * scaledDates[i] + + this.logBoxHeight / 2,
+                        y2: 400 +   this.logBoxHeight * scaledDates[i] + + this.logBoxHeight / 2,
                         hidden: !this.isTopicSelected[this.topics.indexOf("msg")],
                     })
                 }
@@ -288,7 +288,7 @@ export class LoggerComponent implements OnInit {
     }
 
     onChangePopoverContent(i) {
-        if (this.msgs[i].data !== "") {
+        if (this.msgs[i].topic === "msg") {
             this.popoverContent = this.msgs[i].data;
         } else {
             this.popoverContent = this.msgs[i].timestamp.toString();
