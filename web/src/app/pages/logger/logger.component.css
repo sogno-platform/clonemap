@@ -269,7 +269,7 @@ stroke-width: 2;
 }
 
 .agentBox {
-    fill: var(--primary-color);
+    fill: var(--light-primary-color);
 }
 
 text {

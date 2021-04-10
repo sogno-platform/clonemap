@@ -30,14 +30,14 @@ for x in range(0, 10):
          agentids = [0, 1, 2, 3, 4]
          agentids.remove(agentid)
          receiver = np.random.choice(agentids)
-         logMessage["data"] = "Sender: " + str(agentid) + ";Receiver: " + str(receiver) + ";Timestamp: "  + logMessage["timestamp"].strftime("%Y-%m%dT%H:%M:%S")
+         logMessage["data"] = "Sender: " + str(agentid) + ";Receiver: " + str(receiver) + ";Timestamp: "  + logMessage["timestamp"].strftime("%Y-%m%dT%H:%M:%SZ")
          logMessageReceiver = {
             "masid": 0,
             "agentid": int(receiver),
             "timestamp": timestamp,
             "topic": topic,
             "msg": "ACL receive",
-            "data": "Sender: " + str(agentid) + ";Receiver: " + str(receiver) + ";Timestamp: " +logMessage["timestamp"].strftime("%Y-%m-%dT%H:%M:%S")
+            "data": "Sender: " + str(agentid) + ";Receiver: " + str(receiver) + ";Timestamp: " +logMessage["timestamp"].strftime("%Y-%m-%dT%H:%M:%SZ")
          } 
 
          data.append(logMessage)
@@ -48,7 +48,7 @@ for x in range(0, 10):
 
 data = sorted(data, key=lambda k: k["timestamp"], reverse=True)
 for log in data:
-   log["timestamp"] = log["timestamp"].strftime('%Y-%m-%dT%H:%M:%S')
+   log["timestamp"] = log["timestamp"].strftime('%Y-%m-%dT%H:%M:%SZ')
 
 with open("logs.json", "w") as write_file:
     json.dump(data, write_file) 
