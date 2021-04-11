@@ -1,13 +1,12 @@
-import { Component, OnInit, ViewChildren, QueryList, ElementRef } from '@angular/core';
+import { Component, OnInit, enableProdMode } from '@angular/core';
 import { LoggerService} from 'src/app/services/logger.service'
 import { MasService } from 'src/app/services/mas.service';
 import { ActivatedRoute, Params} from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Agents} from 'src/app/models/agents.model';
 import { LogMessage } from 'src/app/models/logMessage.model';
 import { forkJoin, Observable } from 'rxjs';
-
+import { FormControl, FormGroup } from '@angular/forms';
 
 
 
@@ -17,8 +16,6 @@ import { forkJoin, Observable } from 'rxjs';
   styleUrls: ['./logger.component.css']
 })
 export class LoggerComponent implements OnInit {
-
-
 
     alive: boolean = true;
     selectedMASID: number = -1;
@@ -39,6 +36,13 @@ export class LoggerComponent implements OnInit {
     selectedIDMap;
     notSelectedID: number[] = [];
     isAgentSelected: boolean[] = [];
+    range = new FormGroup( {
+        start: new FormControl(),
+        end: new FormControl()
+    });
+
+    startTime: string = "20210301000000";
+    endTime: string = "20210331000000"
 
     isTopicSelected: boolean[] = [true, true, true, true, true];
     topics: string[] = ["error", "debug", "msg", "status", "app"];
@@ -87,10 +91,10 @@ export class LoggerComponent implements OnInit {
         // get the selectedMASid from the current route
         this.route.params.subscribe((params: Params) => {
                 this.selectedMASID = params.masid;  
-                this.masService.getAgents(params.masid).subscribe((res: Agents) => {
-                    if (res.counter !== 0) {
-                        this.agentID = res.instances.map(item => item.id);
-                        for (let i = 0; i < res.counter; i++) {
+                this.masService.getMASById(params.masid).subscribe((res: any) => {
+                    if (res.agents.counter !== 0) {
+                        this.agentID = res.agents.instances.map(item => item.id);
+                        for (let i = 0; i < res.agents.counter; i++) {
                             this.isAgentSelected.push(false);
                         }
                         this.updateSelectedID();
@@ -104,9 +108,10 @@ export class LoggerComponent implements OnInit {
     
     onToggleTopic(i: number) {
         this.isTopicSelected[i] = ! this.isTopicSelected[i];
-        this.updateScaledDates();
-        
+        this.updateScaledDates()
     }
+
+
 
     updateSelectedID() {
         this.selectedID = [];
@@ -124,9 +129,12 @@ export class LoggerComponent implements OnInit {
         this.multiLogs().subscribe( logss => {
             this.msgs = [];
             for (let logs of logss) {
-                for (let log of logs) {
-                    this.msgs.push(log);
+                if (logs !== null) {
+                    for (let log of logs) {
+                        this.msgs.push(log);
+                    }
                 }
+
             }
             this.msgs.sort((a, b) => {
                 let date1 = new Date(a.timestamp);
@@ -136,8 +144,6 @@ export class LoggerComponent implements OnInit {
             console.log(this.msgs);
             this.drawAllElements();
          })
-
-
     }
 
 
@@ -146,8 +152,8 @@ export class LoggerComponent implements OnInit {
         console.log(this.selectedID);
         for (let id of this.selectedID) {
             for (let topic of this.topics) {
-                res.push(this.loggerService.getNLatestLogs(this.selectedMASID.toString(),
-                id.toString(), topic, this.numLogs.toString()));
+                res.push(this.loggerService.getLogsInRange(this.selectedMASID.toString(),
+                id.toString(), topic, this.startTime, this.endTime));
             }
         }
         return forkJoin(res);
@@ -173,7 +179,6 @@ export class LoggerComponent implements OnInit {
                     y: 200 - this.boxHeight / 3,
                     textID: this.selectedID[i],
                 })
-
         }
     }
 
@@ -238,7 +243,7 @@ export class LoggerComponent implements OnInit {
             let idx = this.selectedID.indexOf(currMsg.agentid) + 1;        
             this.logBoxes.push({
                 x: this.interval *idx - this.logBoxWidth / 2, 
-                y: 400 + this.logBoxHeight * scaledDates[i],
+                y: 400 + this.logBoxHeight * scaledDates[i] * 1.1,
                 topic: currMsg.topic,
                 timestamp: currMsg.timestamp,
                 msg: currMsg.msg,
@@ -256,9 +261,9 @@ export class LoggerComponent implements OnInit {
                 if (this.selectedID.includes(receiver)) {
                     this.communications.push({
                         x1: this.interval * senderIdx + direction * this.logBoxWidth / 2,
-                        y1: 400 + this.logBoxHeight * scaledDates[i] + this.logBoxHeight / 2,
+                        y1: 400 + this.logBoxHeight * scaledDates[i] * 1.1 + this.logBoxHeight / 2,
                         x2: this.interval * receiverIdx - direction * this.logBoxWidth / 2,
-                        y2: 400 +   this.logBoxHeight * scaledDates[i] + + this.logBoxHeight / 2,
+                        y2: 400 +   this.logBoxHeight * scaledDates[i] * 1.1 + this.logBoxHeight / 2,
                         hidden: !this.isTopicSelected[this.topics.indexOf("msg")],
                     })
                 }
@@ -305,19 +310,42 @@ export class LoggerComponent implements OnInit {
     }
 
 
+    convertStartDate(date: Date): string {
+        let res: string = date.getFullYear().toString();
+        res += (date.getMonth() + 1) < 10 ? "0" + (date.getMonth() + 1).toString() : (date.getMonth() + 1).toString()
+        res += date.getDay()  < 10 ? "0" + date.getDay().toString() : date.getDay().toString()
+        res += "000000";
+        return res;
+    }
 
+    convertEndDate(date: Date): string {
+        let res: string = date.getFullYear().toString();
+        res += (date.getMonth() + 1) < 10 ? "0" + (date.getMonth() + 1).toString() : (date.getMonth() + 1).toString()
+        res += date.getDay()  < 10 ? "0" + date.getDay().toString() : date.getDay().toString()
+        res += "235959";
+        return res;
+    }
        
-    onSearchLogs(num: string) {
-/*         this.numLogs = parseInt(num); 
-        let params = new HttpParams();
-        for (let i = 0; i < this.agentID.length; i++) {
-            if (this.isAgentSelected[i]) {
-                params.append("selectedID", this.agentID[i].toString());
+    onSearchLogs() {
+        this.startTime = this.convertStartDate(this.range.value.start);
+        this.endTime =  this.convertEndDate(this.range.value.end);
+        this.multiLogs().subscribe( logss => {
+            this.msgs = [];
+            for (let logs of logss) {
+                if (logs !== null) {
+                    for (let log of logs) {
+                        this.msgs.push(log);
+                    }
+                }
             }
-        }   
-        this.loggerService.getAllLatestLogs(this.selectedMASID.toString(), this.numLogs.toString(), params).subscribe( (res: string[][]) => {
-      
-        })  */
+            this.msgs.sort((a, b) => {
+                let date1 = new Date(a.timestamp);
+                let date2 = new Date(b.timestamp);
+                return date2.getTime() - date1.getTime();
+            } )
+            console.log(this.msgs);
+            this.drawAllElements();
+         })
     }
 
 

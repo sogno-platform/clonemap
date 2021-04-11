@@ -12,7 +12,8 @@ services:
       - clonemap-net
 
   logger:
-    image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/logger
+    #image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/logger
+    image: qianwen12/logger
     environment:
       CLONEMAP_DEPLOYMENT_TYPE: ${CLONEMAP_DEPLOYMENT_TYPE}
       CLONEMAP_LOG_LEVEL: ${CLONEMAP_LOG_LEVEL}

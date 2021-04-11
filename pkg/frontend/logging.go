@@ -48,7 +48,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"sort"
 	"strconv"
 	"time"
 
@@ -117,70 +116,6 @@ func (fe *Frontend) handlePostLogs(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-// handleGetAllLatestLogMessages is the handler to /api/logging/{masid}/latest/{num}
-func (fe *Frontend) handleGetAllLatestLogs(w http.ResponseWriter, r *http.Request) {
-	var cmapErr, httpErr error
-	masID, num, cmapErr := getMasAndNum(r)
-	if cmapErr != nil {
-		httpErr = httpreply.NotFoundError(w)
-		fe.logErrors(r.URL.Path, cmapErr, httpErr)
-		return
-	}
-	var logMsgs []schemas.LogMessage
-	logMsgs, _, cmapErr = fe.logClient.GetAllLatestLogs(masID, num)
-	if cmapErr != nil {
-		httpErr = httpreply.CMAPError(w, cmapErr.Error())
-		fe.logErrors(r.URL.Path, cmapErr, httpErr)
-		return
-	}
-
-	agentID := make(map[int]bool)
-	for _, logMsg := range logMsgs {
-		_, ok := agentID[logMsg.AgentID]
-		if !ok {
-			agentID[logMsg.AgentID] = true
-		}
-	}
-
-	numAgent := len(agentID)
-
-	topics := map[string]int{
-		"error":  0,
-		"debug":  1,
-		"msg":    2,
-		"status": 3,
-		"app":    4,
-	}
-
-	timestamps := make(map[int]timeSlice)
-	for _, logMsg := range logMsgs {
-		topicIdx, ok := topics[logMsg.Topic]
-		idx := logMsg.AgentID + topicIdx*numAgent
-		_, ok = timestamps[idx]
-		if ok {
-			timestamps[idx] = append(timestamps[idx], logMsg.Timestamp)
-		} else {
-			timestamps[idx] = timeSlice{logMsg.Timestamp}
-		}
-	}
-
-	output := [][]time.Time{}
-
-	for i := 0; i < numAgent*5; i++ {
-		_, ok := timestamps[i]
-		if !ok {
-			output = append(output, []time.Time{})
-		} else {
-			sort.Sort(timestamps[i])
-			output = append(output, timestamps[i])
-		}
-	}
-
-	httpErr = httpreply.Resource(w, output, cmapErr)
-	fe.logErrors(r.URL.Path, cmapErr, httpErr)
-	return
-}
-
 // handleGetLogs is the handler to /api/logging/{masid}/{agentid}/{topic}/latest/{num}
 func (fe *Frontend) handleGetNLatestLogs(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
@@ -203,8 +138,26 @@ func (fe *Frontend) handleGetNLatestLogs(w http.ResponseWriter, r *http.Request)
 	return
 }
 
-// handleGetLogsWithRange is the handler to /api/logging/{masid}/{agentid}/{topic}/time/{start}/{end}
-/* func handleGetLogsWithRange(w http.ResponseWriter, r *http.Request) {
+// handleGetLogsTime is the handler to /api/logging/{masid}/{agentid}/{topic}/time/{start}/{end}
+func (fe *Frontend) handleGetLogsInRange(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
+	masid, agentid, topic, start, end, cmapErr := getLogsTime(r)
+	if cmapErr != nil {
+		httpErr = httpreply.NotFoundError(w)
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
 
-} */
+	var msgs []schemas.LogMessage
+	msgs, _, cmapErr = fe.logClient.GetLogsInRange(masid, agentid, topic, start, end)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
+
+	httpErr = httpreply.Resource(w, msgs, cmapErr)
+	fe.logErrors(r.URL.Path, cmapErr, httpErr)
+	return
+
+}

@@ -52,7 +52,7 @@ COPY pkg/common pkg/common
 COPY pkg/schemas pkg/schemas
 COPY pkg/client pkg/client
 COPY pkg/status pkg/status
-COPY web web
+# COPY web web
 ENV PATH="/clonemap:${PATH}"
 RUN cd cmd/frontend; CGO_ENABLED=0 GOOS=linux go build -ldflags '-s' -o frontend; cp frontend /clonemap/
 

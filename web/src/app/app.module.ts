@@ -10,6 +10,10 @@ import { AMSComponent } from './pages/ams/ams.component';
 import { LoggerComponent } from './pages/logger/logger.component';
 import { DFComponent } from './pages/df/df.component';
 import { TopBarComponent } from './pages/top-bar/top-bar.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core/';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -18,13 +22,18 @@ import { TopBarComponent } from './pages/top-bar/top-bar.component';
     AMSComponent,
     LoggerComponent,
     DFComponent,
-    TopBarComponent,
+    TopBarComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     NgbModule,
-    HttpClientModule
+    HttpClientModule,
+    BrowserAnimationsModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    FormsModule,
+    ReactiveFormsModule
   ],
   providers: [],
   bootstrap: [AppComponent]

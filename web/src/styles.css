@@ -29,6 +29,12 @@ html,body {
    color: white;
 }
 
+.my-btn:hover {
+   background-color: var(--primary-color);
+   color: white;
+   font: bold;
+}
+
 .title {
    padding-top: 100px;
    padding-left: 100px;
@@ -42,3 +48,6 @@ html,body {
 
 
 
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

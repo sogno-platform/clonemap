@@ -45,6 +45,7 @@
 
 
 .contentcontainer {
+   margin-top: 30px;
    border-radius: 5px;
    position: relative;
    display: flex;
@@ -74,58 +75,49 @@
    justify-content: center;
    align-items: center;
 }
-.input {
-   color: var(--primary-color);
-   height: 50px;
-   margin-right:10px;
-}
+
 
 
 .btn-search {
-   background-color: var(--light-primary-color);
-   color:white;
-   height: 50px;
-   width: 50px;
+   height: 40px;
+   width: 150px;
    border: none;
    border-radius: 10px;
+   margin-right: 100px;
 }
 
-.btn-create {
-   background-color: var(--light-primary-color);
-   color:white;
-   height: 50px;
-   width: 50px;
-   border: none;
-   border-radius: 10px;
-   font-size: large;
-   font-weight: bold;
-   margin-left: 30px; 
-}
+
 
 
 /*style of the selection board */
+
+.selectionBoard {
+   margin-left: 50px;
+}
 
 
 .agent-title {
    color: rgb(85, 81, 81);
    font-size: 30px;
    margin-left: 30px;
-   margin-top: -20px;
-   width: 180px;
+   margin-top: 0px;
+   width: 120px;
 }
 
 .topic-title {
    color: rgb(85, 81, 81);
    font-size: 30px;
-   width: 180px;
+   width: 100px;
    margin-bottom: 40px;
 }
 
-
+.row {
+   margin-top: 5px;
+}
 
 
 .agents {
-    width:1500px;
+    width:800px;
     margin-left:15px;
 }
 

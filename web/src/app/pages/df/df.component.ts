@@ -18,6 +18,7 @@ export class DFComponent implements OnInit {
     filename: string = "Choose a file...";
     collapsed: boolean[] = [];
     searched_results;
+    disc
     constructor(
         private dfService: DfService,
         private masService: MasService,
@@ -94,6 +95,12 @@ export class DFComponent implements OnInit {
             console.log("success");
             console.log(res);
             this.modalService.dismissAll("uploaded");
+            this.dfService.getAllSvcs(this.selectedMASID.toString()).subscribe( res => {
+                this.searched_results = res;
+                console.log(res);               
+            },
+            err => console.log(err)
+            )
             },
             error => {
                 console.log(error);

@@ -1,8 +1,5 @@
 import { Injectable } from '@angular/core';
 import { WebRequestService} from './web-request.service';
-import { HttpParams } from '@angular/common/http';
-import { LogMessage} from 'src/app/models/logMessage.model';
-
 
 @Injectable({
   providedIn: 'root'
@@ -27,7 +24,7 @@ export class LoggerService {
     return this.webReqService.get(`api/logging/${masid}/${agentid}/${topic}/latest/${num}`);
   }
   
-  getLoggerWithinRange(masid: string, agentid: string, topic: string, start: string, end: string) {
+  getLogsInRange(masid: string, agentid: string, topic: string, start: string, end: string) {
     return this.webReqService.get(`api/logging/${masid}/${agentid}/${topic}/time/${start}/${end}`);
   }
 

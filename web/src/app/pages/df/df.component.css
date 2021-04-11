@@ -78,8 +78,6 @@
 
 
 .btn-search {
-   background-color: var(--light-primary-color);
-   color:white;
    height: 50px;
    width: 50px;
    border: none;
@@ -87,8 +85,7 @@
 }
 
 .btn-create {
-   background-color: var(--light-primary-color);
-   color:white;
+
    height: 50px;
    width: 50px;
    border: none;

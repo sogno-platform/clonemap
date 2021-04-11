@@ -84,11 +84,12 @@ func (cli *LoggerClient) PostLogs(masID int, logs []schemas.LogMessage) (httpSta
 	return
 }
 
-// GetAllLatestLogs gets log messages
-func (cli *LoggerClient) GetAllLatestLogs(masID int, num int) (msgs []schemas.LogMessage, httpStatus int, err error) {
+// GetLatestLogs gets log messages
+func (cli *LoggerClient) GetLatestLogs(masID int, agentID int, topic string,
+	num int) (msgs []schemas.LogMessage, httpStatus int, err error) {
 	var body []byte
 	body, httpStatus, err = httpretry.Get(cli.httpClient, cli.prefix()+"/api/logging/"+
-		strconv.Itoa(masID)+"/latest/"+
+		strconv.Itoa(masID)+"/"+strconv.Itoa(agentID)+"/"+topic+"/latest/"+
 		strconv.Itoa(num), time.Second*2, 4)
 	if err != nil {
 		return
@@ -100,13 +101,12 @@ func (cli *LoggerClient) GetAllLatestLogs(masID int, num int) (msgs []schemas.Lo
 	return
 }
 
-// GetLatestLogs gets log messages
-func (cli *LoggerClient) GetLatestLogs(masID int, agentID int, topic string,
-	num int) (msgs []schemas.LogMessage, httpStatus int, err error) {
+// GetLogsInRange gets log messages in a certain range
+func (cli *LoggerClient) GetLogsInRange(masID int, agentID int, topic string, start string, end string) (msgs []schemas.LogMessage, httpStatus int, err error) {
 	var body []byte
 	body, httpStatus, err = httpretry.Get(cli.httpClient, cli.prefix()+"/api/logging/"+
-		strconv.Itoa(masID)+"/"+strconv.Itoa(agentID)+"/"+topic+"/latest/"+
-		strconv.Itoa(num), time.Second*2, 4)
+		strconv.Itoa(masID)+"/"+strconv.Itoa(agentID)+"/"+topic+"/time/"+
+		start+"/"+end, time.Second*2, 4)
 	if err != nil {
 		return
 	}

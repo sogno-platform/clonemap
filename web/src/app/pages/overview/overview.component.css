@@ -1,22 +1,22 @@
 /* overview without agency*/
-
-.empty-overview {
-   display: flex;
-   height: 800px;
-   flex-direction: column;
-   align-items: center;
-   justify-content: center;
-   
-}
-.empty-overview > h1 {
+h1 {
    color: var(--primary-color);
-   padding-bottom: 50px;
+   text-align: center;
+   margin-top: 300px;
+
 }
 
-.empty-overview > button {
-   height: 50px;
-   width:  200px;
+.overview-empty button {
+   position: relative;
+   margin-top: 30px;
+   margin-left: 700px;
+   height:60px;
+   width: 160px;
+   font-size: larger;
+
 }
+
+
 
 /* style of sidebar */
 
@@ -107,8 +107,7 @@
 }
 
 .search-btn {
-   background-color: var(--light-primary-color);
-   color:white;
+
    height: 50px;
    width: 50px;
    border: none;

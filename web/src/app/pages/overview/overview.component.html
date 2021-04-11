@@ -43,67 +43,73 @@
     </ng-template>
 
 
-    <div class="contentcontainer" *ngIf="MASs !== null && MASs.length !== 0" >
-        <div class = "title">
-            <h2 >Overview</h2>              
-            <button type='button' class='btn my-btn btn-create' (click)="openLg(content)">+ New MAS</button>
-            <input type="text" #searchMAS class="input" id="searchMAS" placeholder="Enter the MAS ID"/>
-            <button class="search-btn" type="submit" (click)="onSearchMAS(searchMAS.value)">
-                <i class="fas fa-search"></i>
-            </button>        
-        </div>
-
-        <!--display the overview of agencies with tables-->
-        <div id="tables">
-            <div class="row">
-                <div class="col-md-4 my-row" *ngFor="let MAS of MASsDisplay">
-                    <div class="card" (click)="onOpenMAS(MAS.id)">
-                        <div class="card-header">
-                            <h5>MAS {{MAS.id}}</h5>
-                            <button class="btn btn-delete" (click)="onDeleteMAS(MAS.id)">
-                                <div class="icon">
-                                  <i class="fas fa-trash"></i>
+    <div class="contentcontainer"  >
+            <div *ngIf="MASs !== null && MASs.length !== 0">
+                <div class="title">
+                    <h2 >Overview</h2>              
+                    <button type='button' class='btn my-btn btn-create' (click)="openLg(content)">+ New MAS</button>
+                    <input type="text" #searchMAS class="input" id="searchMAS" placeholder="Enter the MAS ID"/>
+                    <button class="my-btn search-btn" type="submit" (click)="onSearchMAS(searchMAS.value)">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>   
+                            <!--display the overview of agencies with tables-->
+                <div id="tables">
+                    <div class="row">
+                        <div class="col-md-4 my-row" *ngFor="let MAS of MASsDisplay">
+                            <div class="card" (click)="onOpenMAS(MAS.id)">
+                                <div class="card-header">
+                                    <h5>MAS {{MAS.id}}</h5>
+                                    <button class="btn btn-delete" (click)="onDeleteMAS(MAS.id)">
+                                        <div class="icon">
+                                        <i class="fas fa-trash"></i>
+                                        </div>
+                                    </button>
                                 </div>
-                            </button>
-                        </div>
 
-                        <div class="card-body">
-                            <table class="table table-striped">
-                                <tbody>
-                                <tr>
-                                    <th>Name</th>
-                                    <td>{{ MAS.config.name }}</td> 
-                                </tr>
-                                <tr>
-                                    <th>Number of agents per agency </th>
-                                    <td>{{ MAS.config.agentsperagency }} </td>
-                                </tr>
-                                <tr> 
-                                    <th> Status of df</th>
-                                    <td>{{ MAS.config.df.active }} </td>
-                                </tr>
-                                <tr> 
-                                    <th> Status of logger </th>
-                                    <td>{{ MAS.config.logger.active }} </td>
-                                </tr>
-                                <tr> 
-                                    <th> Status of MQTT</th>
-                                    <td> {{ MAS.config.mqtt.active }} </td>
-                                </tr>
-                                </tbody>
-                            </table>
+                                <div class="card-body">
+                                    <table class="table table-striped">
+                                        <tbody>
+                                        <tr>
+                                            <th>Name</th>
+                                            <td>{{ MAS.config.name }}</td> 
+                                        </tr>
+                                        <tr>
+                                            <th>Number of agents per agency </th>
+                                            <td>{{ MAS.config.agentsperagency }} </td>
+                                        </tr>
+                                        <tr> 
+                                            <th> Status of df</th>
+                                            <td>{{ MAS.config.df.active }} </td>
+                                        </tr>
+                                        <tr> 
+                                            <th> Status of logger </th>
+                                            <td>{{ MAS.config.logger.active }} </td>
+                                        </tr>
+                                        <tr> 
+                                            <th> Status of MQTT</th>
+                                            <td> {{ MAS.config.mqtt.active }} </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </div>     
             </div>
+
+
+        <div class="overview-empty" *ngIf="MASs === null || MASs.length === 0">       
+            <h1>{{status}}</h1>
+            <button *ngIf="MASs.length !== null" type='button' class="btn my-btn" (click)="openLg(content)">+ New MAS</button>      
         </div>
     </div>
+    
+
 </div>
 
-<div class="empty-overview" *ngIf="MASs === null || MASs.length === 0">       
-   <h1>{{status}}</h1>
-   <button *ngIf="MASs.length !== null" type='button' class="btn my-btn" (click)="openLg(content)">+ New MAS</button>      
-</div>
+
 
 
 
