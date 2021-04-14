@@ -13,7 +13,19 @@ import { TopBarComponent } from './pages/top-bar/top-bar.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core/';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { NgxMatTimepickerModule } from 'ngx-mat-timepicker';
+import { MatIconModule } from '@angular/material/icon'; 
+
+const materialModules = [
+  MatDatepickerModule,
+  MatNativeDateModule,
+  MatFormFieldModule,
+  MatInputModule,
+  MatIconModule
+];
 
 @NgModule({
   declarations: [
@@ -30,10 +42,10 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
     NgbModule,
     HttpClientModule,
     BrowserAnimationsModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    ...materialModules,
+    NgxMatTimepickerModule
   ],
   providers: [],
   bootstrap: [AppComponent]

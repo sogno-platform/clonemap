@@ -17,9 +17,6 @@ html,body {
    margin-bottom: 100px;
 }
 
-
-
-
 .my-row {
    padding-bottom: 30px;
 }
@@ -35,9 +32,20 @@ html,body {
    font: bold;
 }
 
+.btn-search {
+   height: 50px;
+   width: 50px;
+   border: none;
+   border-radius: 10px;
+}
+
 .title {
    padding-top: 100px;
    padding-left: 100px;
+}
+
+mat-form-field  {
+   width: 120px; 
 }
 
 
@@ -49,5 +57,5 @@ html,body {
 
 
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+

@@ -1,7 +1,7 @@
 {
     "config":{
         "name":"test",
-        "agentsperagency":1,
+        "agentsperagency":5,
         "mqtt":{
             "active":true
         },
@@ -27,19 +27,19 @@
                     "name":"test0"
                 },
                 {
-                    "nodeid":1,
+                    "nodeid":0,
                     "name":"test1"
                 },
                 {
-                    "nodeid":2,
+                    "nodeid":0,
                     "name":"test2"
                 },
                 {
-                    "nodeid":3,
+                    "nodeid":0,
                     "name":"test3"
                 },
                 {
-                    "nodeid":4,
+                    "nodeid":0,
                     "name":"test4"
                 }
             ]

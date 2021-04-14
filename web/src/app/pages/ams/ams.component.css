@@ -95,7 +95,9 @@ h1 {
    padding-bottom: 30px;
    padding-top: 20px;
    padding-left: 20px;
-   color: var(--light-primary-color)
+   color: var(--light-primary-color);
+   font-size:30px;
+   font-weight: bold;
 }
 
 .card {

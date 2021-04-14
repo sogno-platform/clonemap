@@ -16,12 +16,14 @@ header {
 
 .navbar-nav .nav-item {
    border-radius: 5px;
+
 }
 
 .navbar-nav .nav-item .nav-link {
    font-size: 20px;
    color: var(--primary-color);
    font-family: 'Lato', sans-serif;
+   padding: 10px;
 }
 
 

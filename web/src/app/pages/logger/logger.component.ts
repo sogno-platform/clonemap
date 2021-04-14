@@ -1,9 +1,9 @@
-import { Component, OnInit, enableProdMode } from '@angular/core';
+import { Component, OnInit} from '@angular/core';
 import { LoggerService} from 'src/app/services/logger.service'
 import { MasService } from 'src/app/services/mas.service';
 import { ActivatedRoute, Params} from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { LogMessage } from 'src/app/models/logMessage.model';
 import { forkJoin, Observable } from 'rxjs';
 import { FormControl, FormGroup } from '@angular/forms';
@@ -41,8 +41,8 @@ export class LoggerComponent implements OnInit {
         end: new FormControl()
     });
 
-    startTime: string = "20210301000000";
-    endTime: string = "20210331000000"
+    searchStartTime: string = "20210301000000";
+    searchEndTime: string = "20210331000000"
 
     isTopicSelected: boolean[] = [true, true, true, true, true];
     topics: string[] = ["error", "debug", "msg", "status", "app"];
@@ -64,6 +64,12 @@ export class LoggerComponent implements OnInit {
     popoverContent: string = "This is the content of the popover";
     popoverTopic: string;
     msgs: LogMessage[] = [];
+
+    selectedStartDate: Date;
+    selectedEndDate: Date;
+    selectedStartTime: string;
+    selectedEndTime: string;
+
 
     constructor(
         private loggerService: LoggerService,
@@ -102,14 +108,13 @@ export class LoggerComponent implements OnInit {
                 });
             });   
     }  
-    
-    
-    
-    
+
     onToggleTopic(i: number) {
         this.isTopicSelected[i] = ! this.isTopicSelected[i];
-        this.updateScaledDates()
+        this.updateScaledDates();
+        
     }
+
 
 
 
@@ -124,8 +129,9 @@ export class LoggerComponent implements OnInit {
                 this.notSelectedID.push(i);
             }
         }
+    }
 
-
+    drawLogs() {
         this.multiLogs().subscribe( logss => {
             this.msgs = [];
             for (let logs of logss) {
@@ -134,7 +140,6 @@ export class LoggerComponent implements OnInit {
                         this.msgs.push(log);
                     }
                 }
-
             }
             this.msgs.sort((a, b) => {
                 let date1 = new Date(a.timestamp);
@@ -146,6 +151,11 @@ export class LoggerComponent implements OnInit {
          })
     }
 
+    onConfirm() {
+        this.modalService.dismissAll();
+        this.drawLogs();
+    }
+
 
     multiLogs(): Observable<any[]> {
         let res = [];
@@ -153,17 +163,24 @@ export class LoggerComponent implements OnInit {
         for (let id of this.selectedID) {
             for (let topic of this.topics) {
                 res.push(this.loggerService.getLogsInRange(this.selectedMASID.toString(),
-                id.toString(), topic, this.startTime, this.endTime));
+                id.toString(), topic, this.searchStartTime, this.searchEndTime));
             }
         }
         return forkJoin(res);
     } 
 
 
-    onToggleID(i : number) {
+    onDeleteID(i : number) {
+        this.isAgentSelected[i] = !this.isAgentSelected[i];
+        this.updateSelectedID();
+        this.drawLogs();
+    }
+
+    onAddID(i: number) {
         this.isAgentSelected[i] = !this.isAgentSelected[i];
         this.updateSelectedID();
     }
+
 
     drawAgentBox() {
         this.agentBox = [];
@@ -310,25 +327,33 @@ export class LoggerComponent implements OnInit {
     }
 
 
-    convertStartDate(date: Date): string {
+
+    convertDate(date: Date): string {
         let res: string = date.getFullYear().toString();
         res += (date.getMonth() + 1) < 10 ? "0" + (date.getMonth() + 1).toString() : (date.getMonth() + 1).toString()
-        res += date.getDay()  < 10 ? "0" + date.getDay().toString() : date.getDay().toString()
-        res += "000000";
+        res += date.getDate()  < 10 ? "0" + date.getDate().toString() : date.getDate().toString()
         return res;
     }
 
-    convertEndDate(date: Date): string {
-        let res: string = date.getFullYear().toString();
-        res += (date.getMonth() + 1) < 10 ? "0" + (date.getMonth() + 1).toString() : (date.getMonth() + 1).toString()
-        res += date.getDay()  < 10 ? "0" + date.getDay().toString() : date.getDay().toString()
-        res += "235959";
-        return res;
-    }
+   
        
     onSearchLogs() {
-        this.startTime = this.convertStartDate(this.range.value.start);
-        this.endTime =  this.convertEndDate(this.range.value.end);
+        const startDate: string = this.convertDate(this.selectedStartDate);
+        const endDate:string =  this.convertDate(this.selectedEndDate);
+
+        if (this.selectedStartTime.charAt(1) == ":") {
+            this.selectedStartTime = "0" + this.selectedStartTime;
+        }
+
+        if (this.selectedEndTime.charAt(1) == ":") {
+            this.selectedEndTime = "0" + this.selectedEndTime;
+        }
+
+        this.searchStartTime = startDate + this.selectedStartTime.substr(0,2) +
+                            this.selectedStartTime.substr(3, 2) + "00";
+        this.searchEndTime = endDate + this.selectedEndTime.substr(0,2) +
+                            this.selectedEndTime.substr(3, 2) + "59";
+
         this.multiLogs().subscribe( logss => {
             this.msgs = [];
             for (let logs of logss) {

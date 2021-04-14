@@ -17,7 +17,7 @@
     <!--modal for uploading the agency-->
     <ng-template #content let-modal>
         <div class="modal-header">
-            <h4 class="modal-title">Start new MAS</h4>
+            <h2 class="modal-title">Start new MAS</h2>
             <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
             <span aria-hidden="true">&times;</span>
             </button>
@@ -46,7 +46,7 @@
     <div class="contentcontainer"  >
             <div *ngIf="MASs !== null && MASs.length !== 0">
                 <div class="title">
-                    <h2 >Overview</h2>              
+                    <div class="title-name" >Overview</div>              
                     <button type='button' class='btn my-btn btn-create' (click)="openLg(content)">+ New MAS</button>
                     <input type="text" #searchMAS class="input" id="searchMAS" placeholder="Enter the MAS ID"/>
                     <button class="my-btn search-btn" type="submit" (click)="onSearchMAS(searchMAS.value)">
@@ -59,7 +59,7 @@
                         <div class="col-md-4 my-row" *ngFor="let MAS of MASsDisplay">
                             <div class="card" (click)="onOpenMAS(MAS.id)">
                                 <div class="card-header">
-                                    <h5>MAS {{MAS.id}}</h5>
+                                    <h3>MAS {{MAS.id}}</h3>
                                     <button class="btn btn-delete" (click)="onDeleteMAS(MAS.id)">
                                         <div class="icon">
                                         <i class="fas fa-trash"></i>
@@ -101,7 +101,7 @@
 
 
         <div class="overview-empty" *ngIf="MASs === null || MASs.length === 0">       
-            <h1>{{status}}</h1>
+            <div class="status">{{status}}</div>
             <button *ngIf="MASs.length !== null" type='button' class="btn my-btn" (click)="openLg(content)">+ New MAS</button>      
         </div>
     </div>

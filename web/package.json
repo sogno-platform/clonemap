@@ -23,9 +23,13 @@
     "@angular/platform-browser-dynamic": "~11.0.4",
     "@angular/router": "~11.0.4",
     "@ng-bootstrap/ng-bootstrap": "^9.0.2",
+    "@types/luxon": "^1.26.3",
     "bootstrap": "^4.5.0",
+    "install": "^0.13.0",
+    "luxon": "^1.26.0",
+    "ngx-mat-timepicker": "^11.0.5",
     "rxjs": "~6.6.0",
-    "tslib": "^2.0.0",
+    "tslib": "^2.2.0",
     "zone.js": "~0.10.2"
   },
   "devDependencies": {

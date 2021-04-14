@@ -16,7 +16,7 @@
 
             <div class="config">
                 <div class="config-header d-flex justify-content-between"> 
-                    <h2 class="title">Config</h2>
+                    <div class="title">Config</div>
                     <i class="fas fa-angle-right" *ngIf="collapsed" (click)="onToggleCollapsed()"></i>
                     <i class="fas fa-angle-down" *ngIf="!collapsed" (click)="onToggleCollapsed()"></i>
                 </div>
@@ -53,12 +53,12 @@
 
             
             <div class="containers">
-                <h2 class="title">Containers</h2>
+                <div class="title">Containers</div>
                 <div *ngFor="let image of selectedMAS.imagegroups.instances">
                     <div class="card">
-                        <h5 class="card-header">Image {{image.id}}</h5>
+                        <div class="card-header">Image {{image.id}}</div>
                         <div class="card-body">
-                            <table class="table table-striped">
+                            <table class="table">
                                 <tbody>
                                 <tr>
                                     <th>Image</th>
@@ -77,13 +77,13 @@
 
 
             <div class="containers">
-                <h2 class="title">Agents</h2>
+                <div class="title">Agents</div>
                 <div class="row">   
                     <div class="col-md-4 my-row" *ngFor="let agent of selectedMAS.agents.instances">
                         <div class="card">
-                            <h5 class="card-header">Agent {{agent.id}}</h5>
+                            <div class="card-header">Agent {{agent.id}}</div>
                             <div class="card-body">
-                                <table  class="table table-striped">
+                                <table  class="table">
                                     <tbody>
                                     <tr>
                                         <th>Name</th>
