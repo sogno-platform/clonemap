@@ -55,8 +55,17 @@
             </button>
             <button type='button' class='btn my-btn btn-create' (click)="openLg(content)">+</button>
         </div> 
+
+        <ul class="nav nav-tabs justify-content-end">
+            <li class="nav-item">
+                <a class="nav-link" [class.active]="curr_state==='graph'" (click)="onClickGraph()">graph</a>
+            </li>
+            <li class="nav-item"  style="padding-right:100px;">
+                <a class="nav-link" [class.active]="curr_state==='list'" (click)="onClickList()" >list</a>
+            </li>
+         </ul>
   
-        <div class="content">
+        <div class="content" *ngIf="curr_state === 'list'">
             <div class="empty-service" *ngIf="searched_results === null">
                 <h1>No services found</h1>
             </div>
@@ -94,6 +103,12 @@
                     </tr>
                     </tbody>
                 </table>
+            </div>
+        </div>
+
+        <div class="content" *ngIf="curr_state === 'graph'">
+            <div id="graph">
+
             </div>
         </div>
        

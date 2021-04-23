@@ -27,26 +27,68 @@
                     "name":"test0"
                 },
                 {
-                    "nodeid":0,
+                    "nodeid":1,
                     "name":"test1"
                 },
                 {
-                    "nodeid":0,
+                    "nodeid":2,
                     "name":"test2"
                 },
                 {
-                    "nodeid":0,
+                    "nodeid":3,
                     "name":"test3"
                 },
                 {
-                    "nodeid":0,
+                    "nodeid":4,
                     "name":"test4"
                 }
             ]
         }
     ],
     "graph":{
-        "node":null,
-        "edge":null
+        "node":[
+            {
+                "id": 0,
+                "agents": [0]
+            },
+            {
+                "id": 1,
+                "agents": [1]
+            },
+            {
+                "id": 2,
+                "agents": [2]
+            },
+            {
+                "id": 3,
+                "agents": [3]
+            },
+            {
+                "id": 4,
+                "agents": [4]
+            }
+        ],
+        "edge":[
+            {
+                "n1": 0,
+                "n2": 1,
+                "weight": 2
+            },
+            {
+                "n1": 2,
+                "n2": 1,
+                "weight": 2
+            },
+            {
+                "n1": 3,
+                "n2": 1,
+                "weight": 2
+            },
+            {
+                "n1": 4,
+                "n2": 1,
+                "weight": 2
+            }
+        ]
     }
 }

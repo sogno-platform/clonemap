@@ -117,11 +117,9 @@ export class LoggerComponent implements OnInit {
 
 
 
-
     updateSelectedID() {
         this.selectedID = [];
-        this.notSelectedID = [];
-        
+        this.notSelectedID 
         for (let i = 0; i < this.agentID.length; i++) {
             if (this.isAgentSelected[i]) {
                 this.selectedID.push(i);
