@@ -51,8 +51,8 @@ export class LoggerComponent implements OnInit {
 
     width: number = 1500;
     height: number = 2000;
-    boxWidth: number = 200;
-    boxHeight: number = 100;
+    boxWidth: number = 100;
+    boxHeight: number = 50;
     logBoxWidth: number = 50;
     logBoxHeight: number = 25;
     interval: number;
@@ -112,14 +112,13 @@ export class LoggerComponent implements OnInit {
     onToggleTopic(i: number) {
         this.isTopicSelected[i] = ! this.isTopicSelected[i];
         this.updateScaledDates();
-        
     }
 
 
 
     updateSelectedID() {
         this.selectedID = [];
-        this.notSelectedID 
+        this.notSelectedID = [];
         for (let i = 0; i < this.agentID.length; i++) {
             if (this.isAgentSelected[i]) {
                 this.selectedID.push(i);
@@ -129,7 +128,7 @@ export class LoggerComponent implements OnInit {
         }
     }
 
-    drawLogs() {
+    drawLogs() {      
         this.multiLogs().subscribe( logss => {
             this.msgs = [];
             for (let logs of logss) {
@@ -144,7 +143,6 @@ export class LoggerComponent implements OnInit {
                 let date2 = new Date(b.timestamp);
                 return date2.getTime() - date1.getTime();
             } )
-            console.log(this.msgs);
             this.drawAllElements();
          })
     }
@@ -157,7 +155,6 @@ export class LoggerComponent implements OnInit {
 
     multiLogs(): Observable<any[]> {
         let res = [];
-        console.log(this.selectedID);
         for (let id of this.selectedID) {
             for (let topic of this.topics) {
                 res.push(this.loggerService.getLogsInRange(this.selectedMASID.toString(),
@@ -175,8 +172,11 @@ export class LoggerComponent implements OnInit {
     }
 
     onAddID(i: number) {
-        this.isAgentSelected[i] = !this.isAgentSelected[i];
-        this.updateSelectedID();
+        if (this.selectedID.length < 10) {
+            this.isAgentSelected[i] = !this.isAgentSelected[i];
+            this.updateSelectedID();
+        }
+
     }
 
 
@@ -333,25 +333,41 @@ export class LoggerComponent implements OnInit {
         return res;
     }
 
+    convertTime(origin: string): string {
+        console.log(origin);
+        if (origin.charAt(1) == ":") {
+            origin = "0" + origin;
+        }
+        let hour: number = +origin.substr(0,2);
+        let minute: number = +origin.substr(3,2);
+        
+        console.log(origin.charAt(6))
+        if (origin.charAt(6) === "P") {
+            hour += 12;
+        }
+        let res:string = "";
+        if (hour < 10) {
+            res += "0"
+        }
+        res += hour.toString();
+        if (minute < 10) {
+            res += "0"
+        }
+        res += minute.toString();
+        console.log(res);
+        return res;
+    }
+
    
        
     onSearchLogs() {
         const startDate: string = this.convertDate(this.selectedStartDate);
         const endDate:string =  this.convertDate(this.selectedEndDate);
 
-        if (this.selectedStartTime.charAt(1) == ":") {
-            this.selectedStartTime = "0" + this.selectedStartTime;
-        }
 
-        if (this.selectedEndTime.charAt(1) == ":") {
-            this.selectedEndTime = "0" + this.selectedEndTime;
-        }
-
-        this.searchStartTime = startDate + this.selectedStartTime.substr(0,2) +
-                            this.selectedStartTime.substr(3, 2) + "00";
-        this.searchEndTime = endDate + this.selectedEndTime.substr(0,2) +
-                            this.selectedEndTime.substr(3, 2) + "59";
-
+        this.searchStartTime = startDate + this.convertTime(this.selectedStartTime) + "00";
+        this.searchEndTime = endDate + this.convertTime(this.selectedEndTime)+ "59";
+        console.log(this.searchEndTime);
         this.multiLogs().subscribe( logss => {
             this.msgs = [];
             for (let logs of logss) {

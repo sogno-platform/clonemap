@@ -62,6 +62,18 @@
    padding-bottom: 50px;
 }
 
+.alive {
+
+   position: relative;
+   display: flex;
+   flex-direction: column;
+}
+
+.content {
+   display: flex;
+   flex-direction: column;
+}
+
 
 .inputs {
    padding-top: 30px;
@@ -107,7 +119,7 @@
    width: 1200px;
    border-radius: 10px;
    margin-top:50px;
-   margin-left: 200px; 
+   margin-left: 400px;
 }
 
 
@@ -130,6 +142,11 @@
 
 /* style of the nav tab */
 
+.nav {
+   margin-left: 30px;
+}
+
+
 .nav-item>.active>a, .nav-item>.active>a:hover, .nav-item>.active>a:focus {
    border-color: var(--background-primary-color);
    border-bottom-color: transparent;
@@ -148,8 +165,18 @@
 }
 
 #graph {
-   width: 100%;
+   width: 2100px;
    height: 1000px;
+
+}
+
+
+.node {
+   color: var(--primary-color);
+}
+
+.notShow{
+   z-index: -1;
 }
 
 

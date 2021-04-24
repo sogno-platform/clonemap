@@ -40,81 +40,76 @@
 
 
 
-   <div class="contentcontainer">
+    <div class="contentcontainer">
         <div class="notalive" *ngIf="!alive" >
             <h1>DF is not alive......</h1>
         </div>
    
-        <div *ngIf="alive">
-        <div class="inputs">
-            <input #desc type="text" class="input" id="searchDesc" placeholder="Enter the description"/>
-            <input #nodeid type="text" class="input"  id="searchNode" placeholder="Enter the node ID"/>
-            <input #dist type="text" class="input" id="searchDist" placeholder="Enter the distance"/>
-            <button class="my-btn btn-search" type="submit" (click)="onSearchSvcs(desc.value, nodeid.value, dist.value)">
-                <i class="fas fa-search"></i>
-            </button>
-            <button type='button' class='btn my-btn btn-create' (click)="openLg(content)">+</button>
-        </div> 
-
-        <ul class="nav nav-tabs justify-content-end">
-            <li class="nav-item">
-                <a class="nav-link" [class.active]="curr_state==='graph'" (click)="onClickGraph()">graph</a>
-            </li>
-            <li class="nav-item"  style="padding-right:100px;">
-                <a class="nav-link" [class.active]="curr_state==='list'" (click)="onClickList()" >list</a>
-            </li>
-         </ul>
-  
-        <div class="content" *ngIf="curr_state === 'list'">
-            <div class="empty-service" *ngIf="searched_results === null">
-                <h1>No services found</h1>
-            </div>
-            <div class="service" *ngFor="let res of searched_results; index as i">
-                <div class="service-header d-flex justify-content-between">
-                    <h2>Service {{i+1}}</h2>
-                    <i class="fas fa-angle-right" *ngIf="collapsed[i]" (click)="onToggleCollapsed(i)"></i>
-                    <i class="fas fa-angle-down" *ngIf="!collapsed[i]" (click)="onToggleCollapsed(i)"></i>
+        <div class="alive" *ngIf="alive">
+            <ul class="nav nav-tabs justify-content-end">
+                <li class="nav-item"  >
+                    <a class="nav-link" [class.active]="curr_state==='list'" (click)="onClickList()" >list</a>
+                </li>
+                <li class="nav-item" style="padding-right:100px;">
+                    <a class="nav-link" [class.active]="curr_state==='graph'" (click)="onClickGraph()">graph</a>
+                </li>
+            </ul>
+    
+            <div class="content" *ngIf="curr_state === 'list'">
+                <div class="inputs">
+                    <input #desc type="text" class="input" id="searchDesc" placeholder="Enter the description"/>
+                    <input #nodeid type="text" class="input"  id="searchNode" placeholder="Enter the node ID"/>
+                    <input #dist type="text" class="input" id="searchDist" placeholder="Enter the distance"/>
+                    <button class="my-btn btn-search" type="submit" (click)="onSearchSvcs(desc.value, nodeid.value, dist.value)">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <button type='button' class='btn my-btn btn-create' (click)="openLg(content)">+</button>
                 </div>
-                <table class="table table-striped" *ngIf="!collapsed[i]">
-                    <tbody>
-                    <tr>
-                        <th>MAS ID</th>
-                        <td>{{res.masid}}</td>
-                    </tr>
-                    <tr>
-                        <th>Agent ID</th>
-                        <td>{{res.agentid}}</td>
-                    </tr>
-                    <tr>
-                        <th>NODE ID</th>
-                        <td>{{res.nodeid}}</td>
-                    </tr>
-                    <tr>
-                        <th>Create Date</th>
-                        <td>{{res.createdat}}</td>
-                    </tr>
-                    <tr>
-                        <th>Change Date</th>
-                        <td>{{res.changedat}}</td>
-                    </tr>
-                    <tr>
-                        <th>Dist</th>
-                        <td>{{res.dist}}</td>
-                    </tr>
-                    </tbody>
-                </table>
+                <div class="empty-service" *ngIf="searched_results === null">
+                    <h1>No services found</h1>
+                </div>
+                <div class="service" *ngFor="let res of searched_results; index as i">
+                    <div class="service-header d-flex justify-content-between">
+                        <h2>Service {{i+1}}</h2>
+                        <i class="fas fa-angle-right" *ngIf="collapsed[i]" (click)="onToggleCollapsed(i)"></i>
+                        <i class="fas fa-angle-down" *ngIf="!collapsed[i]" (click)="onToggleCollapsed(i)"></i>
+                    </div>
+                    <table class="table table-striped" *ngIf="!collapsed[i]">
+                        <tbody>
+                        <tr>
+                            <th>MAS ID</th>
+                            <td>{{res.masid}}</td>
+                        </tr>
+                        <tr>
+                            <th>Agent ID</th>
+                            <td>{{res.agentid}}</td>
+                        </tr>
+                        <tr>
+                            <th>NODE ID</th>
+                            <td>{{res.nodeid}}</td>
+                        </tr>
+                        <tr>
+                            <th>Create Date</th>
+                            <td>{{res.createdat}}</td>
+                        </tr>
+                        <tr>
+                            <th>Change Date</th>
+                            <td>{{res.changedat}}</td>
+                        </tr>
+                        <tr>
+                            <th>Dist</th>
+                            <td>{{res.dist}}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>          
+            
+            <div class="content" [hidden]="curr_state === 'list'">
+                <div id="graph">
+                </div>
             </div>
-        </div>
-
-        <div class="content" *ngIf="curr_state === 'graph'">
-            <div id="graph">
-
-            </div>
-        </div>
-       
-
-        
-        </div>
+        </div> 
     </div>
 
 </div>
