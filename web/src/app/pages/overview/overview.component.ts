@@ -21,11 +21,8 @@ export class OverviewComponent implements OnInit {
         private masService: MasService,
         private modalService: NgbModal,
         private router: Router
-
     ) {} 
 
-
-    
     ngOnInit() {
         this.updateMAS();
     }
@@ -76,7 +73,6 @@ export class OverviewComponent implements OnInit {
                 this.MASs = [];
                 this.MASsDisplay = [];
                 console.log(this.MASs);
-                
             } else {
                 this.MASs = MASs;
                 this.MASsDisplay = MASs;
@@ -88,8 +84,6 @@ export class OverviewComponent implements OnInit {
             }
         );
     }
-
-
 
     onDeleteMAS(id: string) {
         console.log(id);
@@ -104,31 +98,8 @@ export class OverviewComponent implements OnInit {
         );
     }
 
-    onSearchMAS(id: string) {
-        console.log(id);
-        if (id == "") {
-            this.MASsDisplay = this.MASs;
-            return;
-        }
-        this.masService.getMASById(id).subscribe(
-            (res: any) => {
-                console.log(res);
-                this.MASsDisplay = [res];
-                this.router.navigate['/overview']
-            },
-            (err) => {
-                //this.MASs = []
-                console.log(err);
-                this.MASsDisplay=[]
-            }
-        );
-    }
-
     onOpenMAS(i: number) {
         this.router.navigate(['/ams', i]);
     }
-
-
-
 
 }

@@ -117,6 +117,29 @@ func (cli *LoggerClient) GetLogsInRange(masID int, agentID int, topic string, st
 	return
 }
 
+// PostLogSeries posts new log series to logger
+func (cli *LoggerClient) PostLogSeries(masID int, logs []schemas.LogSeries) (httpStatus int, err error) {
+	js, _ := json.Marshal(logs)
+	_, httpStatus, err = httpretry.Post(cli.httpClient, cli.prefix()+"/api/series/"+
+		strconv.Itoa(masID), "application/json", js, time.Second*2, 4)
+	return
+}
+
+// GetLogSeries gets log series with its name
+func (cli *LoggerClient) GetLogSeries(masID int, agentID int) (series []schemas.LogSeries, httpStatus int, err error) {
+	var body []byte
+	body, httpStatus, err = httpretry.Get(cli.httpClient, cli.prefix()+"/api/series/"+
+		strconv.Itoa(masID)+"/"+strconv.Itoa(agentID), time.Second*2, 4)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(body, &series)
+	if err != nil {
+		series = []schemas.LogSeries{}
+	}
+	return
+}
+
 // PutState updates the state
 func (cli *LoggerClient) PutState(state schemas.State) (httpStatus int, err error) {
 	js, _ := json.Marshal(state)
@@ -171,13 +194,52 @@ func NewLoggerClient(host string, port int, timeout time.Duration, del time.Dura
 // LogCollector collects logs and states and sends them to the Logger service
 // one LogCollector per agency is used; each agent obtains one AgentLogger
 type LogCollector struct {
-	masID    int
-	logIn    chan schemas.LogMessage // logging inbox
-	stateIn  chan schemas.State
-	client   *LoggerClient
-	config   schemas.LoggerConfig
-	logError *log.Logger
-	logInfo  *log.Logger
+	masID       int
+	logIn       chan schemas.LogMessage // logging inbox
+	logSeriesIn chan schemas.LogSeries
+	stateIn     chan schemas.State
+	client      *LoggerClient
+	config      schemas.LoggerConfig
+	logError    *log.Logger
+	logInfo     *log.Logger
+}
+
+// storeLogSeries periodically requests the logging service to store log series
+func (logCol *LogCollector) storeLogSeries() (err error) {
+	if logCol.config.Active {
+		for {
+			if len(logCol.logSeriesIn) > 0 {
+				numSeries := len(logCol.logSeriesIn)
+				logSeries := make([]schemas.LogSeries, numSeries)
+				for i := 0; i < numSeries; i++ {
+					logMsg := <-logCol.logSeriesIn
+					logSeries[i] = logMsg
+					logSeries[i].MASID = logCol.masID
+				}
+				_, err = logCol.client.PostLogSeries(logCol.masID, logSeries)
+				if err != nil {
+					logCol.logError.Println(err)
+					for i := range logSeries {
+						logCol.logSeriesIn <- logSeries[i]
+					}
+					continue
+				}
+			}
+			tempTime := time.Now()
+			for {
+				time.Sleep(100 * time.Millisecond)
+				if time.Since(tempTime).Seconds() > 15 || len(logCol.logSeriesIn) > 50 {
+					break
+				}
+			}
+		}
+	} else {
+		for {
+			// print messages to stdout if logger is turned off
+			logMsg := <-logCol.logSeriesIn
+			logCol.logInfo.Println(logMsg)
+		}
+	}
 }
 
 // storeLogs periodically requests the logging service to store log messages
@@ -275,8 +337,10 @@ func NewLogCollector(masID int, config schemas.LoggerConfig, logErr *log.Logger,
 		logCol.client = NewLoggerClient(config.Host, config.Port, time.Second*60, time.Second*1, 4)
 	}
 	logCol.logIn = make(chan schemas.LogMessage, 10000)
+	logCol.logSeriesIn = make(chan schemas.LogSeries, 10000)
 	logCol.stateIn = make(chan schemas.State, 10000)
 	go logCol.storeLogs()
+	go logCol.storeLogSeries()
 	go logCol.storeState()
 	logCol.logInfo.Println("Created new logger client; status: ", logCol.config.Active)
 	return
@@ -284,15 +348,16 @@ func NewLogCollector(masID int, config schemas.LoggerConfig, logErr *log.Logger,
 
 // AgentLogger is the endpoint for agents
 type AgentLogger struct {
-	agentID  int
-	masID    int
-	client   *LoggerClient
-	logOut   chan schemas.LogMessage // logging inbox
-	stateOut chan schemas.State
-	mutex    *sync.Mutex
-	logError *log.Logger
-	logInfo  *log.Logger
-	active   bool
+	agentID      int
+	masID        int
+	client       *LoggerClient
+	logOut       chan schemas.LogMessage // logging inbox
+	logSeriesOut chan schemas.LogSeries
+	stateOut     chan schemas.State
+	mutex        *sync.Mutex
+	logError     *log.Logger
+	logInfo      *log.Logger
+	active       bool
 }
 
 // NewLog sends a new logging message to the logging service
@@ -322,6 +387,29 @@ func (agLog *AgentLogger) NewLog(topic string, message string, data string) (err
 		Message:        message,
 		AdditionalData: data}
 	agLog.logOut <- msg
+	return
+}
+
+// NewLogSeries sends a new logging series to
+func (agLog *AgentLogger) NewLogSeries(name string, value int) (err error) {
+	if agLog == nil {
+		return
+	}
+	agLog.mutex.Lock()
+	if !agLog.active {
+		agLog.mutex.Unlock()
+		return errors.New("logger not active")
+	}
+	time.Sleep(time.Millisecond * 5)
+	tStamp := time.Now()
+	agLog.mutex.Unlock()
+	logSeries := schemas.LogSeries{
+		AgentID:   agLog.agentID,
+		Timestamp: tStamp,
+		Name:      name,
+		Value:     value,
+	}
+	agLog.logSeriesOut <- logSeries
 	return
 }
 
@@ -357,19 +445,20 @@ func (agLog *AgentLogger) RestoreState() (state string, err error) {
 	return
 }
 
-// NewAgentLogger craetes a new object of type AgentLogger
+// NewAgentLogger creates a new object of type AgentLogger
 func (logCol *LogCollector) NewAgentLogger(agentID int, logErr *log.Logger,
 	logInf *log.Logger) (agLog *AgentLogger) {
 	agLog = &AgentLogger{
-		agentID:  agentID,
-		masID:    logCol.masID,
-		client:   logCol.client,
-		logOut:   logCol.logIn,
-		stateOut: logCol.stateIn,
-		mutex:    &sync.Mutex{},
-		logError: logErr,
-		logInfo:  logInf,
-		active:   logCol.config.Active,
+		agentID:      agentID,
+		masID:        logCol.masID,
+		client:       logCol.client,
+		logOut:       logCol.logIn,
+		logSeriesOut: logCol.logSeriesIn,
+		stateOut:     logCol.stateIn,
+		mutex:        &sync.Mutex{},
+		logError:     logErr,
+		logInfo:      logInf,
+		active:       logCol.config.Active,
 	}
 	return
 }

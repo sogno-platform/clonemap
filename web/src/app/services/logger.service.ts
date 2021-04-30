@@ -28,6 +28,10 @@ export class LoggerService {
     return this.webReqService.get(`api/logging/${masid}/${agentid}/${topic}/time/${start}/${end}`);
   }
 
+  getLogSeries(masid:string, agentid: string) {
+    return this.webReqService.get(`api/logging/series/${masid}/${agentid}`);
+  }
+
   updateAgentState(masid: string, agentid: string, payload: object) {
     return this.webReqService.patch(`api/state/${masid}/${agentid}`, payload);
   }

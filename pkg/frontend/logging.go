@@ -159,5 +159,26 @@ func (fe *Frontend) handleGetLogsInRange(w http.ResponseWriter, r *http.Request)
 	httpErr = httpreply.Resource(w, msgs, cmapErr)
 	fe.logErrors(r.URL.Path, cmapErr, httpErr)
 	return
+}
 
+// handleGetLogSeries is the handler to /api/logging/series/{masid}/{agentid}
+func (fe *Frontend) handleGetLogSeries(w http.ResponseWriter, r *http.Request) {
+	var cmapErr, httpErr error
+	masID, agentID, cmapErr := getAgentID(r)
+
+	if cmapErr != nil {
+		httpErr = httpreply.NotFoundError(w)
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
+	var series []schemas.LogSeries
+	series, _, cmapErr = fe.logClient.GetLogSeries(masID, agentID)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
+	httpErr = httpreply.Resource(w, series, cmapErr)
+	fe.logErrors(r.URL.Path, cmapErr, httpErr)
+	return
 }

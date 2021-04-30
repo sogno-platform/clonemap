@@ -18,6 +18,7 @@ import { MatInputModule } from '@angular/material/input';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgxMatTimepickerModule } from 'ngx-mat-timepicker';
 import { MatIconModule } from '@angular/material/icon'; 
+import { NgxChartsModule } from '@swimlane/ngx-charts'
 
 const materialModules = [
   MatDatepickerModule,
@@ -45,7 +46,8 @@ const materialModules = [
     FormsModule,
     ReactiveFormsModule,
     ...materialModules,
-    NgxMatTimepickerModule
+    NgxMatTimepickerModule,
+    NgxChartsModule
   ],
   providers: [],
   bootstrap: [AppComponent]

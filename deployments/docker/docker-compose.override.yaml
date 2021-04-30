@@ -12,8 +12,7 @@ services:
       - clonemap-net
 
   logger:
-    #image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/logger
-    image: qianwen12/logger
+    image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/logger
     environment:
       CLONEMAP_DEPLOYMENT_TYPE: ${CLONEMAP_DEPLOYMENT_TYPE}
       CLONEMAP_LOG_LEVEL: ${CLONEMAP_LOG_LEVEL}
@@ -51,8 +50,7 @@ services:
       - clonemap-net
 
   fe:
-    # image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/frontend
-    image: qianwen12/frontend
+    image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/frontend
     environment:
       CLONEMAP_DEPLOYMENT_TYPE: ${CLONEMAP_DEPLOYMENT_TYPE}
       CLONEMAP_LOG_LEVEL: ${CLONEMAP_LOG_LEVEL}

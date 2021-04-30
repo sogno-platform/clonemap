@@ -1,0 +1,34 @@
+[
+{
+    "masid": 0,
+    "agentid": 0,
+    "starttime": "2021-04-25T18:29:40.000Z",
+    "interval": 60,
+    "msg": "ACL send",
+    "data": "Sender: 0;Receiver: 1;Timestamp: 2021-04-25T18:29:40.000Z"
+},
+{
+    "masid": 0,
+    "agentid": 0,
+    "starttime": "2021-04-25T18:55:40.000Z",
+    "interval": 3600,
+    "msg": "ACL send",
+    "data": "Sender: 0;Receiver: 1;Timestamp: 2021-04-25T18:29:40.000Z"
+},
+{
+    "masid": 0,
+    "agentid": 1,
+    "starttime": "2021-04-25T18:55:40.000Z",
+    "interval": 60,
+    "msg": "ACL receive",
+    "data": "Sender: 0;Receiver: 1;Timestamp: 2021-04-25T18:29:40.000Z"
+},
+{
+    "masid": 0,
+    "agentid": 1,
+    "starttime": "2021-04-25T18:55:40.000Z",
+    "interval": 3600,
+    "msg": "ACL receive",
+    "data": "Sender: 0;Receiver: 1;Timestamp: 2021-04-25T18:29:40.000Z"
+}
+]

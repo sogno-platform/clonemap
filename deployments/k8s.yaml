@@ -390,6 +390,7 @@ data:
     CREATE TABLE clonemap.logging_msg ( masid int, agentid int, t timestamp, log varchar, PRIMARY KEY ((masid, agentid), t)) WITH CLUSTERING ORDER BY (t ASC);
     CREATE TABLE clonemap.logging_status ( masid int, agentid int, t timestamp, log varchar, PRIMARY KEY ((masid, agentid), t)) WITH CLUSTERING ORDER BY (t ASC);
     CREATE TABLE clonemap.logging_debug ( masid int, agentid int, t timestamp, log varchar, PRIMARY KEY ((masid, agentid), t)) WITH CLUSTERING ORDER BY (t ASC);
+    CREATE TABLE clonemap.logging_series ( masid int, agentid int, t timestamp, log varchar, PRIMARY KEY ((masid, agentid), t)) WITH CLUSTERING ORDER BY (t ASC);
     CREATE TABLE clonemap.state ( masid int, agentid int, state varchar, PRIMARY KEY (masid, agentid));
     EOF
 
@@ -566,7 +567,7 @@ spec:
           - name: CLONEMAP_DEPLOYMENT_TYPE
             value: "production"
           - name: CLONEMAP_LOG_LEVEL
-            value: "error"
+            value: "info"
         resources:
           requests:
             memory: "128Mi"
@@ -662,7 +663,7 @@ metadata:
   labels:
     app: fe
 spec:
-  type: NodePort
+  type: LoadBalancer
   ports:
   - port: 13000
     protocol: TCP

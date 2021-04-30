@@ -163,6 +163,29 @@ func (logger *Logger) handlePostLogMsgList(w http.ResponseWriter, r *http.Reques
 	logger.logErrors(r.URL.Path, cmapErr, httpErr)
 }
 
+// handlePostLogSeries is the handler for post requests to path /api/series/{masid}/
+func (logger *Logger) handlePostLogSeries(w http.ResponseWriter, r *http.Request) {
+	var cmapErr, httpErr error
+	// create new log message entry
+	var body []byte
+	body, cmapErr = ioutil.ReadAll(r.Body)
+	if cmapErr != nil {
+		httpErr = httpreply.NotFoundError(w)
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
+	var logSeries []schemas.LogSeries
+	cmapErr = json.Unmarshal(body, &logSeries)
+	if cmapErr != nil {
+		httpErr = httpreply.JSONUnmarshalError(w)
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
+	go logger.addAgentLogSeries(logSeries)
+	httpErr = httpreply.Created(w, nil, "text/plain", []byte("Ressource Created"))
+	logger.logErrors(r.URL.Path, cmapErr, httpErr)
+}
+
 // handleGetLogsLatest is the handler for requests to path
 // /api/logging/{masid}/{agentid}/{topic}/latest/{num}
 func (logger *Logger) handleGetLogsLatest(w http.ResponseWriter, r *http.Request) {
@@ -225,6 +248,26 @@ func (logger *Logger) handleGetLogsTime(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	httpErr = httpreply.Resource(w, logMsg, cmapErr)
+	logger.logErrors(r.URL.Path, cmapErr, httpErr)
+}
+
+// handleGetLogSeries is the handler for get requests to path /api/series/{masid}/{agentid}/{name}
+func (logger *Logger) handleGetLogSeries(w http.ResponseWriter, r *http.Request) {
+	var cmapErr, httpErr error
+	masID, agentID, cmapErr := getAgentID(r)
+	if cmapErr != nil {
+		httpErr = httpreply.NotFoundError(w)
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
+	var logSeries []schemas.LogSeries
+	logSeries, cmapErr = logger.getAgentLogSeries(masID, agentID)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
+	httpErr = httpreply.Resource(w, logSeries, cmapErr)
 	logger.logErrors(r.URL.Path, cmapErr, httpErr)
 }
 
@@ -378,6 +421,10 @@ func (logger *Logger) server(port int) (serv *http.Server) {
 		HandlerFunc(logger.handleGetLogsTime)
 	s.Path("/logging/{masid}/{agentid}/{topic}/time/{start}/{end}").
 		Methods("POST", "PUT", "DELETE").HandlerFunc(logger.methodNotAllowed)
+
+	s.Path("/series/{masid}/{agentid}").Methods("GET").HandlerFunc(logger.handleGetLogSeries)
+	s.Path("/series/{masid}").Methods("POST").HandlerFunc(logger.handlePostLogSeries)
+
 	s.Path("/state/{masid}/{agentid}").Methods("GET").HandlerFunc(logger.handleGetState)
 	s.Path("/state/{masid}/{agentid}").Methods("PUT").HandlerFunc(logger.handlePutState)
 	s.Path("/state/{masid}/{agentid}").Methods("POST", "DELETE").

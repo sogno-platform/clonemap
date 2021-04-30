@@ -80,6 +80,7 @@
 /*style of the selection board */
 
 .selectionBoard {
+   margin-top:50px;
    margin-left: 50px;
 }
 
@@ -202,7 +203,7 @@
 
 
 
-.active  {
+.is-agent-active  {
    background-color: var(--light-primary-color);
    color: white;
    border: none;
@@ -222,7 +223,12 @@
 
 /* style of the nav tab */
 
-/* .nav-item>.active>a, .nav-item>.active>a:hover, .nav-item>.active>a:focus {
+.nav {
+   margin-left: 30px;
+}
+
+
+.nav-item>.active>a, .nav-item>.active>a:hover, .nav-item>.active>a:focus {
    border-color: var(--background-primary-color);
    border-bottom-color: transparent;
 }
@@ -238,15 +244,13 @@
    color: var(--primary-color);
    font-weight: bold;
 }
- */
 
-/* style of the UML sequence diagram */
 
 
 
 svg {
 /*    border: 1px solid orange;  */
-   margin-top: 100px;
+
    position: absolute;
 }
    
@@ -326,9 +330,21 @@ text {
    background-color: rgb(56, 202, 221) ;
 }
 
+.log-series-graph {
+   margin-top: 50px;
+}
 
+.tt {
+   font-size: 20px;
+   height: 60px;
+   width: 250px;
+   text-align: center;
+   padding: 10px;
+}
 
-
+#update {
+   margin-left: 500px;
+}
 
       
 

@@ -66,6 +66,12 @@ type storage interface {
 	getAgentLogMessagesInRange(masID int, agentID int, topic string, start time.Time,
 		end time.Time) (logs []schemas.LogMessage, err error)
 
+	// addAgentLogSeries add the log series
+	addAgentLogSeries(series schemas.LogSeries)
+
+	// getAgentLogSeries get the log series
+	getAgentLogSeries(masID int, agentID int) (series []schemas.LogSeries, err error)
+
 	// deleteAgentLogMessages deletes all log messages og an agent
 	deleteAgentLogMessages(masID int, agentID int) (err error)
 
@@ -103,13 +109,14 @@ type masStorage struct {
 }
 
 type agentStorage struct {
-	errLogs  []schemas.LogMessage
-	dbgLogs  []schemas.LogMessage
-	msgLogs  []schemas.LogMessage
-	statLogs []schemas.LogMessage
-	appLogs  []schemas.LogMessage
-	state    schemas.State
-	commData []schemas.Communication
+	errLogs   []schemas.LogMessage
+	dbgLogs   []schemas.LogMessage
+	msgLogs   []schemas.LogMessage
+	statLogs  []schemas.LogMessage
+	appLogs   []schemas.LogMessage
+	logSeries []schemas.LogSeries
+	state     schemas.State
+	commData  []schemas.Communication
 }
 
 // addAgentLogMessage adds an entry to specified logging entry
@@ -292,6 +299,40 @@ func (stor *localStorage) getAgentLogMessagesInRange(masID int, agentID int, top
 			default:
 				err = errors.New("wrong topic")
 			}
+		}
+	}
+	stor.mutex.Unlock()
+	return
+}
+
+// addAgentLogSeries add the log series
+func (stor *localStorage) addAgentLogSeries(series schemas.LogSeries) {
+	stor.mutex.Lock()
+	numMAS := len(stor.mas)
+	if numMAS <= series.MASID {
+		for i := 0; i < series.MASID-numMAS+1; i++ {
+			stor.mas = append(stor.mas, masStorage{})
+		}
+	}
+	numAgents := len(stor.mas[series.MASID].agents)
+	if numAgents <= series.AgentID {
+		for i := 0; i < series.AgentID-numAgents+1; i++ {
+			stor.mas[series.MASID].agents = append(stor.mas[series.MASID].agents, agentStorage{})
+		}
+	}
+
+	stor.mas[series.MASID].agents[series.AgentID].logSeries = append(stor.mas[series.MASID].agents[series.AgentID].logSeries, series)
+	stor.mutex.Unlock()
+	return
+}
+
+// getAgentLogSeries return the log series
+func (stor *localStorage) getAgentLogSeries(masID int, agentID int) (series []schemas.LogSeries, err error) {
+	stor.mutex.Lock()
+	if masID < len(stor.mas) {
+		if agentID < len(stor.mas[masID].agents) {
+			series = make([]schemas.LogSeries, len(stor.mas[masID].agents[agentID].logSeries))
+			copy(series, stor.mas[masID].agents[agentID].logSeries)
 		}
 	}
 	stor.mutex.Unlock()

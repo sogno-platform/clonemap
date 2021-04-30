@@ -46,6 +46,7 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"strconv"
 	"time"
 
@@ -74,6 +75,11 @@ func task(ag *agency.Agent) (err error) {
 	_, err = ag.DF.RegisterService(svc)
 	if err != nil {
 		fmt.Println(err)
+	}
+	for i := 0; i < 20; i++ {
+		time.Sleep(2 * time.Second)
+		idx := rand.Intn(4) + 1
+		ag.Logger.NewLogSeries("type"+strconv.Itoa(idx), rand.Intn(100))
 	}
 	return
 }

@@ -5,6 +5,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ActivatedRoute, Params } from '@angular/router';
 import * as cytoscape from 'cytoscape';
 import { forkJoin, Observable } from 'rxjs';
+import { truncate } from 'node:fs';
 
 @Component({
   selector: 'app-df',
@@ -136,10 +137,10 @@ export class DFComponent implements OnInit {
         this.graph = cytoscape({
             container: document.getElementById('graph'),
             elements: [],
-            zoom : 0.75,
-            maxZoom: 1,
-            minZoom: 0.65,
-            zoomingEnabled: false,
+            zoom : 1,
+            maxZoom: 2,
+            minZoom: 0.5,
+            zoomingEnabled: true,
             pan: {x: 500, y: 0},
             style: [
                 {

@@ -221,6 +221,7 @@ func (fe *Frontend) server(port int) (serv *http.Server) {
 	s.Path("/df/{masid}/svc/desc/{desc}/node/{nodeid}/dist/{dist}").Methods("Get").HandlerFunc(fe.handleSvcWithDist)
 
 	// api for logger
+	s.Path("/logging/series/{masid}/{agentid}").Methods("GET").HandlerFunc(fe.handleGetLogSeries)
 	s.Path("/logging/{masid}/{agentid}/{topic}/latest/{num}").Methods("GET").HandlerFunc(fe.handleGetNLatestLogs)
 	s.Path("/logging/{masid}/list").Methods("POST").HandlerFunc(fe.handlePostLogs)
 	s.Path("/logging/{masid}/{agentid}/{topic}/time/{start}/{end}").Methods("GET").HandlerFunc(fe.handleGetLogsInRange)

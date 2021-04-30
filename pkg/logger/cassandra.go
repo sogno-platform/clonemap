@@ -71,6 +71,7 @@ type cassStorage struct {
 	logDebugIn  chan schemas.LogMessage // logging inbox
 	logMsgIn    chan schemas.LogMessage // logging inbox
 	stateIn     chan schemas.State      // state inbox
+	logSeriesIn chan schemas.LogSeries  // logging inbox
 }
 
 // addAgentLogMessage adds an entry to specified logging entry
@@ -177,6 +178,30 @@ func (stor *cassStorage) getAgentLogMessagesInRange(masID int, agentID int, topi
 			return
 		}
 		logs = append(logs, logmsg)
+	}
+	iter.Close()
+	return
+}
+
+// addAgentLogSeries add log series
+func (stor *cassStorage) addAgentLogSeries(series schemas.LogSeries) {
+	stor.logSeriesIn <- series
+	return
+}
+
+// getAgentLogSeries get log series
+func (stor *cassStorage) getAgentLogSeries(masID int, agentID int) (series []schemas.LogSeries, err error) {
+	var iter *gocql.Iter
+	iter = stor.session.Query("SELECT state FROM logging_series WHERE masid = ? AND agentid = ?", masID,
+		agentID).Iter()
+	var js []byte
+	for iter.Scan(&js) {
+		var logSeries schemas.LogSeries
+		err = json.Unmarshal(js, &logSeries)
+		if err != nil {
+			return
+		}
+		series = append(series, logSeries)
 	}
 	iter.Close()
 	return
@@ -297,6 +322,45 @@ func (stor *cassStorage) storeLogs(topic string) {
 	}
 }
 
+// storeSeries stores the log series in a batch operation
+func (stor *cassStorage) storeSeries() {
+	var err error
+	stmt := "INSERT INTO logging_series (masid, agentid, t, log) VALUES (?, ?, ?, ?)"
+
+	for {
+		batch := gocql.NewBatch(gocql.UnloggedBatch)
+		series := <-stor.logSeriesIn
+		var js []byte
+		js, err = json.Marshal(series)
+		if err != nil {
+			fmt.Println(err)
+		}
+		batch.Query(stmt, series.MASID, series.AgentID, series.Timestamp, js)
+		size := len(js)
+		for i := 0; i < 9; i++ {
+			// maximum of 10 operations in batch
+			if size > 25000 {
+				break
+			}
+			select {
+			case series = <-stor.logSeriesIn:
+				js, err = json.Marshal(series)
+				if err != nil {
+					fmt.Println(err)
+				}
+				batch.Query(stmt, series.MASID, series.AgentID, series.Timestamp, js)
+				size += len(js)
+			default:
+				break
+			}
+		}
+		err = stor.session.ExecuteBatch(batch)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+}
+
 // storeState stores the state in a batch operation
 func (stor *cassStorage) storeState() {
 	var err error
@@ -361,6 +425,7 @@ func newCassandraStorage(ip []string, user string, pass string) (stor storage, e
 	temp.logErrorIn = make(chan schemas.LogMessage, 10000)
 	temp.logMsgIn = make(chan schemas.LogMessage, 10000)
 	temp.stateIn = make(chan schemas.State, 10000)
+	temp.logSeriesIn = make(chan schemas.LogSeries, 10000)
 
 	for i := 0; i < 3; i++ {
 		go temp.storeLogs("status")
@@ -368,6 +433,7 @@ func newCassandraStorage(ip []string, user string, pass string) (stor storage, e
 		go temp.storeLogs("error")
 		go temp.storeLogs("debug")
 		go temp.storeLogs("msg")
+		go temp.storeSeries()
 		go temp.storeState()
 	}
 	stor = &temp

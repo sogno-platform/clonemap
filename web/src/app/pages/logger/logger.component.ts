@@ -3,11 +3,9 @@ import { LoggerService} from 'src/app/services/logger.service'
 import { MasService } from 'src/app/services/mas.service';
 import { ActivatedRoute, Params} from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { HttpClient } from '@angular/common/http';
-import { LogMessage } from 'src/app/models/logMessage.model';
-import { forkJoin, Observable } from 'rxjs';
+import { LogMessage, LogSeries, pointSeries } from 'src/app/models/log.model';
+import { forkJoin, Observable} from 'rxjs';
 import { FormControl, FormGroup } from '@angular/forms';
-
 
 
 @Component({
@@ -20,35 +18,19 @@ export class LoggerComponent implements OnInit {
     alive: boolean = true;
     selectedMASID: number = -1;
     MASs = null;
-    searched_results;
+    currState: string = "log";
 
-    fileToUpload: File = null;
-    display: string = "";
-    filename: string = "Choose a file...";
-
-    errorSelected: boolean = true;
-    debugSelected: boolean = true;
-    msgSelected: boolean = true;
-    statusSelected: boolean = true;
-    appSelected: boolean = true;
     agentID: number[];
     selectedID: number[] = [];
-    selectedIDMap;
     notSelectedID: number[] = [];
     isAgentSelected: boolean[] = [];
-    range = new FormGroup( {
-        start: new FormControl(),
-        end: new FormControl()
-    });
 
+
+    // parameters and variables for drawing logs
     searchStartTime: string = "20210301000000";
     searchEndTime: string = "20210331000000"
-
     isTopicSelected: boolean[] = [true, true, true, true, true];
     topics: string[] = ["error", "debug", "msg", "status", "app"];
-
-    numLogs: number  = 4;
-
     width: number = 1500;
     height: number = 2000;
     boxWidth: number = 100;
@@ -62,22 +44,52 @@ export class LoggerComponent implements OnInit {
     communications = [];
     texts = [];  
     popoverContent: string = "This is the content of the popover";
-    popoverTopic: string;
-    msgs: LogMessage[] = [];
+    logs: LogMessage[] = [];
 
+    range = new FormGroup( {
+        start: new FormControl(),
+        end: new FormControl()
+    });
     selectedStartDate: Date;
     selectedEndDate: Date;
     selectedStartTime: string;
     selectedEndTime: string;
 
+    // parameters and variables for drawing log series
+    logSeries: LogSeries[] = [];
+    bubbleData: pointSeries[] = [];
+    view: any[]= [1738, 600];
+    showXAxis: boolean = true;
+    showYAxis: boolean = true;
+    gradient: boolean = false;
+    showLegend: boolean = true;
+    showXAxisLabel: boolean = true;
+    xAxisLabel: string = 'Time';
+    showYAxisLabel: boolean = true;
+    yAxisLabel: string = 'Value';
+    maxRadius: number = 10;
+    minRadius: number = 10;
+    datesSeries: Date[] = [];
+    scaledDatesSeries: number[];
+    mapAxisDate: Map<number, string> = new Map<number, string>();
+    xAxisTickFormatting = val => {
+      return this.mapAxisDate.get(val);
+    }
+    colorScheme = {
+      domain: ['#9696F3', 
+      'rgb(230, 109, 109)', 
+      'rgb(216, 216, 110)', 
+      'rgb(126, 235, 149)', 
+      'rgb(56, 202, 221)' ]
+    };
 
     constructor(
         private loggerService: LoggerService,
         private masService: MasService,
         private route: ActivatedRoute,
         private modalService: NgbModal,
-        private http: HttpClient,
-        ) { }
+        ) { 
+        }
 
     ngOnInit(): void {
 
@@ -107,14 +119,40 @@ export class LoggerComponent implements OnInit {
                     }
                 });
             });   
-    }  
+    } 
+    
 
-    onToggleTopic(i: number) {
-        this.isTopicSelected[i] = ! this.isTopicSelected[i];
-        this.updateScaledDates();
+
+    /********************************** common functions ************************************/
+    onDeleteID(i : number) {
+        this.isAgentSelected[i] = !this.isAgentSelected[i];
+        this.updateSelectedID();
+        if (this.currState === "log") {
+            this.drawLogs();
+        } else {
+            this.drawSeries();
+        }
     }
 
+    openLg(content) {
+        this.modalService.open(content, { size: 'lg', centered: true });
+    }
 
+    onAddID(i: number) {
+        if (this.selectedID.length < 10) {
+            this.isAgentSelected[i] = !this.isAgentSelected[i];
+            this.updateSelectedID();
+        }
+    }
+
+    onConfirm() {
+        this.modalService.dismissAll();
+        if (this.currState === "log") {
+            this.drawLogs();
+        } else {
+            this.drawSeries();
+        }
+    }
 
     updateSelectedID() {
         this.selectedID = [];
@@ -128,96 +166,11 @@ export class LoggerComponent implements OnInit {
         }
     }
 
-    drawLogs() {      
-        this.multiLogs().subscribe( logss => {
-            this.msgs = [];
-            for (let logs of logss) {
-                if (logs !== null) {
-                    for (let log of logs) {
-                        this.msgs.push(log);
-                    }
-                }
-            }
-            this.msgs.sort((a, b) => {
-                let date1 = new Date(a.timestamp);
-                let date2 = new Date(b.timestamp);
-                return date2.getTime() - date1.getTime();
-            } )
-            this.drawAllElements();
-         })
-    }
 
-    onConfirm() {
-        this.modalService.dismissAll();
-        this.drawLogs();
-    }
-
-
-    multiLogs(): Observable<any[]> {
-        let res = [];
-        for (let id of this.selectedID) {
-            for (let topic of this.topics) {
-                res.push(this.loggerService.getLogsInRange(this.selectedMASID.toString(),
-                id.toString(), topic, this.searchStartTime, this.searchEndTime));
-            }
-        }
-        return forkJoin(res);
-    } 
-
-
-    onDeleteID(i : number) {
-        this.isAgentSelected[i] = !this.isAgentSelected[i];
-        this.updateSelectedID();
-        this.drawLogs();
-    }
-
-    onAddID(i: number) {
-        if (this.selectedID.length < 10) {
-            this.isAgentSelected[i] = !this.isAgentSelected[i];
-            this.updateSelectedID();
-        }
-
-    }
-
-
-    drawAgentBox() {
-        this.agentBox = [];
-        this.texts = [];
-        this.interval = 1 / (1 + this.selectedID.length) * this.width;
-
-        for (let i=0; i < this.selectedID.length; i++) {
-                const X: number = (i+1) * this.interval;
-                // plot the agent box
-                this.agentBox.push({x: X - this.boxWidth / 2, y: 200 - this.boxHeight});
-                this.texts.push({
-                    x: X - this.boxWidth * 5 / 12, 
-                    y: 200 - this.boxHeight / 3,
-                    textID: this.selectedID[i],
-                })
-        }
-    }
-
-    drawTimeline() {
-        this.timeline = []
-        for (let i = 0; i < this.selectedID.length; i++) {
-                let X = (i+1) * this.interval;
-                this.timeline.push({x1: X, y1:200, x2: X, y2: this.height })  
-        }
-
-    }
-
-    generateScaledDates(msgs: LogMessage[]) :number[]{
-        
-        let dates: Date[] = []
-        for (let i = 0; i < msgs.length; i++) {
-            let date = new Date(msgs[i].timestamp)
-            dates.push(date)
-        }
-
+    generateScaledDates(dates: Date[]) :number[]{       
         // find the date differences
         let datesInterval: number[] = [0];
-
-        for (let i = 1; i < this.msgs.length; i++) {
+        for (let i = 1; i < dates.length; i++) {
             datesInterval.push(Math.round(dates[i-1].getTime()/1000) - Math.round(dates[i].getTime()/1000));
         }
 
@@ -234,27 +187,100 @@ export class LoggerComponent implements OnInit {
             }
         }
 
-   
         // generate  scaledDates
-
         let scaledDates: number[] = [];
         let curr:number = 0;
-        for (let i = 0; i < datesInterval.length; i++) {
-            if (datesInterval[i] != 0) {
-                curr = curr +  Math.round(100 * ((5 - 1)  * (datesInterval[i] - minDiff)/(maxDiff - minDiff) + 1)) / 100;
+        if (maxDiff !== minDiff) {
+            for (let i = 0; i < datesInterval.length; i++) {
+                    if (datesInterval[i] !== 0) {
+                        curr = curr +  Math.round(100 * ((5 - 1)  * (datesInterval[i] - minDiff)/(maxDiff - minDiff) + 1)) / 100;
+                    }
+                    scaledDates.push(curr); 
             }
-                scaledDates.push(curr); 
+        } else {
+            for (let i = 0; i < datesInterval.length; i++) {
+                if (datesInterval[i] !== 0) {
+                    curr = curr + 1
+                }
+                scaledDates.push(curr);
+            }
         }
-
-        this.height = 800 + this.logBoxHeight * scaledDates[scaledDates.length-1];
         return scaledDates;
+    }
+
+
+    /********************************* functions for drawing logs  ************************************/
+    onClickLog(){
+        this.currState = "log";
+    }
+
+    onToggleTopic(i: number) {
+        this.isTopicSelected[i] = ! this.isTopicSelected[i];
+        this.updateScaledDates();
+    }
+
+    drawLogs() {
+        this.logs = [];      
+        this.multiLogs().subscribe( logss => {
+            this.logs = [];
+            for (let logs of logss) {
+                if (logs !== null) {
+                    for (let log of logs) {
+                        this.logs.push(log);
+                    }
+                }
+            }
+            this.logs.sort((a, b) => {
+                let date1 = new Date(a.timestamp);
+                let date2 = new Date(b.timestamp);
+                return date2.getTime() - date1.getTime();
+            })
+            this.drawAllElements(this.logs);
+         })
+    }
+
+
+    multiLogs(): Observable<any[]> {
+        let res = [];
+        for (let id of this.selectedID) {
+            for (let topic of this.topics) {
+                res.push(this.loggerService.getLogsInRange(this.selectedMASID.toString(),
+                id.toString(), topic, this.searchStartTime, this.searchEndTime));
+            }
+        }
+        return forkJoin(res);
+    } 
+
+    drawAgentBox() {
+        this.agentBox = [];
+        this.texts = [];
+        this.interval = 1 / (1 + this.selectedID.length) * this.width;
+
+        for (let i=0; i < this.selectedID.length; i++) {
+            const X: number = (i+1) * this.interval;
+            // plot the agent box
+            this.agentBox.push({x: X - this.boxWidth / 2, y: 200 - this.boxHeight});
+            this.texts.push({
+                x: X - this.boxWidth * 5 / 12, 
+                y: 200 - this.boxHeight / 3,
+                textID: this.selectedID[i],
+            })
+        }
+    }
+
+    drawTimeline() {
+        this.timeline = []
+        for (let i = 0; i < this.selectedID.length; i++) {
+            let X = (i+1) * this.interval;
+            this.timeline.push({x1: X, y1:200, x2: X, y2: this.height })  
+        }
     }
 
     drawScaledDates(scaledDates: number[]) {
         this.logBoxes = [];
         this.communications = [];
         for (let i = 0; i < scaledDates.length; i++) {
-            let currMsg = this.msgs[i];
+            let currMsg = this.logs[i];
             let idx = this.selectedID.indexOf(currMsg.agentid) + 1;        
             this.logBoxes.push({
                 x: this.interval *idx - this.logBoxWidth / 2, 
@@ -267,13 +293,13 @@ export class LoggerComponent implements OnInit {
                 
             });
             if (currMsg.topic === "msg" && currMsg.msg ==="ACL send"){
-                let data = this.msgs[i].data.split(";");
-                let sender = Number(data[0].charAt(data[0].length - 1));
-                let senderIdx = this.selectedID.indexOf(sender) + 1;
-                let receiver = Number(data[1].charAt(data[1].length-1));
-                let receiverIdx = this.selectedID.indexOf(receiver) + 1;
-                let direction = (senderIdx < receiverIdx) ? 1 : -1;
-                if (this.selectedID.includes(receiver)) {
+                const data = this.logs[i].data.split(";");
+                const sender = Number(data[0].charAt(data[0].length - 1));
+                const senderIdx = this.selectedID.indexOf(sender) + 1;
+                const receiver = Number(data[1].charAt(data[1].length - 1));
+                const receiverIdx = this.selectedID.indexOf(receiver) + 1;
+                const direction = (senderIdx < receiverIdx) ? 1 : -1;
+                if (this.selectedID.includes(receiver) && this.selectedID.includes(sender)) {
                     this.communications.push({
                         x1: this.interval * senderIdx + direction * this.logBoxWidth / 2,
                         y1: 400 + this.logBoxHeight * scaledDates[i] * 1.1 + this.logBoxHeight / 2,
@@ -286,45 +312,34 @@ export class LoggerComponent implements OnInit {
         }
     }
 
-
     updateScaledDates() {
         for (let i = 0; i < this.logBoxes.length; i++) {
-                let idx = this.topics.indexOf(this.logBoxes[i].topic);
-                this.logBoxes[i].hidden = !this.isTopicSelected[idx];
-            }
+            let idx = this.topics.indexOf(this.logBoxes[i].topic);
+            this.logBoxes[i].hidden = !this.isTopicSelected[idx];
+        }
         
-       
         for (let i = 0; i < this.communications.length; i++) {
             let idx = this.topics.indexOf("msg")
             this.communications[i].hidden = !this.isTopicSelected[idx];
         }
     }
                 
-    drawAllElements() {
+    drawAllElements(msgs: LogMessage[]) {
         this.drawAgentBox();
-        let scaledDates: number[] = this.generateScaledDates(this.msgs);
+        let dates: Date[] = []
+        for (let i = 0; i < this.logs.length; i++) {
+            let date = new Date(msgs[i].timestamp)
+            dates.push(date)
+        }
+        let scaledDates: number[] = this.generateScaledDates(dates);
+        this.height = 800 + this.logBoxHeight * scaledDates[scaledDates.length-1];
         this.drawScaledDates(scaledDates);
         this.drawTimeline();
     }
 
     onChangePopoverContent(i) {
-        if (this.msgs[i].topic === "msg") {
-            this.popoverContent = this.msgs[i].data;
-        } else {
-            this.popoverContent = this.msgs[i].timestamp.toString();
-        }
-
-        this.popoverTopic = this.msgs[i].topic;
+        this.popoverContent = this.logs[i].msg;
     }
-
-
-
-    // functions for uploadning the log
-    openLg(content) {
-        this.modalService.open(content, { size: 'lg', centered: true });
-    }
-
-
 
     convertDate(date: Date): string {
         let res: string = date.getFullYear().toString();
@@ -334,14 +349,11 @@ export class LoggerComponent implements OnInit {
     }
 
     convertTime(origin: string): string {
-        console.log(origin);
         if (origin.charAt(1) == ":") {
             origin = "0" + origin;
         }
         let hour: number = +origin.substr(0,2);
         let minute: number = +origin.substr(3,2);
-        
-        console.log(origin.charAt(6))
         if (origin.charAt(6) === "P") {
             hour += 12;
         }
@@ -354,41 +366,103 @@ export class LoggerComponent implements OnInit {
             res += "0"
         }
         res += minute.toString();
-        console.log(res);
         return res;
     }
 
    
-       
     onSearchLogs() {
         const startDate: string = this.convertDate(this.selectedStartDate);
         const endDate:string =  this.convertDate(this.selectedEndDate);
-
-
         this.searchStartTime = startDate + this.convertTime(this.selectedStartTime) + "00";
         this.searchEndTime = endDate + this.convertTime(this.selectedEndTime)+ "59";
-        console.log(this.searchEndTime);
         this.multiLogs().subscribe( logss => {
-            this.msgs = [];
+            this.logs = [];
             for (let logs of logss) {
                 if (logs !== null) {
                     for (let log of logs) {
-                        this.msgs.push(log);
+                        this.logs.push(log);
                     }
                 }
             }
-            this.msgs.sort((a, b) => {
+            this.logs.sort((a, b) => {
                 let date1 = new Date(a.timestamp);
                 let date2 = new Date(b.timestamp);
                 return date2.getTime() - date1.getTime();
             } )
-            console.log(this.msgs);
-            this.drawAllElements();
-         })
+            this.drawAllElements(this.logs);
+            })
     }
 
+    /********************************  functions for drawing log series   ********************************/ 
+    onClickLogSeries(){
+        this.currState = "logSeries";
+        this.drawSeries();
+    }
 
+    multiSeries(): Observable<any> {
+        let res = [];
+        for (let id of this.selectedID) {
+            res.push(this.loggerService.getLogSeries(this.selectedMASID.toString(),
+            id.toString()));
+        }
+        return forkJoin(res);
+    }
 
+    drawSeries() {   
+        this.logSeries = [];
+        this.multiSeries().subscribe( logss => {
+            for (let logs of logss) {
+                if (logs !== null) {
+                    for (let log of logs) {
+                        this.logSeries.push(log);
+                    }
+                }
+            }
+            this.logSeries.sort((a, b) => {
+                let date1 = new Date(a.timestamp);
+                let date2 = new Date(b.timestamp);
+                return date2.getTime() - date1.getTime();
+            });
+            console.log(this.logSeries);
+            this.drawLogSeries();
+        });
 
+    }
 
+    drawLogSeries() {
+        this.datesSeries = [];
+        this.bubbleData = [];
+        for (let i = 0; i < this.logSeries.length; i++) {
+            let date = new Date(this.logSeries[i].timestamp)
+            this.datesSeries.push(date)
+        }
+        this.scaledDatesSeries = this.generateScaledDates(this.datesSeries); 
+        const maxDate : number = this.scaledDatesSeries[this.scaledDatesSeries.length - 1]
+        for (let i = 0; i < this.logSeries.length; i++) {
+            const x: number = maxDate - this.scaledDatesSeries[i];
+            const point = {
+                name: new Date(this.logSeries[i].timestamp).toLocaleString('de-DE',{ hour12: false }),
+                x: x,
+                y: this.logSeries[i].value,
+                r: 10
+            } 
+            this.mapAxisDate.set(x, new Date(this.logSeries[i].timestamp).toLocaleString('de-DE',{ hour12: false }) )
+            this.bubbleData.push({
+                name: this.logSeries[i].name,
+                series: [point]
+            })
+        }
+    }
+
+    onSelect(data): void {
+        console.log('Item clicked', JSON.parse(JSON.stringify(data)));
+    }
+
+    onActivate(data): void {
+        console.log('Activate', JSON.parse(JSON.stringify(data)));
+    }
+
+    onDeactivate(data): void {
+        console.log('Deactivate', JSON.parse(JSON.stringify(data)));
+    }
 }

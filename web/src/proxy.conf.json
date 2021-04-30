@@ -4,6 +4,14 @@
       "secure": false
    },
 
+   "/api/logging/series": {
+      "target": "http://localhost:30011",
+      "secure": false,
+      "pathRewrite": {
+         "^/api/logging/series":"/api/series"
+      }
+   },
+
    "/api/logging": {
       "target": "http://localhost:30011",
       "secure": false
