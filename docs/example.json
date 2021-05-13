@@ -19,7 +19,7 @@
     "imagegroups":[
         {
             "config":{
-                "image":"qianwen12/agency"
+                "image":"registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/agency"
             },
             "agents":[
                 {

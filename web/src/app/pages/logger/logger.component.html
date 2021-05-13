@@ -47,114 +47,120 @@
                     <a class="nav-link" [class.active]="currState==='logSeries'" (click)="onClickLogSeries()">logSeries</a>
                 </li>
             </ul>
-                <div class="selectionBoard d-flex">
-                    <div class="agentID d-flex align-content-end">
-                        <div class="agent-title">agents</div>
-                        <div class="agents">
-                            <div class="row">
-                                <div *ngFor="let id of selectedID" class="agent-selected col-lg-2 is-agent-active" (click)="onDeleteID(id)" [ngValue]="id" >
-                                    <p>agent {{id}} </p>
-                                    <div class="delete"><i class="fas fa-trash"></i></div>
-                                </div>
-                                <div *ngIf="selectedID.length<9" class="more col-lg-1" (click)="openLg(content)">+ </div>
+
+            <div class="selectionBoard d-flex">
+                <div class="agentID d-flex align-content-end">
+                    <div class="agent-title">agents</div>
+                    <div class="agents">
+                        <div class="row">
+                            <div *ngFor="let id of selectedID" class="agent-selected col-lg-2 is-agent-active" (click)="onDeleteID(id)" [ngValue]="id" >
+                                <p>agent {{id}} </p>
+                                <div class="delete"><i class="fas fa-trash"></i></div>
                             </div>
-                        </div>  
-                    </div>
-
-                    <div *ngIf="currState==='log'">
-                        <mat-form-field appearance="fill" class="example-form-field">
-                            <mat-label>Start date</mat-label>
-                            <input matInput 
-                                [matDatepicker]="startdatepicker"
-                                [(ngModel)]="selectedStartDate"
-                            >
-                            <mat-datepicker-toggle matSuffix [for]="startdatepicker"></mat-datepicker-toggle>
-                            <mat-datepicker #startdatepicker>
-                                <mat-datepicker-actions>
-                                <button class="btn" mat-button matDatepickerCancel>Cancel</button>
-                                <button class="btn my-btn" mat-raised-button color="primary" matDatepickerApply>OK</button>
-                                </mat-datepicker-actions>
-                            </mat-datepicker>
-                        </mat-form-field>
-            
-                        <mat-form-field  appearance="fill" class="example-form-field between">
-                            <mat-label>Start time</mat-label>
-                            <input matInput
-                                name="selected_start_time"
-                                [(ngModel)]="selectedStartTime"
-                                [ngxMatTimepicker]="pickerA"
-                                placeholder="6:00 AM"
-                                readonly />
-                            <mat-icon matSuffix (click)="pickerA.open()">
-                                watch_later
-                            </mat-icon>
-                        </mat-form-field>
-                        <ngx-mat-timepicker #pickerA></ngx-mat-timepicker>
-                                
-                        <mat-form-field appearance="fill" class="example-form-field">
-                            <mat-label>End date</mat-label>
-                            <input matInput 
-                                [matDatepicker]="enddatepicker"
-                                [(ngModel)]="selectedEndDate"
-                                >
-                            <mat-datepicker-toggle matSuffix [for]="enddatepicker"></mat-datepicker-toggle>
-                            <mat-datepicker #enddatepicker>
-                                <mat-datepicker-actions>
-                                <button class="btn" mat-button matDatepickerCancel>Cancel</button>
-                                <button class="btn my-btn" mat-raised-button matDatepickerApply>OK</button>
-                                </mat-datepicker-actions>
-                            </mat-datepicker>
-                        </mat-form-field>
-
-                        <mat-form-field appearance="fill">
-                            <mat-label>End time</mat-label>
-                            <input matInput
-                                name="selected_end_time"
-                                [(ngModel)]="selectedEndTime"
-                                [ngxMatTimepicker]="pickerB"
-                                placeholder="4:00 PM"
-                                readonly />
-                            <mat-icon matSuffix
-                                    (click)="pickerB.open()">
-                                watch_later
-                            </mat-icon>
-                        </mat-form-field>
-                        <ngx-mat-timepicker #pickerB></ngx-mat-timepicker>
-
-                        <i class="fas fa-search fa-2x" (click)="onSearchLogs()"></i>
-                    </div>
-
-                    <div *ngIf="currState==='logSeries'">
-                        <button id="update" type="button" class="btn my-btn" (click)="onClickLogSeries()">update</button>
-                    </div>
-
-                </div>
-                
-                    <ng-template #popContent> {{popoverContent}} </ng-template>
-
-                    <svg *ngIf="currState==='log'" [attr.width]="width" [attr.height]="height">
-                        <marker id="arrow" viewBox="0 -5 10 10" refX="8" refY="0" markerWidth="4" markerHeight="4" orient="auto">
-                                <path fill="var(--light-primary-color)" d="M0,-5L10,0L0,5"></path>
-                            </marker>
-                        <rect class="agentBox" *ngFor="let box of agentBox" [attr.x]="box.x" [attr.y]="box.y" [attr.width]="boxWidth" [attr.height]="boxHeight"></rect>
-                        <text class="agentText" font-size="20px"  *ngFor="let text of texts, index as i" [attr.x]="text.x" [attr.y]="text.y"> Agent {{text.textID}} </text>
-                        <line stroke-dasharray="5, 5" class="vertical" *ngFor="let line of timeline" [attr.x1]="line.x1" [attr.y1]="line.y1" [attr.x2]="line.x2" [attr.y2]="height"/>     
-                        <line stroke="var(--light-primary-color)" stroke-width="4" *ngFor="let line of communications" [class.hidden]="line.hidden" [attr.x1]="line.x1" [attr.y1]="line.y1" [attr.x2]="line.x2" [attr.y2]="line.y2" marker-end="url(#arrow)"/> 
-                        <rect class="logBox" *ngFor="let box of logBoxes, index as i" [class.hidden]="box.hidden" (click)="onChangePopoverContent(i)" [ngbPopover]="popContent" placement="right" container="body" [attr.x]="box.x" [attr.y]="box.y" [attr.width]="logBoxWidth" [attr.height]="logBoxHeight"
-                        [ngClass]="box.topic"
-                        ></rect>    
-                    </svg> 
-                    
-                    <div *ngIf="currState==='log'" class="topics d-flex-column">
-                        <div class="topic-title"> Topic </div>
-                        <div [class.selected]="isTopicSelected[0]" class="error-tag tag" (click)="onToggleTopic(0)">error</div>
-                        <div [class.selected]="isTopicSelected[1]" class="debug-tag tag" (click)="onToggleTopic(1)" >debug</div>
-                        <div [class.selected]="isTopicSelected[2]"class="msg-tag tag" (click)="onToggleTopic(2)">msg</div>
-                        <div [class.selected]="isTopicSelected[3]" class="status-tag tag" (click)="onToggleTopic(3)">status</div>
-                        <div [class.selected]="isTopicSelected[4]" class="app-tag tag" (click)="onToggleTopic(4)">app</div>
+                            <div *ngIf="selectedID.length<9" class="more col-lg-1" (click)="openLg(content)">+ </div>
+                        </div>
                     </div>  
-                
+                </div>
+  
+                <mat-form-field appearance="fill" class="example-form-field">
+                    <mat-label>Start date</mat-label>
+                    <input matInput 
+                        [matDatepicker]="startdatepicker"
+                        [(ngModel)]="selectedStartDate"
+                    >
+                    <mat-datepicker-toggle matSuffix [for]="startdatepicker"></mat-datepicker-toggle>
+                    <mat-datepicker #startdatepicker>
+                        <mat-datepicker-actions>
+                        <button class="btn" mat-button matDatepickerCancel>Cancel</button>
+                        <button class="btn my-btn" mat-raised-button color="primary" matDatepickerApply>OK</button>
+                        </mat-datepicker-actions>
+                    </mat-datepicker>
+                </mat-form-field>
+    
+                <mat-form-field  appearance="fill" class="example-form-field between">
+                    <mat-label>Start time</mat-label>
+                    <input matInput
+                        name="selected_start_time"
+                        [(ngModel)]="selectedStartTime"
+                        [ngxMatTimepicker]="pickerA"
+                        placeholder="6:00 AM"
+                        readonly />
+                    <mat-icon matSuffix (click)="pickerA.open()">
+                        watch_later
+                    </mat-icon>
+                </mat-form-field>
+                <ngx-mat-timepicker #pickerA></ngx-mat-timepicker>
+                            
+                <mat-form-field appearance="fill" class="example-form-field">
+                    <mat-label>End date</mat-label>
+                    <input matInput 
+                        [matDatepicker]="enddatepicker"
+                        [(ngModel)]="selectedEndDate"
+                        >
+                    <mat-datepicker-toggle matSuffix [for]="enddatepicker"></mat-datepicker-toggle>
+                    <mat-datepicker #enddatepicker>
+                        <mat-datepicker-actions>
+                        <button class="btn" mat-button matDatepickerCancel>Cancel</button>
+                        <button class="btn my-btn" mat-raised-button matDatepickerApply>OK</button>
+                        </mat-datepicker-actions>
+                    </mat-datepicker>
+                </mat-form-field>
 
+                <mat-form-field appearance="fill" class="between">
+                    <mat-label>End time</mat-label>
+                    <input matInput
+                        name="selected_end_time"
+                        [(ngModel)]="selectedEndTime"
+                        [ngxMatTimepicker]="pickerB"
+                        placeholder="4:00 PM"
+                        readonly />
+                    <mat-icon matSuffix
+                            (click)="pickerB.open()">
+                        watch_later
+                    </mat-icon>
+                </mat-form-field>
+                <ngx-mat-timepicker #pickerB></ngx-mat-timepicker>
+
+                <div *ngIf="currState==='logSeries'">
+                    <mat-form-field appearance="fill">
+                        <mat-label>Name</mat-label>
+                        <mat-select (change)="updateSelectedName($event.value)">
+                          <mat-option *ngFor="let name of names" [value]="name">
+                            {{name}}
+                          </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+
+                <i class="fas fa-search fa-2x" (click)="onClickSearchButton()"></i>
+
+            </div>
+                
+            <ng-template #popContent> {{popoverContent}} </ng-template>
+
+            <svg *ngIf="currState==='log'" [attr.width]="width" [attr.height]="height">
+                <marker id="arrow" viewBox="0 -5 10 10" refX="8" refY="0" markerWidth="4" markerHeight="4" orient="auto">
+                        <path fill="var(--light-primary-color)" d="M0,-5L10,0L0,5"></path>
+                    </marker>
+                <rect class="agentBox" *ngFor="let box of agentBox" [attr.x]="box.x" [attr.y]="box.y" [attr.width]="boxWidth" [attr.height]="boxHeight"></rect>
+                <text class="agentText" font-size="20px"  *ngFor="let text of texts, index as i" [attr.x]="text.x" [attr.y]="text.y"> Agent {{text.textID}} </text>
+                <line stroke-dasharray="5, 5" class="vertical" *ngFor="let line of timeline" [attr.x1]="line.x1" [attr.y1]="line.y1" [attr.x2]="line.x2" [attr.y2]="height"/>     
+                <line stroke="var(--light-primary-color)" stroke-width="4" *ngFor="let line of communications" [class.hidden]="line.hidden" [attr.x1]="line.x1" [attr.y1]="line.y1" [attr.x2]="line.x2" [attr.y2]="line.y2" marker-end="url(#arrow)"/> 
+                <rect class="logBox" *ngFor="let box of logBoxes, index as i" [class.hidden]="box.hidden" (mouseenter)="onChangePopoverContent(i)" triggers="mouseenter:mouseleave" [ngbPopover]="popContent" placement="right" container="body" [attr.x]="box.x" [attr.y]="box.y" [attr.width]="logBoxWidth" [attr.height]="logBoxHeight"
+                [ngClass]="box.topic"
+                ></rect>    
+            </svg> 
+            
+            <div *ngIf="currState==='log'" class="topics d-flex-column">
+                <div class="topic-title"> Topic </div>
+                <div [class.selected]="isTopicSelected[0]" class="error-tag tag" (click)="onToggleTopic(0)">error</div>
+                <div [class.selected]="isTopicSelected[1]" class="debug-tag tag" (click)="onToggleTopic(1)" >debug</div>
+                <div [class.selected]="isTopicSelected[2]"class="msg-tag tag" (click)="onToggleTopic(2)">msg</div>
+                <div [class.selected]="isTopicSelected[3]" class="status-tag tag" (click)="onToggleTopic(3)">status</div>
+                <div [class.selected]="isTopicSelected[4]" class="app-tag tag" (click)="onToggleTopic(4)">app</div>
+            </div>  
+                
+<!--                     [xAxisTickFormatting]="xAxisTickFormatting" -->
         
             <div class="log-series-graph" *ngIf="currState==='logSeries'">
                 <ngx-charts-bubble-chart *ngIf="selectedID.length !== 0"
@@ -167,6 +173,7 @@
                     [showXAxisLabel]="showXAxisLabel"
                     [showYAxisLabel]="showYAxisLabel"
                     [xAxisLabel]="xAxisLabel"
+                    [xAxisTicks]="xAxisTicks"
                     [xAxisTickFormatting]="xAxisTickFormatting"
                     [yAxisLabel]="yAxisLabel"
                     [minRadius]="minRadius"

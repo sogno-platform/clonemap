@@ -8,6 +8,7 @@ import { forkJoin, Observable} from 'rxjs';
 import { FormControl, FormGroup } from '@angular/forms';
 
 
+
 @Component({
   selector: 'app-logger',
   templateUrl: './logger.component.html',
@@ -56,6 +57,8 @@ export class LoggerComponent implements OnInit {
     selectedEndTime: string;
 
     // parameters and variables for drawing log series
+    selectedName: string = "type1";
+    names: string[] = []
     logSeries: LogSeries[] = [];
     bubbleData: pointSeries[] = [];
     view: any[]= [1738, 600];
@@ -71,16 +74,17 @@ export class LoggerComponent implements OnInit {
     minRadius: number = 10;
     datesSeries: Date[] = [];
     scaledDatesSeries: number[];
+    xAxisTicks: number[] = [];
     mapAxisDate: Map<number, string> = new Map<number, string>();
-    xAxisTickFormatting = val => {
+    xAxisTickFormatting = (val:number) => {
       return this.mapAxisDate.get(val);
     }
     colorScheme = {
-      domain: ['#9696F3', 
-      'rgb(230, 109, 109)', 
+      domain: ['#9696F3'
+/*       'rgb(230, 109, 109)', 
       'rgb(216, 216, 110)', 
       'rgb(126, 235, 149)', 
-      'rgb(56, 202, 221)' ]
+      'rgb(56, 202, 221)'  */]
     };
 
     constructor(
@@ -105,6 +109,12 @@ export class LoggerComponent implements OnInit {
             err => {
                 console.log(err)  
         });
+
+        // default start time and end time
+        this.selectedStartDate = new Date();
+        this.selectedEndDate = new Date();
+        this.selectedStartTime = "1:00 AM"
+        this.selectedEndTime = "11:59 PM"
         
         // get the selectedMASid from the current route
         this.route.params.subscribe((params: Params) => {
@@ -142,6 +152,7 @@ export class LoggerComponent implements OnInit {
         if (this.selectedID.length < 10) {
             this.isAgentSelected[i] = !this.isAgentSelected[i];
             this.updateSelectedID();
+            this.updateNames();
         }
     }
 
@@ -206,6 +217,64 @@ export class LoggerComponent implements OnInit {
             }
         }
         return scaledDates;
+    }
+
+    onClickSearchButton() {
+        const startDate: string = this.convertDate(this.selectedStartDate);
+        const endDate:string =  this.convertDate(this.selectedEndDate);
+        this.searchStartTime = startDate + this.convertTime(this.selectedStartTime) + "00";
+        this.searchEndTime = endDate + this.convertTime(this.selectedEndTime)+ "59";
+        if (this.currState==="log") {
+            this.multiLogs().subscribe( logss => {
+                this.logs = [];
+                for (let logs of logss) {
+                    if (logs !== null) {
+                        for (let log of logs) {
+                            this.logs.push(log);
+                        }
+                    }
+                }
+                this.logs.sort((a, b) => {
+                    let date1 = new Date(a.timestamp);
+                    let date2 = new Date(b.timestamp);
+                    return date2.getTime() - date1.getTime();
+                } )
+                this.drawAllElements(this.logs);
+            })
+        } else {
+            this.drawSeries();
+        }
+
+    }
+
+
+
+    convertDate(date: Date): string {
+        let res: string = date.getFullYear().toString();
+        res += (date.getMonth() + 1) < 10 ? "0" + (date.getMonth() + 1).toString() : (date.getMonth() + 1).toString()
+        res += date.getDate()  < 10 ? "0" + date.getDate().toString() : date.getDate().toString()
+        return res;
+    }
+
+    convertTime(origin: string): string {
+        if (origin.charAt(1) == ":") {
+            origin = "0" + origin;
+        }
+        let hour: number = +origin.substr(0,2);
+        let minute: number = +origin.substr(3,2);
+        if (origin.charAt(6) === "P") {
+            hour += 12;
+        }
+        let res:string = "";
+        if (hour < 10) {
+            res += "0"
+        }
+        res += hour.toString();
+        if (minute < 10) {
+            res += "0"
+        }
+        res += minute.toString();
+        return res;
     }
 
 
@@ -341,69 +410,47 @@ export class LoggerComponent implements OnInit {
         this.popoverContent = this.logs[i].msg;
     }
 
-    convertDate(date: Date): string {
-        let res: string = date.getFullYear().toString();
-        res += (date.getMonth() + 1) < 10 ? "0" + (date.getMonth() + 1).toString() : (date.getMonth() + 1).toString()
-        res += date.getDate()  < 10 ? "0" + date.getDate().toString() : date.getDate().toString()
-        return res;
-    }
-
-    convertTime(origin: string): string {
-        if (origin.charAt(1) == ":") {
-            origin = "0" + origin;
-        }
-        let hour: number = +origin.substr(0,2);
-        let minute: number = +origin.substr(3,2);
-        if (origin.charAt(6) === "P") {
-            hour += 12;
-        }
-        let res:string = "";
-        if (hour < 10) {
-            res += "0"
-        }
-        res += hour.toString();
-        if (minute < 10) {
-            res += "0"
-        }
-        res += minute.toString();
-        return res;
-    }
-
-   
-    onSearchLogs() {
-        const startDate: string = this.convertDate(this.selectedStartDate);
-        const endDate:string =  this.convertDate(this.selectedEndDate);
-        this.searchStartTime = startDate + this.convertTime(this.selectedStartTime) + "00";
-        this.searchEndTime = endDate + this.convertTime(this.selectedEndTime)+ "59";
-        this.multiLogs().subscribe( logss => {
-            this.logs = [];
-            for (let logs of logss) {
-                if (logs !== null) {
-                    for (let log of logs) {
-                        this.logs.push(log);
-                    }
-                }
-            }
-            this.logs.sort((a, b) => {
-                let date1 = new Date(a.timestamp);
-                let date2 = new Date(b.timestamp);
-                return date2.getTime() - date1.getTime();
-            } )
-            this.drawAllElements(this.logs);
-            })
-    }
 
     /********************************  functions for drawing log series   ********************************/ 
+    
     onClickLogSeries(){
         this.currState = "logSeries";
         this.drawSeries();
+    }
+    
+    updateSelectedName(name: string) {
+        this.selectedName = name;
+    }
+
+    updateNames() {
+        this.names = [];
+        this.multiNames().subscribe( namess => {
+            for (let names of namess) {
+                if ( names!== null) {
+                    for (let name of names) {
+                        if (!this.names.includes(name)) {
+                            this.names.push(name)
+                        }
+                    }
+                }
+            }
+        })
+    }
+
+    multiNames(): Observable<any> {
+        let res = [];
+        for (let id of this.selectedID) {
+            res.push(this.loggerService.getLogSeriesNames(this.selectedMASID.toString(),
+            id.toString()));
+        }
+        return forkJoin(res);      
     }
 
     multiSeries(): Observable<any> {
         let res = [];
         for (let id of this.selectedID) {
-            res.push(this.loggerService.getLogSeries(this.selectedMASID.toString(),
-            id.toString()));
+            res.push(this.loggerService.getLogSeriesByName(this.selectedMASID.toString(),
+            id.toString(), this.selectedName, this.searchStartTime, this.searchEndTime));
         }
         return forkJoin(res);
     }
@@ -423,13 +470,11 @@ export class LoggerComponent implements OnInit {
                 let date2 = new Date(b.timestamp);
                 return date2.getTime() - date1.getTime();
             });
-            console.log(this.logSeries);
-            this.drawLogSeries();
+            this.drawSeriesHelper();
         });
-
     }
 
-    drawLogSeries() {
+    drawSeriesHelper() {
         this.datesSeries = [];
         this.bubbleData = [];
         for (let i = 0; i < this.logSeries.length; i++) {
@@ -437,6 +482,7 @@ export class LoggerComponent implements OnInit {
             this.datesSeries.push(date)
         }
         this.scaledDatesSeries = this.generateScaledDates(this.datesSeries); 
+        console.log(this.scaledDatesSeries);
         const maxDate : number = this.scaledDatesSeries[this.scaledDatesSeries.length - 1]
         for (let i = 0; i < this.logSeries.length; i++) {
             const x: number = maxDate - this.scaledDatesSeries[i];
@@ -446,12 +492,16 @@ export class LoggerComponent implements OnInit {
                 y: this.logSeries[i].value,
                 r: 10
             } 
+            this.xAxisTicks.push(x)
+            console.log(typeof x)
             this.mapAxisDate.set(x, new Date(this.logSeries[i].timestamp).toLocaleString('de-DE',{ hour12: false }) )
             this.bubbleData.push({
                 name: this.logSeries[i].name,
                 series: [point]
             })
         }
+
+        console.log(this.mapAxisDate);
     }
 
     onSelect(data): void {

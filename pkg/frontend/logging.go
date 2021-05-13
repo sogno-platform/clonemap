@@ -141,7 +141,11 @@ func (fe *Frontend) handleGetNLatestLogs(w http.ResponseWriter, r *http.Request)
 // handleGetLogsTime is the handler to /api/logging/{masid}/{agentid}/{topic}/time/{start}/{end}
 func (fe *Frontend) handleGetLogsInRange(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
-	masid, agentid, topic, start, end, cmapErr := getLogsTime(r)
+	masid, agentid, cmapErr := getAgentID(r)
+	vars := mux.Vars(r)
+	topic := vars["topic"]
+	start := vars["start"]
+	end := vars["end"]
 	if cmapErr != nil {
 		httpErr = httpreply.NotFoundError(w)
 		fe.logErrors(r.URL.Path, cmapErr, httpErr)
@@ -161,8 +165,30 @@ func (fe *Frontend) handleGetLogsInRange(w http.ResponseWriter, r *http.Request)
 	return
 }
 
-// handleGetLogSeries is the handler to /api/logging/series/{masid}/{agentid}
-func (fe *Frontend) handleGetLogSeries(w http.ResponseWriter, r *http.Request) {
+// handleGetLogSeriesNames is the handler to api/logging/series/{masid}/{agentid}/names
+func (fe *Frontend) handleGetLogSeriesNames(w http.ResponseWriter, r *http.Request) {
+	var cmapErr, httpErr error
+	masID, agentID, cmapErr := getAgentID(r)
+	if cmapErr != nil {
+		httpErr = httpreply.NotFoundError(w)
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
+	var names []string
+	names, _, cmapErr = fe.logClient.GetLogSeriesNames(masID, agentID)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
+	httpErr = httpreply.Resource(w, names, cmapErr)
+	fe.logErrors(r.URL.Path, cmapErr, httpErr)
+	return
+
+}
+
+// handleGetLogSeriesByName is the handler to /api/logging/series/{masid}/{agentid}/{name}/time/{start}/{end}
+func (fe *Frontend) handleGetLogSeriesByName(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
 	masID, agentID, cmapErr := getAgentID(r)
 
@@ -171,8 +197,12 @@ func (fe *Frontend) handleGetLogSeries(w http.ResponseWriter, r *http.Request) {
 		fe.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
+	vars := mux.Vars(r)
+	name := vars["name"]
+	start := vars["start"]
+	end := vars["end"]
 	var series []schemas.LogSeries
-	series, _, cmapErr = fe.logClient.GetLogSeries(masID, agentID)
+	series, _, cmapErr = fe.logClient.GetLogSeriesByName(masID, agentID, name, start, end)
 	if cmapErr != nil {
 		httpErr = httpreply.CMAPError(w, cmapErr.Error())
 		fe.logErrors(r.URL.Path, cmapErr, httpErr)

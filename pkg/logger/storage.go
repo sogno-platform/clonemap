@@ -70,7 +70,10 @@ type storage interface {
 	addAgentLogSeries(series schemas.LogSeries)
 
 	// getAgentLogSeries get the log series
-	getAgentLogSeries(masID int, agentID int) (series []schemas.LogSeries, err error)
+	getAgentLogSeries(masID int, agentID int, name string, start time.Time, end time.Time) (series []schemas.LogSeries, err error)
+
+	// getAgentLogSeriesNames gets the name of the log series
+	getAgentLogSeriesNames(masID int, agentID int) (names []string, err error)
 
 	// deleteAgentLogMessages deletes all log messages og an agent
 	deleteAgentLogMessages(masID int, agentID int) (err error)
@@ -114,7 +117,7 @@ type agentStorage struct {
 	msgLogs   []schemas.LogMessage
 	statLogs  []schemas.LogMessage
 	appLogs   []schemas.LogMessage
-	logSeries []schemas.LogSeries
+	logSeries map[string][]schemas.LogSeries
 	state     schemas.State
 	commData  []schemas.Communication
 }
@@ -321,18 +324,51 @@ func (stor *localStorage) addAgentLogSeries(series schemas.LogSeries) {
 		}
 	}
 
-	stor.mas[series.MASID].agents[series.AgentID].logSeries = append(stor.mas[series.MASID].agents[series.AgentID].logSeries, series)
+	if stor.mas[series.MASID].agents[series.AgentID].logSeries == nil {
+		stor.mas[series.MASID].agents[series.AgentID].logSeries = make(map[string][]schemas.LogSeries)
+	}
+	stor.mas[series.MASID].agents[series.AgentID].logSeries[series.Name] = append(stor.mas[series.MASID].agents[series.AgentID].logSeries[series.Name], series)
 	stor.mutex.Unlock()
 	return
 }
 
 // getAgentLogSeries return the log series
-func (stor *localStorage) getAgentLogSeries(masID int, agentID int) (series []schemas.LogSeries, err error) {
+func (stor *localStorage) getAgentLogSeries(masID int, agentID int, name string, start time.Time, end time.Time) (series []schemas.LogSeries, err error) {
 	stor.mutex.Lock()
 	if masID < len(stor.mas) {
 		if agentID < len(stor.mas[masID].agents) {
-			series = make([]schemas.LogSeries, len(stor.mas[masID].agents[agentID].logSeries))
-			copy(series, stor.mas[masID].agents[agentID].logSeries)
+			length := len(stor.mas[masID].agents[agentID].logSeries[name])
+			if length > 0 {
+				startIndex := sort.Search(length,
+					func(i int) bool {
+						return stor.mas[masID].agents[agentID].logSeries[name][i].Timestamp.After(start)
+					})
+				endIndex := sort.Search(length,
+					func(i int) bool {
+						return stor.mas[masID].agents[agentID].logSeries[name][i].Timestamp.After(end)
+					})
+				if endIndex-startIndex >= 0 {
+					series = make([]schemas.LogSeries, endIndex-startIndex)
+					copy(series, stor.mas[masID].agents[agentID].logSeries[name][startIndex:endIndex])
+				}
+			}
+		}
+	}
+	stor.mutex.Unlock()
+	return
+}
+
+// getAgentLogSeriesNames gets the name of the log series
+func (stor *localStorage) getAgentLogSeriesNames(masID int, agentID int) (names []string, err error) {
+	stor.mutex.Lock()
+	if masID < len(stor.mas) {
+		if agentID < len(stor.mas[masID].agents) {
+			if stor.mas[masID].agents[agentID].logSeries != nil {
+				names = make([]string, 0, len(stor.mas[masID].agents[agentID].logSeries))
+				for k := range stor.mas[masID].agents[agentID].logSeries {
+					names = append(names, k)
+				}
+			}
 		}
 	}
 	stor.mutex.Unlock()

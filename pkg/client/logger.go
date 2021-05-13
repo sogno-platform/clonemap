@@ -125,17 +125,32 @@ func (cli *LoggerClient) PostLogSeries(masID int, logs []schemas.LogSeries) (htt
 	return
 }
 
-// GetLogSeries gets log series with its name
-func (cli *LoggerClient) GetLogSeries(masID int, agentID int) (series []schemas.LogSeries, httpStatus int, err error) {
+// GetLogSeriesByName gets log series by its name
+func (cli *LoggerClient) GetLogSeriesByName(masID int, agentID int, name string, start string, end string) (series []schemas.LogSeries, httpStatus int, err error) {
 	var body []byte
 	body, httpStatus, err = httpretry.Get(cli.httpClient, cli.prefix()+"/api/series/"+
-		strconv.Itoa(masID)+"/"+strconv.Itoa(agentID), time.Second*2, 4)
+		strconv.Itoa(masID)+"/"+strconv.Itoa(agentID)+"/"+name+"/time/"+start+"/"+end, time.Second*2, 4)
 	if err != nil {
 		return
 	}
 	err = json.Unmarshal(body, &series)
 	if err != nil {
 		series = []schemas.LogSeries{}
+	}
+	return
+}
+
+// GetLogSeriesNames gets log series by its name
+func (cli *LoggerClient) GetLogSeriesNames(masID int, agentID int) (names []string, httpStatus int, err error) {
+	var body []byte
+	body, httpStatus, err = httpretry.Get(cli.httpClient, cli.prefix()+"/api/series/"+
+		strconv.Itoa(masID)+"/"+strconv.Itoa(agentID)+"/names", time.Second*2, 4)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(body, &names)
+	if err != nil {
+		names = []string{}
 	}
 	return
 }
@@ -196,6 +211,7 @@ func NewLoggerClient(host string, port int, timeout time.Duration, del time.Dura
 type LogCollector struct {
 	masID       int
 	logIn       chan schemas.LogMessage // logging inbox
+	seriesName  string
 	logSeriesIn chan schemas.LogSeries
 	stateIn     chan schemas.State
 	client      *LoggerClient
@@ -391,7 +407,7 @@ func (agLog *AgentLogger) NewLog(topic string, message string, data string) (err
 }
 
 // NewLogSeries sends a new logging series to
-func (agLog *AgentLogger) NewLogSeries(name string, value int) (err error) {
+func (agLog *AgentLogger) NewLogSeries(name string, value float64) (err error) {
 	if agLog == nil {
 		return
 	}
@@ -403,13 +419,13 @@ func (agLog *AgentLogger) NewLogSeries(name string, value int) (err error) {
 	time.Sleep(time.Millisecond * 5)
 	tStamp := time.Now()
 	agLog.mutex.Unlock()
-	logSeries := schemas.LogSeries{
+	seriesItem := schemas.LogSeries{
 		AgentID:   agLog.agentID,
-		Timestamp: tStamp,
 		Name:      name,
+		Timestamp: tStamp,
 		Value:     value,
 	}
-	agLog.logSeriesOut <- logSeries
+	agLog.logSeriesOut <- seriesItem
 	return
 }
 

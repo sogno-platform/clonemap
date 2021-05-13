@@ -211,7 +211,7 @@
 }
 
 .between {
-   margin-right: 40px;
+   margin-right: 20px;
 }
 
 .fa-search {
@@ -336,7 +336,7 @@ text {
 
 .tt {
    font-size: 20px;
-   height: 60px;
+   height: 80px;
    width: 250px;
    text-align: center;
    padding: 10px;

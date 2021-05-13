@@ -162,25 +162,6 @@ func getNLogs(r *http.Request) (masID int, agentid int, topic string, num int, e
 	return
 }
 
-// getRange return the masid, agentid, topic and start and end
-func getLogsTime(r *http.Request) (masID int, agentid int, topic string, start string, end string, err error) {
-	vars := mux.Vars(r)
-	masID, err = strconv.Atoi(vars["masid"])
-	if err != nil {
-		return
-	}
-
-	agentid, err = strconv.Atoi(vars["agentid"])
-	if err != nil {
-		return
-	}
-
-	topic = vars["topic"]
-	start = vars["start"]
-	end = vars["end"]
-	return
-}
-
 // loggingMiddleware logs request before calling final handler
 func (fe *Frontend) loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -221,7 +202,8 @@ func (fe *Frontend) server(port int) (serv *http.Server) {
 	s.Path("/df/{masid}/svc/desc/{desc}/node/{nodeid}/dist/{dist}").Methods("Get").HandlerFunc(fe.handleSvcWithDist)
 
 	// api for logger
-	s.Path("/logging/series/{masid}/{agentid}").Methods("GET").HandlerFunc(fe.handleGetLogSeries)
+	s.Path("/logging/series/{masid}/{agentid}/names").Methods("GET").HandlerFunc(fe.handleGetLogSeriesNames)
+	s.Path("/logging/series/{masid}/{agentid}/{name}/time/{start}/{end}").Methods("GET").HandlerFunc(fe.handleGetLogSeriesByName)
 	s.Path("/logging/{masid}/{agentid}/{topic}/latest/{num}").Methods("GET").HandlerFunc(fe.handleGetNLatestLogs)
 	s.Path("/logging/{masid}/list").Methods("POST").HandlerFunc(fe.handlePostLogs)
 	s.Path("/logging/{masid}/{agentid}/{topic}/time/{start}/{end}").Methods("GET").HandlerFunc(fe.handleGetLogsInRange)

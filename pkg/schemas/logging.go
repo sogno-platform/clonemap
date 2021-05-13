@@ -71,11 +71,11 @@ type LogMessage struct {
 
 // LogSeries contains series data of a single agent
 type LogSeries struct {
-	MASID     int       `json:"masid"`     // ID of MAS agent runs in
-	AgentID   int       `json:"agentid"`   // ID of agent
-	Timestamp time.Time `json:"timestamp"` // start time of the logSeries
-	Name      string    `json:"name"`      // name of the logSeries
-	Value     int       `json:"value"`     // data of the logSeries
+	MASID     int       `json:"masid"`   // ID of MAS agent runs in
+	AgentID   int       `json:"agentid"` // ID of agent
+	Name      string    `json:"name"`
+	Timestamp time.Time `json:"timestamp"` // time of the logSeries
+	Value     float64   `json:"value"`     // value of the series item
 }
 
 // State contains the state of an agent as byte array (json)

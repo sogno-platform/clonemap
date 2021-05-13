@@ -129,11 +129,24 @@ func (logger *Logger) addAgentLogMessageList(logmsg []schemas.LogMessage) (err e
 	return
 }
 
-// addAgentLogSeries
+// addAgentLogSeries add log series
 func (logger *Logger) addAgentLogSeries(logseries []schemas.LogSeries) {
 	for i := 0; i < len(logseries); i++ {
 		logger.stor.addAgentLogSeries(logseries[i])
 	}
+}
+
+// getLogSeriesByName return all the log series of a specific name
+func (logger *Logger) getAgentLogSeries(masID int, agentID int, name string, start time.Time, end time.Time) (series []schemas.LogSeries, err error) {
+	series, err = logger.stor.getAgentLogSeries(masID, agentID, name, start, end)
+	return
+}
+
+// agetAgentLogSeriesNames add log series
+func (logger *Logger) getAgentLogSeriesNames(masID int, agentID int) (names []string, err error) {
+	names, err = logger.stor.getAgentLogSeriesNames(masID, agentID)
+	return
+
 }
 
 // getLatestAgentLogMessages return the latest num log messages
@@ -147,12 +160,6 @@ func (logger *Logger) getLatestAgentLogMessages(masID int, agentID int, topic st
 func (logger *Logger) getAgentLogMessagesInRange(masID int, agentID int, topic string,
 	start time.Time, end time.Time) (logs []schemas.LogMessage, err error) {
 	logs, err = logger.stor.getAgentLogMessagesInRange(masID, agentID, topic, start, end)
-	return
-}
-
-// getLogSeries return all the log series of a specific name
-func (logger *Logger) getAgentLogSeries(masID int, agentID int) (series []schemas.LogSeries, err error) {
-	series, err = logger.stor.getAgentLogSeries(masID, agentID)
 	return
 }
 

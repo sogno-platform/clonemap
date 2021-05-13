@@ -4,8 +4,10 @@ import { MasService} from "src/app/services/mas.service";
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ActivatedRoute, Params } from '@angular/router';
 import * as cytoscape from 'cytoscape';
+import popper from 'cytoscape-popper';
 import { forkJoin, Observable } from 'rxjs';
-import { truncate } from 'node:fs';
+cytoscape.use( popper);
+
 
 @Component({
   selector: 'app-df',
@@ -71,11 +73,12 @@ export class DFComponent implements OnInit {
                 reqNode: this.masService.getMASById(this.selectedMASID.toString()),
                 reqSvc: this.dfService.getAllSvcs(this.selectedMASID.toString())
             }).subscribe(({ reqNode, reqSvc } : any ) => {
+                console.log(reqSvc)
                 let nodes = reqNode.graph.node.map(node => node.id);
                 let agents = reqNode.agents.instances.map(agent => agent.id);
                 let edgeNodes = reqNode.graph.edge;
                 let edgeAgentNode = [];
-                let svcs = [];
+                let svcs: string[] = [];
                 let edgeSvcAgent = [];
                 for (let i = 0; i < reqNode.graph.node.length; i++) {
                     for (let j = 0; j < reqNode.graph.node[i].agents.length; j++) {
@@ -86,7 +89,7 @@ export class DFComponent implements OnInit {
                     }
                 }
                 for (let i = 0; i < reqSvc.length; i++) {
-                    svcs.push(i);
+                    svcs.push(reqSvc[i].desc);
                     edgeSvcAgent.push({
                         n1: i,
                         n2: reqSvc[i].agentid,
@@ -147,7 +150,7 @@ export class DFComponent implements OnInit {
                     selector: 'node',
                     style: {
                         'background-color': "#9696f3",
-                        label: 'data(id)',
+                        label: 'data(name)',
                         "text-halign": 'center',
                         "text-valign": 'center',
                     }
@@ -192,7 +195,7 @@ export class DFComponent implements OnInit {
 
                     data: { 
                         id: 'node' + res.nodes[i],
-                        name: res.nodes[i].toString(),
+                        name: 'node' +  res.nodes[i].toString(),
                     }
                 });            
             }
@@ -202,7 +205,7 @@ export class DFComponent implements OnInit {
                     classes: 'agent', 
                     data: { 
                         id: 'agent' + res.agents[i],
-                        name: res.agents[i].toString(),
+                        name: 'agent' + res.agents[i].toString(),
                     }
                 });
             }
@@ -211,8 +214,8 @@ export class DFComponent implements OnInit {
                 this.graph.add({
                     classes: 'svc',
                     data: { 
-                        id: 'svc' + res.svcs[i],
-                        name: res.svcs[i].toString(),
+                        id: 'svc' + i,
+                        name: res.svcs[i],
                         }
                 });
             }
@@ -257,6 +260,10 @@ export class DFComponent implements OnInit {
                 name : "cose",
                 fit: true,
             }).run();   
+
+            this.graph.$('node').on('tap', function(evt){
+                console.log( 'tap ' + evt.target.id() );
+            });
         })  
     }
 

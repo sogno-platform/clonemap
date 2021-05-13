@@ -11,21 +11,23 @@ import { LoggerComponent } from './pages/logger/logger.component';
 import { DFComponent } from './pages/df/df.component';
 import { TopBarComponent } from './pages/top-bar/top-bar.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { NgxMatTimepickerModule } from 'ngx-mat-timepicker';
+import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core/';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { NgxMatTimepickerModule } from 'ngx-mat-timepicker';
-import { MatIconModule } from '@angular/material/icon'; 
-import { NgxChartsModule } from '@swimlane/ngx-charts'
+import { MatSelectModule } from '@angular/material/select';
+import { MatIconModule } from '@angular/material/icon';
 
 const materialModules = [
   MatDatepickerModule,
   MatNativeDateModule,
   MatFormFieldModule,
   MatInputModule,
-  MatIconModule
+  MatIconModule,
+  MatSelectModule
 ];
 
 @NgModule({

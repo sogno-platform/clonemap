@@ -28,8 +28,12 @@ export class LoggerService {
     return this.webReqService.get(`api/logging/${masid}/${agentid}/${topic}/time/${start}/${end}`);
   }
 
-  getLogSeries(masid:string, agentid: string) {
-    return this.webReqService.get(`api/logging/series/${masid}/${agentid}`);
+  getLogSeriesNames(masid:string, agentid: string) {
+    return this.webReqService.get(`api/logging/series/${masid}/${agentid}/names`)
+  }
+
+  getLogSeriesByName(masid:string, agentid: string, name: string, start: string, end: string) {
+    return this.webReqService.get(`api/logging/series/${masid}/${agentid}/${name}/time/${start}/${end}`)
   }
 
   updateAgentState(masid: string, agentid: string, payload: object) {
