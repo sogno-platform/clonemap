@@ -278,6 +278,7 @@ func (stor *cassStorage) storeLogs(topic string) {
 			if size > 25000 {
 				break
 			}
+			empty := false
 			select {
 			case log = <-logIn:
 				js, err = json.Marshal(log)
@@ -287,6 +288,9 @@ func (stor *cassStorage) storeLogs(topic string) {
 				batch.Query(stmt, log.MASID, log.AgentID, log.Timestamp, js)
 				size += len(js)
 			default:
+				empty = true
+			}
+			if empty {
 				break
 			}
 		}
