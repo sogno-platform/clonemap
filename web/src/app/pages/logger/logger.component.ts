@@ -61,11 +61,11 @@ export class LoggerComponent implements OnInit {
     names: string[] = []
     logSeries: LogSeries[] = [];
     bubbleData: pointSeries[] = [];
-    view: any[]= [1738, 600];
+    view: any[]= [1600, 600];
     showXAxis: boolean = true;
     showYAxis: boolean = true;
     gradient: boolean = false;
-    showLegend: boolean = true;
+    showLegend: boolean = false;
     showXAxisLabel: boolean = true;
     xAxisLabel: string = 'Time';
     showYAxisLabel: boolean = true;

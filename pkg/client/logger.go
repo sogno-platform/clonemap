@@ -320,10 +320,14 @@ func (logCol *LogCollector) storeState() (err error) {
 			states = append(states, state)
 			for i := 0; i < 24; i++ {
 				// maximum of 25 states
+				done := false
 				select {
 				case state = <-logCol.stateIn:
 					states = append(states, state)
 				default:
+					done = true
+				}
+				if done {
 					break
 				}
 			}
