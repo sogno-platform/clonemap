@@ -192,8 +192,8 @@ func (stor *cassStorage) addAgentLogSeries(series schemas.LogSeries) {
 // getAgentLogSeries get log series
 func (stor *cassStorage) getAgentLogSeries(masID int, agentID int, name string, start time.Time, end time.Time) (series []schemas.LogSeries, err error) {
 	var iter *gocql.Iter
-	iter = stor.session.Query("SELECT log FROM logging_series WHERE masid = ? AND agentid = ? AND name = ?", masID,
-		agentID, name).Iter()
+	iter = stor.session.Query("SELECT series FROM logging_series WHERE masid = ? AND agentid = ? AND "+
+		"name = ? AND t > ? AND t < ?", masID, agentID, name, start, end).Iter()
 	var js []byte
 	for iter.Scan(&js) {
 		var logSeries schemas.LogSeries
@@ -209,6 +209,23 @@ func (stor *cassStorage) getAgentLogSeries(masID int, agentID int, name string, 
 
 // getAgentLogSeriesNames get log series
 func (stor *cassStorage) getAgentLogSeriesNames(masID int, agentID int) (names []string, err error) {
+	var iter *gocql.Iter
+	iter = stor.session.Query("SELECT series FROM logging_series WHERE masid = ? AND agentid = ?", masID, agentID).Iter()
+	var js []byte
+	maps := map[string]bool{}
+	for iter.Scan(&js) {
+		var logSeries schemas.LogSeries
+		err = json.Unmarshal(js, &logSeries)
+		if err != nil {
+			return
+		}
+		_, ok := maps[logSeries.Name]
+		if !ok {
+			names = append(names, logSeries.Name)
+			maps[logSeries.Name] = true
+		}
+	}
+	iter.Close()
 	return
 }
 
@@ -308,6 +325,7 @@ func (stor *cassStorage) storeLogs(topic string) {
 			if size > 25000 {
 				break
 			}
+			empty := false
 			select {
 			case log = <-logIn:
 				js, err = json.Marshal(log)
@@ -317,6 +335,9 @@ func (stor *cassStorage) storeLogs(topic string) {
 				batch.Query(stmt, log.MASID, log.AgentID, log.Timestamp, js)
 				size += len(js)
 			default:
+				empty = true
+			}
+			if empty {
 				break
 			}
 		}
@@ -330,7 +351,7 @@ func (stor *cassStorage) storeLogs(topic string) {
 // storeSeries stores the log series in a batch operation
 func (stor *cassStorage) storeSeries() {
 	var err error
-	stmt := "INSERT INTO logging_series (masid, agentid, name, t, log) VALUES (?, ?, ?, ?, ?)"
+	stmt := "INSERT INTO logging_series (masid, agentid, name, t, series) VALUES (?, ?, ?, ?, ?)"
 
 	for {
 		batch := gocql.NewBatch(gocql.UnloggedBatch)
@@ -340,7 +361,7 @@ func (stor *cassStorage) storeSeries() {
 		if err != nil {
 			fmt.Println(err)
 		}
-		batch.Query(stmt, series.MASID, series.AgentID, series.Timestamp, series.Name, js)
+		batch.Query(stmt, series.MASID, series.AgentID, series.Name, series.Timestamp, js)
 		size := len(js)
 		for i := 0; i < 9; i++ {
 			// maximum of 10 operations in batch
@@ -353,7 +374,7 @@ func (stor *cassStorage) storeSeries() {
 				if err != nil {
 					fmt.Println(err)
 				}
-				batch.Query(stmt, series.MASID, series.AgentID, series.Timestamp, js)
+				batch.Query(stmt, series.MASID, series.AgentID, series.Name, series.Timestamp, js)
 				size += len(js)
 			default:
 				break

@@ -158,14 +158,14 @@ metadata:
   #   etcd.database.coreos.com/scope: clusterwide
 spec:
   size: 3
-  pod:
-    resources:
-      limits:
-        cpu: 300m
-        memory: 400Mi
-      requests:
-        cpu: 200m
-        memory: 300Mi
+  # pod:
+  #   resources:
+  #     limits:
+  #       cpu: 300m
+  #       memory: 400Mi
+  #     requests:
+  #       cpu: 200m
+  #       memory: 300Mi
 version: "3.2.24"
 ---
 
@@ -359,13 +359,13 @@ spec:
             value: "error"
           - name: CLONEMAP_NAMESPACE
             value: "clonemap"
-        resources:
-          requests:
-            memory: "128Mi"
-            cpu: "500m"
-          limits:
-            memory: "256Mi"
-            cpu: "600m"
+        # resources:
+        #   requests:
+        #     memory: "128Mi"
+        #     cpu: "500m"
+        #   limits:
+        #     memory: "256Mi"
+        #     cpu: "600m"
         ports:
         - containerPort: 9000
           name: ams-port
@@ -390,7 +390,7 @@ data:
     CREATE TABLE clonemap.logging_msg ( masid int, agentid int, t timestamp, log varchar, PRIMARY KEY ((masid, agentid), t)) WITH CLUSTERING ORDER BY (t ASC);
     CREATE TABLE clonemap.logging_status ( masid int, agentid int, t timestamp, log varchar, PRIMARY KEY ((masid, agentid), t)) WITH CLUSTERING ORDER BY (t ASC);
     CREATE TABLE clonemap.logging_debug ( masid int, agentid int, t timestamp, log varchar, PRIMARY KEY ((masid, agentid), t)) WITH CLUSTERING ORDER BY (t ASC);
-    CREATE TABLE clonemap.logging_series ( masid int, agentid int, t timestamp, log varchar, PRIMARY KEY ((masid, agentid), t)) WITH CLUSTERING ORDER BY (t ASC);
+    CREATE TABLE clonemap.logging_series ( masid int, agentid int, name varchar, t timestamp, series varchar, PRIMARY KEY ((masid, agentid), name, t)) WITH CLUSTERING ORDER BY (name ASC, t ASC);
     CREATE TABLE clonemap.state ( masid int, agentid int, state varchar, PRIMARY KEY (masid, agentid));
     EOF
 
@@ -568,13 +568,13 @@ spec:
             value: "production"
           - name: CLONEMAP_LOG_LEVEL
             value: "info"
-        resources:
-          requests:
-            memory: "128Mi"
-            cpu: "300m"
-          limits:
-            memory: "256Mi"
-            cpu: "400m"
+        # resources:
+        #   requests:
+        #     memory: "128Mi"
+        #     cpu: "300m"
+        #   limits:
+        #     memory: "256Mi"
+        #     cpu: "400m"
         ports:
         - containerPort: 11000
           name: logger-port
@@ -635,13 +635,13 @@ spec:
             value: "production"
           - name: CLONEMAP_LOG_LEVEL
             value: "error"
-        resources:
-          requests:
-            memory: "128Mi"
-            cpu: "300m"
-          limits:
-            memory: "256Mi"
-            cpu: "400m"
+        # resources:
+        #   requests:
+        #     memory: "128Mi"
+        #     cpu: "300m"
+        #   limits:
+        #     memory: "256Mi"
+        #     cpu: "400m"
         ports:
         - containerPort: 12000
           name: df-port
@@ -702,13 +702,13 @@ spec:
             value: "production"
           - name: CLONEMAP_LOG_LEVEL
             value: "error"
-        resources:
-          requests:
-            memory: "256Mi"
-            cpu: "500m"
-          limits:
-            memory: "512Mi"
-            cpu: "1"
+        # resources:
+        #   requests:
+        #     memory: "256Mi"
+        #     cpu: "500m"
+        #   limits:
+        #     memory: "512Mi"
+        #     cpu: "1"
         ports:
         - containerPort: 13000
           name: fe-port

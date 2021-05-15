@@ -332,6 +332,12 @@ text {
 
 .log-series-graph {
    margin-top: 50px;
+   width: 1200px;
+}
+
+ngx-charts-bubble-chart {
+   padding-right: 100px;
+
 }
 
 .tt {
