@@ -9,11 +9,10 @@ import { ActivatedRoute, Params} from '@angular/router';
 })
 export class AMSComponent implements OnInit {
 
-    MASs;
+    MASID: number[] = [];
     selectedMASID: number = -1;
-    selectedMAS;
+    selectedMAS: any = null;
     collapsed: boolean = false;
-
 
     constructor(
         private masService: MasService,
@@ -21,16 +20,14 @@ export class AMSComponent implements OnInit {
     ) { }
 
     ngOnInit() {
+
         // get the information for the sidebar
-
         this.masService.getMAS().subscribe((MASs: any) => {
-            if (MASs === null) {
-                    this.MASs = [];
-            } else {
-                this.MASs = MASs;
-                }   
-            });
-
+            if (MASs !== null) {
+                this.MASID = MASs.map( MAS => MAS.id);
+                console.log(this.MASID);
+            }   
+        });
 
         // get the concrete content of the selected MAS
         this.route.params.subscribe(
@@ -44,14 +41,10 @@ export class AMSComponent implements OnInit {
                     console.log("No MASID");
                 }
             });
- 
     }
 
     onToggleCollapsed() {
         this.collapsed = !this.collapsed;
     }
-
-        
-    
 
 }

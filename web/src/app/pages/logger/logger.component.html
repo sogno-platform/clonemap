@@ -1,16 +1,16 @@
 <div class="maincontainer">
     <!--sidebar-->
-    <div class="sidebar" *ngIf="MASs !== null">
+    <div class="sidebar" >
         <div class="nav">
-            <div class="nav-item" *ngFor="let MAS of MASs" routerLinkActive="is-active" [ngClass]="MAS.id === selectedMASID ? 'active' : ''">
-                <a class="list-text"  [routerLink]="['/logger', MAS.id]" >
-                  <p > MAS {{ MAS.id }}</p>
+            <div class="nav-item" *ngFor="let id of MASID" routerLinkActive="is-active" [ngClass]="id === selectedMASID ? 'active' : ''">
+                <a class="list-text"  [routerLink]="['/logger', id]" >
+                  <p > MAS {{ id }}</p>
                 </a>
             </div>
         </div>
     </div> 
 
-    <!--modal for uploading the log-->
+    <!--modal for adding agents-->
     <ng-template #content let-modal>
         <div class="modal-header">
             <h2 class="modal-title">Add Agent</h2>
@@ -38,7 +38,6 @@
             <h1>Logger is not alive......</h1>
         </div>
         <div *ngIf="alive">
-
             <ul class="nav nav-tabs justify-content-end">
                 <li class="nav-item"  >
                     <a class="nav-link" [class.active]="currState==='log'" (click)="onClickLog()" >log</a>
@@ -81,9 +80,10 @@
                     <mat-label>Start time</mat-label>
                     <input matInput
                         name="selected_start_time"
+                        format="24"
                         [(ngModel)]="selectedStartTime"
                         [ngxMatTimepicker]="pickerA"
-                        placeholder="6:00 AM"
+                        placeholder="00:00"
                         readonly />
                     <mat-icon matSuffix (click)="pickerA.open()">
                         watch_later
@@ -110,9 +110,10 @@
                     <mat-label>End time</mat-label>
                     <input matInput
                         name="selected_end_time"
+                        format="24"
                         [(ngModel)]="selectedEndTime"
                         [ngxMatTimepicker]="pickerB"
-                        placeholder="4:00 PM"
+                        placeholder="23:49"
                         readonly />
                     <mat-icon matSuffix
                             (click)="pickerB.open()">
@@ -124,7 +125,7 @@
                 <div *ngIf="currState==='logSeries'">
                     <mat-form-field appearance="fill">
                         <mat-label>Name</mat-label>
-                        <mat-select (change)="updateSelectedName($event.value)">
+                        <mat-select (selectionChange)="updateSelectedName($event.value)">
                           <mat-option *ngFor="let name of names" [value]="name">
                             {{name}}
                           </mat-option>

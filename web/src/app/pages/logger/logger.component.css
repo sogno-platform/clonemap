@@ -352,6 +352,9 @@ ngx-charts-bubble-chart {
    margin-left: 500px;
 }
 
+::ng-deep .gridline-path-vertical {      
+   display: none; 
+}
       
 
 

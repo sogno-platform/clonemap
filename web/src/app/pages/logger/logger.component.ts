@@ -18,14 +18,13 @@ export class LoggerComponent implements OnInit {
 
     alive: boolean = true;
     selectedMASID: number = -1;
-    MASs = null;
+    MASID: number[] = [];
     currState: string = "log";
 
     agentID: number[];
     selectedID: number[] = [];
     notSelectedID: number[] = [];
     isAgentSelected: boolean[] = [];
-
 
     // parameters and variables for drawing logs
     searchStartTime: string = "20210301000000";
@@ -39,26 +38,25 @@ export class LoggerComponent implements OnInit {
     logBoxWidth: number = 50;
     logBoxHeight: number = 25;
     interval: number;
-    timeline = [];
-    agentBox = [];
-    logBoxes = [];
-    communications = [];
+    timeline: any = [];
+    agentBox: any = [];
+    logBoxes: any = [];
+    communications: any = [];
     texts = [];  
     popoverContent: string = "This is the content of the popover";
     logs: LogMessage[] = [];
-
     range = new FormGroup( {
         start: new FormControl(),
         end: new FormControl()
     });
-    selectedStartDate: Date;
-    selectedEndDate: Date;
-    selectedStartTime: string;
-    selectedEndTime: string;
+    selectedStartDate: Date = new Date();
+    selectedEndDate: Date = new Date();
+    selectedStartTime: string = "00:00";
+    selectedEndTime: string = "23:59";
 
     // parameters and variables for drawing log series
-    selectedName: string = "type1";
-    names: string[] = []
+    selectedName: string = "";
+    names: string[] = [];
     logSeries: LogSeries[] = [];
     bubbleData: pointSeries[] = [];
     view: any[]= [1600, 600];
@@ -92,8 +90,7 @@ export class LoggerComponent implements OnInit {
         private masService: MasService,
         private route: ActivatedRoute,
         private modalService: NgbModal,
-        ) { 
-        }
+        ) {}
 
     ngOnInit(): void {
 
@@ -104,31 +101,26 @@ export class LoggerComponent implements OnInit {
 
         // update the sidebar
         this.masService.getMAS().subscribe((MASs: any) => {
-            this.MASs = MASs;
-            },
-            err => {
-                console.log(err)  
+            if (MASs !== null) {
+                this.MASID = MASs.map(MAS => MAS.id);
+            } 
+        }, err => {
+            console.log(err);
         });
 
-        // default start time and end time
-        this.selectedStartDate = new Date();
-        this.selectedEndDate = new Date();
-        this.selectedStartTime = "1:00 AM"
-        this.selectedEndTime = "11:59 PM"
-        
         // get the selectedMASid from the current route
         this.route.params.subscribe((params: Params) => {
-                this.selectedMASID = params.masid;  
-                this.masService.getMASById(params.masid).subscribe((res: any) => {
-                    if (res.agents.counter !== 0) {
-                        this.agentID = res.agents.instances.map(item => item.id);
-                        for (let i = 0; i < res.agents.counter; i++) {
-                            this.isAgentSelected.push(false);
-                        }
-                        this.updateSelectedID();
+            this.selectedMASID = params.masid;  
+            this.masService.getMASById(params.masid).subscribe((res: any) => {
+                if (res.agents.counter !== 0) {
+                    this.agentID = res.agents.instances.map(item => item.id);
+                    for (let i = 0; i < res.agents.counter; i++) {
+                        this.isAgentSelected.push(false);
                     }
-                });
-            });   
+                    this.updateSelectedID();
+                }
+            });
+        });   
     } 
     
 
@@ -137,6 +129,7 @@ export class LoggerComponent implements OnInit {
     onDeleteID(i : number) {
         this.isAgentSelected[i] = !this.isAgentSelected[i];
         this.updateSelectedID();
+        this.updateNames();
         if (this.currState === "log") {
             this.drawLogs();
         } else {
@@ -177,7 +170,6 @@ export class LoggerComponent implements OnInit {
         }
     }
 
-
     generateScaledDates(dates: Date[]) :number[]{       
         // find the date differences
         let datesInterval: number[] = [0];
@@ -193,7 +185,7 @@ export class LoggerComponent implements OnInit {
             if (datesInterval[i] > maxDiff) {
                 maxDiff = datesInterval[i];
             }
-            if (datesInterval[i] != 0 && datesInterval[i] < minDiff) {
+            if (datesInterval[i] !== 0 && datesInterval[i] < minDiff) {
                 minDiff = datesInterval[i];
             }
         }
@@ -203,10 +195,10 @@ export class LoggerComponent implements OnInit {
         let curr:number = 0;
         if (maxDiff !== minDiff) {
             for (let i = 0; i < datesInterval.length; i++) {
-                    if (datesInterval[i] !== 0) {
-                        curr = curr +  Math.round(100 * ((5 - 1)  * (datesInterval[i] - minDiff)/(maxDiff - minDiff) + 1)) / 100;
-                    }
-                    scaledDates.push(curr); 
+                if (datesInterval[i] !== 0) {
+                    curr = curr +  Math.round(100 * ((5 - 1)  * (datesInterval[i] - minDiff)/(maxDiff - minDiff) + 1)) / 100;
+                }
+                scaledDates.push(curr); 
             }
         } else {
             for (let i = 0; i < datesInterval.length; i++) {
@@ -222,29 +214,13 @@ export class LoggerComponent implements OnInit {
     onClickSearchButton() {
         const startDate: string = this.convertDate(this.selectedStartDate);
         const endDate:string =  this.convertDate(this.selectedEndDate);
-        this.searchStartTime = startDate + this.convertTime(this.selectedStartTime) + "00";
-        this.searchEndTime = endDate + this.convertTime(this.selectedEndTime)+ "59";
+        this.searchStartTime = startDate + this.selectedStartTime.replace(":", "") + "00";
+        this.searchEndTime = endDate + this.selectedEndTime.replace(":", "") + "59";
         if (this.currState==="log") {
-            this.multiLogs().subscribe( logss => {
-                this.logs = [];
-                for (let logs of logss) {
-                    if (logs !== null) {
-                        for (let log of logs) {
-                            this.logs.push(log);
-                        }
-                    }
-                }
-                this.logs.sort((a, b) => {
-                    let date1 = new Date(a.timestamp);
-                    let date2 = new Date(b.timestamp);
-                    return date2.getTime() - date1.getTime();
-                } )
-                this.drawAllElements(this.logs);
-            })
+            this.drawLogs();
         } else {
             this.drawSeries();
         }
-
     }
 
 
@@ -255,28 +231,6 @@ export class LoggerComponent implements OnInit {
         res += date.getDate()  < 10 ? "0" + date.getDate().toString() : date.getDate().toString()
         return res;
     }
-
-    convertTime(origin: string): string {
-        if (origin.charAt(1) == ":") {
-            origin = "0" + origin;
-        }
-        let hour: number = +origin.substr(0,2);
-        let minute: number = +origin.substr(3,2);
-        if (origin.charAt(6) === "P") {
-            hour += 12;
-        }
-        let res:string = "";
-        if (hour < 10) {
-            res += "0"
-        }
-        res += hour.toString();
-        if (minute < 10) {
-            res += "0"
-        }
-        res += minute.toString();
-        return res;
-    }
-
 
     /********************************* functions for drawing logs  ************************************/
     onClickLog(){
@@ -291,7 +245,6 @@ export class LoggerComponent implements OnInit {
     drawLogs() {
         this.logs = [];      
         this.multiLogs().subscribe( logss => {
-            this.logs = [];
             for (let logs of logss) {
                 if (logs !== null) {
                     for (let log of logs) {
@@ -307,7 +260,6 @@ export class LoggerComponent implements OnInit {
             this.drawAllElements(this.logs);
          })
     }
-
 
     multiLogs(): Observable<any[]> {
         let res = [];
@@ -418,7 +370,7 @@ export class LoggerComponent implements OnInit {
         this.drawSeries();
     }
     
-    updateSelectedName(name: string) {
+    updateSelectedName(name) {
         this.selectedName = name;
     }
 
@@ -500,7 +452,6 @@ export class LoggerComponent implements OnInit {
                 series: [point]
             })
         }
-
         console.log(this.mapAxisDate);
     }
 

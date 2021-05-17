@@ -1,18 +1,14 @@
-<!-- Agency Elements -->
 <div class="maincontainer">
     <!--sidebar-->
     <div class="sidebar">
         <div class="nav">
-            <div *ngIf="MASs !== null">
-            <div class="nav-item" *ngFor="let MAS of MASs" routerLinkActive="is-active">
-                <a class="list-text" [routerLink]="['/ams', MAS.id]" >
-                    <p >MAS {{ MAS.id }}</p>
+            <div class="nav-item" *ngFor="let id of MASID" routerLinkActive="is-active">
+                <a class="list-text" [routerLink]="['/ams', id]" >
+                    <p >MAS {{ id }}</p>
                 </a>
-            </div>
             </div>
         </div>
     </div>   
-
 
     <!--modal for uploading the agency-->
     <ng-template #content let-modal>
@@ -42,14 +38,13 @@
         </div>
     </ng-template>
 
-
     <div class="contentcontainer"  >
-            <div *ngIf="MASs !== null && MASs.length !== 0">
+            <div *ngIf="MASID.length !== 0">
                 <div class="title">
                     <div class="title-name" >Overview</div>              
                     <button type='button' class='btn my-btn btn-create' (click)="openLg(content)">+ New MAS</button>
                 </div>   
-                            <!--display the overview of agencies with tables-->
+                <!--display the overview of agencies with tables-->
                 <div id="tables">
                     <div class="row">
                         <div class="col-md-4 my-row" *ngFor="let MAS of MASsDisplay">
@@ -95,13 +90,11 @@
                 </div>     
             </div>
 
-
-        <div class="overview-empty" *ngIf="MASs === null || MASs.length === 0">       
+        <div class="overview-empty" *ngIf="MASID.length === 0">       
             <div class="status">{{status}}</div>
-            <button *ngIf="MASs.length !== null" type='button' class="btn my-btn" (click)="openLg(content)">+ New MAS</button>      
+            <button *ngIf="status==='Currently no MASs, create one......'" type='button' class="btn my-btn" (click)="openLg(content)">+ New MAS</button>      
         </div>
     </div>
-    
 
 </div>
 

@@ -16,7 +16,7 @@ cytoscape.use( popper);
 })
 export class DFComponent implements OnInit {
     selectedMASID:number = -1;
-    MASs = null;
+    MASID: any = [];
     alive: boolean = true;
     fileToUpload: File = null;
     display: string = "";
@@ -24,7 +24,7 @@ export class DFComponent implements OnInit {
     collapsed: boolean[] = [];
     searched_results;
     curr_state: string = "list";
-    graph;
+    graph: any;
     constructor(
         private dfService: DfService,
         private masService: MasService,
@@ -35,48 +35,43 @@ export class DFComponent implements OnInit {
     ngOnInit() {
         this.dfService.getAlive().subscribe( (res: any) => {
             this.alive = res.df;
-        }, 
-        error => {
+        }, error => {
             console.log(error);
         });
 
         // update the sidebar
         this.masService.getMAS().subscribe((MASs: any) => {
-            this.MASs = MASs;
-            }, 
-            err => {
-                console.log(err)  
-            }
-        );
+            this.MASID = MASs.map(MAS => MAS.id);
+        }, err => {
+            console.log(err)  
+        });
 
-        this.route.params.subscribe(
-            (params: Params) => {
-                if (params.masid) {
-                    this.selectedMASID = params.masid;
-                    this.dfService.getAllSvcs(this.selectedMASID.toString()).subscribe( (res:any) => {
-                        this.searched_results = res;  
-                        for (let i = 0; i < res.length; i++) {
-                            this.collapsed.push(false);
-                        }  
-                    })       
-                } else {
-                    console.log("No masid");
-                }
+        this.route.params.subscribe((params: Params) => {
+            if (params.masid) {
+                this.selectedMASID = params.masid;
+                this.dfService.getAllSvcs(this.selectedMASID.toString()).subscribe( (res:any) => {
+                    this.searched_results = res;  
+                    for (let i = 0; i < res.length; i++) {
+                        this.collapsed.push(false);
+                    }  
+                });       
+            } else {
+                console.log("No masid");
+            }
         });
     }
 
-
-
-     getNodeAndEdge(): Observable<any>  {
+    getNodeAndEdge(): Observable<any>  {
         return new Observable((observer) => {
             forkJoin({
                 reqNode: this.masService.getMASById(this.selectedMASID.toString()),
                 reqSvc: this.dfService.getAllSvcs(this.selectedMASID.toString())
             }).subscribe(({ reqNode, reqSvc } : any ) => {
                 console.log(reqSvc)
-                let nodes = reqNode.graph.node.map(node => node.id);
-                let agents = reqNode.agents.instances.map(agent => agent.id);
-                let edgeNodes = reqNode.graph.edge;
+                console.log(reqNode)
+                const nodes = reqNode.graph.node.map(node => node.id);
+                const agents = reqNode.agents.instances.map(agent => agent.id);
+                const edgeNodes = reqNode.graph.edge;
                 let edgeAgentNode = [];
                 let svcs: string[] = [];
                 let edgeSvcAgent = [];
@@ -109,7 +104,7 @@ export class DFComponent implements OnInit {
 
     }
 
-    // functions for update the services
+    // functions for updating the services
     openLg(content) {
         this.modalService.open(content, { size: 'lg', centered: true });
     }

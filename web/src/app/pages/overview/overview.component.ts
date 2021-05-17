@@ -11,8 +11,8 @@ import { Router, ActivatedRouteSnapshot } from '@angular/router'
 
 export class OverviewComponent implements OnInit {
   
-    MASs = null;
-    MASsDisplay = null;
+    MASID: number[] = [];
+    MASsDisplay: any = [];
     fileToUpload: File = null;
     display: string = "";
     filename: string = "Choose a file...";
@@ -68,19 +68,17 @@ export class OverviewComponent implements OnInit {
 
     updateMAS() {
         this.masService.getMAS().subscribe((MASs: any) => {
-            if (MASs === null) {
-                this.status = "Currently no MASs, create one......";
-                this.MASs = [];
-                this.MASsDisplay = [];
-                console.log(this.MASs);
-            } else {
-                this.MASs = MASs;
+            if (MASs !== null) {
+                this.MASID = MASs.map(MAS => MAS.id);
                 this.MASsDisplay = MASs;
+            } else {
+                this.status = "Currently no MASs, create one......";
+                this.MASsDisplay = [];
+                console.log(this.MASID);
             }
             },
             err => {
                 this.status = "The CloneMAP platform is not connected"
-                console.log(err)  
             }
         );
     }

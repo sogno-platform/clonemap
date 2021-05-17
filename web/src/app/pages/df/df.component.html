@@ -1,10 +1,10 @@
 <div class="maincontainer">
        <!--sidebar-->
-    <div class="sidebar" *ngIf="MASs !== null">
+    <div class="sidebar" *ngIf="MASID.length !== 0">
         <div class="nav">
-            <div class="nav-item" *ngFor="let MAS of MASs" routerLinkActive="is-active" [ngClass]="MAS.id === selectedMASID ? 'active' : ''">
-                <a class="list-text"  [routerLink]="['/df', MAS.id]" >
-                  <p > MAS {{ MAS.id }}</p>
+            <div class="nav-item" *ngFor="let id of MASID" routerLinkActive="is-active" [ngClass]="id === selectedMASID ? 'active' : ''">
+                <a class="list-text"  [routerLink]="['/df', id]" >
+                  <p > MAS {{ id }}</p>
                 </a>
             </div>
         </div>
