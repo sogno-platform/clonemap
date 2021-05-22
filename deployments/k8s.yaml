@@ -390,6 +390,7 @@ data:
     CREATE TABLE clonemap.logging_msg ( masid int, agentid int, t timestamp, log varchar, PRIMARY KEY ((masid, agentid), t)) WITH CLUSTERING ORDER BY (t ASC);
     CREATE TABLE clonemap.logging_status ( masid int, agentid int, t timestamp, log varchar, PRIMARY KEY ((masid, agentid), t)) WITH CLUSTERING ORDER BY (t ASC);
     CREATE TABLE clonemap.logging_debug ( masid int, agentid int, t timestamp, log varchar, PRIMARY KEY ((masid, agentid), t)) WITH CLUSTERING ORDER BY (t ASC);
+    CREATE TABLE clonemap.logging_beh ( masid int, agentid int, t timestamp, log varchar, PRIMARY KEY ((masid, agentid), t)) WITH CLUSTERING ORDER BY (t ASC);
     CREATE TABLE clonemap.logging_series ( masid int, agentid int, name varchar, t timestamp, series varchar, PRIMARY KEY ((masid, agentid), name, t)) WITH CLUSTERING ORDER BY (name ASC, t ASC);
     CREATE TABLE clonemap.state ( masid int, agentid int, state varchar, PRIMARY KEY (masid, agentid));
     EOF

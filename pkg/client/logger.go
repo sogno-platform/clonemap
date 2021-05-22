@@ -271,7 +271,8 @@ func (logCol *LogCollector) storeLogs() (err error) {
 					if (logMsg.Topic == "msg" && !logCol.config.TopicMsg) ||
 						(logMsg.Topic == "app" && !logCol.config.TopicApp) ||
 						(logMsg.Topic == "debug" && !logCol.config.TopicDebug) ||
-						(logMsg.Topic == "status" && !logCol.config.TopicStatus) {
+						(logMsg.Topic == "status" && !logCol.config.TopicStatus) ||
+						(logMsg.Topic == "beh" && !logCol.config.TopicBeh) {
 						continue
 					}
 					logMsgs[index] = logMsg
@@ -303,7 +304,8 @@ func (logCol *LogCollector) storeLogs() (err error) {
 			if (logMsg.Topic == "msg" && !logCol.config.TopicMsg) ||
 				(logMsg.Topic == "app" && !logCol.config.TopicApp) ||
 				(logMsg.Topic == "debug" && !logCol.config.TopicDebug) ||
-				(logMsg.Topic == "status" && !logCol.config.TopicStatus) {
+				(logMsg.Topic == "status" && !logCol.config.TopicStatus) ||
+				(logMsg.Topic == "beh" && !logCol.config.TopicBeh) {
 				continue
 			}
 			logCol.logInfo.Println(logMsg)
@@ -392,7 +394,7 @@ func (agLog *AgentLogger) NewLog(topic string, message string, data string) (err
 	}
 	agLog.mutex.Unlock()
 	if topic != "error" && topic != "debug" && topic != "status" && topic != "msg" &&
-		topic != "app" {
+		topic != "app" && topic != "beh" {
 		err = errors.New("unknown topic")
 		return
 	}

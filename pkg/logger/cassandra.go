@@ -70,6 +70,7 @@ type cassStorage struct {
 	logErrorIn  chan schemas.LogMessage // logging inbox
 	logDebugIn  chan schemas.LogMessage // logging inbox
 	logMsgIn    chan schemas.LogMessage // logging inbox
+	logBehIn    chan schemas.LogMessage // logging inbox
 	stateIn     chan schemas.State      // state inbox
 	logSeriesIn chan schemas.LogSeries  // logging inbox
 }
@@ -100,6 +101,10 @@ func (stor *cassStorage) addAgentLogMessage(log schemas.LogMessage) (err error) 
 		stor.logAppIn <- log
 		// err = stor.session.Query("INSERT INTO logging_app (masid, agentid, t, log) "+
 		// 	"VALUES (?, ?, ?, ?)", masID, agentID, log.Timestamp, js).Exec()
+	case "beh":
+		stor.logBehIn <- log
+		// err = stor.session.Query("INSERT INTO logging_beh (masid, agentid, t, log) "+
+		// 	"VALUES (?, ?, ?, ?)", masID, agentID, log.Timestamp, js).Exec()
 	default:
 		err = errors.New("wrong topic")
 	}
@@ -125,6 +130,9 @@ func (stor *cassStorage) getLatestAgentLogMessages(masID int, agentID int, topic
 			"agentid = ? LIMIT ?", masID, agentID, num).Iter()
 	case "app":
 		iter = stor.session.Query("SELECT log FROM logging_app WHERE masid = ? AND "+
+			"agentid = ? LIMIT ?", masID, agentID, num).Iter()
+	case "beh":
+		iter = stor.session.Query("SELECT log FROM logging_beh WHERE masid = ? AND "+
 			"agentid = ? LIMIT ?", masID, agentID, num).Iter()
 	default:
 		err = errors.New("wrong topic")
@@ -163,6 +171,9 @@ func (stor *cassStorage) getAgentLogMessagesInRange(masID int, agentID int, topi
 			"agentid = ? AND t > ? AND t < ?", masID, agentID, start, end).Iter()
 	case "app":
 		iter = stor.session.Query("SELECT log FROM logging_app WHERE masid = ? AND "+
+			"agentid = ? AND t > ? AND t < ?", masID, agentID, start, end).Iter()
+	case "beh":
+		iter = stor.session.Query("SELECT log FROM logging_beh WHERE masid = ? AND "+
 			"agentid = ? AND t > ? AND t < ?", masID, agentID, start, end).Iter()
 	default:
 		err = errors.New("wrong topic")
@@ -306,6 +317,8 @@ func (stor *cassStorage) storeLogs(topic string) {
 		logIn = stor.logDebugIn
 	} else if topic == "msg" {
 		logIn = stor.logMsgIn
+	} else if topic == "beh" {
+		logIn = stor.logBehIn
 	} else {
 		return
 	}
@@ -450,6 +463,7 @@ func newCassandraStorage(ip []string, user string, pass string) (stor storage, e
 	temp.logDebugIn = make(chan schemas.LogMessage, 10000)
 	temp.logErrorIn = make(chan schemas.LogMessage, 10000)
 	temp.logMsgIn = make(chan schemas.LogMessage, 10000)
+	temp.logBehIn = make(chan schemas.LogMessage, 10000)
 	temp.stateIn = make(chan schemas.State, 10000)
 	temp.logSeriesIn = make(chan schemas.LogSeries, 10000)
 
@@ -459,6 +473,7 @@ func newCassandraStorage(ip []string, user string, pass string) (stor storage, e
 		go temp.storeLogs("error")
 		go temp.storeLogs("debug")
 		go temp.storeLogs("msg")
+		go temp.storeLogs("beh")
 		go temp.storeSeries()
 		go temp.storeState()
 	}

@@ -13,7 +13,8 @@
             "msg":true,
             "app":true,
             "status":true,
-            "debug":true
+            "debug":true,
+            "beh": true
         }
     },
     "imagegroups":[

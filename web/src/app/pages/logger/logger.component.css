@@ -295,6 +295,10 @@ text {
    fill: rgb(56, 202, 221);
 }
 
+.beh {
+   fill: rgb(223, 170, 72);
+}
+
 
 .topics .selected {
    color: white;
@@ -328,6 +332,10 @@ text {
 
 .topics .app-tag.selected {
    background-color: rgb(56, 202, 221) ;
+}
+
+.topics .beh-tag.selected {
+   background-color: rgb(223, 170, 72) ;
 }
 
 .log-series-graph {

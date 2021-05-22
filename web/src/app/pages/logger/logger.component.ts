@@ -29,8 +29,8 @@ export class LoggerComponent implements OnInit {
     // parameters and variables for drawing logs
     searchStartTime: string = "20210301000000";
     searchEndTime: string = "20210331000000"
-    isTopicSelected: boolean[] = [true, true, true, true, true];
-    topics: string[] = ["error", "debug", "msg", "status", "app"];
+    isTopicSelected: boolean[] = [true, true, true, true, true, true];
+    topics: string[] = ["error", "debug", "msg", "status", "app", "beh" ];
     width: number = 1500;
     height: number = 2000;
     boxWidth: number = 100;
@@ -466,4 +466,10 @@ export class LoggerComponent implements OnInit {
     onDeactivate(data): void {
         console.log('Deactivate', JSON.parse(JSON.stringify(data)));
     }
+
+    /********************************* functions for drawing logs  ************************************/
+    onClickStatistics() {
+        this.currState = "staticstics";
+    }
+
 }

@@ -117,6 +117,7 @@ type agentStorage struct {
 	msgLogs   []schemas.LogMessage
 	statLogs  []schemas.LogMessage
 	appLogs   []schemas.LogMessage
+	behLogs   []schemas.LogMessage
 	logSeries map[string][]schemas.LogSeries
 	state     schemas.State
 	commData  []schemas.Communication
@@ -152,6 +153,9 @@ func (stor *localStorage) addAgentLogMessage(log schemas.LogMessage) (err error)
 			log)
 	case "app":
 		stor.mas[log.MASID].agents[log.AgentID].appLogs = append(stor.mas[log.MASID].agents[log.AgentID].appLogs,
+			log)
+	case "beh":
+		stor.mas[log.MASID].agents[log.AgentID].behLogs = append(stor.mas[log.MASID].agents[log.AgentID].behLogs,
 			log)
 	default:
 		err = errors.New("wrong topic")
@@ -202,6 +206,13 @@ func (stor *localStorage) getLatestAgentLogMessages(masID int, agentID int, topi
 				}
 				logs = make([]schemas.LogMessage, num)
 				copy(logs, stor.mas[masID].agents[agentID].appLogs[length-num:length])
+			case "beh":
+				length := len(stor.mas[masID].agents[agentID].behLogs)
+				if length < num {
+					num = length
+				}
+				logs = make([]schemas.LogMessage, num)
+				copy(logs, stor.mas[masID].agents[agentID].behLogs[length-num:length])
 			default:
 				err = errors.New("wrong topic")
 			}
@@ -299,6 +310,22 @@ func (stor *localStorage) getAgentLogMessagesInRange(masID int, agentID int, top
 						copy(logs, stor.mas[masID].agents[agentID].appLogs[startIndex:endIndex])
 					}
 				}
+			case "beh":
+				length := len(stor.mas[masID].agents[agentID].behLogs)
+				if length > 0 {
+					startIndex := sort.Search(length,
+						func(i int) bool {
+							return stor.mas[masID].agents[agentID].behLogs[i].Timestamp.After(start)
+						})
+					endIndex := sort.Search(length,
+						func(i int) bool {
+							return stor.mas[masID].agents[agentID].behLogs[i].Timestamp.After(end)
+						})
+					if endIndex-startIndex >= 0 {
+						logs = make([]schemas.LogMessage, endIndex-startIndex)
+						copy(logs, stor.mas[masID].agents[agentID].behLogs[startIndex:endIndex])
+					}
+				}
 			default:
 				err = errors.New("wrong topic")
 			}
@@ -385,6 +412,7 @@ func (stor *localStorage) deleteAgentLogMessages(masID int, agentID int) (err er
 			stor.mas[masID].agents[agentID].msgLogs = nil
 			stor.mas[masID].agents[agentID].statLogs = nil
 			stor.mas[masID].agents[agentID].appLogs = nil
+			stor.mas[masID].agents[agentID].behLogs = nil
 		}
 	}
 	stor.mutex.Unlock()

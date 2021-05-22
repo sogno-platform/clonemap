@@ -55,6 +55,7 @@ type LoggerConfig struct {
 	TopicApp    bool   `json:"app,omitempty"`    // activation of app log topic
 	TopicStatus bool   `json:"status,omitempty"` // activation of status log topic
 	TopicDebug  bool   `json:"debug,omitempty"`  // activation of debug log topic
+	TopicBeh    bool   `json:"beh,omitempty"`    // activation of beh log topic
 	Host        string `json:"host,omitempty"`   // hostname of Logger
 	Port        int    `json:"port,omitempty"`   // port of Logger
 }
@@ -64,7 +65,7 @@ type LogMessage struct {
 	MASID          int       `json:"masid"`          // ID of MAS agent runs in
 	AgentID        int       `json:"agentid"`        // ID of agent
 	Timestamp      time.Time `json:"timestamp"`      // time of message
-	Topic          string    `json:"topic"`          // log type (error, debug, msg, status, app)
+	Topic          string    `json:"topic"`          // log type (error, debug, msg, status, app, beh)
 	Message        string    `json:"msg"`            // log message
 	AdditionalData string    `json:"data,omitempty"` // additional information e.g in json
 }
