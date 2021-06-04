@@ -14,12 +14,9 @@
         </div>
         <div *ngIf="selectedMAS !== null">
             <div class="config">
-                <div class="config-header d-flex justify-content-between"> 
-                    <div class="title">Config</div>
-                    <i class="fas fa-angle-right" *ngIf="collapsed" (click)="onToggleCollapsed()"></i>
-                    <i class="fas fa-angle-down" *ngIf="!collapsed" (click)="onToggleCollapsed()"></i>
-                </div>
-                <table *ngIf="!collapsed" class="table table-striped">
+               
+                <div class="title">Config</div>
+                <table  class="table table-striped">
                     <tbody>
                         <tr>
                             <th>Id</th>
@@ -53,7 +50,8 @@
             
             <div class="containers">
                 <div class="title">Containers</div>
-                <div *ngFor="let image of selectedMAS.imagegroups.instances">
+                <div class="row">
+                <div class="col-md-4 my-row" *ngFor="let image of selectedMAS.imagegroups.instances">
                     <div class="card">
                         <div class="card-header">Image {{image.id}}</div>
                         <div class="card-body">
@@ -72,13 +70,14 @@
                         </div>
                     </div>
                 </div>
+                </div>
             </div>
 
 
             <div class="containers">
                 <div class="title">Agents</div>
-                <div class="row">   
-                    <div class="col-md-4 my-row" *ngFor="let agent of selectedMAS.agents.instances">
+                <div class="row">    
+                    <div class="col-md-4 my-row" *ngFor="let agent of selectedMAS.agents.instances | paginate: { itemsPerPage: 6, currentPage: q };">
                         <div class="card">
                             <div class="card-header">Agent {{agent.id}}</div>
                             <div class="card-body">
@@ -102,7 +101,10 @@
                         </div>
                     </div> 
                 </div>
-            </div>         
+            </div> 
+            <pagination-controls class="pagination" (pageChange)="q = $event"></pagination-controls>
+
+
         </div>
     </div>
 </div>

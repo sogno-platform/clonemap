@@ -1,4 +1,4 @@
-import { Component, OnInit} from '@angular/core';
+import { Component, OnInit, ViewChild} from '@angular/core';
 import { LoggerService} from 'src/app/services/logger.service'
 import { MasService } from 'src/app/services/mas.service';
 import { ActivatedRoute, Params} from '@angular/router';
@@ -6,7 +6,6 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { LogMessage, LogSeries, pointSeries } from 'src/app/models/log.model';
 import { forkJoin, Observable} from 'rxjs';
 import { FormControl, FormGroup } from '@angular/forms';
-
 
 
 @Component({
@@ -18,13 +17,15 @@ export class LoggerComponent implements OnInit {
 
     alive: boolean = true;
     selectedMASID: number = -1;
-    MASID: number[] = [];
+    MASID: number[] = []; 
     currState: string = "log";
 
     agentID: number[];
     selectedID: number[] = [];
     notSelectedID: number[] = [];
     isAgentSelected: boolean[] = [];
+    tabs: string[] = ["log", "logSeries", "statistics", "heatmap"]
+    behaviorTypes: string[] = ["mqtt", "protocol", "period", "custom"]
 
     // parameters and variables for drawing logs
     searchStartTime: string = "20210301000000";
@@ -43,7 +44,7 @@ export class LoggerComponent implements OnInit {
     logBoxes: any = [];
     communications: any = [];
     texts = [];  
-    popoverContent: string = "This is the content of the popover";
+    popoverContent: string[] = ["This is the content of the popover"];
     logs: LogMessage[] = [];
     range = new FormGroup( {
         start: new FormControl(),
@@ -54,20 +55,11 @@ export class LoggerComponent implements OnInit {
     selectedStartTime: string = "00:00";
     selectedEndTime: string = "23:59";
 
-    // parameters and variables for drawing log series
+    // parameters and variables for ngx-charts
     selectedName: string = "";
     names: string[] = [];
     logSeries: LogSeries[] = [];
     bubbleData: pointSeries[] = [];
-    view: any[]= [1600, 600];
-    showXAxis: boolean = true;
-    showYAxis: boolean = true;
-    gradient: boolean = false;
-    showLegend: boolean = false;
-    showXAxisLabel: boolean = true;
-    xAxisLabel: string = 'Time';
-    showYAxisLabel: boolean = true;
-    yAxisLabel: string = 'Value';
     maxRadius: number = 10;
     minRadius: number = 10;
     datesSeries: Date[] = [];
@@ -77,20 +69,42 @@ export class LoggerComponent implements OnInit {
     xAxisTickFormatting = (val:number) => {
       return this.mapAxisDate.get(val);
     }
+
+    // exclusive for log series
+    viewBubble: any[]= [1600, 600];
     colorScheme = {
-      domain: ['#9696F3'
-/*       'rgb(230, 109, 109)', 
-      'rgb(216, 216, 110)', 
-      'rgb(126, 235, 149)', 
-      'rgb(56, 202, 221)'  */]
-    };
+        domain: [
+            "rgb(230, 109, 109)",
+            "rgb(230, 178, 109)",
+            "rgb(222, 230, 109)",
+            "rgb(147, 230, 109)",
+            "rgb(109, 230, 210)",
+            "rgb(109, 151, 230)",
+            "rgb(131, 109, 230)",
+            "rgb(196, 109, 230)",
+            "rgb(230, 109, 174)",
+            "rgb(12, 6, 6)" ]
+      };
+  
+    animations: boolean = true;
+    
+    // exclusive for statistics
+    sagentStats: number = -1;
+    selectedBehType: string = "mqtt";
+    statsInfo: any[] = [];
+
+    // exclusive for heatmap
+    gridColors: string[] = []
+    grids: any[] = [];
+    gridWidth: number = 4;
+    popoverFrequency: any = {};
 
     constructor(
         private loggerService: LoggerService,
         private masService: MasService,
         private route: ActivatedRoute,
         private modalService: NgbModal,
-        ) {}
+    ) {}
 
     ngOnInit(): void {
 
@@ -108,11 +122,14 @@ export class LoggerComponent implements OnInit {
             console.log(err);
         });
 
+
         // get the selectedMASid from the current route
         this.route.params.subscribe((params: Params) => {
             this.selectedMASID = params.masid;  
             this.masService.getMASById(params.masid).subscribe((res: any) => {
                 if (res.agents.counter !== 0) {
+                    this.gridWidth = 600 / res.agents.counter;
+                    console.log(this.gridWidth);
                     this.agentID = res.agents.instances.map(item => item.id);
                     for (let i = 0; i < res.agents.counter; i++) {
                         this.isAgentSelected.push(false);
@@ -151,10 +168,18 @@ export class LoggerComponent implements OnInit {
 
     onConfirm() {
         this.modalService.dismissAll();
-        if (this.currState === "log") {
-            this.drawLogs();
-        } else {
-            this.drawSeries();
+        switch (this.currState) {
+            case this.tabs[0]:
+                this.drawLogs();
+                break;
+            case this.tabs[1]:
+                this.drawSeries();
+                break;
+            case this.tabs[2]:
+                this.drawStatistics;
+                break;
+            default:
+                
         }
     }
 
@@ -218,8 +243,10 @@ export class LoggerComponent implements OnInit {
         this.searchEndTime = endDate + this.selectedEndTime.replace(":", "") + "59";
         if (this.currState==="log") {
             this.drawLogs();
-        } else {
+        } else if (this.currState==="logSeries") {
             this.drawSeries();
+        } else {
+            this.drawStatistics();
         }
     }
 
@@ -257,7 +284,7 @@ export class LoggerComponent implements OnInit {
                 let date2 = new Date(b.timestamp);
                 return date2.getTime() - date1.getTime();
             })
-            this.drawAllElements(this.logs);
+            this.drawAllElements();
          })
     }
 
@@ -300,6 +327,8 @@ export class LoggerComponent implements OnInit {
     drawScaledDates(scaledDates: number[]) {
         this.logBoxes = [];
         this.communications = [];
+        console.log(this.logs);
+        console.log(scaledDates);
         for (let i = 0; i < scaledDates.length; i++) {
             let currMsg = this.logs[i];
             let idx = this.selectedID.indexOf(currMsg.agentid) + 1;        
@@ -315,9 +344,9 @@ export class LoggerComponent implements OnInit {
             });
             if (currMsg.topic === "msg" && currMsg.msg ==="ACL send"){
                 const data = this.logs[i].data.split(";");
-                const sender = Number(data[0].charAt(data[0].length - 1));
+                const sender = Number(data[0].split(" ")[1]);
                 const senderIdx = this.selectedID.indexOf(sender) + 1;
-                const receiver = Number(data[1].charAt(data[1].length - 1));
+                const receiver = Number(data[1].split(" ")[2]);
                 const receiverIdx = this.selectedID.indexOf(receiver) + 1;
                 const direction = (senderIdx < receiverIdx) ? 1 : -1;
                 if (this.selectedID.includes(receiver) && this.selectedID.includes(sender)) {
@@ -345,13 +374,14 @@ export class LoggerComponent implements OnInit {
         }
     }
                 
-    drawAllElements(msgs: LogMessage[]) {
+    drawAllElements() {
         this.drawAgentBox();
         let dates: Date[] = []
         for (let i = 0; i < this.logs.length; i++) {
-            let date = new Date(msgs[i].timestamp)
+            let date = new Date(this.logs[i].timestamp)
             dates.push(date)
         }
+        
         let scaledDates: number[] = this.generateScaledDates(dates);
         this.height = 800 + this.logBoxHeight * scaledDates[scaledDates.length-1];
         this.drawScaledDates(scaledDates);
@@ -359,7 +389,17 @@ export class LoggerComponent implements OnInit {
     }
 
     onChangePopoverContent(i) {
-        this.popoverContent = this.logs[i].msg;
+        if ("data" in this.logs[i]) {
+            if (this.logs[i].msg === "ACL send" || this.logs[i].msg === "ACL receive") {
+                this.popoverContent = this.logs[i].data.split("; ");
+                this.popoverContent[2] = this.popoverContent[2].split(".")[0];
+                console.log(this.logs[i].data.split("; "))   
+            } else {
+                this.popoverContent = [this.logs[i].timestamp.toString().split(".")[0], this.logs[i].msg, ...this.logs[i].data.split(";")]
+            }
+        } else {
+            this.popoverContent = [this.logs[i].timestamp.toString().split(".")[0], ...this.logs[i].msg.split(";")];
+        }
     }
 
 
@@ -370,7 +410,7 @@ export class LoggerComponent implements OnInit {
         this.drawSeries();
     }
     
-    updateSelectedName(name) {
+    updateSelectedName(name: string) {
         this.selectedName = name;
     }
 
@@ -448,7 +488,7 @@ export class LoggerComponent implements OnInit {
             console.log(typeof x)
             this.mapAxisDate.set(x, new Date(this.logSeries[i].timestamp).toLocaleString('de-DE',{ hour12: false }) )
             this.bubbleData.push({
-                name: this.logSeries[i].name,
+                name: "agent" + this.logSeries[i].agentid.toString(),
                 series: [point]
             })
         }
@@ -467,9 +507,125 @@ export class LoggerComponent implements OnInit {
         console.log('Deactivate', JSON.parse(JSON.stringify(data)));
     }
 
-    /********************************* functions for drawing logs  ************************************/
+    /********************************* functions for statistics information  ************************************/
+    
     onClickStatistics() {
-        this.currState = "staticstics";
+        this.currState = "statistics";
+        this.drawStatistics();
     }
+
+
+    updateSelectedBehType(beh: string) {
+        this.selectedBehType = beh;
+    }
+
+    // convertSecond converts second to minute, hour, day when necessary
+    convertSecond(origin: number): string {
+        const hour: number = Math.floor(origin / (60 * 60));
+        const minute: number = Math.floor(origin % (60 * 60) /60);
+        const second: number = Math.floor(origin % 60);
+        let res: string = "";
+        res += ' ' +  hour.toString() + "H"
+        res += ' ' + minute.toString() + "M"
+        res += ' ' + second.toString() + "S"
+        return res;
+    }
+
+
+    //display Statistics infomation
+    drawStatistics() {
+        if (this.sagentStats !== -1) {
+            const methods: string[] = ["max", "min", "count", "average"];
+            this.statsInfo = [];
+            this.multiInfo().subscribe(res => {
+                for (let i = 0; i < res.length; i++) {
+                    if (i !== 2) {
+                        this.statsInfo.push({
+                            method: methods[i],
+                            value: this.convertSecond(res[i])
+                        })
+                    } else {
+                        this.statsInfo.push({
+                            method: methods[i],
+                            value: res[i]
+                        })
+                    }
+                }
+            })
+        }
+    }
+
+    multiInfo(): Observable<any> {
+        let res = [];
+        const methods: string[] = ["max", "min", "count", "average"];
+        for (let method of methods) {
+            res.push(this.loggerService.getBehavior(this.selectedMASID.toString(), this.sagentStats.toString(), method, 
+            this.selectedBehType, this.searchStartTime, this.searchEndTime));
+        }
+        return forkJoin(res);
+    }
+
+    updateSelectedAgent(agentID: number) {
+        this.sagentStats = agentID;
+    }
+
+
+/********************************* functions for heatmap  ************************************/
+    onClickHeatmap() {
+        this.currState = "heatmap";
+        this.drawHeatmap();
+    }
+
+        /************ convert the count of msg communication to color light ***************/
+    // form hsl(240, 100%, 90%) to hsl(240, 100%, 50%)
+    convertValueToColor(values: number[]): string[] {
+        const maxVal = Math.max(...values);
+        const minVal = Math.min(...values);
+        let arrayColor: string[] = [];
+        if (maxVal === minVal) {
+            arrayColor = Array(values.length).fill("hsl(240, 100%, 70%)")
+        } else {
+            for (const val of values) {
+                let percent: number = 100 -(val - minVal) / (maxVal - minVal) * 40 - 10;
+                percent = Math.trunc(percent);
+                arrayColor.push("hsl(240, 100%, " + percent.toString() + "%)");
+            }
+        }
+        return arrayColor;   
+    }
+
+    onEnterGrid(i: number){
+        this.popoverFrequency = {};
+        this.popoverFrequency.x = this.grids[i].x;
+        this.popoverFrequency.y = this.grids[i].y;
+        this.popoverFrequency.value = this.grids[i].value;
+        this.grids[i].color = "hsl(0, 70.8%, 66.5%)";
+    }
+    onLeaveGrid(i: number){
+        this.grids[i].color = this.gridColors[i];
+    }
+
+    drawHeatmap() {
+        this.loggerService.getMsgHeatmap(this.selectedMASID.toString()).subscribe( (res: any) => {
+            let values: number[] = [];
+            for (let i = 0; i < res.length; i++) {
+                values.push(parseInt(res[i].split("-")[2]))
+            }
+            this.gridColors = this.convertValueToColor(values);
+            this.grids = [];
+            for (let i = 0; i < res.length; i++) {
+                this.grids.push({
+                    x: res[i].split("-")[0],
+                    y: res[i].split("-")[1],
+                    value: res[i].split("-")[2],
+                    color: this.gridColors[i]
+                })
+            }
+        })
+    }
+    
+
+
+
 
 }

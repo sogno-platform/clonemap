@@ -163,7 +163,7 @@ func (logger *Logger) handlePostLogMsgList(w http.ResponseWriter, r *http.Reques
 	logger.logErrors(r.URL.Path, cmapErr, httpErr)
 }
 
-// handlePostLogSeries is the handler for post requests to path /api/series/{masid}/{agentid}
+// handlePostLogSeries is the handler for post requests to path /api/series/{masid}
 func (logger *Logger) handlePostLogSeries(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
 	// create new log message entry
@@ -182,6 +182,28 @@ func (logger *Logger) handlePostLogSeries(w http.ResponseWriter, r *http.Request
 		return
 	}
 	go logger.addAgentLogSeries(logSeries)
+	httpErr = httpreply.Created(w, nil, "text/plain", []byte("Ressource Created"))
+	logger.logErrors(r.URL.Path, cmapErr, httpErr)
+}
+
+// handlePostBehsStats is the handler for post requests to path /api/stats/{masid}
+func (logger *Logger) handlePostBehsStats(w http.ResponseWriter, r *http.Request) {
+	var cmapErr, httpErr error
+	var body []byte
+	body, cmapErr = ioutil.ReadAll(r.Body)
+	if cmapErr != nil {
+		httpErr = httpreply.NotFoundError(w)
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
+	var behsStats []schemas.BehStats
+	cmapErr = json.Unmarshal(body, &behsStats)
+	if cmapErr != nil {
+		httpErr = httpreply.JSONUnmarshalError(w)
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
+	go logger.addAgentBehsStats(behsStats)
 	httpErr = httpreply.Created(w, nil, "text/plain", []byte("Ressource Created"))
 	logger.logErrors(r.URL.Path, cmapErr, httpErr)
 }
@@ -271,7 +293,7 @@ func (logger *Logger) handleGetLogSeriesNames(w http.ResponseWriter, r *http.Req
 	logger.logErrors(r.URL.Path, cmapErr, httpErr)
 }
 
-// handleGetLogSeriesByName is the handler for requests to path /api/series/{masid}/{agentid}/{name}
+// handleGetLogSeriesByName is the handler for requests to path /api/series/{masid}/{agentid}/{name}/time/{start}/{end}
 func (logger *Logger) handleGetLogSeriesByName(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
 	masID, agentID, cmapErr := getAgentID(r)
@@ -302,6 +324,61 @@ func (logger *Logger) handleGetLogSeriesByName(w http.ResponseWriter, r *http.Re
 		return
 	}
 	httpErr = httpreply.Resource(w, logSeries, cmapErr)
+	logger.logErrors(r.URL.Path, cmapErr, httpErr)
+}
+
+// handleGetMsgHeatmap is the handler for requests to path /api/statistics/{masid}/heatmap
+func (logger *Logger) handleGetMsgHeatmap(w http.ResponseWriter, r *http.Request) {
+	var cmapErr, httpErr error
+	vars := mux.Vars(r)
+	masID, cmapErr := strconv.Atoi(vars["masid"])
+	if cmapErr != nil {
+		return
+	}
+	var heatmap map[[2]int]int
+	heatmap, cmapErr = logger.getMsgHeatmap(masID)
+	if cmapErr != nil {
+		httpErr := httpreply.CMAPError(w, cmapErr.Error())
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
+	var res []string
+	for key, v := range heatmap {
+		res = append(res, strconv.Itoa(key[0])+"-"+strconv.Itoa(key[1])+"-"+strconv.Itoa(v))
+	}
+	httpErr = httpreply.Resource(w, res, cmapErr)
+	logger.logErrors(r.URL.Path, cmapErr, httpErr)
+}
+
+// handleGetStatistics is the handler for requests to path /api/statistics/{masid}/{method}/{topic}/{start}/{end}
+func (logger *Logger) handleGetStats(w http.ResponseWriter, r *http.Request) {
+	var cmapErr, httpErr error
+	vars := mux.Vars(r)
+	masID, agentID, cmapErr := getAgentID(r)
+	if cmapErr != nil {
+		return
+	}
+	method := vars["method"]
+	behtype := vars["behtype"]
+	start, cmapErr := time.Parse("20060102150405", vars["start"])
+	if cmapErr != nil {
+		httpErr = httpreply.NotFoundError(w)
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
+	end, cmapErr := time.Parse("20060102150405", vars["end"])
+	if cmapErr != nil {
+		httpErr = httpreply.NotFoundError(w)
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
+	data, cmapErr := logger.getStats(masID, agentID, method, behtype, start, end)
+	if cmapErr != nil {
+		httpErr := httpreply.CMAPError(w, cmapErr.Error())
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
+	httpErr = httpreply.Resource(w, data, cmapErr)
 	logger.logErrors(r.URL.Path, cmapErr, httpErr)
 }
 
@@ -459,6 +536,10 @@ func (logger *Logger) server(port int) (serv *http.Server) {
 	s.Path("/series/{masid}/{agentid}/names").Methods("GET").HandlerFunc(logger.handleGetLogSeriesNames)
 	s.Path("/series/{masid}/{agentid}/{name}/time/{start}/{end}").Methods("GET").HandlerFunc(logger.handleGetLogSeriesByName)
 	s.Path("/series/{masid}").Methods("POST").HandlerFunc(logger.handlePostLogSeries)
+
+	s.Path("/stats/{masid}").Methods("POST").HandlerFunc(logger.handlePostBehsStats)
+	s.Path("/stats/{masid}/heatmap").Methods("GET").HandlerFunc(logger.handleGetMsgHeatmap)
+	s.Path("/stats/{masid}/{agentid}/{method}/{behtype}/{start}/{end}").Methods("GET").HandlerFunc(logger.handleGetStats)
 
 	s.Path("/state/{masid}/{agentid}").Methods("GET").HandlerFunc(logger.handleGetState)
 	s.Path("/state/{masid}/{agentid}").Methods("PUT").HandlerFunc(logger.handlePutState)

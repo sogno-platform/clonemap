@@ -1,4 +1,4 @@
-export class LogMessage  {
+export interface LogMessage  {
 	masid: number;         	// ID of MAS agent runs in
 	agentid: number;       	// ID of agent
 	timestamp: Date;     	// time of message
@@ -7,7 +7,7 @@ export class LogMessage  {
 	data: string;				// additional information e.g in json
 }
 
-export class LogSeries  {
+export interface LogSeries  {
 	masid: number;         		// ID of MAS agent runs in
 	agentid: number;       		// ID of agent
 	timestamp: Date;     		// time of the log series
@@ -16,7 +16,7 @@ export class LogSeries  {
 }
 
 
-export class pointSeries {
+export interface pointSeries {
 	name: string;
 	series: point[];
 }

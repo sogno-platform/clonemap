@@ -368,10 +368,10 @@ func (ams *AMS) configureMAS(masSpec schemas.MASSpec) (masInfo schemas.MASInfo,
 			masInfo.Agents.Inst[agentID].ImageGroupID = i
 			masInfo.Agents.Inst[agentID].Address.Agency = "-im-" + strconv.Itoa(i) + "-agency-" +
 				strconv.Itoa(j/masSpec.Config.NumAgentsPerAgency)
-			for j := range masInfo.Graph.Node {
-				if masInfo.Graph.Node[j].ID == masInfo.Agents.Inst[i].Spec.NodeID {
-					masInfo.Graph.Node[j].Agent = append(masInfo.Graph.Node[j].Agent,
-						masInfo.Agents.Inst[i].ID)
+			for k := range masInfo.Graph.Node {
+				if masInfo.Graph.Node[k].ID == masInfo.Agents.Inst[j].Spec.NodeID {
+					masInfo.Graph.Node[k].Agent = append(masInfo.Graph.Node[k].Agent,
+						masInfo.Agents.Inst[j].ID)
 					break
 				}
 			}

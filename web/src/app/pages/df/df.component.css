@@ -88,26 +88,6 @@
    margin-right:10px;
 }
 
-
-.btn-create {
-
-   height: 50px;
-   width: 50px;
-   border: none;
-   border-radius: 10px;
-   font-size: large;
-   font-weight: bold;
-   margin-left: 30px;
-}
-
-.btn-delete {
-   margin-left:250px;
-   background-color: var(--light-primary-color);
-   color:white;
-}
-
-
-
 /* style of the card */ 
 .empty-service {
    color: var(--light-primary-color);
@@ -138,6 +118,15 @@
    padding-top: 20px;
    padding-right: 40px;
 }
+
+.pagination {
+   margin: 50px 0px 50px 1200px;
+}
+
+.pagination /deep/ .ngx-pagination .current {
+   background:var(--light-primary-color);
+ }
+
 
 
 /* style of the nav tab */

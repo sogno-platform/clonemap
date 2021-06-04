@@ -14,6 +14,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgxMatTimepickerModule } from 'ngx-mat-timepicker';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
+import { NgxPaginationModule } from 'ngx-pagination';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core/';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -49,7 +50,8 @@ const materialModules = [
     ReactiveFormsModule,
     ...materialModules,
     NgxMatTimepickerModule,
-    NgxChartsModule
+    NgxChartsModule,
+    NgxPaginationModule
   ],
   providers: [],
   bootstrap: [AppComponent]

@@ -59,6 +59,6 @@ type MQTTMessage struct {
 
 // String outputs message
 func (msg MQTTMessage) String() (ret string) {
-	ret = "Topic: " + msg.Topic + "; Content: " + string(msg.Content)
+	ret = "Topic: " + msg.Topic + ";Content: " + string(msg.Content)
 	return
 }

@@ -46,7 +46,10 @@ package logger
 
 import (
 	"errors"
+	"math"
 	"sort"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -58,6 +61,12 @@ type storage interface {
 	// addAgentLogMessage adds an entry to specified logging entry
 	addAgentLogMessage(log schemas.LogMessage) (err error)
 
+	// addAgentLogSeries add the log series
+	addAgentLogSeries(series schemas.LogSeries)
+
+	// addAgentBehStats add the behavior stats
+	addAgentBehStats(logBeh schemas.BehStats)
+
 	// getLatestAgentLogMessages return the latest num log messages
 	getLatestAgentLogMessages(masID int, agentID int, topic string,
 		num int) (logs []schemas.LogMessage, err error)
@@ -66,14 +75,17 @@ type storage interface {
 	getAgentLogMessagesInRange(masID int, agentID int, topic string, start time.Time,
 		end time.Time) (logs []schemas.LogMessage, err error)
 
-	// addAgentLogSeries add the log series
-	addAgentLogSeries(series schemas.LogSeries)
+	// getAgentLogSeriesNames gets the name of the log series
+	getAgentLogSeriesNames(masID int, agentID int) (names []string, err error)
 
 	// getAgentLogSeries get the log series
 	getAgentLogSeries(masID int, agentID int, name string, start time.Time, end time.Time) (series []schemas.LogSeries, err error)
 
-	// getAgentLogSeriesNames gets the name of the log series
-	getAgentLogSeriesNames(masID int, agentID int) (names []string, err error)
+	// getMsgHeatmap get the msg communication frequency
+	getMsgHeatmap(masID int) (heatmap map[[2]int]int, err error)
+
+	// getStatistics get the data of a certain method and topic
+	getStats(masID int, agentID int, method string, topic string, start time.Time, end time.Time) (data float32, err error)
 
 	// deleteAgentLogMessages deletes all log messages og an agent
 	deleteAgentLogMessages(masID int, agentID int) (err error)
@@ -109,6 +121,7 @@ type localStorage struct {
 
 type masStorage struct {
 	agents []agentStorage
+	msgCnt map[[2]int]int
 }
 
 type agentStorage struct {
@@ -118,6 +131,7 @@ type agentStorage struct {
 	statLogs  []schemas.LogMessage
 	appLogs   []schemas.LogMessage
 	behLogs   []schemas.LogMessage
+	behsStats map[string][]schemas.BehStats
 	logSeries map[string][]schemas.LogSeries
 	state     schemas.State
 	commData  []schemas.Communication
@@ -148,6 +162,15 @@ func (stor *localStorage) addAgentLogMessage(log schemas.LogMessage) (err error)
 	case "msg":
 		stor.mas[log.MASID].agents[log.AgentID].msgLogs = append(stor.mas[log.MASID].agents[log.AgentID].msgLogs,
 			log)
+		if log.Message == "ACL send" {
+			if stor.mas[log.MASID].msgCnt == nil {
+				stor.mas[log.MASID].msgCnt = make(map[[2]int]int)
+			}
+			recvStr := strings.Split(log.AdditionalData, ";")[1]
+			rec, _ := strconv.Atoi(strings.Split(recvStr, " ")[2])
+			idx := [2]int{log.AgentID, rec}
+			stor.mas[log.MASID].msgCnt[idx] += 1
+		}
 	case "status":
 		stor.mas[log.MASID].agents[log.AgentID].statLogs = append(stor.mas[log.MASID].agents[log.AgentID].statLogs,
 			log)
@@ -359,6 +382,47 @@ func (stor *localStorage) addAgentLogSeries(series schemas.LogSeries) {
 	return
 }
 
+// addAgentBehStats add the behavior stats
+func (stor *localStorage) addAgentBehStats(behStats schemas.BehStats) {
+	stor.mutex.Lock()
+	numMAS := len(stor.mas)
+	if numMAS <= behStats.MASID {
+		for i := 0; i < behStats.MASID-numMAS+1; i++ {
+			stor.mas = append(stor.mas, masStorage{})
+		}
+	}
+	numAgents := len(stor.mas[behStats.MASID].agents)
+	if numAgents <= behStats.AgentID {
+		for i := 0; i < behStats.AgentID-numAgents+1; i++ {
+			stor.mas[behStats.MASID].agents = append(stor.mas[behStats.MASID].agents, agentStorage{})
+		}
+	}
+
+	if stor.mas[behStats.MASID].agents[behStats.AgentID].behsStats == nil {
+		stor.mas[behStats.MASID].agents[behStats.AgentID].behsStats = make(map[string][]schemas.BehStats)
+	}
+	stor.mas[behStats.MASID].agents[behStats.AgentID].behsStats[behStats.BehType] = append(stor.mas[behStats.MASID].agents[behStats.AgentID].behsStats[behStats.BehType], behStats)
+	stor.mutex.Unlock()
+	return
+}
+
+// getAgentLogSeriesNames gets the name of the log series
+func (stor *localStorage) getAgentLogSeriesNames(masID int, agentID int) (names []string, err error) {
+	stor.mutex.Lock()
+	if masID < len(stor.mas) {
+		if agentID < len(stor.mas[masID].agents) {
+			if stor.mas[masID].agents[agentID].logSeries != nil {
+				names = make([]string, 0, len(stor.mas[masID].agents[agentID].logSeries))
+				for k := range stor.mas[masID].agents[agentID].logSeries {
+					names = append(names, k)
+				}
+			}
+		}
+	}
+	stor.mutex.Unlock()
+	return
+}
+
 // getAgentLogSeries return the log series
 func (stor *localStorage) getAgentLogSeries(masID int, agentID int, name string, start time.Time, end time.Time) (series []schemas.LogSeries, err error) {
 	stor.mutex.Lock()
@@ -385,15 +449,82 @@ func (stor *localStorage) getAgentLogSeries(masID int, agentID int, name string,
 	return
 }
 
-// getAgentLogSeriesNames gets the name of the log series
-func (stor *localStorage) getAgentLogSeriesNames(masID int, agentID int) (names []string, err error) {
+// getMsgHeatmap return the msg communication frequency
+func (stor *localStorage) getMsgHeatmap(masID int) (heatmap map[[2]int]int, err error) {
+	stor.mutex.Lock()
+	if masID < len(stor.mas) {
+		heatmap = stor.mas[masID].msgCnt
+	}
+	stor.mutex.Unlock()
+	return
+}
+
+func getDuration(behsStats []schemas.BehStats) (duration []int) {
+	for _, behStats := range behsStats {
+		duration = append(duration, behStats.Duration)
+	}
+	return
+}
+
+func getMax(duration []int) (maxVal int) {
+	maxVal = 0
+	for _, v := range duration {
+		if v > maxVal {
+			maxVal = v
+		}
+	}
+	return
+}
+
+func getMin(duration []int) (minVal int) {
+	minVal = math.MaxInt32
+	for _, v := range duration {
+		if v < minVal {
+			minVal = v
+		}
+	}
+	return
+}
+
+func getAverage(duration []int) (averageVal float32) {
+	sum := 0
+	for _, v := range duration {
+		sum += v
+	}
+	return float32(sum) / float32(len(duration))
+}
+
+// getStatistics get the data of a certain method and topic
+func (stor *localStorage) getStats(masID int, agentID int, method string, behType string, start time.Time, end time.Time) (data float32, err error) {
 	stor.mutex.Lock()
 	if masID < len(stor.mas) {
 		if agentID < len(stor.mas[masID].agents) {
-			if stor.mas[masID].agents[agentID].logSeries != nil {
-				names = make([]string, 0, len(stor.mas[masID].agents[agentID].logSeries))
-				for k := range stor.mas[masID].agents[agentID].logSeries {
-					names = append(names, k)
+			res, ok := stor.mas[masID].agents[agentID].behsStats[behType]
+			if ok {
+				length := len(res)
+				startIndex := sort.Search(length,
+					func(i int) bool {
+						return res[i].Start.After(start)
+					})
+				endIndex := sort.Search(length,
+					func(i int) bool {
+						return res[i].Start.After(end)
+					})
+				if endIndex-startIndex >= 0 {
+					logs := make([]schemas.BehStats, endIndex-startIndex)
+					copy(logs, stor.mas[masID].agents[agentID].behsStats[behType][startIndex:endIndex])
+					switch method {
+					case "max":
+						data = float32(getMax(getDuration(logs)))
+					case "min":
+						data = float32(getMin(getDuration(logs)))
+					case "count":
+						data = float32(len(logs))
+					case "average":
+						data = getAverage((getDuration(logs)))
+					default:
+						err = errors.New("wrong method")
+					}
 				}
 			}
 		}

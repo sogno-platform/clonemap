@@ -45,23 +45,34 @@
                 <li class="nav-item">
                     <a class="nav-link" [class.active]="currState==='logSeries'" (click)="onClickLogSeries()">logSeries</a>
                 </li>
-                <li class="nav-item" style="padding-right:100px;">
+                <li class="nav-item">
                     <a class="nav-link" [class.active]="currState==='statistics'" (click)="onClickStatistics()">statistics</a>
+                </li>
+                <li class="nav-item" style="padding-right:100px;">
+                    <a class="nav-link" [class.active]="currState==='heatmap'" (click)="onClickHeatmap()">heatmap</a>
                 </li>
             </ul>
 
-            <div class="selectionBoard d-flex">
-                <div class="agentID d-flex align-content-end">
-                    <div class="agent-title">agents</div>
-                    <div class="agents">
-                        <div class="row">
-                            <div *ngFor="let id of selectedID" class="agent-selected col-lg-2 is-agent-active" (click)="onDeleteID(id)" [ngValue]="id" >
-                                <p>agent {{id}} </p>
-                                <div class="delete"><i class="fas fa-trash"></i></div>
-                            </div>
-                            <div *ngIf="selectedID.length<9" class="more col-lg-1" (click)="openLg(content)">+ </div>
-                        </div>
-                    </div>  
+            <div  class="selectionBoard d-flex justify-content-center">
+<!--            agent selection for statistic condition -->                
+                <div *ngIf="currState==='statistics'">
+                    <mat-form-field appearance="fill" class="between">
+                        <mat-label>agent</mat-label>
+                        <mat-select (selectionChange)="updateSelectedAgent($event.value)">
+                          <mat-option *ngFor="let agent of agentID" [value]="agent">
+                            agent {{agent}}
+                          </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                    <mat-form-field appearance="fill" class="between">
+                        <mat-label>type
+                        </mat-label>
+                        <mat-select (selectionChange)="updateSelectedBehType($event.value)">
+                          <mat-option *ngFor="let type of behaviorTypes" [value]="type">
+                            {{type}}
+                          </mat-option>
+                        </mat-select>
+                    </mat-form-field>
                 </div>
   
                 <mat-form-field appearance="fill" class="example-form-field">
@@ -139,19 +150,46 @@
                 <i class="fas fa-search fa-2x" (click)="onClickSearchButton()"></i>
 
             </div>
+            <!--            agent selection for non-statistic conditions -->
+            <div *ngIf="currState ==='log' || currState ==='logSeries'" class= "d-flex align-content-end">
+                <div class="agent-title">agents</div>
+                <div class="agents">
+                    <div class="row">
+                        <div *ngFor="let id of selectedID" class="agent-selected col-lg-1 is-agent-active" (click)="onDeleteID(id)" [ngValue]="id" >
+                            <p>agent {{id}} </p>
+                            <div class="delete"><i class="fas fa-trash"></i></div>
+                        </div>
+                        <div *ngIf="selectedID.length<9" class="more col-lg-1" (click)="openLg(content)">+ </div>
+                    </div>
+                </div>  
+            </div>
                 
-            <ng-template #popContent> {{popoverContent}} </ng-template>
+            <ng-template #popContent> 
+                <div *ngFor="let content of popoverContent">
+                    {{content}}
+                </div>
+            </ng-template>
 
             <svg *ngIf="currState==='log'" [attr.width]="width" [attr.height]="height">
                 <marker id="arrow" viewBox="0 -5 10 10" refX="8" refY="0" markerWidth="4" markerHeight="4" orient="auto">
                         <path fill="var(--light-primary-color)" d="M0,-5L10,0L0,5"></path>
                     </marker>
                 <rect class="agentBox" *ngFor="let box of agentBox" [attr.x]="box.x" [attr.y]="box.y" [attr.width]="boxWidth" [attr.height]="boxHeight"></rect>
-                <text class="agentText" font-size="20px"  *ngFor="let text of texts, index as i" [attr.x]="text.x" [attr.y]="text.y"> Agent {{text.textID}} </text>
+                <text font-size="20px"  *ngFor="let text of texts, index as i" [attr.x]="text.x" [attr.y]="text.y"> Agent {{text.textID}} </text>
                 <line stroke-dasharray="5, 5" class="vertical" *ngFor="let line of timeline" [attr.x1]="line.x1" [attr.y1]="line.y1" [attr.x2]="line.x2" [attr.y2]="height"/>     
                 <line stroke="var(--light-primary-color)" stroke-width="4" *ngFor="let line of communications" [class.hidden]="line.hidden" [attr.x1]="line.x1" [attr.y1]="line.y1" [attr.x2]="line.x2" [attr.y2]="line.y2" marker-end="url(#arrow)"/> 
-                <rect class="logBox" *ngFor="let box of logBoxes, index as i" [class.hidden]="box.hidden" (mouseenter)="onChangePopoverContent(i)" triggers="mouseenter:mouseleave" [ngbPopover]="popContent" placement="right" container="body" [attr.x]="box.x" [attr.y]="box.y" [attr.width]="logBoxWidth" [attr.height]="logBoxHeight"
-                [ngClass]="box.topic"
+                <rect class="logBox" *ngFor="let box of logBoxes, index as i" 
+                    [class.hidden]="box.hidden" 
+                    (mouseenter)="onChangePopoverContent(i)" 
+                    triggers="mouseenter:mouseleave" 
+                    [ngbPopover]="popContent" 
+                    placement="right" 
+                    container="body" 
+                    [attr.x]="box.x" 
+                    [attr.y]="box.y" 
+                    [attr.width]="logBoxWidth" 
+                    [attr.height]="logBoxHeight"
+                    [ngClass]="box.topic"
                 ></rect>    
             </svg> 
             
@@ -164,22 +202,22 @@
                 <div [class.selected]="isTopicSelected[4]" class="app-tag tag" (click)="onToggleTopic(4)">app</div>
                 <div [class.selected]="isTopicSelected[5]" class="beh-tag tag" (click)="onToggleTopic(5)">beh</div>
             </div>  
-                
+      
         
-            <div class="log-series-graph" *ngIf="currState==='logSeries'">
+            <div *ngIf="currState==='logSeries'" class="log-series-graph">
                 <ngx-charts-bubble-chart *ngIf="selectedID.length !== 0"
-                    [view]="view"
+                    [view]="viewBubble"
                     [scheme]="colorScheme"
                     [results]="bubbleData"
-                    [xAxis]="showXAxis"
-                    [yAxis]="showYAxis"
-                    [legend]="showLegend"
-                    [showXAxisLabel]="showXAxisLabel"
-                    [showYAxisLabel]="showYAxisLabel"
-                    [xAxisLabel]="xAxisLabel"
+                    xAxis="true"
+                    yAxis="true"     
+                    legend="true"
+                    showXAxisLabel="true"
+                    showYAxisLabel="true"
+                    xAxisLabel="time"
                     [xAxisTicks]="xAxisTicks"
                     [xAxisTickFormatting]="xAxisTickFormatting"
-                    [yAxisLabel]="yAxisLabel"
+                    yAxisLabel="value"
                     [minRadius]="minRadius"
                     [maxRadius]="maxRadius"
                     [trimXAxisTicks]="false"
@@ -194,6 +232,52 @@
                     </ng-template>
                 </ngx-charts-bubble-chart>
             </div>
+
+
+            <ng-template #popFrequency class="heatmap-popover" > 
+                <div> Agent Send: {{ popoverFrequency.x }} </div>
+                <div> Agent Receive : {{ popoverFrequency.y }} </div>
+                <div> Msg Count :{{ popoverFrequency.value }} </div>
+            </ng-template>
+
+
+            <div  *ngIf="currState==='statistics'">
+            <div class="row" >
+                <div class="container">
+                <div class="row statis-dashboard">
+                    <div *ngFor="let item of statisInfo" class="col-sm-6 statis-item">
+                    <div class="card">
+                        <div class="card-body">
+                        <h1 class="card-title">{{ item.method }}</h1>
+                        <p class="card-text">{{item.value}}</p>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+                </div>             
+            </div>
+            </div>
+
+            <div class="d-flex justify-content-center">
+            <svg class="heatmap" *ngIf="currState==='heatmap'" width="600" height="600" >
+                <rect class="grid" *ngFor="let grid of grids, index as i" 
+                [attr.fill]="grid.color" 
+                [attr.x]="grid.x * gridWidth" 
+                [attr.y]="grid.y * gridWidth" 
+                [attr.width]="gridWidth" 
+                [attr.height]="gridWidth"
+                (mouseenter)="onEnterGrid(i)" 
+                (mouseleave)="onLeaveGrid(i)" 
+                triggers="mouseenter:mouseleave" 
+                [ngbPopover]="popFrequency"
+                placement="top" 
+                container="body"
+                ></rect>
+<!--                 <text class="xlabel" x="350" y="730"> agent ID of sender</text>
+                <text class="ylabel" x="-10" y="350"> agent ID of receiver</text> -->
+            </svg>
+            </div>
+            
 
         </div>
    </div>

@@ -9,7 +9,6 @@ header {
 .navbar {
    font-size: 20px;
    color: white !important ;
-   font-family: 'Lato', sans-serif;
    height: 60px;
    background-color:white;
 }
@@ -22,7 +21,6 @@ header {
 .navbar-nav .nav-item .nav-link {
    font-size: 20px;
    color: var(--primary-color);
-   font-family: 'Lato', sans-serif;
    padding: 10px;
 }
 

@@ -125,6 +125,21 @@ func (cli *LoggerClient) PostLogSeries(masID int, logs []schemas.LogSeries) (htt
 	return
 }
 
+// GetLogSeriesNames gets log series by its name
+func (cli *LoggerClient) GetLogSeriesNames(masID int, agentID int) (names []string, httpStatus int, err error) {
+	var body []byte
+	body, httpStatus, err = httpretry.Get(cli.httpClient, cli.prefix()+"/api/series/"+
+		strconv.Itoa(masID)+"/"+strconv.Itoa(agentID)+"/names", time.Second*2, 4)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(body, &names)
+	if err != nil {
+		names = []string{}
+	}
+	return
+}
+
 // GetLogSeriesByName gets log series by its name
 func (cli *LoggerClient) GetLogSeriesByName(masID int, agentID int, name string, start string, end string) (series []schemas.LogSeries, httpStatus int, err error) {
 	var body []byte
@@ -140,18 +155,38 @@ func (cli *LoggerClient) GetLogSeriesByName(masID int, agentID int, name string,
 	return
 }
 
-// GetLogSeriesNames gets log series by its name
-func (cli *LoggerClient) GetLogSeriesNames(masID int, agentID int) (names []string, httpStatus int, err error) {
+// GetMsgHeatMap gets msg communication frequency
+func (cli *LoggerClient) GetMsgHeatmap(masID int) (heatmap []string, httpStatus int, err error) {
 	var body []byte
-	body, httpStatus, err = httpretry.Get(cli.httpClient, cli.prefix()+"/api/series/"+
-		strconv.Itoa(masID)+"/"+strconv.Itoa(agentID)+"/names", time.Second*2, 4)
+	body, httpStatus, err = httpretry.Get(cli.httpClient, cli.prefix()+"/api/stats/"+
+		strconv.Itoa(masID)+"/heatmap", time.Second*2, 4)
 	if err != nil {
 		return
 	}
-	err = json.Unmarshal(body, &names)
+	err = json.Unmarshal(body, &heatmap)
 	if err != nil {
-		names = []string{}
+		heatmap = []string{}
 	}
+	return
+}
+
+// PostBehStats posts new behavior logs to logger
+func (cli *LoggerClient) PostBehStats(masID int, logs []schemas.BehStats) (httpStatus int, err error) {
+	js, _ := json.Marshal(logs)
+	_, httpStatus, err = httpretry.Post(cli.httpClient, cli.prefix()+"/api/stats/"+
+		strconv.Itoa(masID), "application/json", js, time.Second*2, 4)
+	return
+}
+
+// GetMsgHeatMap gets msg communication frequency
+func (cli *LoggerClient) GetStats(masID int, agentID int, method string, behtype string, start string, end string) (data float32, httpStatus int, err error) {
+	var body []byte
+	body, httpStatus, err = httpretry.Get(cli.httpClient, cli.prefix()+"/api/stats/"+
+		strconv.Itoa(masID)+"/"+strconv.Itoa(agentID)+"/"+method+"/"+behtype+"/"+start+"/"+end, time.Second*2, 4)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(body, &data)
 	return
 }
 
@@ -213,6 +248,7 @@ type LogCollector struct {
 	logIn       chan schemas.LogMessage // logging inbox
 	seriesName  string
 	logSeriesIn chan schemas.LogSeries
+	behStatsIn  chan schemas.BehStats
 	stateIn     chan schemas.State
 	client      *LoggerClient
 	config      schemas.LoggerConfig
@@ -254,6 +290,44 @@ func (logCol *LogCollector) storeLogSeries() (err error) {
 			// print messages to stdout if logger is turned off
 			logMsg := <-logCol.logSeriesIn
 			logCol.logInfo.Println(logMsg)
+		}
+	}
+}
+
+// storeLogBeh periodically requests the logging service to store behavior logs
+func (logCol *LogCollector) storeBehStats() (err error) {
+	if logCol.config.Active {
+		for {
+			if len(logCol.behStatsIn) > 0 {
+				numLogs := len(logCol.behStatsIn)
+				behStats := make([]schemas.BehStats, numLogs)
+				for i := 0; i < numLogs; i++ {
+					item := <-logCol.behStatsIn
+					behStats[i] = item
+					behStats[i].MASID = logCol.masID
+				}
+				_, err = logCol.client.PostBehStats(logCol.masID, behStats)
+				if err != nil {
+					logCol.logError.Println(err)
+					for i := range behStats {
+						logCol.behStatsIn <- behStats[i]
+					}
+					continue
+				}
+			}
+			tempTime := time.Now()
+			for {
+				time.Sleep(100 * time.Millisecond)
+				if time.Since(tempTime).Seconds() > 15 || len(logCol.behStatsIn) > 50 {
+					break
+				}
+			}
+		}
+	} else {
+		for {
+			// print messages to stdout if logger is turned off
+			behStats := <-logCol.behStatsIn
+			logCol.logInfo.Println(behStats)
 		}
 	}
 }
@@ -360,9 +434,11 @@ func NewLogCollector(masID int, config schemas.LoggerConfig, logErr *log.Logger,
 	}
 	logCol.logIn = make(chan schemas.LogMessage, 10000)
 	logCol.logSeriesIn = make(chan schemas.LogSeries, 10000)
+	logCol.behStatsIn = make(chan schemas.BehStats, 10000)
 	logCol.stateIn = make(chan schemas.State, 10000)
 	go logCol.storeLogs()
 	go logCol.storeLogSeries()
+	go logCol.storeBehStats()
 	go logCol.storeState()
 	logCol.logInfo.Println("Created new logger client; status: ", logCol.config.Active)
 	return
@@ -375,6 +451,7 @@ type AgentLogger struct {
 	client       *LoggerClient
 	logOut       chan schemas.LogMessage // logging inbox
 	logSeriesOut chan schemas.LogSeries
+	behStatsOut  chan schemas.BehStats
 	stateOut     chan schemas.State
 	mutex        *sync.Mutex
 	logError     *log.Logger
@@ -412,7 +489,7 @@ func (agLog *AgentLogger) NewLog(topic string, message string, data string) (err
 	return
 }
 
-// NewLogSeries sends a new logging series to
+// NewLogSeries sends a new logging series to the logging service
 func (agLog *AgentLogger) NewLogSeries(name string, value float64) (err error) {
 	if agLog == nil {
 		return
@@ -432,6 +509,30 @@ func (agLog *AgentLogger) NewLogSeries(name string, value float64) (err error) {
 		Value:     value,
 	}
 	agLog.logSeriesOut <- seriesItem
+	return
+}
+
+// NewBehStats send a new behavior log to the logging service
+func (agLog *AgentLogger) NewBehStats(start time.Time, end time.Time, behType string) (err error) {
+	if agLog == nil {
+		return
+	}
+	agLog.mutex.Lock()
+	if !agLog.active {
+		agLog.mutex.Unlock()
+		return errors.New("logger not active")
+	}
+	time.Sleep(time.Millisecond * 5)
+	agLog.mutex.Unlock()
+
+	behStats := schemas.BehStats{
+		AgentID:  agLog.agentID,
+		BehType:  behType,
+		Start:    start,
+		End:      end,
+		Duration: int(end.Sub(start) / time.Second),
+	}
+	agLog.behStatsOut <- behStats
 	return
 }
 
@@ -476,6 +577,7 @@ func (logCol *LogCollector) NewAgentLogger(agentID int, logErr *log.Logger,
 		client:       logCol.client,
 		logOut:       logCol.logIn,
 		logSeriesOut: logCol.logSeriesIn,
+		behStatsOut:  logCol.behStatsIn,
 		stateOut:     logCol.stateIn,
 		mutex:        &sync.Mutex{},
 		logError:     logErr,

@@ -348,6 +348,7 @@ spec:
       containers:
       - name: ams-container
         image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/ams
+        imagePullPolicy: Always
         env:
           - name: CLONEMAP_DEPLOYMENT_TYPE
             value: "production"
@@ -392,6 +393,8 @@ data:
     CREATE TABLE clonemap.logging_debug ( masid int, agentid int, t timestamp, log varchar, PRIMARY KEY ((masid, agentid), t)) WITH CLUSTERING ORDER BY (t ASC);
     CREATE TABLE clonemap.logging_beh ( masid int, agentid int, t timestamp, log varchar, PRIMARY KEY ((masid, agentid), t)) WITH CLUSTERING ORDER BY (t ASC);
     CREATE TABLE clonemap.logging_series ( masid int, agentid int, name varchar, t timestamp, series varchar, PRIMARY KEY ((masid, agentid), name, t)) WITH CLUSTERING ORDER BY (name ASC, t ASC);
+    CREATE TABLE clonemap.beh_statis ( masid int, agentid int, behType varchar, start timestamp, end timestamp, duration int, PRIMARY KEY ((masid, agentid, behType), start)) WITH CLUSTERING ORDER BY (start ASC);
+    CREATE TABLE clonemap.heatmap(masid int, sender int, receiver int, count counter, PRIMARY KEY(masid, sender, receiver));
     CREATE TABLE clonemap.state ( masid int, agentid int, state varchar, PRIMARY KEY (masid, agentid));
     EOF
 
@@ -564,6 +567,7 @@ spec:
       containers:
       - name: logger-container
         image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/logger
+        imagePullPolicy: Always
         env:
           - name: CLONEMAP_DEPLOYMENT_TYPE
             value: "production"
@@ -698,6 +702,7 @@ spec:
       containers:
       - name: fe-container
         image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/frontend
+        imagePullPolicy: Always
         env:
           - name: CLONEMAP_DEPLOYMENT_TYPE
             value: "production"

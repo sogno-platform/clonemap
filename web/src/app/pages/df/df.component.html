@@ -1,5 +1,5 @@
 <div class="maincontainer">
-       <!--sidebar-->
+    <!--sidebar-->
     <div class="sidebar" *ngIf="MASID.length !== 0">
         <div class="nav">
             <div class="nav-item" *ngFor="let id of MASID" routerLinkActive="is-active" [ngClass]="id === selectedMASID ? 'active' : ''">
@@ -9,37 +9,6 @@
             </div>
         </div>
     </div>   
-    
-    <!--modal for uploading the service-->
-    <ng-template #content let-modal>
-        <div class="modal-header">
-            <h2 class="modal-title">Add Service</h2>
-            <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
-            <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-        <div class="modal-body">
-            <div class="form-group">
-                <label for="newMAS">Uploaded Contents</label>
-                <textarea class="form-control" id="newMAS" [(ngModel)]="display" (change)="onUpdateContent($event.target.value)" rows="20">{{display}}</textarea>
-            </div>                   
-            <div class="input-group mb-3">
-                <div class="custom-file">
-                    <input type="file" 
-                            class="custom-file-input" 
-                            id="inputService"
-                            (change)="handleFileInput($event.target.files)">
-                    <label class="custom-file-label" for="inputService" >{{filename}}</label>
-                </div>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn my-btn" (click)="onCreateSVC()">Upload</button>
-        </div>
-    </ng-template>
-
-
-
     <div class="contentcontainer">
         <div class="notalive" *ngIf="!alive" >
             <h1>DF is not alive......</h1>
@@ -63,18 +32,16 @@
                     <button class="my-btn btn-search" type="submit" (click)="onSearchSvcs(desc.value, nodeid.value, dist.value)">
                         <i class="fas fa-search"></i>
                     </button>
-                    <button type='button' class='btn my-btn btn-create' (click)="openLg(content)">+</button>
                 </div>
                 <div class="empty-service" *ngIf="searched_results === null">
                     <h1>No services found</h1>
                 </div>
-                <div class="service" *ngFor="let res of searched_results; index as i">
+                <div *ngIf="searched_results !== null && searched_results.length !== 0">
+                <div class="service" *ngFor="let res of searched_results | paginate: { itemsPerPage: 5, currentPage: q }; index as i ">
                     <div class="service-header d-flex justify-content-between">
-                        <h2>Service {{i+1}}</h2>
-                        <i class="fas fa-angle-right" *ngIf="collapsed[i]" (click)="onToggleCollapsed(i)"></i>
-                        <i class="fas fa-angle-down" *ngIf="!collapsed[i]" (click)="onToggleCollapsed(i)"></i>
+                        <h2>Service {{res.id}}</h2>
                     </div>
-                    <table class="table table-striped" *ngIf="!collapsed[i]">
+                    <table class="table table-striped">
                         <tbody>
                         <tr>
                             <th>MAS ID</th>
@@ -106,6 +73,8 @@
                         </tr>
                         </tbody>
                     </table>
+                </div>
+                <pagination-controls class="pagination" (pageChange)="q = $event"></pagination-controls>
                 </div>
             </div>          
             

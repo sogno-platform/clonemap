@@ -1,7 +1,11 @@
 {
-   "/api/clonemap": {
+   "/api/ams": {
       "target": "http://localhost:30009",
-      "secure": false
+      "secure": false,
+      "pathRewrite": {
+         "^/api/ams":"/api/clonemap"
+      }
+
    },
 
    "/api/logging/series": {
@@ -9,6 +13,14 @@
       "secure": false,
       "pathRewrite": {
          "^/api/logging/series":"/api/series"
+      }
+   },
+
+   "/api/logging/stats": {
+      "target": "http://localhost:30011",
+      "secure": false,
+      "pathRewrite": {
+         "^/api/logging/stats":"/api/stats"
       }
    },
 

@@ -48,6 +48,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 	"time"
 
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
@@ -73,6 +75,7 @@ type cassStorage struct {
 	logBehIn    chan schemas.LogMessage // logging inbox
 	stateIn     chan schemas.State      // state inbox
 	logSeriesIn chan schemas.LogSeries  // logging inbox
+	behStatsIn  chan schemas.BehStats   // logging inbox
 }
 
 // addAgentLogMessage adds an entry to specified logging entry
@@ -200,6 +203,12 @@ func (stor *cassStorage) addAgentLogSeries(series schemas.LogSeries) {
 	return
 }
 
+// addAgentBehStats add the behavior log
+func (stor *cassStorage) addAgentBehStats(behStats schemas.BehStats) {
+	stor.behStatsIn <- behStats
+	return
+}
+
 // getAgentLogSeries get log series
 func (stor *cassStorage) getAgentLogSeries(masID int, agentID int, name string, start time.Time, end time.Time) (series []schemas.LogSeries, err error) {
 	var iter *gocql.Iter
@@ -218,7 +227,7 @@ func (stor *cassStorage) getAgentLogSeries(masID int, agentID int, name string, 
 	return
 }
 
-// getAgentLogSeriesNames get log series
+// getAgentLogSeriesNames get names of  log series
 func (stor *cassStorage) getAgentLogSeriesNames(masID int, agentID int) (names []string, err error) {
 	var iter *gocql.Iter
 	iter = stor.session.Query("SELECT series FROM logging_series WHERE masid = ? AND agentid = ?", masID, agentID).Iter()
@@ -243,6 +252,57 @@ func (stor *cassStorage) getAgentLogSeriesNames(masID int, agentID int) (names [
 // deleteAgentLogMessages deletes all log messages og an agent
 func (stor *cassStorage) deleteAgentLogMessages(masID int, agentID int) (err error) {
 
+	return
+}
+
+// getMsgHeatmap get the msg communication frequency
+func (stor *cassStorage) getMsgHeatmap(masID int) (heatmap map[[2]int]int, err error) {
+	scanner := stor.session.Query("SELECT sender, receiver, count FROM heatmap WHERE masid = ? ", masID).Iter().Scanner()
+	heatmap = make(map[[2]int]int)
+	for scanner.Next() {
+		var (
+			sender   int
+			receiver int
+			count    int
+		)
+		err = scanner.Scan(&sender, &receiver, &count)
+		if err != nil {
+			return
+		}
+		idx := [2]int{sender, receiver}
+		heatmap[idx] = count
+	}
+	return
+}
+
+// getStatistics get the data of a certain method and topic
+func (stor *cassStorage) getStats(masID int, agentID int, method string, behType string, start time.Time, end time.Time) (data float32, err error) {
+	var iter *gocql.Iter
+	iter = stor.session.Query("SELECT series FROM beh_stats WHERE masid = ? AND agentid = ? AND "+
+		"behType = ? AND start > ? AND start < ?", masID, agentID, behType, start, end).Iter()
+	var js []byte
+	duration := []int{}
+	for iter.Scan(&js) {
+		var behStats schemas.BehStats
+		err = json.Unmarshal(js, &behStats)
+		if err != nil {
+			return
+		}
+		duration = append(duration, behStats.Duration)
+	}
+	iter.Close()
+	switch method {
+	case "max":
+		data = float32(getMax(duration))
+	case "min":
+		data = float32(getMin(duration))
+	case "count":
+		data = float32(len(duration))
+	case "average":
+		data = getAverage((duration))
+	default:
+		err = errors.New("wrong method")
+	}
 	return
 }
 
@@ -302,7 +362,7 @@ func (stor *cassStorage) deleteAgentState(masID int, agentID int) (err error) {
 	return
 }
 
-// storeLogs stores the logs in a batch operation
+// storeLogs stores the logs in a batch operation and store the communication frequency
 func (stor *cassStorage) storeLogs(topic string) {
 	var logIn chan schemas.LogMessage
 	var err error
@@ -331,6 +391,12 @@ func (stor *cassStorage) storeLogs(topic string) {
 		if err != nil {
 			fmt.Println(err)
 		}
+		if topic == "msg" && log.Message == "ACL send" {
+			recvStr := strings.Split(log.AdditionalData, ";")[1]
+			rec, _ := strconv.Atoi(strings.Split(recvStr, " ")[2])
+			stor.session.Query("UPDATE heatmap SET count=count+1 WHERE masid = ? AND sender = ? AND receiver = ?",
+				log.MASID, log.AgentID, rec).Exec()
+		}
 		batch.Query(stmt, log.MASID, log.AgentID, log.Timestamp, js)
 		size := len(js)
 		for i := 0; i < 9; i++ {
@@ -346,6 +412,12 @@ func (stor *cassStorage) storeLogs(topic string) {
 					fmt.Println(err)
 				}
 				batch.Query(stmt, log.MASID, log.AgentID, log.Timestamp, js)
+				if topic == "msg" && log.Message == "ACL send" {
+					recvStr := strings.Split(log.AdditionalData, ";")[1]
+					rec, _ := strconv.Atoi(strings.Split(recvStr, " ")[2])
+					stor.session.Query("UPDATE heatmap SET count=count+1 WHERE masid = ? AND sender = ? AND receiver = ?",
+						log.MASID, log.AgentID, rec).Exec()
+				}
 				size += len(js)
 			default:
 				empty = true
@@ -388,6 +460,45 @@ func (stor *cassStorage) storeSeries() {
 					fmt.Println(err)
 				}
 				batch.Query(stmt, series.MASID, series.AgentID, series.Name, series.Timestamp, js)
+				size += len(js)
+			default:
+				break
+			}
+		}
+		err = stor.session.ExecuteBatch(batch)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+}
+
+// storeStatis stores the log series in a batch operation
+func (stor *cassStorage) storeStats() {
+	var err error
+	stmt := "INSERT INTO beh_stats (masid, agentid, type, start, end, duration) VALUES (?, ?, ?, ?, ?, ?)"
+
+	for {
+		batch := gocql.NewBatch(gocql.UnloggedBatch)
+		behStats := <-stor.behStatsIn
+		var js []byte
+		js, err = json.Marshal(behStats)
+		if err != nil {
+			fmt.Println(err)
+		}
+		batch.Query(stmt, behStats.MASID, behStats.AgentID, behStats.BehType, behStats.Start, js)
+		size := len(js)
+		for i := 0; i < 9; i++ {
+			// maximum of 10 operations in batch
+			if size > 25000 {
+				break
+			}
+			select {
+			case behStats = <-stor.behStatsIn:
+				js, err = json.Marshal(behStats)
+				if err != nil {
+					fmt.Println(err)
+				}
+				batch.Query(stmt, behStats.MASID, behStats.AgentID, behStats.BehType, behStats.Start, js)
 				size += len(js)
 			default:
 				break
@@ -466,6 +577,7 @@ func newCassandraStorage(ip []string, user string, pass string) (stor storage, e
 	temp.logBehIn = make(chan schemas.LogMessage, 10000)
 	temp.stateIn = make(chan schemas.State, 10000)
 	temp.logSeriesIn = make(chan schemas.LogSeries, 10000)
+	temp.behStatsIn = make(chan schemas.BehStats, 10000)
 
 	for i := 0; i < 3; i++ {
 		go temp.storeLogs("status")
@@ -475,6 +587,7 @@ func newCassandraStorage(ip []string, user string, pass string) (stor storage, e
 		go temp.storeLogs("msg")
 		go temp.storeLogs("beh")
 		go temp.storeSeries()
+		go temp.storeStats()
 		go temp.storeState()
 	}
 	stor = &temp

@@ -82,6 +82,7 @@
 .selectionBoard {
    margin-top:50px;
    margin-left: 50px;
+   margin-bottom: 50px;
 }
 
 
@@ -106,7 +107,7 @@
 
 
 .agents {
-    width:800px;
+    width:80%;
     margin-left:15px;
     margin-top: -10px;
 }
@@ -250,14 +251,12 @@
 
 svg {
 /*    border: 1px solid orange;  */
-
    position: absolute;
 }
    
 .vertical {
-stroke: var(--light-primary-color);
-stroke-width: 2;
-
+   stroke: var(--light-primary-color);
+   stroke-width: 2;
 }
 
 .agentBox {
@@ -363,6 +362,66 @@ ngx-charts-bubble-chart {
 ::ng-deep .gridline-path-vertical {      
    display: none; 
 }
+
+/* css for statistics */
+
+.statis-dashboard {
+   margin-top: 50px;
+}
+.statis-item {
+   margin-bottom: 50px;
+}
+
+.statis-item > .card {
+   background-color: var(--light-primary-color);
+   border: none;
+   border-radius: 30px;
+   height: 200px;
+}
+
+.card-title {
+   color: white;
+   text-align: center;
+}
+
+.card-text {
+   color: white;
+   font-size: 50px;
+   text-align: center;
+   vertical-align: middle;
+   line-height: 90px; 
+
+}
+
+.heatmap{
+   border: var(--light-primary-color) solid;
+}
+
+.xlabel {
+   font-size: 20px;
+   fill: gray;
+}
+
+.ylabel {
+   font-size: 20px;
+   fill: gray;
+/*    transform: rotate(90deg); */
+   transform-box: fill-box;
+   transform-origin: center;
+   transform: rotate(-90deg);
+}
+
+.heatmap-popover {
+   background-color: red ;
+   color: red;
+}
+
+
+
+
+
+
+
       
 
 

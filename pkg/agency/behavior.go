@@ -92,6 +92,8 @@ func (agent *Agent) NewMessageBehavior(protocol int,
 
 // Start initiates the handling of messages
 func (protBehavior *aclProtocolBehavior) Start() {
+	// log the start
+	protBehavior.ag.Logger.NewLog("beh", "protocol start", "")
 	// register protocol handler
 	protBehavior.ag.ACL.registerProtocolChannel(protBehavior.protocol, protBehavior.msgIn)
 	// execute
@@ -112,9 +114,15 @@ func (protBehavior *aclProtocolBehavior) task() {
 		select {
 		case msg := <-protBehavior.msgIn:
 			if handle, ok := protBehavior.handlePerformative[msg.Performative]; ok {
+				start := time.Now()
 				handle(msg)
+				end := time.Now()
+				protBehavior.ag.Logger.NewBehStats(start, end, "protocol")
 			} else {
+				start := time.Now()
 				protBehavior.handleDefault(msg)
+				end := time.Now()
+				protBehavior.ag.Logger.NewBehStats(start, end, "protocol")
 			}
 		case command := <-protBehavior.ctrl:
 			switch command {
@@ -129,6 +137,8 @@ func (protBehavior *aclProtocolBehavior) task() {
 
 // Stop terminates the message handling
 func (protBehavior *aclProtocolBehavior) Stop() {
+	// log the stop
+	protBehavior.ag.Logger.NewLog("beh", "protocol stop", "")
 	// deregister handler
 	protBehavior.ag.ACL.deregisterProtocolChannel(protBehavior.protocol)
 	// stop message handling
@@ -166,6 +176,8 @@ func (agent *Agent) NewMQTTTopicBehavior(topic string,
 
 // Start initiates the handling of messages
 func (mqttBehavior *mqttTopicBehavior) Start() {
+	// log the start
+	mqttBehavior.ag.Logger.NewLog("beh", "mqtt behavior starts; Topic:"+mqttBehavior.topic, "")
 	// register protocol handle
 	mqttBehavior.ag.MQTT.registerTopicChannel(mqttBehavior.topic, mqttBehavior.msgIn)
 	// execute
@@ -174,7 +186,7 @@ func (mqttBehavior *mqttTopicBehavior) Start() {
 
 // task performs the execution of the handle function
 func (mqttBehavior *mqttTopicBehavior) task() {
-	mqttBehavior.logInfo.Println("Starting mqtt behavior for agent ", mqttBehavior.ag.GetAgentID())
+	mqttBehavior.ag.Logger.NewLog("app", "executing mqtt task......", "")
 	for {
 		mqttBehavior.ag.mutex.Lock()
 		act := mqttBehavior.ag.active
@@ -184,7 +196,12 @@ func (mqttBehavior *mqttTopicBehavior) task() {
 		}
 		select {
 		case msg := <-mqttBehavior.msgIn:
+			start := time.Now()
 			mqttBehavior.handle(msg)
+			end := time.Now()
+			mqttBehavior.ag.Logger.NewBehStats(start, end, "mqtt")
+			mqttBehavior.ag.Logger.NewLog("beh", msg.String()+";start: "+start.String()+
+				";end: "+end.String()+";duration:"+end.Sub(start).String(), "")
 		case command := <-mqttBehavior.ctrl:
 			switch command {
 			case -1:
@@ -198,6 +215,8 @@ func (mqttBehavior *mqttTopicBehavior) task() {
 
 // Stop terminates the message handling
 func (mqttBehavior *mqttTopicBehavior) Stop() {
+	// log the stop
+	mqttBehavior.ag.Logger.NewLog("beh", "mqtt stop", "")
 	// deregister handler
 	mqttBehavior.ag.MQTT.deregisterTopicChannel(mqttBehavior.topic)
 	// stop message handling
@@ -233,6 +252,8 @@ func (agent *Agent) NewPeriodicBehavior(period time.Duration,
 
 // Start initiates the handling of messages
 func (periodBehavior *periodicBehavior) Start() {
+	// log the start
+	periodBehavior.ag.Logger.NewLog("beh", "period-start", "")
 	// execute
 	go periodBehavior.task()
 }
@@ -258,13 +279,19 @@ func (periodBehavior *periodicBehavior) task() {
 				return
 			}
 		default:
+			start := time.Now()
 			periodBehavior.handle()
+			end := time.Now()
+			periodBehavior.ag.Logger.NewBehStats(start, end, "protocol")
+
 		}
 	}
 }
 
 // Stop terminates the message handling
 func (periodBehavior *periodicBehavior) Stop() {
+	// log the stop
+	periodBehavior.ag.Logger.NewLog("beh", "period-stop", "")
 	// stop message handling
 	periodBehavior.ctrl <- -1
 }
@@ -299,6 +326,8 @@ func (agent *Agent) NewCustomUpdateBehavior(
 
 // Start initiates the handling of messages
 func (custUpBehavior *customUpdateBehavior) Start() {
+	// log the start
+	custUpBehavior.ag.Logger.NewLog("beh", "custom", "start")
 	custUpBehavior.ag.registerCustomUpdateChannel(custUpBehavior.customIn)
 	// execute
 	go custUpBehavior.task()
@@ -317,7 +346,10 @@ func (custUpBehavior *customUpdateBehavior) task() {
 		}
 		select {
 		case custom := <-custUpBehavior.customIn:
+			start := time.Now()
 			custUpBehavior.handle(custom)
+			end := time.Now()
+			custUpBehavior.ag.Logger.NewBehStats(start, end, "custom")
 		case command := <-custUpBehavior.ctrl:
 			switch command {
 			case -1:
@@ -331,6 +363,8 @@ func (custUpBehavior *customUpdateBehavior) task() {
 
 // Stop terminates the behavior
 func (custUpBehavior *customUpdateBehavior) Stop() {
+	// log the stop
+	custUpBehavior.ag.Logger.NewLog("beh", "custom-stop", "")
 	custUpBehavior.ag.deregisterCustomUpdateChannel()
 	// stop behavior
 	custUpBehavior.ctrl <- -1

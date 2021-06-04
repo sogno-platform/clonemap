@@ -51,23 +51,11 @@
    flex-grow: 1;
 }
 
-.config {
-   border: 2px solid var(--background-primary-color);
+.config{
    border-radius: 10px;
-   width: 1200px;
+   width: 600px;
    margin-top:50px;
-   margin-left: 100px; 
-}
-
-.config-header {
-   height:80px;
-   color: var(--light-primary-color);
-   font-size: 30px;
-}
-
-.config-header i {
-   padding-top: 30px;
-   padding-right: 30px;
+   margin-left: 100px;; 
 }
 
 .containers {
@@ -77,6 +65,15 @@
    margin-top:50px;
    margin-left: 100px;; 
 }
+
+.pagination {
+   margin: 0px 0px 50px 1200px;
+}
+
+.pagination /deep/ .ngx-pagination .current {
+   background:var(--light-primary-color);
+ }
+
 
 
 
@@ -118,7 +115,7 @@ table {
 }
 
 table th {
-   width: 500px;
+   width: 100px;
 }
 
 

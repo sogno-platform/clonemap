@@ -1,0 +1,41 @@
+{
+  "config":{
+    "name":"test",
+    "agentsperagency":2,
+    "mqtt":{
+        "active":true
+    },
+    "df":{
+        "active":true
+    },
+    "logger":{
+        "active":true,
+        "msg":true,
+        "app":true,
+        "status":true,
+        "debug":true,
+        "beh": true
+    }
+  },
+  "imagegroups":[
+    {
+      "config":{
+        "image": "registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/agency_test"
+      },
+      "agents":[
+        {
+          "nodeid":0,
+          "name":"test0"
+        },
+        {
+          "nodeid":1,
+          "name":"test1"
+        }
+      ]
+    }
+  ],
+    "graph":{
+      "node":null,
+      "edge":null
+  }
+}

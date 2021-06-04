@@ -136,17 +136,11 @@ func (logger *Logger) addAgentLogSeries(logseries []schemas.LogSeries) {
 	}
 }
 
-// getLogSeriesByName return all the log series of a specific name
-func (logger *Logger) getAgentLogSeries(masID int, agentID int, name string, start time.Time, end time.Time) (series []schemas.LogSeries, err error) {
-	series, err = logger.stor.getAgentLogSeries(masID, agentID, name, start, end)
-	return
-}
-
-// agetAgentLogSeriesNames add log series
-func (logger *Logger) getAgentLogSeriesNames(masID int, agentID int) (names []string, err error) {
-	names, err = logger.stor.getAgentLogSeriesNames(masID, agentID)
-	return
-
+// addAgentBehsStats add behavior log
+func (logger *Logger) addAgentBehsStats(behsStats []schemas.BehStats) {
+	for i := 0; i < len(behsStats); i++ {
+		logger.stor.addAgentBehStats(behsStats[i])
+	}
 }
 
 // getLatestAgentLogMessages return the latest num log messages
@@ -160,6 +154,31 @@ func (logger *Logger) getLatestAgentLogMessages(masID int, agentID int, topic st
 func (logger *Logger) getAgentLogMessagesInRange(masID int, agentID int, topic string,
 	start time.Time, end time.Time) (logs []schemas.LogMessage, err error) {
 	logs, err = logger.stor.getAgentLogMessagesInRange(masID, agentID, topic, start, end)
+	return
+}
+
+// getLogSeriesByName return all the log series of a specific name
+func (logger *Logger) getAgentLogSeries(masID int, agentID int, name string, start time.Time, end time.Time) (series []schemas.LogSeries, err error) {
+	series, err = logger.stor.getAgentLogSeries(masID, agentID, name, start, end)
+	return
+}
+
+// getAgentLogSeriesNames return log series names
+func (logger *Logger) getAgentLogSeriesNames(masID int, agentID int) (names []string, err error) {
+	names, err = logger.stor.getAgentLogSeriesNames(masID, agentID)
+	return
+}
+
+// getMsgHeatmap return the frequency of message communication
+
+func (logger *Logger) getMsgHeatmap(masID int) (heatmap map[[2]int]int, err error) {
+	heatmap, err = logger.stor.getMsgHeatmap(masID)
+	return
+}
+
+// getStatistics get the data of a certain method and topic
+func (logger *Logger) getStats(masID int, agentID int, method string, topic string, start time.Time, end time.Time) (data float32, err error) {
+	data, err = logger.stor.getStats(masID, agentID, method, topic, start, end)
 	return
 }
 

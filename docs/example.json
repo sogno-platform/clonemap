@@ -40,7 +40,7 @@
                     "name":"test3"
                 },
                 {
-                    "nodeid":1,
+                    "nodeid":0,
                     "name":"test4"
                 },
                 {
@@ -56,11 +56,11 @@
                     "name":"test7"
                 },
                 {
-                    "nodeid":2,
+                    "nodeid":1,
                     "name":"test8"
                 },
                 {
-                    "nodeid":2,
+                    "nodeid":1,
                     "name":"test9"
                 },
                 {
@@ -72,15 +72,15 @@
                     "name":"test11"
                 },
                 {
-                    "nodeid":3,
+                    "nodeid":2,
                     "name":"test12"
                 },
                 {
-                    "nodeid":3,
+                    "nodeid":2,
                     "name":"test13"
                 },
                 {
-                    "nodeid":3,
+                    "nodeid":2,
                     "name":"test14"
                 },
                 {
@@ -88,19 +88,19 @@
                     "name":"test15"
                 },
                 {
-                    "nodeid":4,
+                    "nodeid":3,
                     "name":"test16"
                 },
                 {
-                    "nodeid":4,
+                    "nodeid":3,
                     "name":"test17"
                 },
                 {
-                    "nodeid":4,
+                    "nodeid":3,
                     "name":"test18"
                 },
                 {
-                    "nodeid":4,
+                    "nodeid":3,
                     "name":"test19"
                 }
             ]
@@ -109,24 +109,16 @@
     "graph":{
         "node":[
             {
-                "id": 0,
-                "agents": [0, 1, 2, 3]
+                "id": 0
             },
             {
-                "id": 1,
-                "agents": [4, 5, 6, 7]
+                "id": 1
             },
             {
-                "id": 2,
-                "agents": [8, 9, 10, 11]
+                "id": 2
             },
             {
-                "id": 3,
-                "agents": [12, 13, 14, 15]
-            },
-            {
-                "id": 4,
-                "agents": [16, 17, 18, 19]
+                "id": 3
             }
         ],
         "edge":[
@@ -147,14 +139,9 @@
             },
             {
                 "n1": 3,
-                "n2": 4,
-                "weight": 2
-            },
-            {
-                "n1": 4,
                 "n2": 0,
                 "weight": 2
             }
         ]
     }
-}
+  }

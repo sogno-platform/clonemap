@@ -59,15 +59,14 @@ RUN cd cmd/frontend; CGO_ENABLED=0 GOOS=linux go build -ldflags '-s' -o frontend
 FROM node:14.15.1 AS ANGULAR_BUILD
 RUN npm install -g @angular/cli@11.0.7
 COPY web web
-WORKDIR web
+WORKDIR /web
 RUN npm install && ng build --prod
 
 
 FROM alpine:latest
-
 WORKDIR /root/
 #RUN apk add --update netbase ca-certificates
-COPY --from=ANGULAR_BUILD /web/dist/clonemap-frontend/* ./web/
+COPY --from=ANGULAR_BUILD /web/dist/clonemap-frontend ./web
 COPY --from=fe_builder /clonemap/frontend . 
 EXPOSE 30013
 CMD ["./frontend"]

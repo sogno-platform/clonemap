@@ -47,9 +47,9 @@
                 <!--display the overview of agencies with tables-->
                 <div id="tables">
                     <div class="row">
-                        <div class="col-md-4 my-row" *ngFor="let MAS of MASsDisplay">
+                        <div class="col-md-4 my-row" *ngFor="let MAS of MASsDisplay | paginate: { itemsPerPage: 6, currentPage: q };">
                             <div class="card" (click)="onOpenMAS(MAS.id)">
-                                <div class="card-header">
+                                <div class="card-header d-flex justify-content-between">
                                     <h3>MAS {{MAS.id}}</h3>
                                     <button class="btn btn-delete" (click)="onDeleteMAS(MAS.id)">
                                         <div class="icon">
@@ -87,7 +87,8 @@
                             </div>
                         </div>
                     </div>
-                </div>     
+                </div> 
+                <pagination-controls class="pagination" (pageChange)="q = $event"></pagination-controls>    
             </div>
 
         <div class="overview-empty" *ngIf="MASID.length === 0">       

@@ -212,3 +212,50 @@ func (fe *Frontend) handleGetLogSeriesByName(w http.ResponseWriter, r *http.Requ
 	fe.logErrors(r.URL.Path, cmapErr, httpErr)
 	return
 }
+
+// handleGetMsgHeatmap is the handler to /api/logging/stats/{masid}/heatmap
+func (fe *Frontend) handleGetMsgHeatmap(w http.ResponseWriter, r *http.Request) {
+	var httpErr, cmapErr error
+	vars := mux.Vars(r)
+	masID, cmapErr := strconv.Atoi(vars["masid"])
+	if cmapErr != nil {
+		httpErr = httpreply.NotFoundError(w)
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
+	var heatmap []string
+	heatmap, _, cmapErr = fe.logClient.GetMsgHeatmap(masID)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
+	httpErr = httpreply.Resource(w, heatmap, cmapErr)
+	fe.logErrors(r.URL.Path, cmapErr, httpErr)
+	return
+}
+
+// handleGetStatistics is the handler to /api/logging/stats/{masid}/{agentid}/{method}/{behtype}/{start}/{end}
+func (fe *Frontend) handleGetStats(w http.ResponseWriter, r *http.Request) {
+	var httpErr, cmapErr error
+	vars := mux.Vars(r)
+	masID, agentID, cmapErr := getAgentID(r)
+	if cmapErr != nil {
+		httpErr = httpreply.NotFoundError(w)
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
+	method := vars["method"]
+	behtype := vars["behtype"]
+	start := vars["start"]
+	end := vars["end"]
+	data, _, cmapErr := fe.logClient.GetStats(masID, agentID, method, behtype, start, end)
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		fe.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
+	httpErr = httpreply.Resource(w, data, cmapErr)
+	fe.logErrors(r.URL.Path, cmapErr, httpErr)
+	return
+}

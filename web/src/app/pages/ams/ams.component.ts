@@ -12,7 +12,6 @@ export class AMSComponent implements OnInit {
     MASID: number[] = [];
     selectedMASID: number = -1;
     selectedMAS: any = null;
-    collapsed: boolean = false;
 
     constructor(
         private masService: MasService,
@@ -40,11 +39,7 @@ export class AMSComponent implements OnInit {
                 } else {
                     console.log("No MASID");
                 }
-            });
-    }
-
-    onToggleCollapsed() {
-        this.collapsed = !this.collapsed;
+        });
     }
 
 }

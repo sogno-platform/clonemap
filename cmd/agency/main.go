@@ -56,22 +56,86 @@ import (
 )
 
 func main() {
-	err := agency.StartAgency(task)
+	err := agency.StartAgency(task_test)
 	if err != nil {
 		fmt.Println(err)
 	}
 }
 
-func task(ag *agency.Agent) (err error) {
-	time.Sleep(2 * time.Second)
+func display(msg schemas.MQTTMessage) (err error) {
+	time.Sleep(10 * time.Second)
+	fmt.Println(string(msg.Content))
+	return
+}
+
+func handleDefault(msg schemas.ACLMessage) (err error) {
+	fmt.Println(string(msg.Content))
+	return
+}
+
+func task_test(ag *agency.Agent) (err error) {
 	id := ag.GetAgentID()
-	recv := (id + 1) % 2
-	msg, _ := ag.ACL.NewMessage(recv, 0, 0, "test message")
-	ag.ACL.SendMessage(msg)
-	ag.Logger.NewLog("app", "This is agent "+strconv.Itoa(id), "")
-	time.Sleep(2 * time.Second)
-	ag.Logger.NewLog("beh", "This is the behavior of the agent"+strconv.Itoa(id), "")
-	ag.Logger.NewLog("debug", "This is the debug of the agent"+strconv.Itoa(id), "")
+
+	// agent 0 subsribes the topic1
+	if id == 0 {
+		ag.MQTT.Subscribe("topic1", 1)
+		behMQTT, err := ag.NewMQTTTopicBehavior("topic1", display)
+
+		if err == nil {
+			behMQTT.Start()
+		}
+	}
+
+	// agent 1 publishes the topic1
+	if id == 1 {
+		for i := 0; i < 10; i++ {
+			time.Sleep(5 * time.Second)
+			msg := "test message" + strconv.Itoa(i)
+			MQTTMsg, err := ag.MQTT.NewMessage("topic1", []byte(msg))
+			if err == nil {
+				ag.MQTT.SendMessage(MQTTMsg, 1)
+			}
+		}
+	}
+
+	// new protocol behavior
+	/* 	handlePerformative := make(map[int]func(schemas.ACLMessage) error)
+	   	handlePerformative[0] = handleDefault
+	   	behPro, err := ag.NewMessageBehavior(0, handlePerformative, handleDefault)
+	   	if err != nil {
+	   		fmt.Println("protocol started with error")
+	   		ag.Logger.NewLog("beh", "protocol error", "")
+	   	} else {
+	   		behPro.Start()
+	   		time.Sleep(30 * time.Second)
+	   	} */
+	return
+}
+
+func task(ag *agency.Agent) (err error) {
+	time.Sleep(10 * time.Second)
+	id := ag.GetAgentID()
+
+	// sends 40 messages randomly to other agents
+	for i := 0; i < 40; i++ {
+		interval := rand.Intn(5)
+		time.Sleep(time.Duration(interval) * time.Second)
+		recv := rand.Intn(20)
+		if recv == id {
+			continue
+		}
+		msg, _ := ag.ACL.NewMessage(recv, 0, 0, "test message")
+		ag.ACL.SendMessage(msg)
+	}
+
+	// app logs
+	cnt := rand.Intn(10)
+	for i := 0; i < cnt; i++ {
+		ag.Logger.NewLog("app", "This is agent "+strconv.Itoa(id), "")
+		time.Sleep(2 * time.Second)
+	}
+
+	// service
 	svc := schemas.Service{
 		Desc: "agent" + strconv.Itoa(id),
 	}
@@ -81,10 +145,10 @@ func task(ag *agency.Agent) (err error) {
 	}
 	for i := 0; i < 5; i++ {
 		time.Sleep(2 * time.Second)
-		/* 		idx := rand.Intn(4) + 1 */
 		for idx := 1; idx < 5; idx++ {
 			ag.Logger.NewLogSeries("type"+strconv.Itoa(idx), rand.Float64())
 		}
 	}
+
 	return
 }
