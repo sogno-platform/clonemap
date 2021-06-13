@@ -88,7 +88,7 @@ func task_test(ag *agency.Agent) (err error) {
 
 	// agent 1 publishes the topic1
 	if id == 1 {
-		for i := 0; i < 10; i++ {
+		for i := 0; i < 20; i++ {
 			time.Sleep(5 * time.Second)
 			msg := "test message" + strconv.Itoa(i)
 			MQTTMsg, err := ag.MQTT.NewMessage("topic1", []byte(msg))

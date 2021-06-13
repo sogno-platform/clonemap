@@ -363,21 +363,29 @@ ngx-charts-bubble-chart {
    display: none; 
 }
 
+
+
 /* css for statistics */
 
-.statis-dashboard {
+.stats-dashboard {
    margin-top: 50px;
 }
-.statis-item {
+
+.card {
    margin-bottom: 50px;
 }
 
-.statis-item > .card {
+.stats-dashboard > .card {
    background-color: var(--light-primary-color);
    border: none;
    border-radius: 30px;
-   height: 200px;
+   height: 150px;
 }
+
+
+.pagination /deep/ .ngx-pagination .current {
+   background:var(--light-primary-color);
+ }
 
 .card-title {
    color: white;
@@ -386,10 +394,10 @@ ngx-charts-bubble-chart {
 
 .card-text {
    color: white;
-   font-size: 50px;
+   font-size: 30px;
    text-align: center;
    vertical-align: middle;
-   line-height: 90px; 
+   line-height: 60px; 
 
 }
 

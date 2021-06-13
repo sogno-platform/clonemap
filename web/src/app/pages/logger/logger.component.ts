@@ -4,6 +4,7 @@ import { MasService } from 'src/app/services/mas.service';
 import { ActivatedRoute, Params} from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { LogMessage, LogSeries, pointSeries } from 'src/app/models/log.model';
+import { StatsInfo } from 'src/app/models/stats.mdoel'
 import { forkJoin, Observable} from 'rxjs';
 import { FormControl, FormGroup } from '@angular/forms';
 
@@ -89,9 +90,10 @@ export class LoggerComponent implements OnInit {
     animations: boolean = true;
     
     // exclusive for statistics
-    sagentStats: number = -1;
+    agentStats: number = -1;
     selectedBehType: string = "mqtt";
-    statsInfo: any[] = [];
+    statsInfo: StatsInfo = null;
+    q: number = 1;
 
     // exclusive for heatmap
     gridColors: string[] = []
@@ -166,6 +168,7 @@ export class LoggerComponent implements OnInit {
         }
     }
 
+    //tabs: string[] = ["log", "logSeries", "statistics", "heatmap"]
     onConfirm() {
         this.modalService.dismissAll();
         switch (this.currState) {
@@ -391,7 +394,7 @@ export class LoggerComponent implements OnInit {
     onChangePopoverContent(i) {
         if ("data" in this.logs[i]) {
             if (this.logs[i].msg === "ACL send" || this.logs[i].msg === "ACL receive") {
-                this.popoverContent = this.logs[i].data.split("; ");
+                this.popoverContent = this.logs[i].data.split(";");
                 this.popoverContent[2] = this.popoverContent[2].split(".")[0];
                 console.log(this.logs[i].data.split("; "))   
             } else {
@@ -534,41 +537,20 @@ export class LoggerComponent implements OnInit {
 
     //display Statistics infomation
     drawStatistics() {
-        if (this.sagentStats !== -1) {
+        if (this.agentStats !== -1) {
             const methods: string[] = ["max", "min", "count", "average"];
-            this.statsInfo = [];
-            this.multiInfo().subscribe(res => {
-                for (let i = 0; i < res.length; i++) {
-                    if (i !== 2) {
-                        this.statsInfo.push({
-                            method: methods[i],
-                            value: this.convertSecond(res[i])
-                        })
-                    } else {
-                        this.statsInfo.push({
-                            method: methods[i],
-                            value: res[i]
-                        })
-                    }
+            this.loggerService.getBehavior(this.selectedMASID.toString(), this.agentStats.toString(),
+            this.selectedBehType, this.searchStartTime, this.searchEndTime).subscribe( (res: any) => {
+                if (res !== null) {
+                    this.statsInfo = res;
                 }
             })
         }
     }
 
-    multiInfo(): Observable<any> {
-        let res = [];
-        const methods: string[] = ["max", "min", "count", "average"];
-        for (let method of methods) {
-            res.push(this.loggerService.getBehavior(this.selectedMASID.toString(), this.sagentStats.toString(), method, 
-            this.selectedBehType, this.searchStartTime, this.searchEndTime));
-        }
-        return forkJoin(res);
-    }
-
     updateSelectedAgent(agentID: number) {
-        this.sagentStats = agentID;
+        this.agentStats = agentID;
     }
-
 
 /********************************* functions for heatmap  ************************************/
     onClickHeatmap() {

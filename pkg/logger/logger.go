@@ -176,9 +176,9 @@ func (logger *Logger) getMsgHeatmap(masID int) (heatmap map[[2]int]int, err erro
 	return
 }
 
-// getStatistics get the data of a certain method and topic
-func (logger *Logger) getStats(masID int, agentID int, method string, topic string, start time.Time, end time.Time) (data float32, err error) {
-	data, err = logger.stor.getStats(masID, agentID, method, topic, start, end)
+// getStats get the statistical data of a certain behType
+func (logger *Logger) getStats(masID int, agentID int, behType string, start time.Time, end time.Time) (statsInfo schemas.StatsInfo, err error) {
+	statsInfo, err = logger.stor.getStats(masID, agentID, behType, start, end)
 	return
 }
 

@@ -242,16 +242,53 @@
 
 
             <div  *ngIf="currState==='statistics'">
-            <div class="row" >
-                <div class="container">
-                <div class="row statis-dashboard">
-                    <div *ngFor="let item of statisInfo" class="col-sm-6 statis-item">
-                    <div class="card">
+            <div class="row justify-content-around" >
+                <div *ngIf="statsInfo !== null" class="col-sm-5">
+                    <table class="table table-hover">
+                        <thead>
+                          <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Start</th>
+                            <th scope="col">End</th>
+                            <th scope="col">Duration</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let item of statsInfo.list | paginate: { itemsPerPage: 10, currentPage: q }; index as i ">
+                                <th scope="row">{{ (q - 1) * 10 + i + 1 }}</th>
+                                <td>{{item.start.split(".")[0]}}</td>
+                                <td>{{item.end.split(".")[0]}}</td>
+                                <td>{{convertSecond(item.duration)}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <pagination-controls class="pagination justify-content-end" (pageChange)="q = $event"></pagination-controls>
+                </div>
+                <div *ngIf="statsInfo !== null" class="col-sm-4">
+                <div class="row justify-content-around stats-dashboard">
+                    <div class="card col-sm-5">
                         <div class="card-body">
-                        <h1 class="card-title">{{ item.method }}</h1>
-                        <p class="card-text">{{item.value}}</p>
+                        <h1 class="card-title">max</h1>
+                        <p class="card-text">{{convertSecond(statsInfo.max)}}</p>
                         </div>
                     </div>
+                    <div class="card col-sm-5">
+                        <div class="card-body">
+                        <h1 class="card-title">min</h1>
+                        <p class="card-text">{{convertSecond(statsInfo.min)}}</p>
+                        </div>
+                    </div>
+                    <div class="card col-sm-5">
+                        <div class="card-body">
+                        <h1 class="card-title">count</h1>
+                        <p class="card-text">{{statsInfo.count}}</p>
+                        </div>
+                    </div>
+                    <div class="card col-sm-5">
+                        <div class="card-body">
+                        <h1 class="card-title">average</h1>
+                        <p class="card-text">{{convertSecond(statsInfo.average)}}</p>
+                        </div>
                     </div>
                 </div>
                 </div>             

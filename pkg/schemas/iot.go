@@ -44,6 +44,8 @@ THE SOFTWARE.
 
 package schemas
 
+import "time"
+
 // MQTTConfig contains the host and port configuration of the broker and indicates if it is active
 type MQTTConfig struct {
 	Active bool   `json:"active"`         // indicates if MQTT is active/usable
@@ -55,6 +57,25 @@ type MQTTConfig struct {
 type MQTTMessage struct {
 	Topic   string // Topic of message
 	Content []byte // Denotes the content of the message
+}
+
+// behStats contains behavior information
+type BehStats struct {
+	MASID    int       `json:"masid"`   // ID of MAS agent runs in
+	AgentID  int       `json:"agentid"` // ID of agent
+	BehType  string    `json:"behtype"`
+	Start    time.Time `json:"start"`
+	End      time.Time `json:"end"`
+	Duration int       `json:"duration"`
+}
+
+// StatsInfo struct representing the statistics info
+type StatsInfo struct {
+	Max     int        `json:"max"`
+	Min     int        `json:"min"`
+	Count   int        `json:"count"`
+	Average float32    `json:"average"`
+	List    []BehStats `json:"list"`
 }
 
 // String outputs message

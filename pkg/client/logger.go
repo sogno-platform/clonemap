@@ -178,15 +178,15 @@ func (cli *LoggerClient) PostBehStats(masID int, logs []schemas.BehStats) (httpS
 	return
 }
 
-// GetMsgHeatMap gets msg communication frequency
-func (cli *LoggerClient) GetStats(masID int, agentID int, method string, behtype string, start string, end string) (data float32, httpStatus int, err error) {
+// GetStats get the statistical information of agent behavior
+func (cli *LoggerClient) GetStats(masID int, agentID int, behtype string, start string, end string) (statsInfo schemas.StatsInfo, httpStatus int, err error) {
 	var body []byte
 	body, httpStatus, err = httpretry.Get(cli.httpClient, cli.prefix()+"/api/stats/"+
-		strconv.Itoa(masID)+"/"+strconv.Itoa(agentID)+"/"+method+"/"+behtype+"/"+start+"/"+end, time.Second*2, 4)
+		strconv.Itoa(masID)+"/"+strconv.Itoa(agentID)+"/"+behtype+"/"+start+"/"+end, time.Second*2, 4)
 	if err != nil {
 		return
 	}
-	err = json.Unmarshal(body, &data)
+	err = json.Unmarshal(body, &statsInfo)
 	return
 }
 

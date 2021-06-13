@@ -235,7 +235,7 @@ func (fe *Frontend) handleGetMsgHeatmap(w http.ResponseWriter, r *http.Request) 
 	return
 }
 
-// handleGetStatistics is the handler to /api/logging/stats/{masid}/{agentid}/{method}/{behtype}/{start}/{end}
+// handleGetStats is the handler to /api/logging/stats/{masid}/{agentid}/{behtype}/{start}/{end}
 func (fe *Frontend) handleGetStats(w http.ResponseWriter, r *http.Request) {
 	var httpErr, cmapErr error
 	vars := mux.Vars(r)
@@ -245,11 +245,10 @@ func (fe *Frontend) handleGetStats(w http.ResponseWriter, r *http.Request) {
 		fe.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
-	method := vars["method"]
 	behtype := vars["behtype"]
 	start := vars["start"]
 	end := vars["end"]
-	data, _, cmapErr := fe.logClient.GetStats(masID, agentID, method, behtype, start, end)
+	data, _, cmapErr := fe.logClient.GetStats(masID, agentID, behtype, start, end)
 	if cmapErr != nil {
 		httpErr = httpreply.CMAPError(w, cmapErr.Error())
 		fe.logErrors(r.URL.Path, cmapErr, httpErr)

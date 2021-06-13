@@ -93,7 +93,7 @@ func (agent *Agent) NewMessageBehavior(protocol int,
 // Start initiates the handling of messages
 func (protBehavior *aclProtocolBehavior) Start() {
 	// log the start
-	protBehavior.ag.Logger.NewLog("beh", "protocol start", "")
+	protBehavior.ag.Logger.NewLog("beh", "protocol behavior starts", "")
 	// register protocol handler
 	protBehavior.ag.ACL.registerProtocolChannel(protBehavior.protocol, protBehavior.msgIn)
 	// execute
@@ -138,7 +138,7 @@ func (protBehavior *aclProtocolBehavior) task() {
 // Stop terminates the message handling
 func (protBehavior *aclProtocolBehavior) Stop() {
 	// log the stop
-	protBehavior.ag.Logger.NewLog("beh", "protocol stop", "")
+	protBehavior.ag.Logger.NewLog("beh", "protocol behavior stops", "")
 	// deregister handler
 	protBehavior.ag.ACL.deregisterProtocolChannel(protBehavior.protocol)
 	// stop message handling
@@ -177,7 +177,7 @@ func (agent *Agent) NewMQTTTopicBehavior(topic string,
 // Start initiates the handling of messages
 func (mqttBehavior *mqttTopicBehavior) Start() {
 	// log the start
-	mqttBehavior.ag.Logger.NewLog("beh", "mqtt behavior starts; Topic:"+mqttBehavior.topic, "")
+	mqttBehavior.ag.Logger.NewLog("beh", "mqtt topic behavior starts; Topic:"+mqttBehavior.topic, "")
 	// register protocol handle
 	mqttBehavior.ag.MQTT.registerTopicChannel(mqttBehavior.topic, mqttBehavior.msgIn)
 	// execute
@@ -216,7 +216,7 @@ func (mqttBehavior *mqttTopicBehavior) task() {
 // Stop terminates the message handling
 func (mqttBehavior *mqttTopicBehavior) Stop() {
 	// log the stop
-	mqttBehavior.ag.Logger.NewLog("beh", "mqtt stop", "")
+	mqttBehavior.ag.Logger.NewLog("beh", "mqtt topic behavior stops", "")
 	// deregister handler
 	mqttBehavior.ag.MQTT.deregisterTopicChannel(mqttBehavior.topic)
 	// stop message handling
@@ -253,14 +253,14 @@ func (agent *Agent) NewPeriodicBehavior(period time.Duration,
 // Start initiates the handling of messages
 func (periodBehavior *periodicBehavior) Start() {
 	// log the start
-	periodBehavior.ag.Logger.NewLog("beh", "period-start", "")
+	periodBehavior.ag.Logger.NewLog("beh", "periodic behavior starts", "")
 	// execute
 	go periodBehavior.task()
 }
 
 // task performs the execution of the handle function
 func (periodBehavior *periodicBehavior) task() {
-	periodBehavior.logInfo.Println("Starting periodoc behavior for agent ",
+	periodBehavior.logInfo.Println("Starting periodic behavior for agent ",
 		periodBehavior.ag.GetAgentID(), " and period ", periodBehavior.period)
 	for {
 		periodBehavior.ag.mutex.Lock()
@@ -274,7 +274,7 @@ func (periodBehavior *periodicBehavior) task() {
 		case command := <-periodBehavior.ctrl:
 			switch command {
 			case -1:
-				periodBehavior.logInfo.Println("Terminating periodoc behavior for agent ",
+				periodBehavior.logInfo.Println("Terminating periodic behavior for agent ",
 					periodBehavior.ag.GetAgentID())
 				return
 			}
@@ -282,7 +282,7 @@ func (periodBehavior *periodicBehavior) task() {
 			start := time.Now()
 			periodBehavior.handle()
 			end := time.Now()
-			periodBehavior.ag.Logger.NewBehStats(start, end, "protocol")
+			periodBehavior.ag.Logger.NewBehStats(start, end, "period")
 
 		}
 	}
@@ -291,7 +291,7 @@ func (periodBehavior *periodicBehavior) task() {
 // Stop terminates the message handling
 func (periodBehavior *periodicBehavior) Stop() {
 	// log the stop
-	periodBehavior.ag.Logger.NewLog("beh", "period-stop", "")
+	periodBehavior.ag.Logger.NewLog("beh", "periodic behavior stops", "")
 	// stop message handling
 	periodBehavior.ctrl <- -1
 }
@@ -327,7 +327,7 @@ func (agent *Agent) NewCustomUpdateBehavior(
 // Start initiates the handling of messages
 func (custUpBehavior *customUpdateBehavior) Start() {
 	// log the start
-	custUpBehavior.ag.Logger.NewLog("beh", "custom", "start")
+	custUpBehavior.ag.Logger.NewLog("beh", "custom update behavior starts", "")
 	custUpBehavior.ag.registerCustomUpdateChannel(custUpBehavior.customIn)
 	// execute
 	go custUpBehavior.task()
@@ -364,7 +364,7 @@ func (custUpBehavior *customUpdateBehavior) task() {
 // Stop terminates the behavior
 func (custUpBehavior *customUpdateBehavior) Stop() {
 	// log the stop
-	custUpBehavior.ag.Logger.NewLog("beh", "custom-stop", "")
+	custUpBehavior.ag.Logger.NewLog("beh", "custom update behavior ends", "")
 	custUpBehavior.ag.deregisterCustomUpdateChannel()
 	// stop behavior
 	custUpBehavior.ctrl <- -1

@@ -275,34 +275,25 @@ func (stor *cassStorage) getMsgHeatmap(masID int) (heatmap map[[2]int]int, err e
 	return
 }
 
-// getStatistics get the data of a certain method and topic
-func (stor *cassStorage) getStats(masID int, agentID int, method string, behType string, start time.Time, end time.Time) (data float32, err error) {
+// getStats get the data of a certain behtype
+func (stor *cassStorage) getStats(masID int, agentID int, behType string, start time.Time, end time.Time) (statsInfo schemas.StatsInfo, err error) {
 	var iter *gocql.Iter
 	iter = stor.session.Query("SELECT series FROM beh_stats WHERE masid = ? AND agentid = ? AND "+
 		"behType = ? AND start > ? AND start < ?", masID, agentID, behType, start, end).Iter()
 	var js []byte
-	duration := []int{}
 	for iter.Scan(&js) {
 		var behStats schemas.BehStats
 		err = json.Unmarshal(js, &behStats)
 		if err != nil {
 			return
 		}
-		duration = append(duration, behStats.Duration)
+		statsInfo.List = append(statsInfo.List, behStats)
 	}
 	iter.Close()
-	switch method {
-	case "max":
-		data = float32(getMax(duration))
-	case "min":
-		data = float32(getMin(duration))
-	case "count":
-		data = float32(len(duration))
-	case "average":
-		data = getAverage((duration))
-	default:
-		err = errors.New("wrong method")
-	}
+	statsInfo.Max = getMax(getDuration(statsInfo.List))
+	statsInfo.Min = getMin(getDuration(statsInfo.List))
+	statsInfo.Count = len(statsInfo.List)
+	statsInfo.Average = getAverage((getDuration(statsInfo.List)))
 	return
 }
 

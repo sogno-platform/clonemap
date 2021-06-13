@@ -79,16 +79,6 @@ type LogSeries struct {
 	Value     float64   `json:"value"`     // value of the series item
 }
 
-// logBeh contains behavior information
-type BehStats struct {
-	MASID    int       `json:"masid"`   // ID of MAS agent runs in
-	AgentID  int       `json:"agentid"` // ID of agent
-	BehType  string    `json:"behtype"`
-	Start    time.Time `json:"start"`
-	End      time.Time `json:"end"`
-	Duration int       `json:"duration"`
-}
-
 // State contains the state of an agent as byte array (json)
 type State struct {
 	MASID     int       `json:"masid"`     // ID of MAS agent runs in

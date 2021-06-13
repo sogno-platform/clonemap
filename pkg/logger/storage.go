@@ -84,8 +84,8 @@ type storage interface {
 	// getMsgHeatmap get the msg communication frequency
 	getMsgHeatmap(masID int) (heatmap map[[2]int]int, err error)
 
-	// getStatistics get the data of a certain method and topic
-	getStats(masID int, agentID int, method string, topic string, start time.Time, end time.Time) (data float32, err error)
+	// getStats get the data of a certain behtype
+	getStats(masID int, agentID int, behType string, start time.Time, end time.Time) (statsInfo schemas.StatsInfo, err error)
 
 	// deleteAgentLogMessages deletes all log messages og an agent
 	deleteAgentLogMessages(masID int, agentID int) (err error)
@@ -494,8 +494,8 @@ func getAverage(duration []int) (averageVal float32) {
 	return float32(sum) / float32(len(duration))
 }
 
-// getStatistics get the data of a certain method and topic
-func (stor *localStorage) getStats(masID int, agentID int, method string, behType string, start time.Time, end time.Time) (data float32, err error) {
+// getStats get the data of a certain behavior type
+func (stor *localStorage) getStats(masID int, agentID int, behType string, start time.Time, end time.Time) (statsInfo schemas.StatsInfo, err error) {
 	stor.mutex.Lock()
 	if masID < len(stor.mas) {
 		if agentID < len(stor.mas[masID].agents) {
@@ -513,18 +513,12 @@ func (stor *localStorage) getStats(masID int, agentID int, method string, behTyp
 				if endIndex-startIndex >= 0 {
 					logs := make([]schemas.BehStats, endIndex-startIndex)
 					copy(logs, stor.mas[masID].agents[agentID].behsStats[behType][startIndex:endIndex])
-					switch method {
-					case "max":
-						data = float32(getMax(getDuration(logs)))
-					case "min":
-						data = float32(getMin(getDuration(logs)))
-					case "count":
-						data = float32(len(logs))
-					case "average":
-						data = getAverage((getDuration(logs)))
-					default:
-						err = errors.New("wrong method")
-					}
+					statsInfo.List = logs
+					statsInfo.Max = getMax(getDuration(logs))
+					statsInfo.Min = getMin(getDuration(logs))
+					statsInfo.Count = len(logs)
+					statsInfo.Average = getAverage((getDuration(logs)))
+
 				}
 			}
 		}

@@ -259,85 +259,85 @@ type ACLMessage struct {
 
 // String outputs message
 func (msg ACLMessage) String() (ret string) {
-	ret = "Sender: " + strconv.Itoa(msg.Sender) + "; Receiver: " + strconv.Itoa(msg.Receiver) +
-		"; Timestamp: " + msg.Timestamp.String() + "; "
+	ret = "Sender: " + strconv.Itoa(msg.Sender) + ";Receiver: " + strconv.Itoa(msg.Receiver) +
+		";Timestamp: " + msg.Timestamp.String() + ";"
 	switch msg.Protocol {
 	case FIPAProtNone:
-		ret += "Protocol: None; "
+		ret += "Protocol: None;"
 	case FIPAProtRequest:
-		ret += "Protocol: Request; "
+		ret += "Protocol: Request;"
 	case FIPAProtQuery:
-		ret += "Protocol: Query; "
+		ret += "Protocol: Query;"
 	case FIPAProtRequestWhen:
-		ret += "Protocol: Request When; "
+		ret += "Protocol: Request When;"
 	case FIPAProtContractNet:
-		ret += "Protocol: Contract-Net; "
+		ret += "Protocol: Contract-Net;"
 	case FIPAProtIteratedContractNet:
-		ret += "Protocol: Iterated Contract-Net; "
+		ret += "Protocol: Iterated Contract-Net;"
 	case FIPAProtEnglishAuction:
-		ret += "Protocol: English Auction; "
+		ret += "Protocol: English Auction;"
 	case FIPAProtDutchAuction:
-		ret += "Protocol: Dutch Auction; "
+		ret += "Protocol: Dutch Auction;"
 	case FIPAProtBrokering:
-		ret += "Protocol: Brokering; "
+		ret += "Protocol: Brokering;"
 	case FIPAProtRecruiting:
-		ret += "Protocol: Recruiting; "
+		ret += "Protocol: Recruiting;"
 	case FIPAProtSubscribe:
-		ret += "Protocol: Subscribe; "
+		ret += "Protocol: Subscribe;"
 	case FIPAProtPropose:
-		ret += "Protocol: Propose; "
+		ret += "Protocol: Propose;"
 	default:
-		ret += "Protocol: Unknown(" + strconv.Itoa(msg.Protocol) + "); "
+		ret += "Protocol: Unknown(" + strconv.Itoa(msg.Protocol) + ");"
 	}
 	switch msg.Performative {
 	case FIPAPerfNone:
-		ret += "Performative: None; "
+		ret += "Performative: None;"
 	case FIPAPerfAcceptProposal:
-		ret += "Performative: Accept Proposal; "
+		ret += "Performative: Accept Proposal;"
 	case FIPAPerfAgree:
-		ret += "Performative: Agree; "
+		ret += "Performative: Agree;"
 	case FIPAPerfCancel:
-		ret += "Performative: Cancel; "
+		ret += "Performative: Cancel;"
 	case FIPAPerfCallForProposal:
-		ret += "Performative: Call For Proposal; "
+		ret += "Performative: Call For Proposal;"
 	case FIPAPerfConfirm:
-		ret += "Performative: Confirm; "
+		ret += "Performative: Confirm;"
 	case FIPAPerfDisconfirm:
-		ret += "Performative: Disconfirm; "
+		ret += "Performative: Disconfirm;"
 	case FIPAPerfFailure:
-		ret += "Performative: Failure; "
+		ret += "Performative: Failure;"
 	case FIPAPerfInform:
-		ret += "Performative: Inform; "
+		ret += "Performative: Inform;"
 	case FIPAPerfInformIf:
-		ret += "Performative: Inform If; "
+		ret += "Performative: Inform If;"
 	case FIPAPerfInformRef:
-		ret += "Performative: Inform Ref; "
+		ret += "Performative: Inform Ref;"
 	case FIPAPerfNotUnderstood:
-		ret += "Performative: Not Understood; "
+		ret += "Performative: Not Understood;"
 	case FIPAPerfPropagate:
-		ret += "Performative: Propagate; "
+		ret += "Performative: Propagate;"
 	case FIPAPerfPropose:
-		ret += "Performative: Propose; "
+		ret += "Performative: Propose;"
 	case FIPAPerfProxy:
-		ret += "Performative: Proxy; "
+		ret += "Performative: Proxy;"
 	case FIPAPerfQueryIf:
-		ret += "Performative: Query If; "
+		ret += "Performative: Query If;"
 	case FIPAPerfQueryRef:
-		ret += "Performative: Query Ref; "
+		ret += "Performative: Query Ref;"
 	case FIPAPerfRefuse:
-		ret += "Performative: Refuse; "
+		ret += "Performative: Refuse;"
 	case FIPAPerfRejectProposal:
-		ret += "Performative: Reject Proposal; "
+		ret += "Performative: Reject Proposal;"
 	case FIPAPerfRequest:
-		ret += "Performative: Request; "
+		ret += "Performative: Request;"
 	case FIPAPerfRequestWhen:
-		ret += "Performative: Request When; "
+		ret += "Performative: Request When;"
 	case FIPAPerfRequestWhenever:
-		ret += "Performative: Request Whenever; "
+		ret += "Performative: Request Whenever;"
 	case FIPAPerfSubscribe:
-		ret += "Performative: Subscribe; "
+		ret += "Performative: Subscribe;"
 	default:
-		ret += "Performative: Unknown(" + strconv.Itoa(msg.Performative) + "); "
+		ret += "Performative: Unknown(" + strconv.Itoa(msg.Performative) + ");"
 	}
 	ret += "Content: " + msg.Content
 	return

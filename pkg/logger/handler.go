@@ -327,7 +327,7 @@ func (logger *Logger) handleGetLogSeriesByName(w http.ResponseWriter, r *http.Re
 	logger.logErrors(r.URL.Path, cmapErr, httpErr)
 }
 
-// handleGetMsgHeatmap is the handler for requests to path /api/statistics/{masid}/heatmap
+// handleGetMsgHeatmap is the handler for requests to path /api/stats/{masid}/heatmap
 func (logger *Logger) handleGetMsgHeatmap(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
 	vars := mux.Vars(r)
@@ -350,7 +350,7 @@ func (logger *Logger) handleGetMsgHeatmap(w http.ResponseWriter, r *http.Request
 	logger.logErrors(r.URL.Path, cmapErr, httpErr)
 }
 
-// handleGetStatistics is the handler for requests to path /api/statistics/{masid}/{method}/{topic}/{start}/{end}
+// handleGetStats is the handler for requests to path /api/statistics/{masid}/{behtype}/{start}/{end}
 func (logger *Logger) handleGetStats(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
 	vars := mux.Vars(r)
@@ -358,7 +358,6 @@ func (logger *Logger) handleGetStats(w http.ResponseWriter, r *http.Request) {
 	if cmapErr != nil {
 		return
 	}
-	method := vars["method"]
 	behtype := vars["behtype"]
 	start, cmapErr := time.Parse("20060102150405", vars["start"])
 	if cmapErr != nil {
@@ -372,13 +371,13 @@ func (logger *Logger) handleGetStats(w http.ResponseWriter, r *http.Request) {
 		logger.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
-	data, cmapErr := logger.getStats(masID, agentID, method, behtype, start, end)
+	statsInfo, cmapErr := logger.getStats(masID, agentID, behtype, start, end)
 	if cmapErr != nil {
 		httpErr := httpreply.CMAPError(w, cmapErr.Error())
 		logger.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
-	httpErr = httpreply.Resource(w, data, cmapErr)
+	httpErr = httpreply.Resource(w, statsInfo, cmapErr)
 	logger.logErrors(r.URL.Path, cmapErr, httpErr)
 }
 
@@ -539,7 +538,7 @@ func (logger *Logger) server(port int) (serv *http.Server) {
 
 	s.Path("/stats/{masid}").Methods("POST").HandlerFunc(logger.handlePostBehsStats)
 	s.Path("/stats/{masid}/heatmap").Methods("GET").HandlerFunc(logger.handleGetMsgHeatmap)
-	s.Path("/stats/{masid}/{agentid}/{method}/{behtype}/{start}/{end}").Methods("GET").HandlerFunc(logger.handleGetStats)
+	s.Path("/stats/{masid}/{agentid}/{behtype}/{start}/{end}").Methods("GET").HandlerFunc(logger.handleGetStats)
 
 	s.Path("/state/{masid}/{agentid}").Methods("GET").HandlerFunc(logger.handleGetState)
 	s.Path("/state/{masid}/{agentid}").Methods("PUT").HandlerFunc(logger.handlePutState)
