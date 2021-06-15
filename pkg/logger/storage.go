@@ -167,7 +167,7 @@ func (stor *localStorage) addAgentLogMessage(log schemas.LogMessage) (err error)
 				stor.mas[log.MASID].msgCnt = make(map[[2]int]int)
 			}
 			recvStr := strings.Split(log.AdditionalData, ";")[1]
-			rec, _ := strconv.Atoi(strings.Split(recvStr, " ")[2])
+			rec, _ := strconv.Atoi(strings.Split(recvStr, " ")[1])
 			idx := [2]int{log.AgentID, rec}
 			stor.mas[log.MASID].msgCnt[idx] += 1
 		}

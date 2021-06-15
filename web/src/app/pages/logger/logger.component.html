@@ -147,10 +147,25 @@
                     </mat-form-field>
                 </div>
 
+                <div *ngIf="currState==='heatmap'">
+                    <mat-form-field appearance="fill" class="between" style="width: 200px;">
+                        <mat-label>Automatic partition?</mat-label>
+                        <mat-select (selectionChange)="updatePartition($event.value)">
+                            <mat-option value="Yes">Yes</mat-option>
+                            <mat-option value="No">No</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                    
+                    <mat-form-field appearance="fill" [hidden]="autoPartition" style="width: 100px;">
+                        <mat-label>Partitions</mat-label>
+                        <input matInput (change)="getPartitionNum($event.target.value)" placeholder="5">
+                    </mat-form-field>
+                </div>
+
                 <i class="fas fa-search fa-2x" (click)="onClickSearchButton()"></i>
 
             </div>
-            <!--            agent selection for non-statistic conditions -->
+            <!--            agent selection for log and logSeries conditions -->
             <div *ngIf="currState ==='log' || currState ==='logSeries'" class= "d-flex align-content-end">
                 <div class="agent-title">agents</div>
                 <div class="agents">
@@ -295,8 +310,9 @@
             </div>
             </div>
 
-            <div class="d-flex justify-content-center">
-            <svg class="heatmap" *ngIf="currState==='heatmap'" width="600" height="600" >
+            <div *ngIf="currState==='heatmap'" class="d-flex justify-content-center">
+
+            <svg class="heatmap" width="1000" height="800" >
                 <rect class="grid" *ngFor="let grid of grids, index as i" 
                 [attr.fill]="grid.color" 
                 [attr.x]="grid.x * gridWidth" 
@@ -310,9 +326,32 @@
                 placement="top" 
                 container="body"
                 ></rect>
+
+                
+                <rect *ngFor="let legend of colorPartitionEle, index as i"
+                    [attr.x] = "700"
+                    [attr.y]= "(legendWidth + 10) * i + 50"
+                    [attr.width]="legendWidth"
+                    [attr.height]="legendWidth"
+                    [attr.fill]="legend"
+                ></rect>
+
+                <text *ngFor="let text of colorLegendTexts, index as i"
+                [attr.x] = "750"
+                [attr.y]= "(legendWidth + 10) * i + 70"
+                [attr.fill]="gray"
+                > {{text[0]}}-{{text[1]}}</text>
+
+
 <!--                 <text class="xlabel" x="350" y="730"> agent ID of sender</text>
                 <text class="ylabel" x="-10" y="350"> agent ID of receiver</text> -->
             </svg>
+
+   
+
+
+  
+            
             </div>
             
 

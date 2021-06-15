@@ -100,6 +100,12 @@ export class LoggerComponent implements OnInit {
     grids: any[] = [];
     gridWidth: number = 4;
     popoverFrequency: any = {};
+    autoPartition: boolean = false;
+    partitionNum: number = 5;
+    colorPartitionEle: string[] = [];
+    colorLegendTexts: number[][] = [];
+    legendWidth = 30;
+    
 
     constructor(
         private loggerService: LoggerService,
@@ -248,8 +254,10 @@ export class LoggerComponent implements OnInit {
             this.drawLogs();
         } else if (this.currState==="logSeries") {
             this.drawSeries();
-        } else {
+        } else if (this.currState==="statistics")  {
             this.drawStatistics();
+        } else {
+            this.drawHeatmap();
         }
     }
 
@@ -558,9 +566,25 @@ export class LoggerComponent implements OnInit {
         this.drawHeatmap();
     }
 
-        /************ convert the count of msg communication to color light ***************/
+    updatePartition(value: string) {
+        if (value === "Yes") {
+            this.autoPartition = true;
+        } else {
+            this.autoPartition = false;
+        }
+    }
+
+    getPartitionNum(value :string) {
+        const num = parseInt(value)
+        if (num !== NaN) {
+            this.partitionNum = num;
+        }
+    }
+
+    /************ convert the count of msg communication to color light ***************/
+    
     // form hsl(240, 100%, 90%) to hsl(240, 100%, 50%)
-    convertValueToColor(values: number[]): string[] {
+    autoConvertColor(values: number[]): string[] {
         const maxVal = Math.max(...values);
         const minVal = Math.min(...values);
         let arrayColor: string[] = [];
@@ -575,6 +599,43 @@ export class LoggerComponent implements OnInit {
         }
         return arrayColor;   
     }
+
+    
+
+    getColorPartitionEle(): string[] {
+        // form hsl(240, 100%, 50%) to hsl(240, 100%, 90%)
+        let colors: string[] = [];
+        for (let i = 0; i < this.partitionNum; i++) {
+            let percent: number = 100 - i / (this.partitionNum - 1) * 40 - 10;
+            percent = Math.trunc(percent);
+            colors.push("hsl(240, 100%, " + percent.toString() + "%)");
+        }
+        return colors;
+    }
+
+    getColorLegendTexts(values: number[]): number[][] {
+        const quo: number = Math.floor(values.length / this.partitionNum)
+        const remainder: number = values.length % this.partitionNum
+        let res: number[][] = []
+        for (let i = 0; i < remainder; i++) {
+            res.push([values[i * (quo + 1)], values[(i + 1) * (quo + 1) - 1]])
+        }   
+        for (let i = remainder; i < this.partitionNum; i++) {
+            res.push([values[i * quo + remainder], values[(i + 1) * quo + remainder - 1]])
+        }   
+        return res; 
+    }
+
+    manualConvertColor(idx: number, len: number): number {
+        const quo = Math.floor(len / this.partitionNum)
+        const remainder = len % this.partitionNum
+        if (Math.floor(idx / (quo + 1)) < remainder) {
+            return Math.floor(idx / (quo + 1));
+        } else {
+            return Math.floor((idx - remainder) / quo);
+        }
+    }
+
 
     onEnterGrid(i: number){
         this.popoverFrequency = {};
@@ -593,15 +654,46 @@ export class LoggerComponent implements OnInit {
             for (let i = 0; i < res.length; i++) {
                 values.push(parseInt(res[i].split("-")[2]))
             }
-            this.gridColors = this.convertValueToColor(values);
-            this.grids = [];
-            for (let i = 0; i < res.length; i++) {
-                this.grids.push({
-                    x: res[i].split("-")[0],
-                    y: res[i].split("-")[1],
-                    value: res[i].split("-")[2],
-                    color: this.gridColors[i]
+
+            if (this.autoPartition) {
+                this.gridColors = this.autoConvertColor(values);
+                this.colorPartitionEle = [];
+                this.colorLegendTexts = [];
+                this.grids = [];
+                for (let i = 0; i < res.length; i++) {
+                    this.grids.push({
+                        x: res[i].split("-")[0],
+                        y: res[i].split("-")[1],
+                        value: res[i].split("-")[2],
+                        color: this.gridColors[i]
+                    })
+                }
+            } else {
+                this.grids = [];
+                this.gridColors = [];
+                const sortedSet: number[] = [...(new Set(values))].sort();
+                let mapIdx = new Map();
+                sortedSet.forEach((ele, idx) => {
+                    mapIdx.set(ele, idx);
                 })
+                if (sortedSet.length < this.partitionNum) {
+                    this.partitionNum = sortedSet.length;
+                }
+                this.colorPartitionEle = this.getColorPartitionEle();
+                this.colorLegendTexts = this.getColorLegendTexts(sortedSet);
+                console.log(this.colorLegendTexts)
+                console.log(this.colorPartitionEle)
+                for (const item of res) {
+                    const idx = mapIdx.get(parseInt(item.split("-")[2]));
+                    const color: string = this.colorPartitionEle[this.manualConvertColor(idx, sortedSet.length)];
+                    this.gridColors.push(color)
+                    this.grids.push({
+                        x: item.split("-")[0],
+                        y: item.split("-")[1],
+                        value: item.split("-")[2],
+                        color: color
+                    })
+                }
             }
         })
     }

@@ -56,7 +56,7 @@ import (
 )
 
 func main() {
-	err := agency.StartAgency(task_test)
+	err := agency.StartAgency(task)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -116,6 +116,13 @@ func task(ag *agency.Agent) (err error) {
 	time.Sleep(10 * time.Second)
 	id := ag.GetAgentID()
 
+	// app logs
+	cnt := rand.Intn(10)
+	for i := 0; i < cnt; i++ {
+		ag.Logger.NewLog("app", "This is agent "+strconv.Itoa(id), "")
+		time.Sleep(2 * time.Second)
+	}
+
 	// sends 40 messages randomly to other agents
 	for i := 0; i < 40; i++ {
 		interval := rand.Intn(5)
@@ -126,13 +133,6 @@ func task(ag *agency.Agent) (err error) {
 		}
 		msg, _ := ag.ACL.NewMessage(recv, 0, 0, "test message")
 		ag.ACL.SendMessage(msg)
-	}
-
-	// app logs
-	cnt := rand.Intn(10)
-	for i := 0; i < cnt; i++ {
-		ag.Logger.NewLog("app", "This is agent "+strconv.Itoa(id), "")
-		time.Sleep(2 * time.Second)
 	}
 
 	// service
