@@ -81,8 +81,8 @@ type storage interface {
 	// getAgentLogSeries get the log series
 	getAgentLogSeries(masID int, agentID int, name string, start time.Time, end time.Time) (series []schemas.LogSeries, err error)
 
-	// getMsgHeatmap get the msg communication frequency
-	getMsgHeatmap(masID int) (heatmap map[[2]int]int, err error)
+	// getMsgHeatmap get the msg communication frequency within a range
+	getMsgHeatmap(masID int, start time.Time, end time.Time) (heatmap map[[2]int]int, err error)
 
 	// getStats get the data of a certain behtype
 	getStats(masID int, agentID int, behType string, start time.Time, end time.Time) (statsInfo schemas.StatsInfo, err error)
@@ -121,7 +121,6 @@ type localStorage struct {
 
 type masStorage struct {
 	agents []agentStorage
-	msgCnt map[[2]int]int
 }
 
 type agentStorage struct {
@@ -162,15 +161,6 @@ func (stor *localStorage) addAgentLogMessage(log schemas.LogMessage) (err error)
 	case "msg":
 		stor.mas[log.MASID].agents[log.AgentID].msgLogs = append(stor.mas[log.MASID].agents[log.AgentID].msgLogs,
 			log)
-		if log.Message == "ACL send" {
-			if stor.mas[log.MASID].msgCnt == nil {
-				stor.mas[log.MASID].msgCnt = make(map[[2]int]int)
-			}
-			recvStr := strings.Split(log.AdditionalData, ";")[1]
-			rec, _ := strconv.Atoi(strings.Split(recvStr, " ")[1])
-			idx := [2]int{log.AgentID, rec}
-			stor.mas[log.MASID].msgCnt[idx] += 1
-		}
 	case "status":
 		stor.mas[log.MASID].agents[log.AgentID].statLogs = append(stor.mas[log.MASID].agents[log.AgentID].statLogs,
 			log)
@@ -449,11 +439,35 @@ func (stor *localStorage) getAgentLogSeries(masID int, agentID int, name string,
 	return
 }
 
-// getMsgHeatmap return the msg communication frequency
-func (stor *localStorage) getMsgHeatmap(masID int) (heatmap map[[2]int]int, err error) {
+// getMsgHeatmap return the msg communication frequency within a range
+func (stor *localStorage) getMsgHeatmap(masID int, start time.Time, end time.Time) (heatmap map[[2]int]int, err error) {
+	heatmap = make(map[[2]int]int)
 	stor.mutex.Lock()
-	if masID < len(stor.mas) {
-		heatmap = stor.mas[masID].msgCnt
+	for agentID := 0; agentID < len(stor.mas[masID].agents); agentID++ {
+		length := len(stor.mas[masID].agents[agentID].msgLogs)
+		if length > 0 {
+			startIndex := sort.Search(length,
+				func(i int) bool {
+					return stor.mas[masID].agents[agentID].msgLogs[i].Timestamp.After(start)
+				})
+			endIndex := sort.Search(length,
+				func(i int) bool {
+					return stor.mas[masID].agents[agentID].msgLogs[i].Timestamp.After(end)
+				})
+			if endIndex-startIndex >= 0 {
+				for _, log := range stor.mas[masID].agents[agentID].msgLogs[startIndex:endIndex] {
+					if log.Message == "ACL send" {
+						sender := log.AgentID
+						recvnfo := strings.Split(log.AdditionalData, ";")[1]
+						receiver, err := strconv.Atoi(strings.Split(recvnfo, ": ")[1])
+						if err == nil {
+							idx := [2]int{sender, receiver}
+							heatmap[idx] += 1
+						}
+					}
+				}
+			}
+		}
 	}
 	stor.mutex.Unlock()
 	return

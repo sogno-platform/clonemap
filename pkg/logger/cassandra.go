@@ -249,30 +249,38 @@ func (stor *cassStorage) getAgentLogSeriesNames(masID int, agentID int) (names [
 	return
 }
 
-// deleteAgentLogMessages deletes all log messages og an agent
+// deleteAgentLogMessages deletes all log messages of an agent
 func (stor *cassStorage) deleteAgentLogMessages(masID int, agentID int) (err error) {
 
 	return
 }
 
 // getMsgHeatmap get the msg communication frequency
-func (stor *cassStorage) getMsgHeatmap(masID int) (heatmap map[[2]int]int, err error) {
-	scanner := stor.session.Query("SELECT sender, receiver, count FROM heatmap WHERE masid = ? ", masID).Iter().Scanner()
+func (stor *cassStorage) getMsgHeatmap(masID int, start time.Time, end time.Time) (heatmap map[[2]int]int, err error) {
 	heatmap = make(map[[2]int]int)
-	for scanner.Next() {
-		var (
-			sender   int
-			receiver int
-			count    int
-		)
-		err = scanner.Scan(&sender, &receiver, &count)
+	var iter *gocql.Iter
+	iter = stor.session.Query("SELECT log FROM logging_msg WHERE masid = ? AND "+
+		"t > ? AND t < ?", masID, start, end).Iter()
+	var js []byte
+	for iter.Scan(&js) {
+		var logmsg schemas.LogMessage
+		err = json.Unmarshal(js, &logmsg)
 		if err != nil {
 			return
 		}
-		idx := [2]int{sender, receiver}
-		heatmap[idx] = count
+		if logmsg.Message == "ACL send" {
+			sender := logmsg.AgentID
+			recvnfo := strings.Split(logmsg.AdditionalData, ";")[1]
+			receiver, err := strconv.Atoi(strings.Split(recvnfo, ": ")[1])
+			if err == nil {
+				idx := [2]int{sender, receiver}
+				heatmap[idx] += 1
+			}
+		}
 	}
+	iter.Close()
 	return
+
 }
 
 // getStats get the data of a certain behtype
@@ -353,7 +361,7 @@ func (stor *cassStorage) deleteAgentState(masID int, agentID int) (err error) {
 	return
 }
 
-// storeLogs stores the logs in a batch operation and store the communication frequency
+// storeLogs stores the logs in a batch operation
 func (stor *cassStorage) storeLogs(topic string) {
 	var logIn chan schemas.LogMessage
 	var err error
@@ -382,12 +390,6 @@ func (stor *cassStorage) storeLogs(topic string) {
 		if err != nil {
 			fmt.Println(err)
 		}
-		if topic == "msg" && log.Message == "ACL send" {
-			recvStr := strings.Split(log.AdditionalData, ";")[1]
-			rec, _ := strconv.Atoi(strings.Split(recvStr, " ")[2])
-			stor.session.Query("UPDATE heatmap SET count=count+1 WHERE masid = ? AND sender = ? AND receiver = ?",
-				log.MASID, log.AgentID, rec).Exec()
-		}
 		batch.Query(stmt, log.MASID, log.AgentID, log.Timestamp, js)
 		size := len(js)
 		for i := 0; i < 9; i++ {
@@ -403,12 +405,6 @@ func (stor *cassStorage) storeLogs(topic string) {
 					fmt.Println(err)
 				}
 				batch.Query(stmt, log.MASID, log.AgentID, log.Timestamp, js)
-				if topic == "msg" && log.Message == "ACL send" {
-					recvStr := strings.Split(log.AdditionalData, ";")[1]
-					rec, _ := strconv.Atoi(strings.Split(recvStr, " ")[2])
-					stor.session.Query("UPDATE heatmap SET count=count+1 WHERE masid = ? AND sender = ? AND receiver = ?",
-						log.MASID, log.AgentID, rec).Exec()
-				}
 				size += len(js)
 			default:
 				empty = true
@@ -463,10 +459,10 @@ func (stor *cassStorage) storeSeries() {
 	}
 }
 
-// storeStatis stores the log series in a batch operation
+// storeStats stores the stats info in a batch operation
 func (stor *cassStorage) storeStats() {
 	var err error
-	stmt := "INSERT INTO beh_stats (masid, agentid, type, start, end, duration) VALUES (?, ?, ?, ?, ?, ?)"
+	stmt := "INSERT INTO beh_stats (masid, agentid, behType, start, end, duration) VALUES (?, ?, ?, ?, ?, ?)"
 
 	for {
 		batch := gocql.NewBatch(gocql.UnloggedBatch)

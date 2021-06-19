@@ -156,10 +156,10 @@ func (cli *LoggerClient) GetLogSeriesByName(masID int, agentID int, name string,
 }
 
 // GetMsgHeatMap gets msg communication frequency
-func (cli *LoggerClient) GetMsgHeatmap(masID int) (heatmap []string, httpStatus int, err error) {
+func (cli *LoggerClient) GetMsgHeatmap(masID int, start string, end string) (heatmap []string, httpStatus int, err error) {
 	var body []byte
 	body, httpStatus, err = httpretry.Get(cli.httpClient, cli.prefix()+"/api/stats/"+
-		strconv.Itoa(masID)+"/heatmap", time.Second*2, 4)
+		strconv.Itoa(masID)+"/heatmap"+"/"+start+"/"+end, time.Second*2, 4)
 	if err != nil {
 		return
 	}

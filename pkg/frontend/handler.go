@@ -204,7 +204,7 @@ func (fe *Frontend) server(port int) (serv *http.Server) {
 	// api for logger
 	s.Path("/logging/series/{masid}/{agentid}/names").Methods("GET").HandlerFunc(fe.handleGetLogSeriesNames)
 	s.Path("/logging/series/{masid}/{agentid}/{name}/time/{start}/{end}").Methods("GET").HandlerFunc(fe.handleGetLogSeriesByName)
-	s.Path("/logging/stats/{masid}/heatmap").Methods("GET").HandlerFunc(fe.handleGetMsgHeatmap)
+	s.Path("/logging/stats/{masid}/heatmap/{start}/{end}").Methods("GET").HandlerFunc(fe.handleGetMsgHeatmap)
 	s.Path("/logging/stats/{masid}/{agentid}/{behtype}/{start}/{end}").Methods("GET").HandlerFunc(fe.handleGetStats)
 
 	s.Path("/logging/{masid}/{agentid}/{topic}/latest/{num}").Methods("GET").HandlerFunc(fe.handleGetNLatestLogs)

@@ -223,8 +223,10 @@ func (fe *Frontend) handleGetMsgHeatmap(w http.ResponseWriter, r *http.Request) 
 		fe.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
+	start := vars["start"]
+	end := vars["end"]
 	var heatmap []string
-	heatmap, _, cmapErr = fe.logClient.GetMsgHeatmap(masID)
+	heatmap, _, cmapErr = fe.logClient.GetMsgHeatmap(masID, start, end)
 	if cmapErr != nil {
 		httpErr = httpreply.CMAPError(w, cmapErr.Error())
 		fe.logErrors(r.URL.Path, cmapErr, httpErr)

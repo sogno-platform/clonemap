@@ -73,7 +73,8 @@ func handleDefault(msg schemas.ACLMessage) (err error) {
 	return
 }
 
-func task_test(ag *agency.Agent) (err error) {
+func task(ag *agency.Agent) (err error) {
+	time.Sleep(10 * time.Second)
 	id := ag.GetAgentID()
 
 	// agent 0 subsribes the topic1
@@ -98,33 +99,8 @@ func task_test(ag *agency.Agent) (err error) {
 		}
 	}
 
-	// new protocol behavior
-	/* 	handlePerformative := make(map[int]func(schemas.ACLMessage) error)
-	   	handlePerformative[0] = handleDefault
-	   	behPro, err := ag.NewMessageBehavior(0, handlePerformative, handleDefault)
-	   	if err != nil {
-	   		fmt.Println("protocol started with error")
-	   		ag.Logger.NewLog("beh", "protocol error", "")
-	   	} else {
-	   		behPro.Start()
-	   		time.Sleep(30 * time.Second)
-	   	} */
-	return
-}
-
-func task(ag *agency.Agent) (err error) {
-	time.Sleep(10 * time.Second)
-	id := ag.GetAgentID()
-
-	// app logs
-	cnt := rand.Intn(10)
-	for i := 0; i < cnt; i++ {
-		ag.Logger.NewLog("app", "This is agent "+strconv.Itoa(id), "")
-		time.Sleep(2 * time.Second)
-	}
-
-	// sends 40 messages randomly to other agents
-	for i := 0; i < 40; i++ {
+	// sends 20 messages randomly to other agents
+	for i := 0; i < 20; i++ {
 		interval := rand.Intn(5)
 		time.Sleep(time.Duration(interval) * time.Second)
 		recv := rand.Intn(20)

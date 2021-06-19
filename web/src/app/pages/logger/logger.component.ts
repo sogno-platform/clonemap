@@ -30,7 +30,7 @@ export class LoggerComponent implements OnInit {
 
     // parameters and variables for drawing logs
     searchStartTime: string = "20210301000000";
-    searchEndTime: string = "20210331000000"
+    searchEndTime: string = "20211231000000"
     isTopicSelected: boolean[] = [true, true, true, true, true, true];
     topics: string[] = ["error", "debug", "msg", "status", "app", "beh" ];
     width: number = 1500;
@@ -103,7 +103,7 @@ export class LoggerComponent implements OnInit {
     autoPartition: boolean = false;
     partitionNum: number = 5;
     colorPartitionEle: string[] = [];
-    colorLegendTexts: number[][] = [];
+    colorLegendTexts: string[] = [];
     legendWidth = 30;
     
 
@@ -613,15 +613,25 @@ export class LoggerComponent implements OnInit {
         return colors;
     }
 
-    getColorLegendTexts(values: number[]): number[][] {
+    getColorLegendTexts(values: number[]): string[] {
         const quo: number = Math.floor(values.length / this.partitionNum)
         const remainder: number = values.length % this.partitionNum
-        let res: number[][] = []
+        let res: string[] = []
         for (let i = 0; i < remainder; i++) {
-            res.push([values[i * (quo + 1)], values[(i + 1) * (quo + 1) - 1]])
+            if (values[i * (quo + 1)] === values[(i + 1) * (quo + 1) - 1]) {
+                res.push(values[i * (quo + 1)].toString()) 
+            } else {
+                res.push( values[i * (quo + 1)].toString() + "-" + 
+                values[(i + 1) * (quo + 1) - 1].toString())
+            }
         }   
         for (let i = remainder; i < this.partitionNum; i++) {
-            res.push([values[i * quo + remainder], values[(i + 1) * quo + remainder - 1]])
+            if (values[i * quo + remainder] === values[(i + 1) * quo + remainder - 1]) {
+                res.push(values[i * quo + remainder].toString())
+            } else {
+                res.push(values[i * quo + remainder].toString() + "-" + 
+                values[(i + 1) * quo + remainder - 1].toString())
+            }
         }   
         return res; 
     }
@@ -649,7 +659,7 @@ export class LoggerComponent implements OnInit {
     }
 
     drawHeatmap() {
-        this.loggerService.getMsgHeatmap(this.selectedMASID.toString()).subscribe( (res: any) => {
+        this.loggerService.getMsgHeatmap(this.selectedMASID.toString(), this.searchStartTime, this.searchEndTime).subscribe( (res: any) => {
             let values: number[] = [];
             for (let i = 0; i < res.length; i++) {
                 values.push(parseInt(res[i].split("-")[2]))

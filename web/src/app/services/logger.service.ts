@@ -36,8 +36,8 @@ export class LoggerService {
     return this.webReqService.get(`api/logging/series/${masid}/${agentid}/${name}/time/${start}/${end}`)
   }
 
-  getMsgHeatmap(masid: string) {
-    return this.webReqService.get(`api/logging/stats/${masid}/heatmap`)
+  getMsgHeatmap(masid: string, start: string, end: string) {
+    return this.webReqService.get(`api/logging/stats/${masid}/heatmap/${start}/${end}`)
   }
 
   getBehavior(masid:string, agentid: string, behtype: string, start: string, end: string) {

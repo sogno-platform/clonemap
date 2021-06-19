@@ -171,8 +171,8 @@ func (logger *Logger) getAgentLogSeriesNames(masID int, agentID int) (names []st
 
 // getMsgHeatmap return the frequency of message communication
 
-func (logger *Logger) getMsgHeatmap(masID int) (heatmap map[[2]int]int, err error) {
-	heatmap, err = logger.stor.getMsgHeatmap(masID)
+func (logger *Logger) getMsgHeatmap(masID int, start time.Time, end time.Time) (heatmap map[[2]int]int, err error) {
+	heatmap, err = logger.stor.getMsgHeatmap(masID, start, end)
 	return
 }
 

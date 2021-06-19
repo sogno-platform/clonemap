@@ -335,8 +335,20 @@ func (logger *Logger) handleGetMsgHeatmap(w http.ResponseWriter, r *http.Request
 	if cmapErr != nil {
 		return
 	}
+	start, cmapErr := time.Parse("20060102150405", vars["start"])
+	if cmapErr != nil {
+		httpErr = httpreply.NotFoundError(w)
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
+	end, cmapErr := time.Parse("20060102150405", vars["end"])
+	if cmapErr != nil {
+		httpErr = httpreply.NotFoundError(w)
+		logger.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
 	var heatmap map[[2]int]int
-	heatmap, cmapErr = logger.getMsgHeatmap(masID)
+	heatmap, cmapErr = logger.getMsgHeatmap(masID, start, end)
 	if cmapErr != nil {
 		httpErr := httpreply.CMAPError(w, cmapErr.Error())
 		logger.logErrors(r.URL.Path, cmapErr, httpErr)
@@ -537,7 +549,7 @@ func (logger *Logger) server(port int) (serv *http.Server) {
 	s.Path("/series/{masid}").Methods("POST").HandlerFunc(logger.handlePostLogSeries)
 
 	s.Path("/stats/{masid}").Methods("POST").HandlerFunc(logger.handlePostBehsStats)
-	s.Path("/stats/{masid}/heatmap").Methods("GET").HandlerFunc(logger.handleGetMsgHeatmap)
+	s.Path("/stats/{masid}/heatmap/{start}/{end}").Methods("GET").HandlerFunc(logger.handleGetMsgHeatmap)
 	s.Path("/stats/{masid}/{agentid}/{behtype}/{start}/{end}").Methods("GET").HandlerFunc(logger.handleGetStats)
 
 	s.Path("/state/{masid}/{agentid}").Methods("GET").HandlerFunc(logger.handleGetState)
