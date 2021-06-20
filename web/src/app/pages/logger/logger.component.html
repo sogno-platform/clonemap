@@ -190,7 +190,12 @@
                         <path fill="var(--light-primary-color)" d="M0,-5L10,0L0,5"></path>
                     </marker>
                 <rect class="agentBox" *ngFor="let box of agentBox" [attr.x]="box.x" [attr.y]="box.y" [attr.width]="boxWidth" [attr.height]="boxHeight"></rect>
-                <text font-size="20px"  *ngFor="let text of texts, index as i" [attr.x]="text.x" [attr.y]="text.y"> Agent {{text.textID}} </text>
+                <text font-size="20px"  *ngFor="let text of texts, index as i" 
+                class="agentbox-text"
+                [attr.x]="text.x" 
+                [attr.y]="text.y"
+                [attr.fill]="white"> 
+                Agent {{text.textID}} </text>
                 <line stroke-dasharray="5, 5" class="vertical" *ngFor="let line of timeline" [attr.x1]="line.x1" [attr.y1]="line.y1" [attr.x2]="line.x2" [attr.y2]="height"/>     
                 <line stroke="var(--light-primary-color)" stroke-width="4" *ngFor="let line of communications" [class.hidden]="line.hidden" [attr.x1]="line.x1" [attr.y1]="line.y1" [attr.x2]="line.x2" [attr.y2]="line.y2" marker-end="url(#arrow)"/> 
                 <rect class="logBox" *ngFor="let box of logBoxes, index as i" 
@@ -232,6 +237,7 @@
                     xAxisLabel="time"
                     [xAxisTicks]="xAxisTicks"
                     [xAxisTickFormatting]="xAxisTickFormatting"
+                    [rotateXAxisTicks]="true"
                     yAxisLabel="value"
                     [minRadius]="minRadius"
                     [maxRadius]="maxRadius"

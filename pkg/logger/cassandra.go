@@ -259,24 +259,17 @@ func (stor *cassStorage) deleteAgentLogMessages(masID int, agentID int) (err err
 func (stor *cassStorage) getMsgHeatmap(masID int, start time.Time, end time.Time) (heatmap map[[2]int]int, err error) {
 	heatmap = make(map[[2]int]int)
 	var iter *gocql.Iter
-	iter = stor.session.Query("SELECT log FROM logging_msg WHERE masid = ? AND "+
+	iter = stor.session.Query("SELECT item FROM heatmap WHERE masid = ? AND "+
 		"t > ? AND t < ?", masID, start, end).Iter()
 	var js []byte
 	for iter.Scan(&js) {
-		var logmsg schemas.LogMessage
-		err = json.Unmarshal(js, &logmsg)
+		var heatmapItem schemas.Heatmap
+		err = json.Unmarshal(js, &heatmapItem)
 		if err != nil {
 			return
 		}
-		if logmsg.Message == "ACL send" {
-			sender := logmsg.AgentID
-			recvnfo := strings.Split(logmsg.AdditionalData, ";")[1]
-			receiver, err := strconv.Atoi(strings.Split(recvnfo, ": ")[1])
-			if err == nil {
-				idx := [2]int{sender, receiver}
-				heatmap[idx] += 1
-			}
-		}
+		idx := [2]int{heatmapItem.Sender, heatmapItem.Receiver}
+		heatmap[idx] += 1
 	}
 	iter.Close()
 	return
@@ -286,7 +279,7 @@ func (stor *cassStorage) getMsgHeatmap(masID int, start time.Time, end time.Time
 // getStats get the data of a certain behtype
 func (stor *cassStorage) getStats(masID int, agentID int, behType string, start time.Time, end time.Time) (statsInfo schemas.StatsInfo, err error) {
 	var iter *gocql.Iter
-	iter = stor.session.Query("SELECT series FROM beh_stats WHERE masid = ? AND agentid = ? AND "+
+	iter = stor.session.Query("SELECT stats FROM beh_stats WHERE masid = ? AND agentid = ? AND "+
 		"behType = ? AND start > ? AND start < ?", masID, agentID, behType, start, end).Iter()
 	var js []byte
 	for iter.Scan(&js) {
@@ -366,6 +359,7 @@ func (stor *cassStorage) storeLogs(topic string) {
 	var logIn chan schemas.LogMessage
 	var err error
 	stmt := "INSERT INTO logging_" + topic + " (masid, agentid, t, log) VALUES (?, ?, ?, ?)"
+	stmtHeatmap := "INSERT INTO heatmap (masid, t, item) VALUES (?, ?, ?)"
 	if topic == "status" {
 		logIn = stor.logStatusIn
 	} else if topic == "app" {
@@ -384,6 +378,7 @@ func (stor *cassStorage) storeLogs(topic string) {
 
 	for {
 		batch := gocql.NewBatch(gocql.UnloggedBatch)
+		batchHeatmap := gocql.NewBatch(gocql.UnloggedBatch)
 		log := <-logIn
 		var js []byte
 		js, err = json.Marshal(log)
@@ -392,6 +387,19 @@ func (stor *cassStorage) storeLogs(topic string) {
 		}
 		batch.Query(stmt, log.MASID, log.AgentID, log.Timestamp, js)
 		size := len(js)
+		if log.Topic == "msg" && log.Message == "ACL send" {
+			sender := log.AgentID
+			recvnfo := strings.Split(log.AdditionalData, ";")[1]
+			receiver, err := strconv.Atoi(strings.Split(recvnfo, ": ")[1])
+			heatmapItem := schemas.Heatmap{
+				Sender:   sender,
+				Receiver: receiver,
+			}
+			js, err = json.Marshal(heatmapItem)
+			if err == nil {
+				batchHeatmap.Query(stmtHeatmap, log.MASID, log.Timestamp, js)
+			}
+		}
 		for i := 0; i < 9; i++ {
 			// maximum of 10 operations in batch
 			if size > 25000 {
@@ -406,6 +414,19 @@ func (stor *cassStorage) storeLogs(topic string) {
 				}
 				batch.Query(stmt, log.MASID, log.AgentID, log.Timestamp, js)
 				size += len(js)
+				if log.Topic == "msg" && log.Message == "ACL send" {
+					sender := log.AgentID
+					recvnfo := strings.Split(log.AdditionalData, ";")[1]
+					receiver, err := strconv.Atoi(strings.Split(recvnfo, ": ")[1])
+					heatmapItem := schemas.Heatmap{
+						Sender:   sender,
+						Receiver: receiver,
+					}
+					js, err = json.Marshal(heatmapItem)
+					if err == nil {
+						batchHeatmap.Query(stmtHeatmap, log.MASID, log.Timestamp, js)
+					}
+				}
 			default:
 				empty = true
 			}
@@ -414,6 +435,10 @@ func (stor *cassStorage) storeLogs(topic string) {
 			}
 		}
 		err = stor.session.ExecuteBatch(batch)
+		if err != nil {
+			fmt.Println(err)
+		}
+		err = stor.session.ExecuteBatch(batchHeatmap)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -440,6 +465,7 @@ func (stor *cassStorage) storeSeries() {
 			if size > 25000 {
 				break
 			}
+			empty := false
 			select {
 			case series = <-stor.logSeriesIn:
 				js, err = json.Marshal(series)
@@ -449,6 +475,9 @@ func (stor *cassStorage) storeSeries() {
 				batch.Query(stmt, series.MASID, series.AgentID, series.Name, series.Timestamp, js)
 				size += len(js)
 			default:
+				empty = true
+			}
+			if empty {
 				break
 			}
 		}
@@ -462,7 +491,7 @@ func (stor *cassStorage) storeSeries() {
 // storeStats stores the stats info in a batch operation
 func (stor *cassStorage) storeStats() {
 	var err error
-	stmt := "INSERT INTO beh_stats (masid, agentid, behType, start, end, duration) VALUES (?, ?, ?, ?, ?, ?)"
+	stmt := "INSERT INTO beh_stats (masid, agentid, behType, start, stats) VALUES (?, ?, ?, ?, ?)"
 
 	for {
 		batch := gocql.NewBatch(gocql.UnloggedBatch)
@@ -479,6 +508,7 @@ func (stor *cassStorage) storeStats() {
 			if size > 25000 {
 				break
 			}
+			empty := false
 			select {
 			case behStats = <-stor.behStatsIn:
 				js, err = json.Marshal(behStats)
@@ -488,6 +518,9 @@ func (stor *cassStorage) storeStats() {
 				batch.Query(stmt, behStats.MASID, behStats.AgentID, behStats.BehType, behStats.Start, js)
 				size += len(js)
 			default:
+				empty = true
+			}
+			if empty {
 				break
 			}
 		}

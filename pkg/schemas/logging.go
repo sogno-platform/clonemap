@@ -93,3 +93,8 @@ type Communication struct {
 	NumMsgSent int `json:"numsent"` // number of messages sent to this agent
 	NumMsgRecv int `json:"numrecv"` // number of messages received from this agent
 }
+
+type Heatmap struct {
+	Sender   int `json:"sender"`
+	Receiver int `json:"receiver"`
+}

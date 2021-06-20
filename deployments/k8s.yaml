@@ -201,7 +201,7 @@ spec:
   ports:
     - port: 1883
       protocol: TCP
-      nodePort: 31883
+      nodePort: 30883
       name: mqtt
   selector:
     app: mosquitto
@@ -347,8 +347,8 @@ spec:
     spec:
       containers:
       - name: ams-container
-        image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/ams
-        imagePullPolicy: Always
+        image: localtest/ams:latest
+        imagePullPolicy: Never
         env:
           - name: CLONEMAP_DEPLOYMENT_TYPE
             value: "production"
@@ -393,7 +393,8 @@ data:
     CREATE TABLE clonemap.logging_debug ( masid int, agentid int, t timestamp, log varchar, PRIMARY KEY ((masid, agentid), t)) WITH CLUSTERING ORDER BY (t ASC);
     CREATE TABLE clonemap.logging_beh ( masid int, agentid int, t timestamp, log varchar, PRIMARY KEY ((masid, agentid), t)) WITH CLUSTERING ORDER BY (t ASC);
     CREATE TABLE clonemap.logging_series ( masid int, agentid int, name varchar, t timestamp, series varchar, PRIMARY KEY ((masid, agentid), name, t)) WITH CLUSTERING ORDER BY (name ASC, t ASC);
-    CREATE TABLE clonemap.beh_stats ( masid int, agentid int, behType varchar, start timestamp, end timestamp, duration int, PRIMARY KEY ((masid, agentid, behType), start)) WITH CLUSTERING ORDER BY (start ASC);
+    CREATE TABLE clonemap.heatmap ( masid int, t timestamp, item varchar, PRIMARY KEY (masid, t)) WITH CLUSTERING ORDER BY (t ASC);
+    CREATE TABLE clonemap.beh_stats ( masid int, agentid int, behType varchar, start timestamp, stats varchar, PRIMARY KEY ((masid, agentid, behType), start)) WITH CLUSTERING ORDER BY (start ASC);
     CREATE TABLE clonemap.state ( masid int, agentid int, state varchar, PRIMARY KEY (masid, agentid));
     EOF
 
@@ -450,7 +451,7 @@ spec:
       containers:
       - name: cass-container
         image: cassandra
-        imagePullPolicy: Always
+        imagePullPolicy: Never
         ports:
         - containerPort: 7000
           name: intra-node
@@ -565,8 +566,8 @@ spec:
     spec:
       containers:
       - name: logger-container
-        image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/logger
-        imagePullPolicy: Always
+        image: localtest/logger:latest
+        imagePullPolicy: Never
         env:
           - name: CLONEMAP_DEPLOYMENT_TYPE
             value: "production"
@@ -700,8 +701,8 @@ spec:
     spec:
       containers:
       - name: fe-container
-        image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/frontend
-        imagePullPolicy: Always
+        image: localtest/frontend:latest
+        imagePullPolicy: Never
         env:
           - name: CLONEMAP_DEPLOYMENT_TYPE
             value: "production"

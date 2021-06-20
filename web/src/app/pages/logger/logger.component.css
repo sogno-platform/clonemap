@@ -263,10 +263,9 @@ svg {
     fill: var(--light-primary-color);
 }
 
-/* text {
+.agentbox-text {
     fill: white;
-    color: var(--primary-color);
-} */
+}
 
 .text-title {
    font: bold 30px; 

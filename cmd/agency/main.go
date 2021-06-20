@@ -81,7 +81,6 @@ func task(ag *agency.Agent) (err error) {
 	if id == 0 {
 		ag.MQTT.Subscribe("topic1", 1)
 		behMQTT, err := ag.NewMQTTTopicBehavior("topic1", display)
-
 		if err == nil {
 			behMQTT.Start()
 		}
@@ -119,6 +118,8 @@ func task(ag *agency.Agent) (err error) {
 	if err != nil {
 		fmt.Println(err)
 	}
+
+	// log series
 	for i := 0; i < 5; i++ {
 		time.Sleep(2 * time.Second)
 		for idx := 1; idx < 5; idx++ {
