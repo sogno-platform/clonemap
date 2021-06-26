@@ -118,11 +118,15 @@ func (protBehavior *aclProtocolBehavior) task() {
 				handle(msg)
 				end := time.Now()
 				protBehavior.ag.Logger.NewBehStats(start, end, "protocol")
+				protBehavior.ag.Logger.NewLog("beh", "Protocol behavior task", "start: "+start.String()+
+					";end: "+end.String()+";duration:"+end.Sub(start).String())
 			} else {
 				start := time.Now()
 				protBehavior.handleDefault(msg)
 				end := time.Now()
 				protBehavior.ag.Logger.NewBehStats(start, end, "protocol")
+				protBehavior.ag.Logger.NewLog("beh", "Protocol behavior task", "start: "+start.String()+
+					";end: "+end.String()+";duration:"+end.Sub(start).String())
 			}
 		case command := <-protBehavior.ctrl:
 			switch command {
@@ -200,8 +204,8 @@ func (mqttBehavior *mqttTopicBehavior) task() {
 			mqttBehavior.handle(msg)
 			end := time.Now()
 			mqttBehavior.ag.Logger.NewBehStats(start, end, "mqtt")
-			mqttBehavior.ag.Logger.NewLog("beh", msg.String()+";start: "+start.String()+
-				";end: "+end.String()+";duration:"+end.Sub(start).String(), "")
+			mqttBehavior.ag.Logger.NewLog("beh", "mqtt topic behavior task", "start: "+start.String()+
+				";end: "+end.String()+";duration:"+end.Sub(start).String()+";"+msg.String())
 		case command := <-mqttBehavior.ctrl:
 			switch command {
 			case -1:
@@ -283,7 +287,8 @@ func (periodBehavior *periodicBehavior) task() {
 			periodBehavior.handle()
 			end := time.Now()
 			periodBehavior.ag.Logger.NewBehStats(start, end, "period")
-
+			periodBehavior.ag.Logger.NewLog("beh", "peroidic behavior task", "start: "+start.String()+
+				";end: "+end.String()+";duration:"+end.Sub(start).String())
 		}
 	}
 }
@@ -350,6 +355,8 @@ func (custUpBehavior *customUpdateBehavior) task() {
 			custUpBehavior.handle(custom)
 			end := time.Now()
 			custUpBehavior.ag.Logger.NewBehStats(start, end, "custom")
+			custUpBehavior.ag.Logger.NewLog("beh", "custom behavior task", "start: "+start.String()+
+				";end: "+end.String()+";duration:"+end.Sub(start).String())
 		case command := <-custUpBehavior.ctrl:
 			switch command {
 			case -1:

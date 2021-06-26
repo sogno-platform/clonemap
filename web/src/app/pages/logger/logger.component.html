@@ -2,9 +2,9 @@
     <!--sidebar-->
     <div class="sidebar" >
         <div class="nav">
-            <div class="nav-item" *ngFor="let id of MASID" routerLinkActive="is-active" [ngClass]="id === selectedMASID ? 'active' : ''">
+            <div class="nav-item" *ngFor="let id of MASID, index as i" routerLinkActive="is-active" [ngClass]="id === selectedMASID ? 'active' : ''">
                 <a class="list-text"  [routerLink]="['/logger', id]" >
-                  <p > MAS {{ id }}</p>
+                  <p > MAS {{ i }}</p>
                 </a>
             </div>
         </div>

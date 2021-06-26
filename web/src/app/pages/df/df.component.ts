@@ -39,7 +39,13 @@ export class DFComponent implements OnInit {
 
         // update the sidebar
         this.masService.getMAS().subscribe((MASs: any) => {
-            this.MASID = MASs.map(MAS => MAS.id);
+            if (MASs !== null) {
+                for (let MAS of MASs) {
+                    if (MAS.status.code != 5) {
+                        this.MASID.push(MAS.id)
+                    }
+                }
+            } 
         }, err => {
             console.log(err)  
         });

@@ -124,7 +124,11 @@ export class LoggerComponent implements OnInit {
         // update the sidebar
         this.masService.getMAS().subscribe((MASs: any) => {
             if (MASs !== null) {
-                this.MASID = MASs.map(MAS => MAS.id);
+                for (let MAS of MASs) {
+                    if (MAS.status.code != 5) {
+                        this.MASID.push(MAS.id)
+                    }
+                }
             } 
         }, err => {
             console.log(err);
@@ -399,6 +403,8 @@ export class LoggerComponent implements OnInit {
         this.drawTimeline();
     }
 
+
+
     onChangePopoverContent(i) {
         if ("data" in this.logs[i]) {
             if (this.logs[i].msg === "ACL send" || this.logs[i].msg === "ACL receive") {
@@ -406,7 +412,12 @@ export class LoggerComponent implements OnInit {
                 this.popoverContent[2] = this.popoverContent[2].split(".")[0];
                 console.log(this.logs[i].data.split("; "))   
             } else {
-                this.popoverContent = [this.logs[i].timestamp.toString().split(".")[0], this.logs[i].msg, ...this.logs[i].data.split(";")]
+                this.popoverContent = [this.logs[i].timestamp.toString().split(".")[0], this.logs[i].msg]
+                let data: string[] = this.logs[i].data.split(";");
+                data[0] = data[0].split(".")[0];
+                data[1] = data[1].split(".")[0];
+                this.popoverContent = [...this.popoverContent, ...data]
+
             }
         } else {
             this.popoverContent = [this.logs[i].timestamp.toString().split(".")[0], ...this.logs[i].msg.split(";")];
@@ -549,8 +560,9 @@ export class LoggerComponent implements OnInit {
             const methods: string[] = ["max", "min", "count", "average"];
             this.loggerService.getBehavior(this.selectedMASID.toString(), this.agentStats.toString(),
             this.selectedBehType, this.searchStartTime, this.searchEndTime).subscribe( (res: any) => {
-                if (res !== null) {
-                    this.statsInfo = res;
+                this.statsInfo = res;
+                if (this.statsInfo.list === null) {
+                    this.statsInfo.list = [];
                 }
             })
         }

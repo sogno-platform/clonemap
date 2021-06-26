@@ -22,9 +22,13 @@ export class AMSComponent implements OnInit {
 
         // get the information for the sidebar
         this.masService.getMAS().subscribe((MASs: any) => {
+            this.MASID = []
             if (MASs !== null) {
-                this.MASID = MASs.map( MAS => MAS.id);
-                console.log(this.MASID);
+                for (let MAS of MASs) {
+                    if (MAS.status.code != 5) {
+                        this.MASID.push(MAS.id)
+                    }
+                }
             }   
         });
 

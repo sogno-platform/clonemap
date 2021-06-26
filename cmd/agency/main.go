@@ -63,13 +63,20 @@ func main() {
 }
 
 func display(msg schemas.MQTTMessage) (err error) {
-	time.Sleep(10 * time.Second)
+	time.Sleep(5 * time.Second)
 	fmt.Println(string(msg.Content))
 	return
 }
 
 func handleDefault(msg schemas.ACLMessage) (err error) {
 	fmt.Println(string(msg.Content))
+	time.Sleep(5 * time.Second)
+	return
+}
+
+func handlePeroid() (err error) {
+	fmt.Println(time.Now())
+	time.Sleep(5 * time.Second)
 	return
 }
 
@@ -96,6 +103,26 @@ func task(ag *agency.Agent) (err error) {
 				ag.MQTT.SendMessage(MQTTMsg, 1)
 			}
 		}
+	}
+
+	handlePerformative := map[int]func(schemas.ACLMessage) error{
+		0: handleDefault,
+	}
+
+	if id == 2 {
+		behPro, err := ag.NewMessageBehavior(0, handlePerformative, handleDefault)
+		if err == nil {
+			behPro.Start()
+		}
+	}
+
+	if id == 3 {
+		behPeroid, err := ag.NewPeriodicBehavior(10*time.Second, handlePeroid)
+		if err == nil {
+			behPeroid.Start()
+		}
+		time.Sleep(50 * time.Second)
+		behPeroid.Stop()
 	}
 
 	// sends 20 messages randomly to other agents
@@ -125,6 +152,54 @@ func task(ag *agency.Agent) (err error) {
 		for idx := 1; idx < 5; idx++ {
 			ag.Logger.NewLogSeries("type"+strconv.Itoa(idx), rand.Float64())
 		}
+	}
+
+	return
+}
+
+func task_test(ag *agency.Agent) (err error) {
+	time.Sleep(10 * time.Second)
+	id := ag.GetAgentID()
+
+	// agent 0 subsribes the topic1
+	if id == 0 {
+		ag.MQTT.Subscribe("topic1", 1)
+		behMQTT, err := ag.NewMQTTTopicBehavior("topic1", display)
+		if err == nil {
+			behMQTT.Start()
+		}
+	}
+
+	// agent 1 publishes the topic1
+	if id == 1 {
+		for i := 0; i < 20; i++ {
+			time.Sleep(5 * time.Second)
+			msg := "test message" + strconv.Itoa(i)
+			MQTTMsg, err := ag.MQTT.NewMessage("topic1", []byte(msg))
+			if err == nil {
+				ag.MQTT.SendMessage(MQTTMsg, 1)
+			}
+		}
+	}
+
+	handlePerformative := map[int]func(schemas.ACLMessage) error{
+		0: handleDefault,
+	}
+
+	if id == 2 {
+		behPro, err := ag.NewMessageBehavior(0, handlePerformative, handleDefault)
+		if err == nil {
+			behPro.Start()
+		}
+	}
+
+	if id == 3 {
+		behPeroid, err := ag.NewPeriodicBehavior(10*time.Second, handlePeroid)
+		if err == nil {
+			behPeroid.Start()
+		}
+		time.Sleep(50 * time.Second)
+		behPeroid.Stop()
 	}
 
 	return

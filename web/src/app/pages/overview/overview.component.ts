@@ -68,19 +68,24 @@ export class OverviewComponent implements OnInit {
 
     updateMAS() {
         this.masService.getMAS().subscribe((MASs: any) => {
+            this.MASsDisplay = [];
             if (MASs !== null) {
-                this.MASID = MASs.map(MAS => MAS.id);
-                this.MASsDisplay = MASs;
+                for (let MAS of MASs) {
+                    if (MAS.status.code != 5) {
+                        this.MASsDisplay.push(MAS)
+                    }
+                    console.log(MAS);
+                }
+                this.MASID = this.MASsDisplay.map(MAS => MAS.id);
+                if (this.MASsDisplay.length === 0) {
+                    this.status = "Currently no MASs, create one......";
+                }
             } else {
                 this.status = "Currently no MASs, create one......";
-                this.MASsDisplay = [];
-                console.log(this.MASID);
             }
-            },
-            err => {
-                this.status = "The CloneMAP platform is not connected"
-            }
-        );
+        }, err => {
+                this.status = "The CloneMAP platform is not connected";
+            });
     }
 
     onDeleteMAS(id: string) {
