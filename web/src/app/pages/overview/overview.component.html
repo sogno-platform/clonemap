@@ -48,9 +48,9 @@
             <div id="tables">
                 <div class="row">
                     <div class="col-md-4 my-row" *ngFor="let MAS of MASsDisplay | paginate: { itemsPerPage: 6, currentPage: q }; index as i">
-                        <div class="card" (click)="onOpenMAS(MAS.id)">
+                        <div class="card">
                             <div class="card-header d-flex justify-content-between">
-                                <h3>MAS {{i}}</h3>
+                                <h3 (click)="onOpenMAS(MAS.id)">MAS {{i}}</h3>
                                 <button class="btn btn-delete" (click)="onDeleteMAS(MAS.id)">
                                     <div class="icon">
                                     <i class="fas fa-trash"></i>

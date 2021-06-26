@@ -126,12 +126,6 @@
    margin-bottom: 50px;
 }
 
-
-.card:hover {
-   cursor: pointer;
-   background-color: rgb(236, 232, 232);
-}
-
 .card-header {
    color: var(--primary-color); 
 }
