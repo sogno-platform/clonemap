@@ -22,13 +22,14 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
 
+
 const materialModules = [
   MatDatepickerModule,
   MatNativeDateModule,
   MatFormFieldModule,
   MatInputModule,
   MatIconModule,
-  MatSelectModule
+  MatSelectModule,
 ];
 
 @NgModule({

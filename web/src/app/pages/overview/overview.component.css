@@ -2,15 +2,24 @@
 .status {
    color: var(--primary-color);
    text-align: center;
-   margin-top: 300px;
    font-size: 50px;
    font-weight: 300;
 }
 
+
+.process-spinner {
+   width: 8rem; 
+   height: 8rem;
+   color: var(--primary-color);
+ }
+
+ .overview-empty {
+    height: 100%;
+ }
+
+
+
 .overview-empty button {
-   position: relative;
-   margin-top: 60px;
-   margin-left: 750px;
    height:60px;
    width: 160px;
    font-size: larger;
@@ -63,17 +72,17 @@
 /* overview with agency*/
 
 .maincontainer {
+   height: 90%;
+   width:100%;
    padding-top: 10px;
    position: relative;
    display:flex;
    left: 0;
    top:60px;
-   height: 100%;
-   width:100%;
 }
 
 .contentcontainer {
-   border-radius: 5px;
+   height: 100%;
    position: relative;
    display: flex;
    flex-direction: column;
@@ -102,7 +111,6 @@
    margin-top: px;
    margin-left:300px;
    margin-right:10px;
-
 }
 
 
@@ -152,6 +160,9 @@
 .pagination /deep/ .ngx-pagination .current {
    background:var(--light-primary-color);
  }
+
+
+
 
 
 

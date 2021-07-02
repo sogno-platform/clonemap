@@ -141,7 +141,6 @@ export class LoggerComponent implements OnInit {
             this.masService.getMASById(params.masid).subscribe((res: any) => {
                 if (res.agents.counter !== 0) {
                     this.gridWidth = 600 / res.agents.counter;
-                    console.log(this.gridWidth);
                     this.agentID = res.agents.instances.map(item => item.id);
                     for (let i = 0; i < res.agents.counter; i++) {
                         this.isAgentSelected.push(false);
@@ -342,8 +341,6 @@ export class LoggerComponent implements OnInit {
     drawScaledDates(scaledDates: number[]) {
         this.logBoxes = [];
         this.communications = [];
-        console.log(this.logs);
-        console.log(scaledDates);
         for (let i = 0; i < scaledDates.length; i++) {
             let currMsg = this.logs[i];
             let idx = this.selectedID.indexOf(currMsg.agentid) + 1;        
@@ -361,7 +358,7 @@ export class LoggerComponent implements OnInit {
                 const data = this.logs[i].data.split(";");
                 const sender = Number(data[0].split(" ")[1]);
                 const senderIdx = this.selectedID.indexOf(sender) + 1;
-                const receiver = Number(data[1].split(" ")[2]);
+                const receiver = Number(data[1].split(" ")[1]);
                 const receiverIdx = this.selectedID.indexOf(receiver) + 1;
                 const direction = (senderIdx < receiverIdx) ? 1 : -1;
                 if (this.selectedID.includes(receiver) && this.selectedID.includes(sender)) {
@@ -409,8 +406,7 @@ export class LoggerComponent implements OnInit {
         if ("data" in this.logs[i]) {
             if (this.logs[i].msg === "ACL send" || this.logs[i].msg === "ACL receive") {
                 this.popoverContent = this.logs[i].data.split(";");
-                this.popoverContent[2] = this.popoverContent[2].split(".")[0];
-                console.log(this.logs[i].data.split("; "))   
+                this.popoverContent[2] = this.popoverContent[2].split(".")[0]; 
             } else {
                 this.popoverContent = [this.logs[i].timestamp.toString().split(".")[0], this.logs[i].msg]
                 let data: string[] = this.logs[i].data.split(";");
@@ -496,7 +492,6 @@ export class LoggerComponent implements OnInit {
             this.datesSeries.push(date)
         }
         this.scaledDatesSeries = this.generateScaledDates(this.datesSeries); 
-        console.log(this.scaledDatesSeries);
         const maxDate : number = this.scaledDatesSeries[this.scaledDatesSeries.length - 1]
         for (let i = 0; i < this.logSeries.length; i++) {
             const x: number = maxDate - this.scaledDatesSeries[i];
@@ -507,14 +502,12 @@ export class LoggerComponent implements OnInit {
                 r: 10
             } 
             this.xAxisTicks.push(x)
-            console.log(typeof x)
             this.mapAxisDate.set(x, new Date(this.logSeries[i].timestamp).toLocaleString('de-DE',{ hour12: false }) )
             this.bubbleData.push({
                 name: "agent" + this.logSeries[i].agentid.toString(),
                 series: [point]
             })
         }
-        console.log(this.mapAxisDate);
     }
 
     onSelect(data): void {
@@ -703,8 +696,6 @@ export class LoggerComponent implements OnInit {
                 }
                 this.colorPartitionEle = this.getColorPartitionEle();
                 this.colorLegendTexts = this.getColorLegendTexts(sortedSet);
-                console.log(this.colorLegendTexts)
-                console.log(this.colorPartitionEle)
                 for (const item of res) {
                     const idx = mapIdx.get(parseInt(item.split("-")[2]));
                     const color: string = this.colorPartitionEle[this.manualConvertColor(idx, sortedSet.length)];

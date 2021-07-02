@@ -38,7 +38,7 @@
         </div>
     </ng-template>
 
-    <div class="contentcontainer"  >
+    <div class="contentcontainer">
         <div *ngIf="MASID.length !== 0">
             <div class="title">
                 <div class="title-name" >Overview</div>              
@@ -90,9 +90,11 @@
             </div> 
             <pagination-controls class="pagination" (pageChange)="q = $event"></pagination-controls>    
         </div>
-
-        <div class="overview-empty" *ngIf="MASID.length === 0">       
-            <div class="status">{{status}}</div>
+        <div class="overview-empty d-flex flex-column justify-content-center align-items-center" *ngIf="MASID.length === 0">
+            <div *ngIf="status==='Currently no MASs, create one......'" class="spinner-border process-spinner mb-5" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+            <p class="status mb-5">{{status}}</p>
             <button *ngIf="status==='Currently no MASs, create one......'" type='button' class="btn my-btn" (click)="openLg(content)">+ New MAS</button>      
         </div>
     </div>
