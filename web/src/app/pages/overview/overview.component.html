@@ -1,6 +1,7 @@
-<div class="maincontainer">
+<div class="maincontainer row">
     <!--sidebar-->
-    <div class="sidebar">
+
+    <div *ngIf="MASID.length !== 0" class="col-md-1 col-sm-4 sidebar">
         <div class="nav">
             <div class="nav-item" *ngFor="let id of MASID, index as i" routerLinkActive="is-active">
                 <a class="list-text" [routerLink]="['/ams', id]" >
@@ -38,66 +39,65 @@
         </div>
     </ng-template>
 
-    <div class="contentcontainer">
-        <div *ngIf="MASID.length !== 0">
-            <div class="title">
-                <div class="title-name" >Overview</div>              
-                <button type='button' class='btn my-btn btn-create' (click)="openLg(content)">+ New MAS</button>
-            </div>   
-            <!--display the overview of agencies with tables-->
-            <div id="tables">
-                <div class="row">
-                    <div class="col-md-4 my-row" *ngFor="let MAS of MASsDisplay | paginate: { itemsPerPage: 6, currentPage: q }; index as i">
-                        <div class="card">
-                            <div class="card-header d-flex justify-content-between">
-                                <h3 (click)="onOpenMAS(MAS.id)">MAS {{i}}</h3>
-                                <button class="btn btn-delete" (click)="onDeleteMAS(MAS.id)">
-                                    <div class="icon">
-                                    <i class="fas fa-trash"></i>
-                                    </div>
-                                </button>
-                            </div>
+    <div *ngIf="MASID.length !== 0" class="content-container col-md-11 col-sm-8  d-flex flex-column justify-content-start align-items-center">
+        <div class="title">
+            <div class="title-name" >Overview</div>              
+            <button type='button' class='btn my-btn btn-create' (click)="openLg(content)">+ New MAS</button>
+        </div>   
+        <!--display the overview of agencies with tables-->
+        <div id="tables">
+            <div class="row justify-content-start">
+                <div class="col-lg-4 col-md-6 col-sm-12 my-row" *ngFor="let MAS of MASsDisplay | paginate: { itemsPerPage: 6, currentPage: q }; index as i">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between">
+                            <h3 (click)="onOpenMAS(MAS.id)">MAS {{i}}</h3>
+                            <button class="btn btn-delete" (click)="onDeleteMAS(MAS.id)">
+                                <div class="icon">
+                                <i class="fas fa-trash"></i>
+                                </div>
+                            </button>
+                        </div>
 
-                            <div class="card-body">
-                                <table class="table table-striped">
-                                    <tbody>
-                                    <tr>
-                                        <th>Name</th>
-                                        <td>{{ MAS.config.name }}</td> 
-                                    </tr>
-                                    <tr>
-                                        <th>Number of agents per agency </th>
-                                        <td>{{ MAS.config.agentsperagency }} </td>
-                                    </tr>
-                                    <tr> 
-                                        <th> Status of df</th>
-                                        <td>{{ MAS.config.df.active }} </td>
-                                    </tr>
-                                    <tr> 
-                                        <th> Status of logger </th>
-                                        <td>{{ MAS.config.logger.active }} </td>
-                                    </tr>
-                                    <tr> 
-                                        <th> Status of MQTT</th>
-                                        <td> {{ MAS.config.mqtt.active }} </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                        <div class="card-body">
+                            <table class="table table-striped">
+                                <tbody>
+                                <tr>
+                                    <th>Name</th>
+                                    <td>{{ MAS.config.name }}</td> 
+                                </tr>
+                                <tr>
+                                    <th>Number of agents per agency </th>
+                                    <td>{{ MAS.config.agentsperagency }} </td>
+                                </tr>
+                                <tr> 
+                                    <th> Status of df</th>
+                                    <td>{{ MAS.config.df.active }} </td>
+                                </tr>
+                                <tr> 
+                                    <th> Status of logger </th>
+                                    <td>{{ MAS.config.logger.active }} </td>
+                                </tr>
+                                <tr> 
+                                    <th> Status of MQTT</th>
+                                    <td> {{ MAS.config.mqtt.active }} </td>
+                                </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
-            </div> 
-            <pagination-controls class="pagination" (pageChange)="q = $event"></pagination-controls>    
-        </div>
-        <div class="overview-empty d-flex flex-column justify-content-center align-items-center" *ngIf="MASID.length === 0">
-            <div *ngIf="status==='Currently no MASs, create one......'" class="spinner-border process-spinner mb-5" role="status">
-                <span class="sr-only">Loading...</span>
             </div>
-            <p class="status mb-5">{{status}}</p>
-            <button *ngIf="status==='Currently no MASs, create one......'" type='button' class="btn my-btn" (click)="openLg(content)">+ New MAS</button>      
-        </div>
+        </div> 
+        <pagination-controls class="pagination" (pageChange)="q = $event"></pagination-controls>
     </div>
+
+    <div *ngIf="MASID.length === 0" class="col-12 overview-empty d-flex flex-column justify-content-center align-items-center">  
+        <div *ngIf="status==='Connecting......'" class="spinner-border process-spinner mb-5" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+        <p class="status mb-5">{{status}}</p>
+        <button *ngIf="status==='Currently no MASs, create one......'" type='button' class="btn my-btn" (click)="openLg(content)">+ New MAS</button>  
+    </div>  
 
 </div>
 

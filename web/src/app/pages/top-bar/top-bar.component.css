@@ -1,21 +1,21 @@
 header {
-   height:10%;
+   height:5%;
    position:absolute;
    top:0;
    left: 0;
    width: 100%;
+   background-color: red;
 }
 
 .navbar {
    font-size: 20px;
    color: white !important ;
-   height: 60px;
+   height: 5%;
    background-color:white;
 }
 
 .navbar-nav .nav-item {
    border-radius: 5px;
-
 }
 
 .navbar-nav .nav-item .nav-link {

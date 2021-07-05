@@ -1,52 +1,25 @@
-/* overview without agency*/
-.status {
-   color: var(--primary-color);
-   text-align: center;
-   font-size: 50px;
-   font-weight: 300;
+.maincontainer {
+   height: 92%;
+   width:100%;
+   position: relative;
+   display:flex;
+   top:8%;   
 }
-
-
-.process-spinner {
-   width: 8rem; 
-   height: 8rem;
-   color: var(--primary-color);
- }
-
- .overview-empty {
-    height: 100%;
- }
-
-
-
-.overview-empty button {
-   height:60px;
-   width: 160px;
-   font-size: larger;
-   background-color: var(--primary-color);
-}
-
-
 
 /* style of sidebar */
-
 .sidebar {
    display: flex;
    flex-direction: column;
-   margin-top: 30px;
-   width: 110px;
-   background:white;
+   height: 100%;
+   overflow:scroll;
 }
-
-
 
 .sidebar .nav .nav-item{
    padding-top:10px;
    padding-bottom:1px;  
    border-radius: 10px;
-   width: 110px;
-   text-align: center;
- 
+   width: 100%;
+   text-align: center;  
 }
 
 .sidebar .nav .nav-item a {
@@ -54,11 +27,8 @@
    text-decoration: none;
 }
 
-
-
 .sidebar .nav .nav-item:hover {
    background: rgb(240, 240, 240);
-
 }
 
 .sidebar > .nav > .nav-item.is-active{
@@ -67,61 +37,61 @@
    font-weight: bold;
 }
 
+/* overview without agency*/
 
+
+.status {
+   color: var(--primary-color);
+   text-align: center;
+   font-size: 50px;
+   font-weight: 300;
+}
+
+.process-spinner {
+   width: 8rem; 
+   height: 8rem;
+   color: var(--primary-color);
+ }
+
+.overview-empty {
+   height: 100%;
+   width: 100%;
+}
+.overview-empty button {
+   height:60px;
+   width: 160px;
+   font-size: larger;
+   background-color: var(--primary-color);
+}
 
 /* overview with agency*/
 
-.maincontainer {
-   height: 90%;
-   width:100%;
-   padding-top: 10px;
-   position: relative;
-   display:flex;
-   left: 0;
-   top:60px;
-}
 
-.contentcontainer {
+.content-container {
    height: 100%;
-   position: relative;
-   display: flex;
-   flex-direction: column;
-   flex-grow: 1;
+/*    width:100%; */
 }
 
 .title {
-   padding-top: 50px;
-   padding-bottom: 50px;
-   display: flex; 
-     
+   height: 50px;
+   display: flex;   
 }
 
 .title .title-name {
-   padding-left:600px;
-   padding-right:20px;
    font-weight: bold;
    font-size: 40px;
-   color: rgb(85, 83, 83)
+   color: rgb(85, 83, 83);
+   padding-right: 20px;
 }
-
-
-.input {
-   color: var(--primary-color);
-   height: 50px;
-   margin-top: px;
-   margin-left:300px;
-   margin-right:10px;
-}
-
 
 .btn-create {
    height:40px;
 }
 
-
 #tables {
+   width:95%;
    margin-top: 50px;
-   margin-left: 60px;
+   margin-left: 5%;
    margin-right: 60px;
 }
 
@@ -151,10 +121,6 @@
 
 .hidden {
    display: none;
-}
-
-.pagination {
-   margin: 0px 0px 50px 1300px;
 }
 
 .pagination /deep/ .ngx-pagination .current {

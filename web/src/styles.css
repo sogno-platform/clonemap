@@ -44,11 +44,11 @@ app-root {
    border: none;
    border-radius: 10px;
 }
-
+/* 
 .title {
    padding-top: 100px;
    padding-left: 100px;
-}
+} */
 
 mat-form-field  {
    width: 140px; 

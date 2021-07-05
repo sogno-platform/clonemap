@@ -79,6 +79,8 @@ export class OverviewComponent implements OnInit {
                 this.MASID = this.MASsDisplay.map(MAS => MAS.id);
                 if (this.MASsDisplay.length === 0) {
                     this.status = "Currently no MASs, create one......";
+                } else {
+                    this.status = "Connected successfully!"
                 }
             } else {
                 this.status = "Currently no MASs, create one......";
