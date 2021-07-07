@@ -5,7 +5,7 @@
         <div class="nav">
             <div class="nav-item" *ngFor="let id of MASID, index as i" routerLinkActive="is-active">
                 <a class="list-text" [routerLink]="['/ams', id]" >
-                    <p >MAS {{ i }}</p>
+                    <p >MAS {{ id }}</p>
                 </a>
             </div>
         </div>
@@ -39,6 +39,30 @@
         </div>
     </ng-template>
 
+    <!--modal for waiting the deletion of the agency-->
+    <ng-template #deleting let-modal>
+        <div class="modal-body d-flex flex-column justify-content-center align-items-center">
+            <div class="spinner-border delete-spinner" role="status">
+                <span class="sr-only">deleting...</span>
+            </div>
+            <p class="mt-4 delete-text">deleting</p> 
+        </div>
+    </ng-template>
+
+
+    <!--modal for waiting the deletion of the agency-->
+    <ng-template #deleted let-modal>
+        <div class="modal-body">
+            <div class="d-flex flex-column justify-content-center align-items-center">
+                <p class="mt-4 delete-text">deleted</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn my-btn" (click)="closeModal()">OK</button>
+        </div>
+    </ng-template>
+
+
     <div *ngIf="MASID.length !== 0" class="content-container col-md-11 col-sm-8  d-flex flex-column justify-content-start align-items-center">
         <div class="title">
             <div class="title-name" >Overview</div>              
@@ -50,8 +74,8 @@
                 <div class="col-lg-4 col-md-6 col-sm-12 my-row" *ngFor="let MAS of MASsDisplay | paginate: { itemsPerPage: 6, currentPage: q }; index as i">
                     <div class="card">
                         <div class="card-header d-flex justify-content-between">
-                            <h3 (click)="onOpenMAS(MAS.id)">MAS {{i}}</h3>
-                            <button class="btn btn-delete" (click)="onDeleteMAS(MAS.id)">
+                            <h3 (click)="onOpenMAS(MAS.id)">MAS {{MAS.id}}</h3>
+                            <button class="btn btn-delete" (click)="onDeleteMAS(MAS.id, deleting, deleted)">
                                 <div class="icon">
                                 <i class="fas fa-trash"></i>
                                 </div>

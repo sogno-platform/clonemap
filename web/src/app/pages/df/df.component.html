@@ -4,7 +4,7 @@
         <div class="nav">
             <div class="nav-item" *ngFor="let id of MASID, index as i" routerLinkActive="is-active" [ngClass]="id === selectedMASID ? 'active' : ''">
                 <a class="list-text"  [routerLink]="['/df', id]" >
-                  <p > MAS {{ i }}</p>
+                  <p > MAS {{ id }}</p>
                 </a>
             </div>
         </div>
@@ -25,7 +25,7 @@
             </ul>
     
             <div class="content" *ngIf="curr_state === 'list'">
-                <div class="inputs">
+                <div class="inputs d-flex justify-content-center align-items-center">
                     <input #desc type="text" class="input" id="searchDesc" placeholder="Enter the description"/>
                     <input #nodeid type="text" class="input"  id="searchNode" placeholder="Enter the node ID"/>
                     <input #dist type="text" class="input" id="searchDist" placeholder="Enter the distance"/>

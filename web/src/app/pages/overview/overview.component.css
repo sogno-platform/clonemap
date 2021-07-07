@@ -127,6 +127,19 @@
    background:var(--light-primary-color);
  }
 
+ .delete-spinner {
+   width: 4rem; 
+   height: 4rem;
+   color: var(--primary-color);
+ }
+
+ .delete-text {
+   color: var(--primary-color);
+   text-align: center;
+   font-size: 30px;
+   font-weight: 100;   
+ }
+
 
 
 

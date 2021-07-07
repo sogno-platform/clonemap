@@ -79,9 +79,6 @@
 .inputs {
    padding-top: 30px;
    padding-bottom: 40px;
-   display: flex;
-   justify-content: center;
-   align-items: center;
 }
 .input {
    color: var(--primary-color);

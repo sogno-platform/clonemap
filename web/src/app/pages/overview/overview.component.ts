@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { MasService } from 'src/app/services/mas.service';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbModalConfig } from '@ng-bootstrap/ng-bootstrap';
 import { Router, ActivatedRouteSnapshot } from '@angular/router'
 
 @Component({
@@ -18,20 +18,28 @@ export class OverviewComponent implements OnInit {
     filename: string = "Choose a file...";
     status: string ="Connecting......";
     constructor(
+        config: NgbModalConfig,
         private masService: MasService,
         private modalService: NgbModal,
         private router: Router
-    ) {} 
+    ) {
+        config.backdrop = "static";
+    } 
 
     ngOnInit() {
         this.updateMAS();
     }
 
 
-/********************   create new MAS *************************/
+    /********************   create new MAS *************************/
 
     openLg(content) {
         this.modalService.open(content, { size: 'lg', centered: true });
+    }
+
+    closeModal() {
+        this.modalService.dismissAll();
+        this.updateMAS();
     }
 
     handleFileInput(files: FileList) {
@@ -71,10 +79,10 @@ export class OverviewComponent implements OnInit {
             this.MASsDisplay = [];
             if (MASs !== null) {
                 for (let MAS of MASs) {
+                    // if the MAS is not deleted
                     if (MAS.status.code != 5) {
                         this.MASsDisplay.push(MAS)
                     }
-                    console.log(MAS);
                 }
                 this.MASID = this.MASsDisplay.map(MAS => MAS.id);
                 if (this.MASsDisplay.length === 0) {
@@ -90,14 +98,17 @@ export class OverviewComponent implements OnInit {
             });
     }
 
-    onDeleteMAS(id: string) {
-        console.log(id);
+    /********************   delete the MAS *************************/
+    onDeleteMAS(id: string, deleting, deleted) {
+        this.modalService.open(deleting, { size: 'sm', centered: true });
         this.masService.deleteMASById(id).subscribe(
             (res: any) => {
-                console.log(res);
-                this.router.navigate['/overview']
-            },
+                this.router.navigate['/overview'];
+            },        
             (err) => {
+                this.modalService.dismissAll();
+                this.modalService.open(deleted, { size: 'sm', centered: true });
+                console.log(typeof(deleted));
                 console.log(err);
             }
         );

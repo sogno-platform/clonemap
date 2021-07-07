@@ -6,19 +6,9 @@ import { environment } from 'src/environments/environment.prod'
 })
 export class WebRequestService {
     readonly ROOT_URL = environment.gateway;
-    readonly headerDict = {
-        'Content-Type': 'application/json',
-/*         'responseType': 'text/plain' */
-    };
-
-
-
 
     constructor(private http: HttpClient) {
-
     }
-
-
 
     get(uri: string) {
         return this.http.get(`${this.ROOT_URL}/${uri}`);

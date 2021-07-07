@@ -44,9 +44,5 @@ export class DfService {
     return this.webReqService.get(`api/df/${masid}/svc/id/${svcid}`);
   }
   
-  deleteSvcById(masid:string, svcid: string) {
-    return this.webReqService.delete(`api/df/${masid}/svc/id/${svcid}`);
-  }
-  
   
 }

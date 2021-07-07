@@ -12,14 +12,6 @@ export class LoggerService {
     return this.webReqService.get('api/pf/modules')
   }
 
-  createLoggerWithType(masid:string, agentid: string, topic: string, payload: object) {
-    return this.webReqService.post(`api/logging/${masid}/${agentid}/${topic}`, payload);
-  }
-
-  createLogger(masid:string, payload: object) {
-    return this.webReqService.post(`api/logging/${masid}/list`, payload);
-  }
-
   getNLatestLogs(masid: string, agentid: string, topic:string, num: string) {
     return this.webReqService.get(`api/logging/${masid}/${agentid}/${topic}/latest/${num}`);
   }
@@ -42,13 +34,5 @@ export class LoggerService {
 
   getBehavior(masid:string, agentid: string, behtype: string, start: string, end: string) {
     return this.webReqService.get(`api/logging/stats/${masid}/${agentid}/${behtype}/${start}/${end}`)
-  }
-
-  updateAgentState(masid: string, agentid: string, payload: object) {
-    return this.webReqService.patch(`api/state/${masid}/${agentid}`, payload);
-  }
-
-  updateAgentStates(masid: string, payload: object) {
-    return this.webReqService.patch(`api/state/${masid}/list`, payload);
   }
 }

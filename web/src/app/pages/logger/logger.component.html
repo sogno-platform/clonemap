@@ -4,7 +4,7 @@
         <div class="nav">
             <div class="nav-item" *ngFor="let id of MASID, index as i" routerLinkActive="is-active" [ngClass]="id === selectedMASID ? 'active' : ''">
                 <a class="list-text"  [routerLink]="['/logger', id]" >
-                  <p > MAS {{ i }}</p>
+                  <p > MAS {{ id }}</p>
                 </a>
             </div>
         </div>
