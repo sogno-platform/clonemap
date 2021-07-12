@@ -1,16 +1,10 @@
 header {
-   height:5%;
-   position:absolute;
-   top:0;
-   left: 0;
    width: 100%;
-   background-color: red;
 }
 
 .navbar {
    font-size: 20px;
    color: white !important ;
-   height: 5%;
    background-color:white;
 }
 
@@ -24,9 +18,6 @@ header {
    padding: 10px;
 }
 
-
-
-
 header >nav > ul> li:hover{
    background: rgb(240, 240, 240);
    color: var(--primary-color);
@@ -35,8 +26,6 @@ header >nav > ul> li:hover{
 header >nav > ul> li > a {
    text-align: center;
 }
-
-
 
 .nav-pills .nav-link.active{
    color: white !important;

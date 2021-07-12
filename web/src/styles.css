@@ -13,11 +13,59 @@ app-root {
    display: inline-block;
 }
 
+/* primary colors used in the frontend */
 :root { 
    --primary-color: rgb(102,102,255);
    --light-primary-color: #9696f3;
    --background-primary-color: #dadaf8;
 }
+
+/* .main-container {
+   padding-top:80px;
+   height:100%;
+   display:flex;
+} */
+
+.content-container {
+   margin-left: 120px;
+   margin-top: 80px;
+   z-index: -1;
+}
+
+/* style of sidebar */
+.sidebar {
+   position: fixed;
+   height: 100%;
+   margin-top: 80px;
+   width: 120px;
+   overflow:scroll;
+   padding-bottom: 30px;
+}
+
+.sidebar > .nav > .nav-item{
+   padding-top:10px;
+   padding-bottom:1px;  
+   border-radius: 10px;
+   width: 100%;
+   text-align: center;  
+}
+
+.sidebar .nav .nav-item a {
+   color: var(--primary-color);
+   text-decoration: none;
+}
+
+.sidebar .nav .nav-item:hover {
+   background: rgb(240, 240, 240);
+}
+
+.sidebar > .nav > .nav-item.is-active{
+   background: var(--background-primary-color)!important;
+   color:var(--primary-color);
+   font-weight: bold;
+}
+
+
 
 #agents {
    margin-bottom: 100px;
@@ -44,15 +92,31 @@ app-root {
    border: none;
    border-radius: 10px;
 }
-/* 
-.title {
-   padding-top: 100px;
-   padding-left: 100px;
-} */
+
 
 mat-form-field  {
    width: 140px; 
 }
+
+@media (max-width: 575px) {
+.content-container {
+   margin-top: 300px;
+}
+.sidebar {
+   margin-top: 300px;
+}
+}
+
+@media (min-width: 576px) {
+   .content-container {
+      margin-top: 90px;
+   }
+   .sidebar {
+      margin-top: 90px;
+   }
+}
+
+
 
 
 

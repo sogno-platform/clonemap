@@ -1,11 +1,11 @@
 <header>
-    <nav class="navbar navbar-expand-lg fixed-top navbar-light my-bg-primary ">
+    <nav class="navbar navbar-expand-sm fixed-top navbar-light my-bg-primary ">
         <a class="navbar-brand" href="#">
             <img src="assets/logo_tp.png" id="navoverview"s width="80" height="60" class="d-inline-block align-top" alt="cloneMAP" loading="lazy">
         </a>
         <ul ngbNav #nav="ngbNav" [(activeId)]="active" class="navbar-nav nav-pills d-flex justify-content-between" style="width:100%;">
-            <li ngbNavItem="overview" class="nav-item"  style="width:150px;">
-                <a ngbNavLink class="nav-link" routerLink="/overview" style="width:150px;">Overview</a>
+            <li ngbNavItem="overview" class="nav-item flex-fill modules">
+                <a ngbNavLink class="nav-link" routerLink="/overview">Overview</a>
             </li>
             <li ngbNavItem="ams" [ngClass]="active == 'overview' ? 'hidden' : ''" class="nav-item flex-fill modules">
                 <a ngbNavLink class="nav-link" routerLink="/ams/{{id}}">AMS</a>

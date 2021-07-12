@@ -1,53 +1,6 @@
-.maincontainer {
-   height: 92%;
-   width:100%;
-   position: relative;
-   display:flex;
-   top:8%;
-}
-
-
-/* style of sidebar */
-
-.sidebar {
-   position: fixed;
-   display: flex;
-   flex-direction: column;
-   width: 7.3%;
-   height: 100%;
-   padding-right: 1%;
-   overflow:scroll;
-}
-
-.sidebar .nav .nav-item{
-   padding-top:10px;
-   border-radius: 10px;
-   width: 110px;
-   text-align: center;
-}
-
-.sidebar .nav .nav-item a {
-   color: var(--primary-color);
-   text-decoration: none;
-}
-
-.sidebar .nav .nav-item:hover {
-   background: rgb(240, 240, 240);
-}
-
-.sidebar > .nav > .nav-item.is-active{
-   background: var(--background-primary-color)!important;
-   color:var(--primary-color);
-   font-weight: bold;
-}
-
-.contentcontainer {
-   margin-left: 8%;
-   border-radius: 5px;
-   position: relative;
-   display: flex;
-   flex-direction: column;
-   flex-grow: 1;
+.content-container {
+   width: 80% ;
+   padding-left: 10%;
 }
 
 .notalive {
@@ -94,10 +47,8 @@
 
 .service {
    border: 2px solid var(--background-primary-color);
-   width: 1200px;
    border-radius: 10px;
    margin-top:50px;
-   margin-left: 200px;
 }
 
 
@@ -118,18 +69,19 @@
 }
 
 .pagination {
-   margin: 50px 0px 50px 1200px;
+   width: 100%;
 }
 
 .pagination /deep/ .ngx-pagination .current {
    background:var(--light-primary-color);
+   
  }
 
 
 
 /* style of the nav tab */
 
-.contentcontainer .nav {
+.content-container .nav {
    margin-left: 30px;
 }
 

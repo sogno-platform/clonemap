@@ -1,82 +1,25 @@
-.maincontainer {
-   height: 92%;
-   width:100%;
-   position: relative;
-   display:flex;
-   top:8%;
+.content-container {
+   width: 90% ;
+   padding-left: 5%;
 }
 
 
-/* style of sidebar */
-
-.sidebar {
-   position: fixed;
-   display: flex;
-   flex-direction: column;
-   width: 7.3%;
-   height: 100%;
-   padding-right: 1%;
-   overflow:scroll;
-}
-
-.sidebar .nav .nav-item{
-   padding-top:10px;
+.containers {
    border-radius: 10px;
-   width: 110px;
+   margin-top:50px;
+}
+
+td {
    text-align: center;
 }
 
-.sidebar .nav .nav-item a {
-   color: var(--primary-color);
-   text-decoration: none;
-}
-
-.sidebar .nav .nav-item:hover {
-   background: rgb(240, 240, 240);
-}
-
-.sidebar > .nav > .nav-item.is-active{
-   background: var(--background-primary-color)!important;
-   color:var(--primary-color);
-   font-weight: bold;
-}
-
-
-
-.contentcontainer {
-   margin-left: 8%;
-   border-radius: 5px;
-   position: relative;
-   display: flex;
-   flex-direction: column;
-   flex-grow: 1;
-}
-
-.config{
-   border-radius: 10px;
-   width: 600px;
-   margin-top:50px;
-   margin-left: 100px;; 
-}
-
-.containers {
-/*    border: 2px solid var(--background-primary-color); */
-   border-radius: 10px;
-   width: 1500px;
-   margin-top:50px;
-   margin-left: 100px;; 
-}
-
 .pagination {
-   margin: 0px 0px 50px 1200px;
+   width: 100%;
 }
 
 .pagination /deep/ .ngx-pagination .current {
    background:var(--light-primary-color);
  }
-
-
-
 
 /* .table-striped > tbody > tr:nth-child(2n+1) > td, .table-striped > tbody > tr:nth-child(2n+1) > th {
    background-color: var(--background-primary-color);
@@ -92,17 +35,14 @@ h1 {
 .title {
    padding-bottom: 30px;
    padding-top: 20px;
-   padding-left: 20px;
    color: var(--light-primary-color);
    font-size:30px;
    font-weight: bold;
 }
 
 .card {
-   width: 400px;
    margin-bottom: 50px;
    padding: 0px;
-
 }
 
 
@@ -115,9 +55,6 @@ table {
    margin-bottom: 0px;
 }
 
-table th {
-   width: 100px;
-}
 
 
 
