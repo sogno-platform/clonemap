@@ -1,4 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
+html {
+   font-size: 62.5%;
+}
 html,body {
    font-family: 'Lato', sans-serif;
    height: 100%;
@@ -13,24 +16,14 @@ app-root {
    display: inline-block;
 }
 
-/* primary colors used in the frontend */
+
+/* primary colors used */
 :root { 
    --primary-color: rgb(102,102,255);
    --light-primary-color: #9696f3;
    --background-primary-color: #dadaf8;
 }
 
-/* .main-container {
-   padding-top:80px;
-   height:100%;
-   display:flex;
-} */
-
-.content-container {
-   margin-left: 120px;
-   margin-top: 80px;
-   z-index: -1;
-}
 
 /* style of sidebar */
 .sidebar {
@@ -65,14 +58,16 @@ app-root {
    font-weight: bold;
 }
 
+.content-container {
+   margin-left: 120px;
+   margin-top: 80px;
+   z-index: -1;
+}
+
 
 
 #agents {
    margin-bottom: 100px;
-}
-
-.my-row {
-   padding-bottom: 30px;
 }
 
 .my-btn {
@@ -101,19 +96,11 @@ mat-form-field  {
 @media (max-width: 575px) {
 .content-container {
    margin-top: 300px;
+   margin-left: 0;
 }
 .sidebar {
-   margin-top: 300px;
+   display: none;
 }
-}
-
-@media (min-width: 576px) {
-   .content-container {
-      margin-top: 90px;
-   }
-   .sidebar {
-      margin-top: 90px;
-   }
 }
 
 

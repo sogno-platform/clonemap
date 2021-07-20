@@ -47,9 +47,9 @@
 
     <div class="containers">
         <div class="title">Containers</div>
-        <div class="row">
-        <div class="col-xl-4 col-md-6 col-sm-12 my-row" *ngFor="let image of selectedMAS.imagegroups.instances">
-            <div class="card">
+        <div class="d-flex flex-wrap">
+        <div *ngFor="let image of selectedMAS.imagegroups.instances">
+            <div class="card mr-auto">
                 <div class="card-header">Image {{image.id}}</div>
                 <div class="card-body">
                     <table class="table">
@@ -72,8 +72,8 @@
 
     <div class="containers">
         <div class="title">Agents</div>
-        <div class="row">    
-            <div class="col-xl-4 col-md-6 col-xs-12 my-row" *ngFor="let agent of selectedMAS.agents.instances | paginate: { itemsPerPage: 12, currentPage: q };">
+        <div class="d-flex flex-wrap">    
+            <div class="mr-auto" *ngFor="let agent of selectedMAS.agents.instances | paginate: { itemsPerPage: 12, currentPage: q };">
                 <div class="card">
                     <div class="card-header">Agent {{agent.id}}</div>
                     <div class="card-body">

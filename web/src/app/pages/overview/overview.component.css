@@ -1,16 +1,17 @@
-.content-container {
-   width: 90% ;
-   padding-left: 5%;
+/* overview without agency*/
+.overview-empty {
+   height: 100%;
+   width: 100%;
 }
 
-/* overview without agency*/
 .status {
    color: var(--primary-color);
    text-align: center;
+   font-size: 5rem;
    font-size: 50px;
    font-weight: 300;
+   line-height: 7rem;
 }
-
 
 .process-spinner {
    width: 8rem; 
@@ -18,10 +19,6 @@
    color: var(--primary-color);
  }
 
-.overview-empty {
-   height: 100%;
-   width: 100%;
-}
 .overview-empty button {
    height:60px;
    width: 160px;
@@ -31,25 +28,29 @@
 
 /* overview with agency*/
 
+.content-container {
+   width: 90% ;
+   padding-left: 5%;
+}
+
 .title {
    height: 50px;
-   display: flex;   
+   height: 5rem; 
 }
 
 .title .title-name {
    font-weight: bold;
-   font-size: 40px;
+   font-size: 5rem;
    color: rgb(85, 83, 83);
-   padding-right: 20px;
 }
 
 .btn-create {
-   height:40px;
+   height:4rem;
+   font-size: 2rem;
 }
 
-#tables {
-   width:100%;
-   margin-top: 50px;
+#cards {
+   margin-top: 5rem;
 }
 
 .table {
@@ -57,6 +58,7 @@
 }
 
 .card {
+   width:40rem;
    margin-bottom: 50px;
 }
 

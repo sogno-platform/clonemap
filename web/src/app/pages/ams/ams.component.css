@@ -41,8 +41,10 @@ h1 {
 }
 
 .card {
+   width: 40rem;
    margin-bottom: 50px;
    padding: 0px;
+
 }
 
 
