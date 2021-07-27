@@ -27,7 +27,7 @@
         </div>       
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn my-btn" (click)="onConfirm()">OK</button>
+        <button type="button" class="btn btn-primary" (click)="onConfirm()">OK</button>
     </div>
 </ng-template>
 
@@ -47,7 +47,7 @@
             <li class="nav-item">
                 <a class="nav-link" [class.active]="currState==='statistics'" (click)="onClickStatistics()">statistics</a>
             </li>
-            <li class="nav-item" style="padding-right:100px;">
+            <li class="nav-item" style="padding-right:10rem;">
                 <a class="nav-link" [class.active]="currState==='heatmap'" (click)="onClickHeatmap()">heatmap</a>
             </li>
         </ul>
@@ -84,7 +84,7 @@
                 <mat-datepicker #startdatepicker>
                     <mat-datepicker-actions>
                     <button class="btn" mat-button matDatepickerCancel>Cancel</button>
-                    <button class="btn my-btn" mat-raised-button color="primary" matDatepickerApply>OK</button>
+                    <button class="btn btn-primary" mat-raised-button color="primary" matDatepickerApply>OK</button>
                     </mat-datepicker-actions>
                 </mat-datepicker>
             </mat-form-field>
@@ -114,7 +114,7 @@
                 <mat-datepicker #enddatepicker>
                     <mat-datepicker-actions>
                     <button class="btn" mat-button matDatepickerCancel>Cancel</button>
-                    <button class="btn my-btn" mat-raised-button matDatepickerApply>OK</button>
+                    <button class="btn btn-primary" mat-raised-button matDatepickerApply>OK</button>
                     </mat-datepicker-actions>
                 </mat-datepicker>
             </mat-form-field>
@@ -147,7 +147,7 @@
             </div>
 
             <div *ngIf="currState==='heatmap'">
-                <mat-form-field appearance="fill" class="between" style="width: 200px;">
+                <mat-form-field appearance="fill" class="between" style="width: 20rem;">
                     <mat-label>Automatic partition?</mat-label>
                     <mat-select (selectionChange)="updatePartition($event.value)">
                         <mat-option value="Yes">Yes</mat-option>
@@ -155,7 +155,7 @@
                     </mat-select>
                 </mat-form-field>
                 
-                <mat-form-field appearance="fill" [hidden]="autoPartition" style="width: 100px;">
+                <mat-form-field appearance="fill" [hidden]="autoPartition" style="width: 10rem;">
                     <mat-label>Partitions</mat-label>
                     <input matInput (change)="getPartitionNum($event.target.value)" placeholder="5">
                 </mat-form-field>
@@ -186,17 +186,17 @@
 
         <svg *ngIf="currState==='log'" [attr.width]="width" [attr.height]="height">
             <marker id="arrow" viewBox="0 -5 10 10" refX="8" refY="0" markerWidth="4" markerHeight="4" orient="auto">
-                    <path fill="var(--light-primary-color)" d="M0,-5L10,0L0,5"></path>
+                    <path fill="var(--secondary)" d="M0,-5L10,0L0,5"></path>
                 </marker>
             <rect class="agentBox" *ngFor="let box of agentBox" [attr.x]="box.x" [attr.y]="box.y" [attr.width]="boxWidth" [attr.height]="boxHeight"></rect>
-            <text font-size="20px"  *ngFor="let text of texts, index as i" 
+            <text font-size="2rem"  *ngFor="let text of texts, index as i" 
             class="agentbox-text"
             [attr.x]="text.x" 
             [attr.y]="text.y"
             [attr.fill]="white"> 
             Agent {{text.textID}} </text>
             <line stroke-dasharray="5, 5" class="vertical" *ngFor="let line of timeline" [attr.x1]="line.x1" [attr.y1]="line.y1" [attr.x2]="line.x2" [attr.y2]="height"/>     
-            <line stroke="var(--light-primary-color)" stroke-width="4" *ngFor="let line of communications" [class.hidden]="line.hidden" [attr.x1]="line.x1" [attr.y1]="line.y1" [attr.x2]="line.x2" [attr.y2]="line.y2" marker-end="url(#arrow)"/> 
+            <line stroke="var(--secondary)" stroke-width="4" *ngFor="let line of communications" [class.hidden]="line.hidden" [attr.x1]="line.x1" [attr.y1]="line.y1" [attr.x2]="line.x2" [attr.y2]="line.y2" marker-end="url(#arrow)"/> 
             <rect class="logBox" *ngFor="let box of logBoxes, index as i" 
                 [class.hidden]="box.hidden" 
                 (mouseenter)="onChangePopoverContent(i)" 

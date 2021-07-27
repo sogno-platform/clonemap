@@ -5,7 +5,7 @@ import { ActivatedRoute, Params} from '@angular/router';
 @Component({
   selector: 'app-ams',
   templateUrl: './ams.component.html',
-  styleUrls: ['./ams.component.css']
+  styleUrls: ['./ams.component.scss']
 })
 export class AMSComponent implements OnInit {
 

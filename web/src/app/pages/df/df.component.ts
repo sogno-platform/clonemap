@@ -12,7 +12,7 @@ cytoscape.use( popper);
 @Component({
   selector: 'app-df',
   templateUrl: './df.component.html',
-  styleUrls: ['./df.component.css']
+  styleUrls: ['./df.component.scss']
 })
 export class DFComponent implements OnInit {
     selectedMASID:number = -1;

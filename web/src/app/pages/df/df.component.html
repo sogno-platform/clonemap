@@ -11,7 +11,7 @@
 
 <div class="content-container">
     <div class="notalive" *ngIf="!alive" >
-        <h1>DF is not alive......</h1>
+        <h1 text-primary>DF is not alive......</h1>
     </div>
 
     <div class="alive" *ngIf="alive">
@@ -19,7 +19,7 @@
             <li class="nav-item"  >
                 <a class="nav-link" [class.active]="curr_state==='list'" (click)="onClickList()" >list</a>
             </li>
-            <li class="nav-item" style="padding-right:100px;">
+            <li class="nav-item" style="padding-right:10rem;">
                 <a class="nav-link" [class.active]="curr_state==='graph'" (click)="onClickGraph()">graph</a>
             </li>
         </ul>
@@ -29,8 +29,8 @@
                 <input #desc type="text" class="input" id="searchDesc" placeholder="Enter the description"/>
                 <input #nodeid type="text" class="input"  id="searchNode" placeholder="Enter the node ID"/>
                 <input #dist type="text" class="input" id="searchDist" placeholder="Enter the distance"/>
-                <button class="my-btn btn-search" type="submit" (click)="onSearchSvcs(desc.value, nodeid.value, dist.value)">
-                    <i class="fas fa-search"></i>
+                <button class="btn btn-primary" type="submit" (click)="onSearchSvcs(desc.value, nodeid.value, dist.value)">
+                    <i class="fas fa-search fa-2x"></i>
                 </button>
             </div>
             <div class="empty-service" *ngIf="searched_results === null">

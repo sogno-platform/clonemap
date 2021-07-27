@@ -1,4 +1,18 @@
 /* You can add global styles to this file, and also import other style files */
+
+// override the primary-color in bootstrap
+$primary: rgb(102,102,255);
+$secondary: #9696f3;
+
+/* primary colors used */
+:root { 
+   --background-primary-color: #dadaf8;
+   --error: rgb(230, 109, 109);
+   --debug: rgb(216, 216, 110);
+}
+
+@import "bootstrap";
+
 html {
    font-size: 62.5%;
 }
@@ -17,34 +31,29 @@ app-root {
 }
 
 
-/* primary colors used */
-:root { 
-   --primary-color: rgb(102,102,255);
-   --light-primary-color: #9696f3;
-   --background-primary-color: #dadaf8;
-}
+
 
 
 /* style of sidebar */
 .sidebar {
    position: fixed;
    height: 100%;
-   margin-top: 80px;
-   width: 120px;
+   margin-top: 8rem;
+   width: 12rem;
    overflow:scroll;
-   padding-bottom: 30px;
+   padding-bottom: 3rem;
 }
 
 .sidebar > .nav > .nav-item{
-   padding-top:10px;
+   padding-top:1rem;
    padding-bottom:1px;  
-   border-radius: 10px;
+   border-radius: 1rem;
    width: 100%;
    text-align: center;  
 }
 
 .sidebar .nav .nav-item a {
-   color: var(--primary-color);
+   color: var(--primary);
    text-decoration: none;
 }
 
@@ -54,48 +63,44 @@ app-root {
 
 .sidebar > .nav > .nav-item.is-active{
    background: var(--background-primary-color)!important;
-   color:var(--primary-color);
+   color:var(--primary);
    font-weight: bold;
 }
 
 .content-container {
-   margin-left: 120px;
-   margin-top: 80px;
+   margin-left: 12rem;
+   margin-top: 8rem;
    z-index: -1;
 }
 
 
 
 #agents {
-   margin-bottom: 100px;
+   margin-bottom: 10rem;
 }
 
-.my-btn {
-   background-color: var(--light-primary-color);
-   color: white;
-}
-
-.my-btn:hover {
-   background-color: var(--primary-color);
+.btn-primary:hover {
+   background-color: var(--primary);
    color: white;
    font: bold;
 }
 
-.btn-search {
-   height: 50px;
-   width: 50px;
-   border: none;
-   border-radius: 10px;
+.page-item.active .page-link {
+   background-color: red;
+   border-color: red;
 }
+
+
 
 
 mat-form-field  {
-   width: 140px; 
+   width: 14rem; 
 }
+
 
 @media (max-width: 575px) {
 .content-container {
-   margin-top: 300px;
+   margin-top: 30rem;
    margin-left: 0;
 }
 .sidebar {

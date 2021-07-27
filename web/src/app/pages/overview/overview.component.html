@@ -33,7 +33,7 @@
         </div>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn my-btn" (click)="onCreateMAS()">Upload</button>
+        <button type="button" class="btn btn-primary" (click)="onCreateMAS()">Upload</button>
     </div>
 </ng-template>
 
@@ -55,27 +55,25 @@
         </div>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn my-btn" (click)="closeModal()">OK</button>
+        <button type="button" class="btn btn-primary" (click)="closeModal()">OK</button>
     </div>
 </ng-template>
 
 
 <div *ngIf="MASID.length !== 0" class="content-container d-flex flex-column align-items-center">
     <div class="title mt-4 d-flex align-items-center">
-        <div class="title-name mr-4" >Overview</div>              
-        <button type='button' class='btn my-btn btn-create' (click)="openLg(content)">+ New MAS</button>
+        <div class="title-name mr-5" >Overview</div>              
+        <button type='button' class='btn btn-primary' (click)="openLg(content)">+ New MAS</button>
     </div>   
     <!--display the overview of agencies with tables-->
     <div id="cards">
-        <div class="d-flex flex-wrap ">
-            <div class="mr-auto" *ngFor="let MAS of MASsDisplay | paginate: { itemsPerPage: 12, currentPage: q }; index as i">
+        <div class="d-flex flex-wrap justify-content-between">
+            <div class="flex-fill" *ngFor="let MAS of MASsDisplay | paginate: { itemsPerPage: 12, currentPage: q }; index as i">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between">
                         <h3 (click)="onOpenMAS(MAS.id)">MAS {{MAS.id}}</h3>
-                        <button class="btn btn-delete" (click)="onDeleteMAS(MAS.id, deleting, deleted)">
-                            <div class="icon">
-                            <i class="fas fa-trash"></i>
-                            </div>
+                        <button class="btn btn-secondary" (click)="onDeleteMAS(MAS.id, deleting, deleted)">
+                        <i class="fas fa-trash fa-lg"></i>
                         </button>
                     </div>
 
@@ -117,7 +115,7 @@
         <span class="sr-only">Loading...</span>
     </div>
     <h1 class="status mb-5">{{status}}</h1>
-    <button *ngIf="status==='Currently no MASs, create one......'" type='button' class="btn my-btn" (click)="openLg(content)">+ New MAS</button>  
+    <button *ngIf="status==='Currently no MASs, create one......'" type='button' class="btn btn-primary" (click)="openLg(content)">+ New MAS</button>  
 </div>  
 
 

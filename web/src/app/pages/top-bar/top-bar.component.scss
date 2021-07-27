@@ -3,7 +3,7 @@ header {
 }
 
 .navbar {
-   font-size: 20px;
+   font-size: 2rem;
    color: white !important ;
    background-color:white;
 }
@@ -13,14 +13,13 @@ header {
 }
 
 .navbar-nav .nav-item .nav-link {
-   font-size: 20px;
-   color: var(--primary-color);
-   padding: 10px;
+   font-size: 2rem;
+   padding: 1rem;
 }
 
 header >nav > ul> li:hover{
    background: rgb(240, 240, 240);
-   color: var(--primary-color);
+   color: var(--primary);
 }
 
 header >nav > ul> li > a {
@@ -29,7 +28,7 @@ header >nav > ul> li > a {
 
 .nav-pills .nav-link.active{
    color: white !important;
-   background-color:var(--primary-color);
+   background-color:var(--primary);
 }
 
 .hidden {

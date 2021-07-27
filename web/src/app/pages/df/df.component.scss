@@ -5,19 +5,14 @@
 
 .notalive {
    display: flex;
-   height: 800px;
+   height: 80rem;
    flex-direction: column;
    align-items: center;
    justify-content: center;
    
 }
-.notalive > h1 {
-   color: var(--primary-color);
-   padding-bottom: 50px;
-}
 
 .alive {
-
    position: relative;
    display: flex;
    flex-direction: column;
@@ -30,51 +25,57 @@
 
 
 .inputs {
-   padding-top: 30px;
-   padding-bottom: 40px;
+   padding-top: 3rem;
+   padding-bottom: 4rem;
 }
 .input {
-   color: var(--primary-color);
-   height: 50px;
-   margin-right:10px;
+   height: 5rem;
+   margin-right:1rem;
+}
+
+.inputs > .btn {
+   width: 5rem;
+   height: 5rem;
+   background-color: var(--secondary);
+   color:white;
+   border: none;
 }
 
 /* style of the card */ 
 .empty-service {
-   color: var(--light-primary-color);
+   color: var(--secondary);
    text-align: center;
 }
 
 .service {
    border: 2px solid var(--background-primary-color);
-   border-radius: 10px;
-   margin-top:50px;
+   border-radius: 1rem;
+   margin-top:5rem;
 }
 
 
 .service-header {
-   color: var(--light-primary-color);
-   font-size: 30px;
-   height:70px;
+   color: var(--secondary);
+   font-size: 3rem;
+   height:7rem;
 }
 
 .service-header h2 {
-   padding-top: 20px;
-   padding-left: 20px;
+   padding-top: 2rem;
+   padding-left: 2rem;
 }
 
 .service-header i {
-   padding-top: 20px;
-   padding-right: 40px;
+   padding-top: 2rem;
+   padding-right: 4rem;
 }
 
 .pagination {
    width: 100%;
 }
 
-.pagination /deep/ .ngx-pagination .current {
-   background:var(--light-primary-color);
-   
+.pagination .ngx-pagination .current {
+   background:var(--secondary);
  }
 
 
@@ -82,7 +83,7 @@
 /* style of the nav tab */
 
 .content-container .nav {
-   margin-left: 30px;
+   margin-left: 3rem;
 }
 
 
@@ -99,26 +100,24 @@
 }
 
 .nav-link.active {
-   color: var(--primary-color);
+   color: var(--primary);
    font-weight: bold;
 }
 
 #graph {
    width: 100%;
-   height: 800px;
-   margin-right: 0px;
+   height: 80rem;
+   margin-right: 0rem;
 
-}
-
-
-.node {
-   color: var(--primary-color);
 }
 
 .notShow{
    z-index: -1;
 }
 
+.pagination ::ng-deep .ngx-pagination .current {
+   background: var(--secondary);
+}
 
 
 

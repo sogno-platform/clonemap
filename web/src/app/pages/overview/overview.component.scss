@@ -5,10 +5,10 @@
 }
 
 .status {
-   color: var(--primary-color);
+   color: var(--primary);
    text-align: center;
    font-size: 5rem;
-   font-size: 50px;
+   font-size: 5rem;
    font-weight: 300;
    line-height: 7rem;
 }
@@ -16,14 +16,14 @@
 .process-spinner {
    width: 8rem; 
    height: 8rem;
-   color: var(--primary-color);
+   color: var(--primary);
  }
 
 .overview-empty button {
-   height:60px;
-   width: 160px;
+   height:6rem;
+   width: 16rem;
    font-size: larger;
-   background-color: var(--primary-color);
+   background-color: var(--primary);
 }
 
 /* overview with agency*/
@@ -34,7 +34,7 @@
 }
 
 .title {
-   height: 50px;
+   height: 5rem;
    height: 5rem; 
 }
 
@@ -44,36 +44,37 @@
    color: rgb(85, 83, 83);
 }
 
-.btn-create {
+.title > .btn {
    height:4rem;
    font-size: 2rem;
 }
 
 #cards {
+   width: 100%;
    margin-top: 5rem;
 }
 
 .table {
-   margin-bottom: 0px;
+   margin-bottom: 0rem;
 }
 
 .card {
    width:40rem;
-   margin-bottom: 50px;
+   margin-bottom: 5rem;
 }
 
 .card-header {
-   color: var(--primary-color); 
+   color: var(--primary); 
 }
 
 .card-body {
-   padding: 0px;
+   padding: 0rem;
 }
 
-.btn-delete {
-   width: 40px;
-   height: 40px;
-   background-color: var(--light-primary-color);
+.card-header > .btn {
+   width: 4rem;
+   height: 4rem;
+   background-color: var(--secondary);
    color:white;
 }
 
@@ -81,22 +82,25 @@
    display: none;
 }
 
-.pagination /deep/ .ngx-pagination .current {
-   background:var(--light-primary-color);
- }
-
  .delete-spinner {
    width: 4rem; 
    height: 4rem;
-   color: var(--primary-color);
+   color: var(--primary);
  }
 
  .delete-text {
-   color: var(--primary-color);
+   color: var(--primary);
    text-align: center;
-   font-size: 30px;
+   font-size: 3rem;
    font-weight: 100;   
  }
+
+ .pagination ::ng-deep .ngx-pagination .current {
+   background: var(--secondary);
+}
+
+
+
 
 
 

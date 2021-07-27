@@ -1,22 +1,22 @@
 
 .notalive {
    display: flex;
-   height: 800px;
+   height: 80rem;
    flex-direction: column;
    align-items: center;
    justify-content: center;
    
 }
 .notalive > h1 {
-   color: var(--primary-color);
-   padding-bottom: 50px;
+   color: var(--primary);
+   padding-bottom: 5rem;
 }
 
 
 /* style of the search bar */
 .inputs {
-   padding-top: 30px;
-   padding-bottom: 40px;
+   padding-top: 3rem;
+   padding-bottom: 4rem;
    display: flex;
    justify-content: center;
    align-items: center;
@@ -26,25 +26,25 @@
 /*style of the selection board */
 
 .selectionBoard {
-   margin-top:50px;
-   margin-left: 50px;
-   margin-bottom: 50px;
+   margin-top:5rem;
+   margin-left: 5rem;
+   margin-bottom: 5rem;
 }
 
 
 .agent-title {
    color: rgb(85, 81, 81);
-   font-size: 30px;
-   margin-left: 30px;
-   margin-top: 0px;
-   width: 120px;
+   font-size: 3rem;
+   margin-left: 3rem;
+   margin-top: 0rem;
+   width: 12rem;
 }
 
 .topic-title {
    color: rgb(85, 81, 81);
-   font-size: 30px;
-   width: 100px;
-   margin-bottom: 40px;
+   font-size: 3rem;
+   width: 10rem;
+   margin-bottom: 4rem;
 }
 
 .row {
@@ -55,55 +55,55 @@
 .agents {
     width:80%;
     margin-left:15px;
-    margin-top: -10px;
+    margin-top: -1rem;
 }
 
 
 .agent-selected {
-   height: 40px;
-   width: 80px;
+   height: 4rem;
+   width: 8rem;
    text-align: center;
-   border-radius: 40px;
-   margin-right: 30px;
-   margin-bottom: 10px;
-   padding-top:10px;
+   border-radius: 4rem;
+   margin-right: 3rem;
+   margin-bottom: 1rem;
+   padding-top:1rem;
    color:white;
-   background-color: var(--light-primary-color);
-   font-size: 20px;
+   background-color: var(--secondary);
+   font-size: 2rem;
    cursor: pointer; 
 }
 
 .agent-not-selected {
-   height: 40px;
-   width: 120px;
+   height: 4rem;
+   width: 12rem;
    text-align: center;
    border: solid rgb(226, 224, 224);
-   border-radius: 40px;
-   margin-right: 30px;
-   margin-bottom: 10px;
+   border-radius: 4rem;
+   margin-right: 3rem;
+   margin-bottom: 1rem;
    padding-top:8px;
    color: gray;
-   font-size: 20px;
+   font-size: 2rem;
    cursor: pointer; 
 }
 
 .agent-not-selected:hover {
    border: none;
-   background: var(--light-primary-color);
+   background: var(--secondary);
    color:white;
-   padding-top:10px;
+   padding-top:1rem;
 }
 
 .more {
-   height: 40px;
-   width: 80px;
+   height: 4rem;
+   width: 8rem;
    text-align: center;
    border: dashed gray;
-   border-radius: 40px;
-   margin-right: 30px;
-   margin-bottom: 10px;
+   border-radius: 4rem;
+   margin-right: 3rem;
+   margin-bottom: 1rem;
    color: grey;
-   font-size: 20px;
+   font-size: 2rem;
    font-weight: bold;
    padding-top: 8px;
    cursor: pointer; 
@@ -129,41 +129,41 @@
 
 .agent-selected:hover .delete {
    display: initial;
-   color: var(--light-primary-color);
+   color: var(--secondary);
 }
 
 
 
 .tag{
-   height: 40px;
-   width: 80px;
+   height: 4rem;
+   width: 8rem;
    text-align: center;
    border: solid rgb(235, 229, 229);
-   border-radius: 40px;
-   margin-right: 30px;
-   margin-bottom: 10px;
+   border-radius: 4rem;
+   margin-right: 3rem;
+   margin-bottom: 1rem;
    padding-top: 8px;
    color: gray;
-   font-size: 20px;
+   font-size: 2rem;
    cursor: pointer; 
 }
 
 
 
 .is-agent-active  {
-   background-color: var(--light-primary-color);
+   background-color: var(--secondary);
    color: white;
    border: none;
-   padding-top: 10px;
+   padding-top: 1rem;
 }
 
 .between {
-   margin-right: 20px;
+   margin-right: 2rem;
 }
 
 .fa-search {
    margin-top: 15px;
-   margin-left: 20px;
+   margin-left: 2rem;
    cursor: pointer;
    
 }
@@ -171,7 +171,7 @@
 /* style of the nav tab */
 
 .content-container .nav {
-   margin-left: 30px;
+   margin-left: 3rem;
 }
 
 
@@ -188,7 +188,7 @@
 }
 
 .nav-link.active {
-   color: var(--primary-color);
+   color: var(--primary);
    font-weight: bold;
 }
 
@@ -201,12 +201,12 @@ svg {
 }
    
 .vertical {
-   stroke: var(--light-primary-color);
+   stroke: var(--secondary);
    stroke-width: 2;
 }
 
 .agentBox {
-    fill: var(--light-primary-color);
+    fill: var(--secondary);
 }
 
 .agentbox-text {
@@ -214,21 +214,21 @@ svg {
 }
 
 .text-title {
-   font: bold 30px; 
+   font: bold 3rem; 
 }
 
 
 
 .error {
-   fill: rgb(230, 109, 109);
+   fill: var(--error);
 }
 
 .debug {
-   fill: rgb(216, 216, 110);
+   fill: var(--debug);
 }
 
 .msg {
-   fill: var(--light-primary-color);
+   fill: var(--secondary);
 }
 
 .status {
@@ -251,23 +251,23 @@ svg {
 
 .topics {
    position: fixed;
-   right: 100px;
-   top: 300px;
+   right: 10rem;
+   top: 30rem;
 }
 
 
 .topics .error-tag.selected {   
-   background-color: rgb(230, 109, 109);
+   background-color: var(--error);
 }
 
 
 .topics .debug-tag.selected {
-   background-color: rgb(216, 216, 110);
+   background-color: var(--debug);
 
 }
 
 .topics .msg-tag.selected {
-   background-color: var(--light-primary-color);
+   background-color: var(--secondary);
 }
 
 .topics .status-tag.selected {
@@ -283,25 +283,25 @@ svg {
 }
 
 .log-series-graph {
-   margin-top: 50px;
-   width: 1200px;
+   margin-top: 5rem;
+   width: 120rem;
 }
 
 ngx-charts-bubble-chart {
-   padding-right: 100px;
+   padding-right: 10rem;
 
 }
 
 .tt {
-   font-size: 20px;
-   height: 80px;
-   width: 250px;
+   font-size: 2rem;
+   height: 8rem;
+   width: 25rem;
    text-align: center;
-   padding: 10px;
+   padding: 1rem;
 }
 
 #update {
-   margin-left: 500px;
+   margin-left: 50rem;
 }
 
 ::ng-deep .gridline-path-vertical {      
@@ -313,23 +313,23 @@ ngx-charts-bubble-chart {
 /* css for statistics */
 
 .stats-dashboard {
-   margin-top: 50px;
+   margin-top: 5rem;
 }
 
 .card {
-   margin-bottom: 50px;
+   margin-bottom: 5rem;
 }
 
 .stats-dashboard > .card {
-   background-color: var(--light-primary-color);
+   background-color: var(--secondary);
    border: none;
-   border-radius: 30px;
-   height: 150px;
+   border-radius: 3rem;
+   height: 15rem;
 }
 
 
-.pagination /deep/ .ngx-pagination .current {
-   background:var(--light-primary-color);
+.pagination .ngx-pagination .current {
+   background:var(--secondary);
  }
 
 .card-title {
@@ -339,15 +339,15 @@ ngx-charts-bubble-chart {
 
 .card-text {
    color: white;
-   font-size: 30px;
+   font-size: 3rem;
    text-align: center;
    vertical-align: middle;
-   line-height: 60px; 
+   line-height: 6rem; 
 
 }
 
 /* .heatmap{
-   border: var(--light-primary-color) solid;
+   border: var(--secondary) solid;
 }
  */
 .heatmap-legend{
@@ -355,12 +355,12 @@ ngx-charts-bubble-chart {
 }
 
 .xlabel {
-   font-size: 20px;
+   font-size: 2rem;
    fill: gray;
 }
 
 .ylabel {
-   font-size: 20px;
+   font-size: 2rem;
    fill: gray;
 /*    transform: rotate(90deg); */
    transform-box: fill-box;

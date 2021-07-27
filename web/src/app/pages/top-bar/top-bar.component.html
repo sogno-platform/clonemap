@@ -5,16 +5,16 @@
         </a>
         <ul ngbNav #nav="ngbNav" [(activeId)]="active" class="navbar-nav nav-pills d-flex justify-content-between" style="width:100%;">
             <li ngbNavItem="overview" class="nav-item flex-fill modules">
-                <a ngbNavLink class="nav-link" routerLink="/overview">Overview</a>
+                <a ngbNavLink class="nav-link text-primary" routerLink="/overview">Overview</a>
             </li>
             <li ngbNavItem="ams" [ngClass]="active == 'overview' ? 'hidden' : ''" class="nav-item flex-fill modules">
-                <a ngbNavLink class="nav-link" routerLink="/ams/{{id}}">AMS</a>
+                <a ngbNavLink class="nav-link text-primary" routerLink="/ams/{{id}}">AMS</a>
             </li>
             <li ngbNavItem="logger" [ngClass]="active == 'overview' ? 'hidden' : ''"  class="nav-item flex-fill modules">
-                <a ngbNavLink class="nav-link" routerLink="/logger/{{id}}">Logger</a>
+                <a ngbNavLink class="nav-link text-primary" routerLink="/logger/{{id}}">Logger</a>
             </li>
             <li ngbNavItem="df" [ngClass]="active == 'overview' ? 'hidden' : ''" class="nav-item  flex-fill modules">
-                <a ngbNavLink class="nav-link" routerLink ="/df/{{id}}" >DF</a>
+                <a ngbNavLink class="nav-link text-primary" routerLink ="/df/{{id}}" >DF</a>
             </li>
         </ul>
     </nav>
