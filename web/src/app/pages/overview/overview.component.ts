@@ -34,7 +34,7 @@ export class OverviewComponent implements OnInit {
     /********************   create new MAS *************************/
 
     openLg(content) {
-        this.modalService.open(content, { size: 'lg', centered: true });
+        this.modalService.open(content, {centered: true, size:"lg" });
     }
 
     closeModal() {

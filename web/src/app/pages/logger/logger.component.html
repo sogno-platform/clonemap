@@ -18,7 +18,7 @@
         </button>
     </div>
     <div class="modal-body">
-        <div class="row">
+        <div class="d-flex  flex-wrap">
             <div *ngFor="let id of notSelectedID">
                 <div class="agent-not-selected"  [ngValue]="id" (click)="onAddID(id)">
                     agent {{id}}
@@ -168,8 +168,8 @@
         <div *ngIf="currState ==='log' || currState ==='logSeries'" class= "d-flex align-content-end">
             <div class="agent-title">agents</div>
             <div class="agents">
-                <div class="row">
-                    <div *ngFor="let id of selectedID" class="agent-selected col-lg-1 is-agent-active" (click)="onDeleteID(id)" [ngValue]="id" >
+                <div class="d-flex flex-wrap">
+                    <div *ngFor="let id of selectedID" class="agent-selected is-agent-active" (click)="onDeleteID(id)" [ngValue]="id" >
                         <p>agent {{id}} </p>
                         <div class="delete"><i class="fas fa-trash"></i></div>
                     </div>

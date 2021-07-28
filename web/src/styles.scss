@@ -16,7 +16,8 @@ $secondary: #9696f3;
 html {
    font-size: 62.5%;
 }
-html,body {
+
+html, body {
    font-family: 'Lato', sans-serif;
    height: 100%;
    width:100%;
@@ -29,8 +30,6 @@ app-root {
    height: 100%;
    display: inline-block;
 }
-
-
 
 
 
@@ -73,8 +72,6 @@ app-root {
    z-index: -1;
 }
 
-
-
 #agents {
    margin-bottom: 10rem;
 }
@@ -85,20 +82,12 @@ app-root {
    font: bold;
 }
 
-.page-item.active .page-link {
-   background-color: red;
-   border-color: red;
-}
-
-
-
-
 mat-form-field  {
    width: 14rem; 
 }
 
 
-@media (max-width: 575px) {
+@media (max-width: 57.5em) {
 .content-container {
    margin-top: 30rem;
    margin-left: 0;
@@ -109,8 +98,16 @@ mat-form-field  {
 }
 
 
+.modal-body {
+   font-size: 1.6rem; 
+}
+
+.modal-footer > button {
+   font-size: 1.6rem;  
+}
 
 
+ 
 
 
 

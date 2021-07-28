@@ -1,8 +1,3 @@
-.content-container {
-   width: 80% ;
-   padding-left: 10%;
-}
-
 .notalive {
    display: flex;
    height: 80rem;
@@ -41,13 +36,20 @@
    border: none;
 }
 
+
+
 /* style of the card */ 
 .empty-service {
    color: var(--secondary);
    text-align: center;
 }
 
+.services {
+   padding-left: 5rem;
+   padding-right: 5rem;
+}
 .service {
+   width: 40rem;
    border: 2px solid var(--background-primary-color);
    border-radius: 1rem;
    margin-top:5rem;
@@ -70,15 +72,18 @@
    padding-right: 4rem;
 }
 
+.table {
+   margin-bottom: 0rem;
+
+}
+
 .pagination {
    width: 100%;
 }
 
-.pagination .ngx-pagination .current {
-   background:var(--secondary);
- }
-
-
+.pagination ::ng-deep .ngx-pagination .current {
+   background: var(--secondary);
+}
 
 /* style of the nav tab */
 
@@ -115,9 +120,7 @@
    z-index: -1;
 }
 
-.pagination ::ng-deep .ngx-pagination .current {
-   background: var(--secondary);
-}
+
 
 
 

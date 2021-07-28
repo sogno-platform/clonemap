@@ -24,7 +24,7 @@
             </li>
         </ul>
 
-        <div class="content" *ngIf="curr_state === 'list'">
+        <div class="d-flex-column align-items-center justify-content-center" *ngIf="curr_state === 'list'">
             <div class="inputs d-flex justify-content-center align-items-center">
                 <input #desc type="text" class="input" id="searchDesc" placeholder="Enter the description"/>
                 <input #nodeid type="text" class="input"  id="searchNode" placeholder="Enter the node ID"/>
@@ -36,7 +36,7 @@
             <div class="empty-service" *ngIf="searched_results === null">
                 <h1>No services found</h1>
             </div>
-            <div *ngIf="searched_results !== null && searched_results.length !== 0">
+            <div class="services d-flex flex-wrap justify-content-around" *ngIf="searched_results !== null && searched_results.length !== 0">
             <div class="service" *ngFor="let res of searched_results | paginate: { itemsPerPage: 5, currentPage: q }; index as i ">
                 <div class="service-header d-flex justify-content-between">
                     <h2>Service {{res.id}}</h2>
