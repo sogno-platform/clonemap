@@ -4,6 +4,7 @@
 $primary: rgb(102,102,255);
 $secondary: #9696f3;
 
+
 /* primary colors used */
 :root { 
    --background-primary-color: #dadaf8;
@@ -25,13 +26,15 @@ html, body {
    margin: 0;
 }
 
+.default-fontsize {
+   font-size: 1.6rem;
+}
+
 app-root {
    width: 100%;
    height: 100%;
    display: inline-block;
 }
-
-
 
 /* style of sidebar */
 .sidebar {
@@ -86,6 +89,27 @@ mat-form-field  {
    width: 14rem; 
 }
 
+/* style of the nav tabs */
+.nav-tabs .nav-item>.active>a, .nav-item>.active>a:hover, .nav-item>.active>a:focus {
+   border-color: var(--background-primary-color);
+   border-bottom-color: transparent;
+}
+.nav-tabs {
+  border-bottom: 1px solid var(--background-primary-color);
+  font-size: 1.6rem;
+}
+
+.nav-tabs .nav-link {
+   color: gray;
+}
+
+.nav-tabs .nav-link.active {
+   color: var(--primary);
+   font-weight: bold;
+}
+
+
+
 
 @media (max-width: 57.5em) {
 .content-container {
@@ -97,14 +121,6 @@ mat-form-field  {
 }
 }
 
-
-.modal-body {
-   font-size: 1.6rem; 
-}
-
-.modal-footer > button {
-   font-size: 1.6rem;  
-}
 
 
  

@@ -17,7 +17,7 @@
         <span aria-hidden="true">&times;</span>
         </button>
     </div>
-    <div class="modal-body">
+    <div class="modal-body default-fontsize">
         <div class="form-group">
             <label for="newMAS">Uploaded Contents</label>
             <textarea class="form-control myCustomTextArea" id="newMAS" (change)="onUpdateContent($event.target.value)" [(ngModel)]="display" rows="20">{{display}}</textarea>
@@ -33,7 +33,7 @@
         </div>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-primary" (click)="onCreateMAS()">Upload</button>
+        <button type="button" class="btn btn-primary default-fontsize" (click)="onCreateMAS()">Upload</button>
     </div>
 </ng-template>
 

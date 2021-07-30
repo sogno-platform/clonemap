@@ -54,10 +54,10 @@ export class DFComponent implements OnInit {
             if (params.masid) {
                 this.selectedMASID = params.masid;
                 this.dfService.getAllSvcs(this.selectedMASID.toString()).subscribe( (res: Service[]) => {
-                    this.searched_results = res;  
-                    for (let i = 0; i < this.searched_results.length; i++) {
-                        this.searched_results[i].id = i;
-                    }
+                    this.searched_results = res.map((ele, idx) => {
+                        ele.id = idx;
+                        return ele;
+                    });
                 });       
             } else {
                 console.log("No masid");

@@ -17,7 +17,7 @@
         <span aria-hidden="true">&times;</span>
         </button>
     </div>
-    <div class="modal-body">
+    <div class="modal-body default-fontsize">
         <div class="d-flex  flex-wrap">
             <div *ngFor="let id of notSelectedID">
                 <div class="agent-not-selected"  [ngValue]="id" (click)="onAddID(id)">
@@ -27,7 +27,7 @@
         </div>       
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-primary" (click)="onConfirm()">OK</button>
+        <button type="button" class="btn btn-primary default-fontsize" (click)="onConfirm()">OK</button>
     </div>
 </ng-template>
 
@@ -51,11 +51,11 @@
                 <a class="nav-link" [class.active]="currState==='heatmap'" (click)="onClickHeatmap()">heatmap</a>
             </li>
         </ul>
-
-        <div  class="selectionBoard d-flex justify-content-center">
-<!--            agent selection for statistic condition -->                
+       <!--selection board -->
+        <div  class="my-5 d-flex justify-content-center">
+            <!--exclusive for statistic condition -->                
             <div *ngIf="currState==='statistics'">
-                <mat-form-field appearance="fill" class="between">
+                <mat-form-field appearance="fill" class="mr-4">
                     <mat-label>agent</mat-label>
                     <mat-select (selectionChange)="updateSelectedAgent($event.value)">
                         <mat-option *ngFor="let agent of agentID" [value]="agent">
@@ -63,7 +63,7 @@
                         </mat-option>
                     </mat-select>
                 </mat-form-field>
-                <mat-form-field appearance="fill" class="between">
+                <mat-form-field appearance="fill" class="mr-4">
                     <mat-label>type
                     </mat-label>
                     <mat-select (selectionChange)="updateSelectedBehType($event.value)">
@@ -73,7 +73,7 @@
                     </mat-select>
                 </mat-form-field>
             </div>
-
+            <!--start date --> 
             <mat-form-field appearance="fill" class="example-form-field">
                 <mat-label>Start date</mat-label>
                 <input matInput 
@@ -88,8 +88,8 @@
                     </mat-datepicker-actions>
                 </mat-datepicker>
             </mat-form-field>
-
-            <mat-form-field  appearance="fill" class="example-form-field between">
+            <!--start time --> 
+            <mat-form-field  appearance="fill" class="example-form-field mr-4">
                 <mat-label>Start time</mat-label>
                 <input matInput
                     name="selected_start_time"
@@ -103,7 +103,7 @@
                 </mat-icon>
             </mat-form-field>
             <ngx-mat-timepicker #pickerA></ngx-mat-timepicker>
-                        
+            <!--end date -->                        
             <mat-form-field appearance="fill" class="example-form-field">
                 <mat-label>End date</mat-label>
                 <input matInput 
@@ -118,8 +118,8 @@
                     </mat-datepicker-actions>
                 </mat-datepicker>
             </mat-form-field>
-
-            <mat-form-field appearance="fill" class="between">
+            <!--end time --> 
+            <mat-form-field appearance="fill" class="mr-4">
                 <mat-label>End time</mat-label>
                 <input matInput
                     name="selected_end_time"
@@ -134,7 +134,7 @@
                 </mat-icon>
             </mat-form-field>
             <ngx-mat-timepicker #pickerB></ngx-mat-timepicker>
-
+            <!--exclusive for logSeries condition -->  
             <div *ngIf="currState==='logSeries'">
                 <mat-form-field appearance="fill">
                     <mat-label>Name</mat-label>
@@ -145,9 +145,9 @@
                     </mat-select>
                 </mat-form-field>
             </div>
-
+            <!--exclusive for heatmap condition -->
             <div *ngIf="currState==='heatmap'">
-                <mat-form-field appearance="fill" class="between" style="width: 20rem;">
+                <mat-form-field appearance="fill" class="mr-4" style="width: 20rem;">
                     <mat-label>Automatic partition?</mat-label>
                     <mat-select (selectionChange)="updatePartition($event.value)">
                         <mat-option value="Yes">Yes</mat-option>
@@ -164,22 +164,22 @@
             <i class="fas fa-search fa-2x" (click)="onClickSearchButton()"></i>
 
         </div>
-        <!--            agent selection for log and logSeries conditions -->
+        <!--agent selection for log anpopContentd logSeries conditions -->
         <div *ngIf="currState ==='log' || currState ==='logSeries'" class= "d-flex align-content-end">
-            <div class="agent-title">agents</div>
+            <div class="agent-title ml-5">agents</div>
             <div class="agents">
                 <div class="d-flex flex-wrap">
-                    <div *ngFor="let id of selectedID" class="agent-selected is-agent-active" (click)="onDeleteID(id)" [ngValue]="id" >
+                    <div *ngFor="let id of selectedID" class="agent-selected" (click)="onDeleteID(id)" [ngValue]="id" >
                         <p>agent {{id}} </p>
-                        <div class="delete"><i class="fas fa-trash"></i></div>
+                        <div class="hidden"><i class="fas fa-trash"></i></div>
                     </div>
                     <div *ngIf="selectedID.length<9" class="more col-lg-1" (click)="openLg(content)">+ </div>
                 </div>
             </div>  
         </div>
             
-        <ng-template #popContent> 
-            <div *ngFor="let content of popoverContent">
+        <ng-template #popContent > 
+            <div class="default-fontsize" *ngFor="let content of popoverContent">
                 {{content}}
             </div>
         </ng-template>
@@ -214,11 +214,11 @@
         
         <div *ngIf="currState==='log'" class="topics d-flex-column">
             <div class="topic-title"> Topic </div>
-            <div [class.selected]="isTopicSelected[0]" class="error-tag tag" (click)="onToggleTopic(0)">error</div>
-            <div [class.selected]="isTopicSelected[1]" class="debug-tag tag" (click)="onToggleTopic(1)" >debug</div>
-            <div [class.selected]="isTopicSelected[2]"class="msg-tag tag" (click)="onToggleTopic(2)">msg</div>
-            <div [class.selected]="isTopicSelected[3]" class="status-tag tag" (click)="onToggleTopic(3)">status</div>
-            <div [class.selected]="isTopicSelected[4]" class="app-tag tag" (click)="onToggleTopic(4)">app</div>
+            <div [class.selected]="isTopicSelected[0]" class="error-tag tag mb-4" (click)="onToggleTopic(0)">error</div>
+            <div [class.selected]="isTopicSelected[1]" class="debug-tag tag mb-4" (click)="onToggleTopic(1)" >debug</div>
+            <div [class.selected]="isTopicSelected[2]"class="msg-tag tag mb-4" (click)="onToggleTopic(2)">msg</div>
+            <div [class.selected]="isTopicSelected[3]" class="status-tag tag mb-4" (click)="onToggleTopic(3)">status</div>
+            <div [class.selected]="isTopicSelected[4]" class="app-tag tag mb-4" (click)="onToggleTopic(4)">app</div>
             <div [class.selected]="isTopicSelected[5]" class="beh-tag tag" (click)="onToggleTopic(5)">beh</div>
         </div>  
     

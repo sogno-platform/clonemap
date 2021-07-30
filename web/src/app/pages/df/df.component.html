@@ -36,46 +36,34 @@
             <div class="empty-service" *ngIf="searched_results === null">
                 <h1>No services found</h1>
             </div>
-            <div class="services d-flex flex-wrap justify-content-around" *ngIf="searched_results !== null && searched_results.length !== 0">
-            <div class="service" *ngFor="let res of searched_results | paginate: { itemsPerPage: 5, currentPage: q }; index as i ">
-                <div class="service-header d-flex justify-content-between">
-                    <h2>Service {{res.id}}</h2>
-                </div>
-                <table class="table table-striped">
+            <div class="services" *ngIf="searched_results !== null && searched_results.length !== 0">
+                <table class="table table-striped default-fontsize">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">MAS ID</th>
+                            <th scope="col">Agent ID</th>
+                            <th scope="col">Node ID</th>
+                            <th scope="col">Description</th>
+                            <th scope="col">Create Date</th>
+                            <th scope="col">Change Date</th>  
+                            <th scope="col">Dist</th>                                                    
+                        </tr>
+                    </thead>
                     <tbody>
-                    <tr>
-                        <th>MAS ID</th>
+                    <tr *ngFor="let res of searched_results | paginate: { itemsPerPage: 20, currentPage: q }; index as i ">
+                        <td>{{i+1}}</td>
                         <td>{{res.masid}}</td>
-                    </tr>
-                    <tr>
-                        <th>Agent ID</th>
                         <td>{{res.agentid}}</td>
-                    </tr>
-                    <tr>
-                        <th>Node ID</th>
                         <td>{{res.nodeid}}</td>
-                    </tr>
-                    <tr>
-                        <th>Description</th>
                         <td>{{res.desc}}</td>
-                    </tr>
-                    <tr>
-                        <th>Create Date</th>
                         <td>{{res.createdat}}</td>
-                    </tr>
-                    <tr>
-                        <th>Change Date</th>
                         <td>{{res.changedat}}</td>
-                    </tr>
-                    <tr>
-                        <th>Dist</th>
                         <td>{{res.dist}}</td>
-                    </tr>
                     </tbody>
                 </table>
-            </div>
-            <div class="pagination mt-4 d-flex justify-content-center align-items-center">
-            <pagination-controls (pageChange)="q = $event"></pagination-controls>
+                <div class="pagination mt-4 d-flex justify-content-center align-items-center">
+                <pagination-controls (pageChange)="q = $event"></pagination-controls>
             </div> 
             </div>
         </div>          
