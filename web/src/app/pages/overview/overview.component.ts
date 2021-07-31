@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { MasService } from 'src/app/services/mas.service';
 import { NgbModal, NgbModalConfig } from '@ng-bootstrap/ng-bootstrap';
 import { Router, ActivatedRouteSnapshot } from '@angular/router'
+import { HttpResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-overview',
@@ -102,14 +103,14 @@ export class OverviewComponent implements OnInit {
     onDeleteMAS(id: string, deleting, deleted) {
         this.modalService.open(deleting, { size: 'sm', centered: true });
         this.masService.deleteMASById(id).subscribe(
-            (res: any) => {
-                this.router.navigate['/overview'];
+            (res: HttpResponse<any>) => {
+                if (res.status === 200) {
+                    this.modalService.dismissAll();
+                    this.modalService.open(deleted, { size: 'sm', centered: true });
+                }
             },        
             (err) => {
-                this.modalService.dismissAll();
-                this.modalService.open(deleted, { size: 'sm', centered: true });
-                console.log(typeof(deleted));
-                console.log(err);
+                console.log(err)
             }
         );
     }
