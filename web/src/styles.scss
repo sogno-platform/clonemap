@@ -3,6 +3,7 @@
 // override the primary-color in bootstrap
 $primary: rgb(102,102,255);
 $secondary: #9696f3;
+$spacer: 1.6rem;
 
 
 /* primary colors used */
@@ -36,11 +37,12 @@ app-root {
    display: inline-block;
 }
 
-/* style of sidebar */
+/* sidebar */
+
 .sidebar {
    position: fixed;
    height: 100%;
-   margin-top: 8rem;
+   margin-top: 9rem;
    width: 12rem;
    overflow:scroll;
    padding-bottom: 3rem;
@@ -70,8 +72,9 @@ app-root {
 }
 
 .content-container {
-   margin-left: 12rem;
-   margin-top: 8rem;
+   margin-left: 14rem;
+   margin-top: 9rem;
+   padding-top: 1rem;
    z-index: -1;
 }
 
@@ -80,8 +83,9 @@ app-root {
 }
 
 .btn-primary:hover {
-   background-color: var(--primary);
+   background-color: var(--secondary);
    color: white;
+   border: none;
    font: bold;
 }
 
@@ -89,7 +93,7 @@ mat-form-field  {
    width: 14rem; 
 }
 
-/* style of the nav tabs */
+/* nav tabs */
 .nav-tabs .nav-item>.active>a, .nav-item>.active>a:hover, .nav-item>.active>a:focus {
    border-color: var(--background-primary-color);
    border-bottom-color: transparent;
@@ -97,6 +101,7 @@ mat-form-field  {
 .nav-tabs {
   border-bottom: 1px solid var(--background-primary-color);
   font-size: 1.6rem;
+  margin-left: 3rem;
 }
 
 .nav-tabs .nav-link {

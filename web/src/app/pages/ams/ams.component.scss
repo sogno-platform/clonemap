@@ -1,21 +1,3 @@
-.content-container {
-   width: 90% ;
-   padding-left: 5%;
-}
-
-.containers {
-   border-radius: 1rem;
-   margin-top:5rem;
-}
-
-.config {
-   width: 40rem;
-}
-
-td {
-   text-align: center;
-}
-
 
 /* .table-striped > tbody > tr:nth-child(2n+1) > td, .table-striped > tbody > tr:nth-child(2n+1) > th {
    background-color: var(--background-primary-color);
@@ -29,28 +11,9 @@ h1 {
 }
 
 .title {
-   padding-bottom: 3rem;
-   padding-top: 2rem;
    color: var(--secondary);
    font-size:3rem;
    font-weight: bold;
-}
-
-.card {
-   width: 40rem;
-   margin-bottom: 5rem;
-   padding: 0rem;
-
-}
-
-
-.card-body {
-   padding: 0rem;
-}
-
-
-table {
-   margin-bottom: 0rem;
 }
 
 .pagination ::ng-deep .ngx-pagination .current {

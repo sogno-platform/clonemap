@@ -52,7 +52,7 @@
                     </thead>
                     <tbody>
                     <tr *ngFor="let res of searched_results | paginate: { itemsPerPage: 20, currentPage: q }; index as i ">
-                        <td>{{i+1}}</td>
+                        <th>{{i+1}}</th>
                         <td>{{res.masid}}</td>
                         <td>{{res.agentid}}</td>
                         <td>{{res.nodeid}}</td>
