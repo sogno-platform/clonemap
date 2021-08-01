@@ -39,7 +39,7 @@
 
 <!--modal for waiting the deletion of the agency-->
 <ng-template #deleting let-modal>
-    <div class="modal-body d-flex flex-column justify-content-center align-items-center">
+    <div class="modal-body default-fontsize d-flex flex-column justify-content-center align-items-center">
         <div class="spinner-border delete-spinner" role="status">
             <span class="sr-only">deleting...</span>
         </div>
@@ -55,7 +55,7 @@
         </div>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-primary" (click)="closeModal()">OK</button>
+        <button type="button" class="btn btn-primary default-fontsize" (click)="closeModal()">OK</button>
     </div>
 </ng-template>
 

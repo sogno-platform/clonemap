@@ -421,7 +421,7 @@ export class LoggerComponent implements OnInit {
     }
 
 
-    /********************************  functions for drawing log series   ********************************/ 
+    /****************  functions for drawing log series   *************************/ 
     
     onClickLogSeries(){
         this.currState = "logSeries";
@@ -522,7 +522,7 @@ export class LoggerComponent implements OnInit {
         console.log('Deactivate', JSON.parse(JSON.stringify(data)));
     }
 
-    /********************************* functions for statistics information  ************************************/
+    /*************** functions for statistics information  ************************/
     
     onClickStatistics() {
         this.currState = "statistics";
