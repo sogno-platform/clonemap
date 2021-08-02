@@ -123,16 +123,17 @@ mat-form-field  {
 
 
 
-@media (max-width: 57.5em) {
-.content-container {
-   margin-top: 30rem;
-   margin-left: 0;
-}
-.sidebar {
-   display: none;
-}
-}
-
+@media (max-width: 576px) {
+   .content-container {
+      margin-top: 30rem;
+      margin-left: 0;
+   }
+   .sidebar {
+      display: none;
+   }
+   
+   }
+   
 
 
  

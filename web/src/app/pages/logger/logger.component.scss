@@ -97,6 +97,12 @@
    cursor: pointer; 
 }
 
+.table {
+   td, th {
+      padding-top: 1.5rem;
+      padding-bottom: 1.5rem;   
+   }
+}
 
 /*topic selection board */
 
@@ -250,9 +256,9 @@ ngx-charts-bubble-chart {
    height: 15rem;
 }
 
-.pagination .ngx-pagination .current {
-   background:var(--secondary);
- }
+.pagination ::ng-deep .ngx-pagination .current {
+   background: var(--secondary);
+}
 
 .card-title {
    color: white;

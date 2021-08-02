@@ -400,8 +400,6 @@ export class LoggerComponent implements OnInit {
         this.drawTimeline();
     }
 
-
-
     onChangePopoverContent(i) {
         if ("data" in this.logs[i]) {
             if (this.logs[i].msg === "ACL send" || this.logs[i].msg === "ACL receive") {
