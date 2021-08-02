@@ -1,6 +1,6 @@
 
 /* .table-striped > tbody > tr:nth-child(2n+1) > td, .table-striped > tbody > tr:nth-child(2n+1) > th {
-   background-color: var(--background-primary-color);
+   background-color: $background-primary-color;
 }
 */
 
@@ -25,6 +25,9 @@ td, th {
    background: var(--secondary);
 }
 
+.content-container {
+  padding-left: 4rem;
+}
 
 
 

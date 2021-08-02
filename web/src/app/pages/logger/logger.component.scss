@@ -1,3 +1,4 @@
+@import '../../../styles.scss' ;
 
 .notalive {
    display: flex;
@@ -8,7 +9,7 @@
    
 }
 .notalive > h1 {
-   color: var(--primary);
+   color: $primary;
    padding-bottom: 5rem;
 }
 
@@ -44,6 +45,18 @@
    background-color: var(--secondary);
    font-size: 2rem;
    cursor: pointer; 
+   
+   &:hover {
+      color: $background-primary-color;   
+      background-color: $background-primary-color;
+      .hidden {
+         display: initial;
+         color: var(--secondary);
+      }
+      p {
+         display: none;
+      }
+   }
 }
 
 .agent-not-selected {
@@ -58,28 +71,16 @@
    color: gray;
    font-size: 2rem;
    cursor: pointer; 
+
+   &:hover {
+      border: none;
+      background: var(--secondary);
+      color:white;
+      padding-top:1rem;
+   }
 }
 
-.agent-not-selected:hover {
-   border: none;
-   background: var(--secondary);
-   color:white;
-   padding-top:1rem;
-}
 
-.agent-selected:hover .hidden {
-   display: initial;
-   color: var(--secondary);
-}
-
-.agent-selected:hover {
-   color: var(--background-primary-color);   
-   background-color: var(--background-primary-color);
-}
-
-.agent-selected:hover p {
-   display: none;
-}
 
 .more {
    height: 4rem;
@@ -102,7 +103,7 @@
 .topics {
    position: fixed;
    right: 10rem;
-   top: 30rem;
+   top: 40rem;
 }
 
 .topic-title {
@@ -130,11 +131,11 @@
 }
 
 .topics .error-tag.selected {   
-   background-color: var(--error);
+   background-color: $error;
 }
 
 .topics .debug-tag.selected {
-   background-color: var(--debug);
+   background-color: $debug;
 }
 
 .topics .msg-tag.selected {
@@ -156,7 +157,7 @@
 
 /* svg graph */
 
-/* log graph */
+/* log */
 svg {
    position: absolute;
 }
@@ -179,11 +180,11 @@ svg {
 }
 
 .error {
-   fill: var(--error);
+   fill: $error;
 }
 
 .debug {
-   fill: var(--debug);
+   fill: $debug;
 }
 
 .msg {

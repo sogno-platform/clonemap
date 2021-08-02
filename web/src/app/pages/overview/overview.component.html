@@ -33,7 +33,7 @@
         </div>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-primary default-fontsize" (click)="onCreateMAS()">Upload</button>
+        <button type="button" class="btn btn-secondary default-fontsize" (click)="onCreateMAS()">Upload</button>
     </div>
 </ng-template>
 
@@ -55,7 +55,7 @@
         </div>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-primary default-fontsize" (click)="closeModal()">OK</button>
+        <button type="button" class="btn btn-secondary default-fontsize" (click)="closeModal()">OK</button>
     </div>
 </ng-template>
 
@@ -63,7 +63,7 @@
 <div *ngIf="MASID.length !== 0" class="content-container d-flex flex-column align-items-center">
     <div class="title mt-4 d-flex align-items-center">
         <div class="title-name mr-5" >Overview</div>              
-        <button type='button' class='btn btn-primary' (click)="openLg(content)">+ New MAS</button>
+        <button type='button' class='btn btn-secondary' (click)="openLg(content)">+ New MAS</button>
     </div>   
     <!--display the overview of agencies with tables-->
     <div id="cards">
@@ -115,8 +115,8 @@
         <span class="sr-only">Loading...</span>
     </div>
     <h1 class="status mb-5">{{status}}</h1>
-    <button *ngIf="status==='Currently no MASs, create one......'" type='button' class="btn btn-primary" (click)="openLg(content)">+ New MAS</button>  
-</div>  
+    <button *ngIf="status==='Currently no MASs, create one......'" type='button' class="btn btn-secondary" (click)="openLg(content)">+ New MAS</button>  
+</div> 
 
 
 

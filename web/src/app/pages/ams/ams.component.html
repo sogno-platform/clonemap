@@ -1,8 +1,9 @@
+
 <div class="sidebar">
     <div class="nav">
         <div class="nav-item" *ngFor="let id of MASID, index as i" routerLinkActive="is-active" [ngClass]="id === selectedMASID ? 'active' : ''">
             <a class="list-text"  [routerLink]="['/ams', id]" >
-              <p > MAS {{ id }}</p>
+            <p > MAS {{ id }}</p>
             </a>
         </div>
     </div>
@@ -59,7 +60,7 @@
         </tr>
         </tbody>
     </table>
- 
+
     <div class="title mb-4">Agents</div>
     <table class="table mb-5 default-fontsize">
         <thead>
@@ -83,6 +84,7 @@
     </div>
 
 </div>
+
 
 
 

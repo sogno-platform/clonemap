@@ -1,34 +1,24 @@
-header {
-   width: 100%;
-}
+@import '../../../styles.scss' ;
 
 .navbar {
-   font-size: 2rem;
-   color: white !important ;
-   background-color:white;
-}
-
-.navbar-nav .nav-item {
-   border-radius: 5px;
+   padding: 0 0 0 0.5rem;
 }
 
 .navbar-nav .nav-item .nav-link {
    font-size: 2rem;
    padding: 1rem;
+   &.active {
+      color: white !important;
+      background-color:$primary;
+   }
 }
 
-header >nav > ul> li:hover{
-   background: rgb(240, 240, 240);
-   color: var(--primary);
-}
-
-header >nav > ul> li > a {
+header >nav > ul> li{
    text-align: center;
-}
-
-.nav-pills .nav-link.active{
-   color: white !important;
-   background-color:var(--primary);
+   &:hover {
+      background: rgb(240, 240, 240);
+      color: $primary;
+   }
 }
 
 .hidden {

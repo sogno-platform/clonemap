@@ -211,18 +211,19 @@
                 [ngClass]="box.topic"
             ></rect>    
         </svg> 
-        
+
         <div *ngIf="currState==='log'" class="topics d-flex-column">
             <div class="topic-title"> Topic </div>
-            <div [class.selected]="isTopicSelected[0]" class="error-tag tag mb-4" (click)="onToggleTopic(0)">error</div>
-            <div [class.selected]="isTopicSelected[1]" class="debug-tag tag mb-4" (click)="onToggleTopic(1)" >debug</div>
-            <div [class.selected]="isTopicSelected[2]"class="msg-tag tag mb-4" (click)="onToggleTopic(2)">msg</div>
-            <div [class.selected]="isTopicSelected[3]" class="status-tag tag mb-4" (click)="onToggleTopic(3)">status</div>
-            <div [class.selected]="isTopicSelected[4]" class="app-tag tag mb-4" (click)="onToggleTopic(4)">app</div>
+            <div [class.selected]="isTopicSelected[0]" class="error-tag tag mb-3" (click)="onToggleTopic(0)">error</div>
+            <div [class.selected]="isTopicSelected[1]" class="debug-tag tag mb-3" (click)="onToggleTopic(1)" >debug</div>
+            <div [class.selected]="isTopicSelected[2]"class="msg-tag tag mb-3" (click)="onToggleTopic(2)">msg</div>
+            <div [class.selected]="isTopicSelected[3]" class="status-tag tag mb-3" (click)="onToggleTopic(3)">status</div>
+            <div [class.selected]="isTopicSelected[4]" class="app-tag tag mb-3" (click)="onToggleTopic(4)">app</div>
             <div [class.selected]="isTopicSelected[5]" class="beh-tag tag" (click)="onToggleTopic(5)">beh</div>
-        </div>  
-    
-    
+        </div> 
+        
+ 
+
         <div *ngIf="currState==='logSeries'" class="log-series-graph">
             <ngx-charts-bubble-chart *ngIf="selectedID.length !== 0"
                 [view]="viewBubble"
