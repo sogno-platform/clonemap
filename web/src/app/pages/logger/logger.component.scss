@@ -164,6 +164,7 @@
 /* svg graph */
 
 /* log */
+
 svg {
    position: absolute;
 }
@@ -171,6 +172,10 @@ svg {
 .vertical {
    stroke: var(--secondary);
    stroke-width: 2;
+}
+
+.hidden {
+   display: none;
 }
 
 .agentBox {
