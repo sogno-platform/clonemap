@@ -161,10 +161,14 @@
                 </mat-form-field>
             </div>
 
-            <i class="fas fa-search fa-2x" (click)="onClickSearchButton()"></i>
+            <i class="fas fa-search fa-2x mt-3 mr-5" (click)="onClickSearchButton()"></i>
+
+            <!--download for log and log series -->
+            <button *ngIf="currState ==='log' || currState ==='logSeries' " class="btn btn-outline-primary download ml-5 mt-2" (click)="onDownloadLogs()"> download
+            </button>
 
         </div>
-        <!--agent selection for log anpopContentd logSeries conditions -->
+        <!--agent selection for log and log series conditions -->
         <div *ngIf="currState ==='log' || currState ==='logSeries'" class= "d-flex align-content-end">
             <div class="agent-title ml-5">agents</div>
             <div class="agents">

@@ -13,11 +13,6 @@
    padding-bottom: 5rem;
 }
 
-.fa-search {
-   margin-top: 1.5rem;
-   margin-left: 2rem;
-   cursor: pointer; 
-}
 
 /* agent selection board */
 
@@ -80,8 +75,6 @@
    }
 }
 
-
-
 .more {
    height: 4rem;
    width: 8rem;
@@ -97,12 +90,7 @@
    cursor: pointer; 
 }
 
-.table {
-   td, th {
-      padding-top: 1.5rem;
-      padding-bottom: 1.5rem;   
-   }
-}
+
 
 /*topic selection board */
 
@@ -158,6 +146,18 @@
 
 .topics .beh-tag.selected {
    background-color: rgb(223, 170, 72) ;
+}
+
+
+/* others in selection board */
+.fa-search {
+   margin-left: 2rem;
+   cursor: pointer; 
+}
+
+.download {
+   height: 4rem;
+   font-size: 1.6rem;
 }
 
 
@@ -277,6 +277,13 @@ ngx-charts-bubble-chart {
    vertical-align: middle;
    line-height: 6rem; 
 
+}
+
+.table {
+   td, th {
+      padding-top: 1.5rem;
+      padding-bottom: 1.5rem;   
+   }
 }
 
 /* heatmap */

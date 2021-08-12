@@ -195,6 +195,8 @@ export class LoggerComponent implements OnInit {
         }
     }
 
+
+
     updateSelectedID() {
         this.selectedID = [];
         this.notSelectedID = [];
@@ -264,7 +266,69 @@ export class LoggerComponent implements OnInit {
         }
     }
 
+    downloadData(blobConfig: Blob, filename: string) {
 
+        // Convert Blob to URL
+        const blobUrl = URL.createObjectURL(blobConfig);
+
+        // Create an a element with blobl URL
+        const anchor = document.createElement('a');
+        anchor.href = blobUrl;
+        anchor.target = "_blank";
+        anchor.download = filename;
+
+        // Auto click on a element, trigger the file download
+        anchor.click();
+
+        URL.revokeObjectURL(blobUrl);
+
+    }
+
+    onDownloadLogs() {
+        if (this.currState === "log") {
+            // configs object
+            this.multiLogs().subscribe( logss => {
+                let config: LogMessage[] = [];
+                for (let logs of logss) {
+                    if (logs !== null) {
+                        for (let log of logs) {
+                            config.push(log);
+                        }
+                    }
+                }
+                // Convert object to Blob
+                const blobConfig = new Blob(
+                    [ JSON.stringify(config) ], 
+                    { type: 'text/json;charset=utf-8' }
+                )
+                this.downloadData(blobConfig, "log.json")
+            })
+        }
+
+        if (this.currState === "logSeries") {
+            // configs object
+            let config: LogSeries[] = [];
+            this.multiSeries().subscribe( logss => {
+                for (let logs of logss) {
+                    if (logs !== null) {
+                        for (let log of logs) {
+                            config.push(log);
+                        }
+                    }
+                }
+                let configStr: string = config.map(log => {
+                    return [log.masid, log.agentid, log.name, log.timestamp, log.value].join(",")
+                }).join("\n");
+                // Convert object to Blob
+                const blobConfig = new Blob(
+                    [configStr], 
+                    { type: 'text/csv;charset=utf-8' }
+                )
+                this.downloadData(blobConfig, "log_series.csv")
+            })
+        }
+
+    }
 
     convertDate(date: Date): string {
         let res: string = date.getFullYear().toString();
