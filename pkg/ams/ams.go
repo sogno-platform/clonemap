@@ -58,6 +58,7 @@ import (
 
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/client"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
+	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/status"
 )
 
 // AMS contains storage and deployment object
@@ -437,6 +438,18 @@ func (ams *AMS) checkModules(configIn schemas.MASConfig) (configOut schemas.MASC
 		}
 		if configOut.MQTT.Port == 0 {
 			configOut.MQTT.Port = 1883
+		}
+	}
+	return
+}
+
+// removeAllMAS removes all mas
+func (ams *AMS) removeAllMAS() (err error) {
+	var mass []schemas.MASInfoShort
+	mass, err = ams.getMASsShort()
+	for i := range mass {
+		if mass[i].Status.Code != status.Terminated {
+			ams.removeMAS(mass[i].ID)
 		}
 	}
 	return

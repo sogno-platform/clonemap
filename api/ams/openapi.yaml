@@ -89,6 +89,11 @@ paths:
       responses:
         '201':
           description: Created
+    delete:
+      description: delete all MASs
+      responses:
+        '200':
+          description: succesful deletion of all MASs
   /api/clonemap/mas/{masid}:
     parameters:
     - $ref: '#/components/parameters/masID'
