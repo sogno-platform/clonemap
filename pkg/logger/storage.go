@@ -443,6 +443,10 @@ func (stor *localStorage) getAgentLogSeries(masID int, agentID int, name string,
 func (stor *localStorage) getMsgHeatmap(masID int, start time.Time, end time.Time) (heatmap map[[2]int]int, err error) {
 	heatmap = make(map[[2]int]int)
 	stor.mutex.Lock()
+	if masID >= len(stor.mas) {
+		stor.mutex.Unlock()
+		return
+	}
 	for agentID := 0; agentID < len(stor.mas[masID].agents); agentID++ {
 		length := len(stor.mas[masID].agents[agentID].msgLogs)
 		if length > 0 {
