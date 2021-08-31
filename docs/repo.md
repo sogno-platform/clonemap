@@ -32,4 +32,4 @@ This folder contains the Go packages which implement the functionality of the di
 
 ## `web` - Web UI
 
-HTML, CSS and Javascript sources for the web UI
+Angular project for the web UI

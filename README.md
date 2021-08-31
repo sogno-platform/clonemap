@@ -36,7 +36,7 @@ In order to connect the agents running in cloneMAP to the outside world a messag
 
 ### UI
 
-For easy user interaction it is planned to provide a WebUI that interacts with the AMS via its REST API. The WebUI is not yet available.
+For easy user interaction a WebUI that interacts with the AMS via its REST API is provided. In AMS part, user can check the configuration information for containers and agents. In Logger part User can check the log information in a timeline, log series in scatter plot and statistics and heatmap of the logs. In DF part, user can check the list and graph of the services..
 
 ## Getting Started
 
