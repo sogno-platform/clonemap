@@ -407,11 +407,19 @@ export class LoggerComponent implements OnInit {
         this.communications = [];
         for (let i = 0; i < scaledDates.length; i++) {
             let currMsg = this.logs[i];
-            let idx = this.selectedID.indexOf(currMsg.agentid) + 1;        
+            let idx = this.selectedID.indexOf(currMsg.agentid) + 1;
+            let r_x = 0;
+            let r_y = 0;
+            if (currMsg.topic === "msg" && (currMsg.msg === "ACL receive" || currMsg.msg === "MQTT receive")) {
+                r_x = 7;
+                r_y = 7;
+            }
             this.logBoxes.push({
                 x: this.interval *idx - this.logBoxWidth / 2, 
                 y: 400 + this.logBoxHeight * scaledDates[i] * 1.1,
                 topic: currMsg.topic,
+                rx: r_x,
+                ry: r_y,
                 timestamp: currMsg.timestamp,
                 msg: currMsg.msg,
                 data: currMsg.data,
