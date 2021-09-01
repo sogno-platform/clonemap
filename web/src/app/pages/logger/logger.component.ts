@@ -360,7 +360,7 @@ export class LoggerComponent implements OnInit {
             this.logs.sort((a, b) => {
                 let date1 = new Date(a.timestamp);
                 let date2 = new Date(b.timestamp);
-                return date2.getTime() - date1.getTime();
+                return date1.getTime() - date2.getTime();
             })
             this.drawAllElements();
          })
