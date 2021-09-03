@@ -208,12 +208,14 @@
                 [ngbPopover]="popContent" 
                 placement="right" 
                 container="body" 
+                stroke="grey" 
+                stroke-width="1" 
                 [attr.x]="box.x" 
                 [attr.y]="box.y" 
-                [attr.rx]="box.rx"
-                [attr.ry]="box.ry"
-                [attr.width]="logBoxWidth" 
-                [attr.height]="logBoxHeight"
+                [attr.rx]="box.rx" 
+                [attr.ry]="box.ry" 
+                [attr.width]="box.width" 
+                [attr.height]="logBoxHeight" 
                 [ngClass]="box.topic"
             ></rect>    
         </svg> 

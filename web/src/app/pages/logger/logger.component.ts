@@ -37,7 +37,7 @@ export class LoggerComponent implements OnInit {
     height: number = 2000;
     boxWidth: number = 100;
     boxHeight: number = 50;
-    logBoxWidth: number = 50;
+    logBoxWidth: number = 60;
     logBoxHeight: number = 25;
     interval: number;
     timeline: any = [];
@@ -213,7 +213,7 @@ export class LoggerComponent implements OnInit {
         // find the date differences
         let datesInterval: number[] = [0];
         for (let i = 1; i < dates.length; i++) {
-            datesInterval.push(Math.round(dates[i-1].getTime()/1000) - Math.round(dates[i].getTime()/1000));
+            datesInterval.push(Math.floor(dates[i].getTime()/1000) - Math.floor(dates[i-1].getTime()/1000));
         }
 
         // find the maximum and minimum interval
@@ -405,8 +405,13 @@ export class LoggerComponent implements OnInit {
     drawScaledDates(scaledDates: number[]) {
         this.logBoxes = [];
         this.communications = [];
+        let agentLogs = []
+        for (let i = 0; i < this.selectedID.length; i++) {
+            agentLogs[i] = [];
+        }
         for (let i = 0; i < scaledDates.length; i++) {
             let currMsg = this.logs[i];
+            let agentIndex = this.selectedID.indexOf(currMsg.agentid);
             let idx = this.selectedID.indexOf(currMsg.agentid) + 1;
             let r_x = 0;
             let r_y = 0;
@@ -417,6 +422,7 @@ export class LoggerComponent implements OnInit {
             this.logBoxes.push({
                 x: this.interval *idx - this.logBoxWidth / 2, 
                 y: 400 + this.logBoxHeight * scaledDates[i] * 1.1,
+                width: this.logBoxWidth,
                 topic: currMsg.topic,
                 rx: r_x,
                 ry: r_y,
@@ -426,6 +432,7 @@ export class LoggerComponent implements OnInit {
                 hidden: !this.isTopicSelected[this.topics.indexOf(currMsg.topic)],
                 
             });
+            agentLogs[agentIndex].push(i);
             if (currMsg.topic === "msg" && currMsg.msg ==="ACL send"){
                 const data = this.logs[i].data.split(";");
                 const sender = Number(data[0].split(" ")[1]);
@@ -441,6 +448,27 @@ export class LoggerComponent implements OnInit {
                         y2: 400 +   this.logBoxHeight * scaledDates[i] * 1.1 + this.logBoxHeight / 2,
                         hidden: !this.isTopicSelected[this.topics.indexOf("msg")],
                     })
+                }
+            }
+        }
+        // display logs for the same agent at the same time in parallel
+        for (let i = 0; i < agentLogs.length; i++) {
+            let parallelLogs = 1;
+            for (let j = 0; j < agentLogs[i].length; j++) {
+                if (j > 0) {
+                    if (scaledDates[agentLogs[i][j]] === scaledDates[agentLogs[i][j-1]]) {
+                        parallelLogs++
+                    } else {
+                        parallelLogs = 1;
+                    }
+                    if (parallelLogs > 1) {
+                        for (let k = 0; k < parallelLogs; k++) {
+                            let width = Math.round(this.logBoxWidth / parallelLogs);
+                            let xPos = this.interval *(i+1) - this.logBoxWidth / 2 + width * k;
+                            this.logBoxes[agentLogs[i][j-parallelLogs+1+k]].x = xPos;
+                            this.logBoxes[agentLogs[i][j-parallelLogs+1+k]].width = width;
+                        }
+                    }
                 }
             }
         }
