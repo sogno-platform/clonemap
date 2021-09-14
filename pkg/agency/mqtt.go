@@ -46,6 +46,7 @@ package agency
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"strconv"
 	"sync"
@@ -57,12 +58,12 @@ import (
 
 // mqttCollector is the agency client for mqtt
 type mqttCollector struct {
-	client       mqtt.Client              // mqtt client
-	msgIn        chan schemas.MQTTMessage // mqtt message inbox
-	name         string                   // agency name
-	config       schemas.MQTTConfig       // indicates if mqtt is active (switch via env)
-	mutex        *sync.Mutex              // mutex for message inbox map
-	subscription map[string][]*AgentMQTT  // map for subscription topics to agents' mqtt object
+	client       mqtt.Client             // mqtt client
+	msgIn        chan mqtt.Message       // mqtt message inbox
+	name         string                  // agency name
+	config       schemas.MQTTConfig      // indicates if mqtt is active (switch via env)
+	mutex        *sync.Mutex             // mutex for message inbox map
+	subscription map[string][]*AgentMQTT // map for subscription topics to agents' mqtt object
 	// numDeliverer int                      // number of go routines for delivery
 	logError *log.Logger
 	logInfo  *log.Logger
@@ -78,7 +79,7 @@ func newMQTTCollector(config schemas.MQTTConfig, name string, logErr *log.Logger
 		logInfo:  logInf,
 		config:   config,
 	}
-	col.msgIn = make(chan schemas.MQTTMessage, 1000)
+	col.msgIn = make(chan mqtt.Message, 1000)
 	col.subscription = make(map[string][]*AgentMQTT)
 	col.logInfo.Println("Created new MQTT client; status: ", col.config.Active)
 	col.init()
@@ -114,10 +115,10 @@ func (mqttCol *mqttCollector) close() (err error) {
 
 // newIncomingMQTTMessage adds message to channel for incoming messages
 func (mqttCol *mqttCollector) newIncomingMQTTMessage(client mqtt.Client, msg mqtt.Message) {
-	var mqttMsg schemas.MQTTMessage
-	mqttMsg.Content = msg.Payload()
-	mqttMsg.Topic = msg.Topic()
-	mqttCol.msgIn <- mqttMsg
+	// var mqttMsg schemas.MQTTMessage
+	// mqttMsg.Content = msg.Payload()
+	// mqttMsg.Topic = msg.Topic()
+	mqttCol.msgIn <- msg
 }
 
 // subscribe subscribes to specified topics
@@ -211,9 +212,9 @@ func (mqttCol *mqttCollector) unsubscribe(mq *AgentMQTT, topic string) (err erro
 }
 
 // publish sends a message
-func (mqttCol *mqttCollector) publish(msg schemas.MQTTMessage, qos int) (err error) {
+func (mqttCol *mqttCollector) publish(topic string, qos int, payload interface{}) (err error) {
 	if mqttCol.config.Active {
-		token := mqttCol.client.Publish(msg.Topic, byte(qos), false, msg.Content)
+		token := mqttCol.client.Publish(topic, byte(qos), false, payload)
 		token.Wait()
 	}
 	return
@@ -221,11 +222,11 @@ func (mqttCol *mqttCollector) publish(msg schemas.MQTTMessage, qos int) (err err
 
 // deliverMsg delivers incoming messages to agents according to their topic
 func (mqttCol *mqttCollector) deliverMsgs() {
-	var msg schemas.MQTTMessage
+	var msg mqtt.Message
 	for {
 		msg = <-mqttCol.msgIn
 		mqttCol.mutex.Lock()
-		ag, ok := mqttCol.subscription[msg.Topic]
+		ag, ok := mqttCol.subscription[msg.Topic()]
 		mqttCol.mutex.Unlock()
 		if ok {
 			for i := range ag {
@@ -238,10 +239,10 @@ func (mqttCol *mqttCollector) deliverMsgs() {
 // AgentMQTT provides functions to subscribe and publish via mqtt
 type AgentMQTT struct {
 	collector  *mqttCollector
-	mutex      *sync.Mutex                         // mutex for message inbox map
-	subTopic   map[string]interface{}              // subscribed topics
-	msgInTopic map[string]chan schemas.MQTTMessage // message inbox for messages with specified topic
-	msgIn      chan schemas.MQTTMessage            // mqtt message inbox
+	mutex      *sync.Mutex                  // mutex for message inbox map
+	subTopic   map[string]interface{}       // subscribed topics
+	msgInTopic map[string]chan mqtt.Message // message inbox for messages with specified topic
+	msgIn      chan mqtt.Message            // mqtt message inbox
 	agentID    int
 	logger     *client.AgentLogger
 	logError   *log.Logger
@@ -262,8 +263,8 @@ func (mqttCol *mqttCollector) newAgentMQTT(agentID int, cmaplog *client.AgentLog
 		active:    mqttCol.config.Active,
 	}
 	mq.subTopic = make(map[string]interface{})
-	mq.msgInTopic = make(map[string]chan schemas.MQTTMessage)
-	mq.msgIn = make(chan schemas.MQTTMessage)
+	mq.msgInTopic = make(map[string]chan mqtt.Message)
+	mq.msgIn = make(chan mqtt.Message)
 	return
 }
 
@@ -318,8 +319,8 @@ func (mq *AgentMQTT) Unsubscribe(topic string) (err error) {
 	return
 }
 
-// SendMessage sends a message
-func (mq *AgentMQTT) SendMessage(msg schemas.MQTTMessage, qos int) (err error) {
+// Publish sends a message
+func (mq *AgentMQTT) Publish(topic string, qos int, payload interface{}) (err error) {
 	mq.mutex.Lock()
 	if !mq.active {
 		mq.mutex.Unlock()
@@ -327,24 +328,24 @@ func (mq *AgentMQTT) SendMessage(msg schemas.MQTTMessage, qos int) (err error) {
 		return
 	}
 	mq.mutex.Unlock()
-	err = mq.collector.publish(msg, qos)
+	err = mq.collector.publish(topic, qos, payload)
 	if err != nil {
 		return
 	}
-	err = mq.logger.NewLog("msg", "MQTT publish", msg.String())
+	err = mq.logger.NewLog("msg", "MQTT publish", "Topic: "+topic+";Content: "+fmt.Sprintf("%v", payload))
 	return
 }
 
-// NewMessage returns a new initiaized message
-func (mq *AgentMQTT) NewMessage(topic string, content []byte) (msg schemas.MQTTMessage, err error) {
-	msg.Topic = topic
-	msg.Content = content
-	err = nil
-	return
-}
+// // NewMessage returns a new initiaized message
+// func (mq *AgentMQTT) NewMessage(topic string, content []byte) (msg mqtt.Message, err error) {
+// 	msg.Topic = topic
+// 	msg.Content = content
+// 	err = nil
+// 	return
+// }
 
 // RecvMessages retrieves all messages since last call of this function
-func (mq *AgentMQTT) RecvMessages() (num int, msgs []schemas.MQTTMessage, err error) {
+func (mq *AgentMQTT) RecvMessages() (num int, msgs []mqtt.Message, err error) {
 	mq.mutex.Lock()
 	if !mq.active {
 		mq.mutex.Unlock()
@@ -366,7 +367,7 @@ func (mq *AgentMQTT) RecvMessages() (num int, msgs []schemas.MQTTMessage, err er
 }
 
 // RecvMessageWait retrieves next message and blocks if no message is available
-func (mq *AgentMQTT) RecvMessageWait() (msg schemas.MQTTMessage, err error) {
+func (mq *AgentMQTT) RecvMessageWait() (msg mqtt.Message, err error) {
 	mq.mutex.Lock()
 	if !mq.active {
 		mq.mutex.Unlock()
@@ -380,16 +381,16 @@ func (mq *AgentMQTT) RecvMessageWait() (msg schemas.MQTTMessage, err error) {
 }
 
 // newIncomingMQTTMessage adds message to channel for incoming messages
-func (mq *AgentMQTT) newIncomingMQTTMessage(msg schemas.MQTTMessage) {
+func (mq *AgentMQTT) newIncomingMQTTMessage(msg mqtt.Message) {
 	mq.mutex.Lock()
 	if !mq.active {
 		mq.mutex.Unlock()
 		return
 	}
 	mq.mutex.Unlock()
-	mq.logger.NewLog("msg", "MQTT receive", msg.String())
+	mq.logger.NewLog("msg", "MQTT receive", mqttMsgToString(msg))
 	mq.mutex.Lock()
-	inbox, ok := mq.msgInTopic[msg.Topic]
+	inbox, ok := mq.msgInTopic[msg.Topic()]
 	mq.mutex.Unlock()
 	if ok {
 		inbox <- msg
@@ -399,7 +400,7 @@ func (mq *AgentMQTT) newIncomingMQTTMessage(msg schemas.MQTTMessage) {
 }
 
 func (mq *AgentMQTT) registerTopicChannel(topic string,
-	topicChan chan schemas.MQTTMessage) (err error) {
+	topicChan chan mqtt.Message) (err error) {
 	mq.mutex.Lock()
 	if !mq.active {
 		mq.mutex.Unlock()
@@ -424,5 +425,11 @@ func (mq *AgentMQTT) deregisterTopicChannel(topic string) (err error) {
 		err = errors.New("topic is not handled")
 	}
 	mq.mutex.Unlock()
+	return
+}
+
+// String outputs message
+func mqttMsgToString(msg mqtt.Message) (ret string) {
+	ret = "Topic: " + msg.Topic() + ";Content: " + string(msg.Payload())
 	return
 }

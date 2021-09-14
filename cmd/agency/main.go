@@ -52,7 +52,9 @@ import (
 
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/agency"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
+
 	// "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
 func main() {
@@ -62,9 +64,9 @@ func main() {
 	}
 }
 
-func display(msg schemas.MQTTMessage) (err error) {
+func display(msg mqtt.Message) (err error) {
 	time.Sleep(5 * time.Second)
-	fmt.Println(string(msg.Content))
+	fmt.Println(string(msg.Payload()))
 	return
 }
 
@@ -98,10 +100,7 @@ func task(ag *agency.Agent) (err error) {
 		for i := 0; i < 20; i++ {
 			time.Sleep(5 * time.Second)
 			msg := "test message" + strconv.Itoa(i)
-			MQTTMsg, err := ag.MQTT.NewMessage("topic1", []byte(msg))
-			if err == nil {
-				ag.MQTT.SendMessage(MQTTMsg, 1)
-			}
+			ag.MQTT.Publish("topic1", 1, msg)
 		}
 	}
 
@@ -175,10 +174,7 @@ func task_test(ag *agency.Agent) (err error) {
 		for i := 0; i < 20; i++ {
 			time.Sleep(5 * time.Second)
 			msg := "test message" + strconv.Itoa(i)
-			MQTTMsg, err := ag.MQTT.NewMessage("topic1", []byte(msg))
-			if err == nil {
-				ag.MQTT.SendMessage(MQTTMsg, 1)
-			}
+			ag.MQTT.Publish("topic1", 1, msg)
 		}
 	}
 

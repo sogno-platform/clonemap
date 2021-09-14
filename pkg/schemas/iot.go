@@ -53,11 +53,11 @@ type MQTTConfig struct {
 	Port   int    `json:"port,omitempty"` // port of MQTT
 }
 
-// MQTTMessage struct representing mqtt message
-type MQTTMessage struct {
-	Topic   string // Topic of message
-	Content []byte // Denotes the content of the message
-}
+// // MQTTMessage struct representing mqtt message
+// type MQTTMessage struct {
+// 	Topic   string // Topic of message
+// 	Content []byte // Denotes the content of the message
+// }
 
 // behStats contains behavior information
 type BehStats struct {
@@ -76,10 +76,4 @@ type StatsInfo struct {
 	Count   int        `json:"count"`
 	Average float32    `json:"average"`
 	List    []BehStats `json:"list"`
-}
-
-// String outputs message
-func (msg MQTTMessage) String() (ret string) {
-	ret = "Topic: " + msg.Topic + ";Content: " + string(msg.Content)
-	return
 }

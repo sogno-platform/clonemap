@@ -50,6 +50,7 @@ import (
 	"time"
 
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
 // Behavior defines execution of a certain behavior
@@ -151,17 +152,17 @@ func (protBehavior *aclProtocolBehavior) Stop() {
 
 // mqttTopicBehavior describes how mqtt messages with a certain topic should be handled
 type mqttTopicBehavior struct {
-	ag      *Agent                          // agent
-	topic   string                          // indicates for which protocol handler should be used
-	handle  func(schemas.MQTTMessage) error // handler function
-	msgIn   chan schemas.MQTTMessage        // msg inbox
-	ctrl    chan int                        // control signals
+	ag      *Agent                   // agent
+	topic   string                   // indicates for which protocol handler should be used
+	handle  func(mqtt.Message) error // handler function
+	msgIn   chan mqtt.Message        // msg inbox
+	ctrl    chan int                 // control signals
 	logInfo *log.Logger
 }
 
 // NewMQTTTopicBehavior creates a new handler for messages of the specified topic
 func (agent *Agent) NewMQTTTopicBehavior(topic string,
-	handle func(schemas.MQTTMessage) error) (behavior Behavior, err error) {
+	handle func(mqtt.Message) error) (behavior Behavior, err error) {
 	if handle == nil {
 		err = errors.New("illegal handler")
 		return
@@ -170,7 +171,7 @@ func (agent *Agent) NewMQTTTopicBehavior(topic string,
 		ag:      agent,
 		topic:   topic,
 		handle:  handle,
-		msgIn:   make(chan schemas.MQTTMessage, 100),
+		msgIn:   make(chan mqtt.Message, 100),
 		ctrl:    make(chan int, 10),
 		logInfo: agent.logInfo,
 	}
@@ -205,7 +206,7 @@ func (mqttBehavior *mqttTopicBehavior) task() {
 			end := time.Now()
 			mqttBehavior.ag.Logger.NewBehStats(start, end, "mqtt")
 			mqttBehavior.ag.Logger.NewLog("beh", "mqtt topic behavior task", "start: "+start.String()+
-				";end: "+end.String()+";duration:"+end.Sub(start).String()+";"+msg.String())
+				";end: "+end.String()+";duration:"+end.Sub(start).String()+";"+mqttMsgToString(msg))
 		case command := <-mqttBehavior.ctrl:
 			switch command {
 			case -1:
