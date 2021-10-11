@@ -1,0 +1,130 @@
+@import '../../../../styles.scss' ;
+
+/*topic selection board */
+
+.topics {
+   position: fixed;
+   right: 10rem;
+   top: 40rem;
+}
+
+.topic-title {
+   color: rgb(85, 81, 81);
+   font-size: 3rem;
+   width: 10rem;
+   margin-bottom: 4rem;
+}
+
+.tag{
+   height: 4rem;
+   width: 8rem;
+   text-align: center;
+   border: solid rgb(235, 229, 229);
+   border-radius: 4rem;
+   padding-top: 8px;
+   color: gray;
+   font-size: 2rem;
+   cursor: pointer; 
+}
+
+.topics .selected {
+   color: white;
+   border: none;
+}
+
+.topics .error-tag.selected {   
+   background-color: $error;
+}
+
+.topics .debug-tag.selected {
+   background-color: $debug;
+}
+
+.topics .msg-tag.selected {
+   background-color: var(--secondary);
+}
+
+.topics .status-tag.selected {
+   background-color: rgb(126, 235, 149);
+}
+
+.topics .app-tag.selected {
+   background-color: rgb(56, 202, 221) ;
+}
+
+.topics .beh-tag.selected {
+   background-color: rgb(223, 170, 72) ;
+}
+
+
+/* others in selection board */
+.fa-search {
+   margin-left: 2rem;
+   cursor: pointer; 
+}
+
+.download {
+   height: 4rem;
+   font-size: 1.6rem;
+}
+
+
+/* svg graph */
+
+/* log */
+
+svg {
+   position: absolute;
+}
+   
+.vertical {
+   stroke: var(--secondary);
+   stroke-width: 2;
+}
+
+.hidden {
+   display: none;
+}
+
+.agentBox {
+    fill: var(--secondary);
+}
+
+.agentbox-text {
+    fill: white;
+}
+
+.text-title {
+   font: bold 3rem; 
+}
+
+.error {
+   fill: $error;
+}
+
+.debug {
+   fill: $debug;
+}
+
+.msg {
+   fill: var(--secondary);
+}
+
+.status {
+   fill: rgb(126, 235, 149);
+}
+
+.app {
+   fill: rgb(56, 202, 221);
+}
+
+.beh {
+   fill: rgb(223, 170, 72);
+}
+
+
+
+
+      
+
+

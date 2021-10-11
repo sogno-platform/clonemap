@@ -1,0 +1,88 @@
+<app-tabs></app-tabs>
+  
+<!--selection board -->
+<div  class="my-5 d-flex justify-content-center"> 
+	<app-period-selector #periodSelector></app-period-selector>  
+
+	<mat-form-field appearance="fill" class="mr-4">
+		<mat-label>agent</mat-label>
+		<mat-select (selectionChange)="updateSelectedAgent($event.value)">
+			<mat-option *ngFor="let agent of agentID" [value]="agent">
+			agent {{agent}}
+			</mat-option>
+		</mat-select>
+	</mat-form-field>
+
+	<mat-form-field appearance="fill" class="mr-4">
+		<mat-label>type
+		</mat-label>
+		<mat-select (selectionChange)="updateSelectedBehType($event.value)">
+			<mat-option *ngFor="let type of behaviorTypes" [value]="type">
+			{{type}}
+			</mat-option>
+		</mat-select>
+	</mat-form-field>
+
+	<i class="fas fa-search fa-2x mt-3 mr-5" (click)="onClickSearchButton(
+		periodSelector.selectedStartDate,
+		periodSelector.selectedEndDate,
+		periodSelector.selectedStartTime,
+		periodSelector.selectedEndTime
+	)"></i>
+</div>
+
+
+
+
+<div class="row justify-content-around" >
+	<div *ngIf="statsInfo !== null" class="col-sm-5">
+		<table class="table table-hover default-fontsize">
+			<thead>
+				<tr>
+				<th scope="col">#</th>
+				<th scope="col">Start</th>
+				<th scope="col">End</th>
+				<th scope="col">Duration</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr *ngFor="let item of statsInfo.list | paginate: { itemsPerPage: 10, currentPage: q }; index as i ">
+					<th scope="row">{{ (q - 1) * 10 + i + 1 }}</th>
+					<td>{{item.start.split(".")[0]}}</td>
+					<td>{{item.end.split(".")[0]}}</td>
+					<td>{{convertSecond(item.duration)}}</td>
+				</tr>
+			</tbody>
+		</table>
+		<pagination-controls class="pagination justify-content-end" (pageChange)="q = $event"></pagination-controls>
+	</div>
+	<div *ngIf="statsInfo !== null" class="col-sm-4">
+	<div class="row justify-content-around stats-dashboard">
+		<div class="card col-sm-5">
+			<div class="card-body">
+			<h1 class="card-title">max</h1>
+			<p class="card-text">{{convertSecond(statsInfo.max)}}</p>
+			</div>
+		</div>
+		<div class="card col-sm-5">
+			<div class="card-body">
+			<h1 class="card-title">min</h1>
+			<p class="card-text">{{convertSecond(statsInfo.min)}}</p>
+			</div>
+		</div>
+		<div class="card col-sm-5">
+			<div class="card-body">
+			<h1 class="card-title">count</h1>
+			<p class="card-text">{{statsInfo.count}}</p>
+			</div>
+		</div>
+		<div class="card col-sm-5">
+			<div class="card-body">
+			<h1 class="card-title">average</h1>
+			<p class="card-text">{{convertSecond(statsInfo.average)}}</p>
+			</div>
+		</div>
+	</div>
+	</div>             
+</div>
+  

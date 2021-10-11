@@ -15,7 +15,7 @@ export class TopBarComponent implements OnInit {
         this.router.events.subscribe((event: Event) => {
         if (event instanceof NavigationEnd) {
             const nav: string = this.router.url.split("/")[1];
-            const navbar: string[] = ["overview", "ams", "logger", "df"];
+            const navbar: string[] = ["overview", "ams", "log", "df"];
             this.id = Number(this.router.url.split("/")[2]);
              if (navbar.includes(nav) ) {
                 this.active = nav;

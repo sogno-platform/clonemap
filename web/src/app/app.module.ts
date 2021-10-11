@@ -7,9 +7,9 @@ import { AppComponent } from './app.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { OverviewComponent } from './pages/overview/overview.component';
 import { AMSComponent } from './pages/ams/ams.component';
-import { LoggerComponent } from './pages/logger/logger.component';
 import { DFComponent } from './pages/df/df.component';
-import { TopBarComponent } from './pages/top-bar/top-bar.component';
+import { LoggerModule } from './pages/logger/logger.module';
+import { SharedModule } from './pages/shared/shared.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgxMatTimepickerModule } from 'ngx-mat-timepicker';
@@ -21,6 +21,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
+
+
 
 
 const materialModules = [
@@ -37,9 +39,7 @@ const materialModules = [
     AppComponent,
     OverviewComponent,
     AMSComponent,
-    LoggerComponent,
     DFComponent,
-    TopBarComponent
   ],
   imports: [
     BrowserModule,
@@ -52,7 +52,9 @@ const materialModules = [
     ...materialModules,
     NgxMatTimepickerModule,
     NgxChartsModule,
-    NgxPaginationModule
+    NgxPaginationModule,
+    LoggerModule,
+    SharedModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

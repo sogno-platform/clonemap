@@ -1,0 +1,65 @@
+<app-tabs></app-tabs>
+
+<!--selection board -->
+<div  class="my-5 d-flex justify-content-center"> 
+    <app-period-selector #periodSelector></app-period-selector>           
+    <mat-form-field (click)="updateNames(agentSelector.selectedID)" appearance="fill">
+    <mat-label>Name</mat-label>
+    <mat-select (selectionChange)="updateSelectedName($event.value)">
+        <mat-option *ngFor="let name of names" [value]="name">
+        {{name}}
+        </mat-option>
+    </mat-select>
+    </mat-form-field>
+
+    <i class="fas fa-search fa-2x mt-3 mr-5" (click)="onClickSearchButton(
+        agentSelector.selectedID,
+        periodSelector.selectedStartDate,
+        periodSelector.selectedEndDate,
+        periodSelector.selectedStartTime,
+        periodSelector.selectedEndTime
+    )"></i>
+
+    <button  class="btn btn-outline-primary download ml-5 mt-2" (click)="onDownloadLogs(
+        agentSelector.selectedID,
+        periodSelector.selectedStartDate,
+        periodSelector.selectedEndDate,
+        periodSelector.selectedStartTime,
+        periodSelector.selectedEndTime
+    )"> download
+    </button>
+
+</div>
+
+<app-agent-selector #agentSelector [selectedMASID]=selectedMASID></app-agent-selector>
+
+<div class="log-series-graph">
+  <ngx-charts-bubble-chart *ngIf="agentSelector.selectedID.length !== 0"
+      [view]="viewBubble"
+      [scheme]="colorScheme"
+      [results]="bubbleData"
+      xAxis="true"
+      yAxis="true"     
+      legend="true"
+      showXAxisLabel="true"
+      showYAxisLabel="true"
+      xAxisLabel="time"
+      [xAxisTicks]="xAxisTicks"
+      [xAxisTickFormatting]="xAxisTickFormatting"
+      [rotateXAxisTicks]="true"
+      yAxisLabel="value"
+      [minRadius]="minRadius"
+      [maxRadius]="maxRadius"
+      [trimXAxisTicks]="false"
+      (select)="onSelect($event)"
+      (activate)="onActivate($event)"
+      (deactivate)="onDeactivate($event)">
+      <ng-template #tooltipTemplate let-model="model">
+          <div class="tt">
+              <div>{{model.name}}</div>  
+              <div>Value: {{model.y}}</div>
+          </div>   
+      </ng-template>
+  </ngx-charts-bubble-chart>
+</div>
+

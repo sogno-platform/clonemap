@@ -1,0 +1,21 @@
+<header>
+    <nav class="navbar navbar-expand-sm fixed-top navbar-light bg-white">
+        <a class="navbar-brand" href="#">
+            <img src="assets/logo_tp.png" id="navoverview"s width="80" height="60" class="d-inline-block align-top" alt="cloneMAP" loading="lazy">
+        </a>
+        <ul class="navbar-nav nav-pills d-flex justify-content-between" style="width:100%;">
+            <li class="nav-item flex-fill modules">
+                <a class="nav-link text-primary" [ngClass]="active=='overview' ? 'active':''" routerLink="/overview">Overview</a>
+            </li>
+            <li [ngClass]="active == 'overview' ? 'hidden' : ''" class="nav-item flex-fill modules">
+                <a class="nav-link text-primary" [ngClass]="active=='ams' ? 'active':''"  routerLink="/ams/{{id}}">AMS</a>
+            </li>
+            <li [ngClass]="active == 'overview' ? 'hidden' : ''"  class="nav-item flex-fill modules">
+                <a class="nav-link text-primary" [ngClass]="active=='log' ? 'active':''" routerLink="/log/{{id}}">Logger</a>
+            </li>
+            <li [ngClass]="active == 'overview' ? 'hidden' : ''" class="nav-item  flex-fill modules">
+                <a class="nav-link text-primary" [ngClass]="active=='df' ? 'active':''" routerLink ="/df/{{id}}" >DF</a>
+            </li>
+        </ul>
+    </nav>
+</header>

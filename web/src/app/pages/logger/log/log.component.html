@@ -1,0 +1,84 @@
+<app-tabs></app-tabs>
+
+<!--selection board -->
+<div  class="my-5 d-flex justify-content-center">
+        
+    <app-period-selector #periodSelector></app-period-selector>
+    <i class="fas fa-search fa-2x mt-3 mr-5" (click)="onClickSearchButton(
+        agentSelector.selectedID,
+        periodSelector.selectedStartDate,
+        periodSelector.selectedEndDate,
+        periodSelector.selectedStartTime,
+        periodSelector.selectedEndTime
+        )"></i>
+
+    <!--download for log and log series -->
+    <button  class="btn btn-outline-primary download ml-5 mt-2" (click)="onDownloadLogs(
+        agentSelector.selectedID,
+        periodSelector.selectedStartDate,
+        periodSelector.selectedEndDate,
+        periodSelector.selectedStartTime,
+        periodSelector.selectedEndTime
+        )"
+        > download
+    </button>
+
+</div>
+
+<app-agent-selector #agentSelector [selectedMASID]=selectedMASID></app-agent-selector>
+
+    
+<ng-template #popContent > 
+    <div class="default-fontsize" *ngFor="let content of popoverContent">
+        {{content}}
+    </div>
+</ng-template>
+
+<svg [attr.width]="width" [attr.height]="height">
+    <marker id="arrow" viewBox="0 -5 10 10" refX="8" refY="0" markerWidth="4" markerHeight="4" orient="auto">
+            <path fill="var(--secondary)" d="M0,-5L10,0L0,5"></path>
+        </marker>
+    <rect class="agentBox" *ngFor="let box of agentBox" [attr.x]="box.x" [attr.y]="box.y" [attr.width]="boxWidth" [attr.height]="boxHeight"></rect>
+    <text font-size="2rem"  *ngFor="let text of texts, index as i" 
+    class="agentbox-text"
+    [attr.x]="text.x" 
+    [attr.y]="text.y"
+    [attr.fill]="white"> 
+    Agent {{text.textID}} </text>
+    <line stroke-dasharray="5, 5" class="vertical" *ngFor="let line of timeline" [attr.x1]="line.x1" [attr.y1]="line.y1" [attr.x2]="line.x2" [attr.y2]="height"/>     
+    <line stroke="var(--secondary)" stroke-width="4" *ngFor="let line of communications" [class.hidden]="line.hidden" [attr.x1]="line.x1" [attr.y1]="line.y1" [attr.x2]="line.x2" [attr.y2]="line.y2" marker-end="url(#arrow)"/> 
+    <rect class="logBox" *ngFor="let box of logBoxes, index as i" 
+        [class.hidden]="box.hidden" 
+        (mouseenter)="onChangePopoverContent(i)" 
+        triggers="mouseenter:mouseleave" 
+        [ngbPopover]="popContent" 
+        placement="right" 
+        container="body" 
+        stroke="grey" 
+        stroke-width="1" 
+        [attr.x]="box.x" 
+        [attr.y]="box.y" 
+        [attr.rx]="box.rx" 
+        [attr.ry]="box.ry" 
+        [attr.width]="box.width" 
+        [attr.height]="logBoxHeight" 
+        [ngClass]="box.topic"
+    ></rect>    
+</svg> 
+
+<div class="topics d-flex-column">
+    <div class="topic-title"> Topic </div>
+    <div [class.selected]="isTopicSelected[0]" class="error-tag tag mb-3" (click)="onToggleTopic(0)">error</div>
+    <div [class.selected]="isTopicSelected[1]" class="debug-tag tag mb-3" (click)="onToggleTopic(1)" >debug</div>
+    <div [class.selected]="isTopicSelected[2]"class="msg-tag tag mb-3" (click)="onToggleTopic(2)">msg</div>
+    <div [class.selected]="isTopicSelected[3]" class="status-tag tag mb-3" (click)="onToggleTopic(3)">status</div>
+    <div [class.selected]="isTopicSelected[4]" class="app-tag tag mb-3" (click)="onToggleTopic(4)">app</div>
+    <div [class.selected]="isTopicSelected[5]" class="beh-tag tag" (click)="onToggleTopic(5)">beh</div>
+</div> 
+      
+
+
+ 
+
+
+

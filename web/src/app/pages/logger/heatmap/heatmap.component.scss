@@ -1,0 +1,18 @@
+/* heatmap */
+.heatmap-legend{
+  background-color: red;
+}
+
+.xlabel {
+  font-size: 2rem;
+  fill: gray;
+}
+
+.ylabel {
+  font-size: 2rem;
+  fill: gray;
+/*    transform: rotate(90deg); */
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: rotate(-90deg);
+}

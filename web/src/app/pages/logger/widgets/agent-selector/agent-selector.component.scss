@@ -1,0 +1,76 @@
+@import 'src/styles.scss' ;
+/* agent selection board */
+
+.agent-title {
+  color: rgb(85, 81, 81);
+  font-size: 3rem;
+  width: 12rem;
+}
+
+.agents {
+  width:80%;
+  margin-left:1.5rem;
+  margin-top: -1rem;
+}
+
+.agent-selected {
+  height: 4rem;
+  width: 12rem;
+  text-align: center;
+  border-radius: 4rem;
+  margin-right: 3rem;
+  margin-bottom: 1rem;
+  padding-top:1rem;
+  color:white;
+  background-color: var(--secondary);
+  font-size: 2rem;
+  cursor: pointer; 
+  
+  &:hover {
+     color: $background-primary-color;   
+     background-color: $background-primary-color;
+     .hidden {
+        display: initial;
+        color: var(--secondary);
+     }
+     p {
+        display: none;
+     }
+  }
+}
+
+.agent-not-selected {
+  height: 4rem;
+  width: 12rem;
+  text-align: center;
+  border: solid rgb(226, 224, 224);
+  border-radius: 4rem;
+  margin-right: 3rem;
+  margin-bottom: 1rem;
+  padding-top:8px;
+  color: gray;
+  font-size: 2rem;
+  cursor: pointer; 
+
+  &:hover {
+     border: none;
+     background: var(--secondary);
+     color:white;
+     padding-top:1rem;
+  }
+}
+
+.more {
+  height: 4rem;
+  width: 8rem;
+  text-align: center;
+  border: dashed gray;
+  border-radius: 4rem;
+  margin-right: 3rem;
+  margin-bottom: 1rem;
+  color: grey;
+  font-size: 2rem;
+  font-weight: bold;
+  padding-top: 8px;
+  cursor: pointer; 
+}

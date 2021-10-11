@@ -1,79 +1,62 @@
-<!--sidebar-->
-<div class="sidebar" *ngIf="MASID.length !== 0">
-    <div class="nav">
-        <div class="nav-item" *ngFor="let id of MASID, index as i" routerLinkActive="is-active" [ngClass]="id === selectedMASID ? 'active' : ''">
-            <a class="list-text"  [routerLink]="['/df', id]" >
-                <p > MAS {{ id }}</p>
-            </a>
-        </div>
+<ul class="nav nav-tabs justify-content-end">
+    <li class="nav-item"  >
+        <a class="nav-link" [class.active]="curr_state==='list'" (click)="onClickList()" >list</a>
+    </li>
+    <li class="nav-item" style="padding-right:10rem;">
+        <a class="nav-link" [class.active]="curr_state==='graph'" (click)="onClickGraph()">graph</a>
+    </li>
+</ul>
+
+<div class="d-flex-column align-items-center justify-content-center" *ngIf="curr_state === 'list'">
+    <div class="inputs d-flex justify-content-center align-items-center">
+        <input #desc type="text" class="input" id="searchDesc" placeholder="Enter the description"/>
+        <input #nodeid type="text" class="input"  id="searchNode" placeholder="Enter the node ID"/>
+        <input #dist type="text" class="input" id="searchDist" placeholder="Enter the distance"/>
+        <button class="btn btn-secondary" type="submit" (click)="onSearchSvcs(desc.value, nodeid.value, dist.value)">
+            <i class="fas fa-search fa-2x"></i>
+        </button>
     </div>
-</div>   
-
-<div class="content-container">
-    <div class="notalive" *ngIf="!alive" >
-        <h1 text-primary>DF is not alive......</h1>
+    <div class="empty-service" *ngIf="searched_results === null">
+        <h1>No services found</h1>
     </div>
-
-    <div class="alive" *ngIf="alive">
-        <ul class="nav nav-tabs justify-content-end">
-            <li class="nav-item"  >
-                <a class="nav-link" [class.active]="curr_state==='list'" (click)="onClickList()" >list</a>
-            </li>
-            <li class="nav-item" style="padding-right:10rem;">
-                <a class="nav-link" [class.active]="curr_state==='graph'" (click)="onClickGraph()">graph</a>
-            </li>
-        </ul>
-
-        <div class="d-flex-column align-items-center justify-content-center" *ngIf="curr_state === 'list'">
-            <div class="inputs d-flex justify-content-center align-items-center">
-                <input #desc type="text" class="input" id="searchDesc" placeholder="Enter the description"/>
-                <input #nodeid type="text" class="input"  id="searchNode" placeholder="Enter the node ID"/>
-                <input #dist type="text" class="input" id="searchDist" placeholder="Enter the distance"/>
-                <button class="btn btn-secondary" type="submit" (click)="onSearchSvcs(desc.value, nodeid.value, dist.value)">
-                    <i class="fas fa-search fa-2x"></i>
-                </button>
-            </div>
-            <div class="empty-service" *ngIf="searched_results === null">
-                <h1>No services found</h1>
-            </div>
-            <div class="services" *ngIf="searched_results !== null && searched_results.length !== 0">
-                <table class="table table-striped default-fontsize">
-                    <thead>
-                        <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">MAS ID</th>
-                            <th scope="col">Agent ID</th>
-                            <th scope="col">Node ID</th>
-                            <th scope="col">Description</th>
-                            <th scope="col">Create Date</th>
-                            <th scope="col">Change Date</th>  
-                            <th scope="col">Dist</th>                                                    
-                        </tr>
-                    </thead>
-                    <tbody>
-                    <tr *ngFor="let res of searched_results | paginate: { itemsPerPage: 20, currentPage: q }; index as i ">
-                        <th>{{i+1}}</th>
-                        <td>{{res.masid}}</td>
-                        <td>{{res.agentid}}</td>
-                        <td>{{res.nodeid}}</td>
-                        <td>{{res.desc}}</td>
-                        <td>{{res.createdat}}</td>
-                        <td>{{res.changedat}}</td>
-                        <td>{{res.dist}}</td>
-                    </tbody>
-                </table>
-                <div class="pagination mt-4 d-flex justify-content-center align-items-center">
-                <pagination-controls (pageChange)="q = $event"></pagination-controls>
-            </div> 
-            </div>
-        </div>          
-        
-        <div class="content" [hidden]="curr_state === 'list'">
-            <div id="graph">
-            </div>
-        </div>
+    <div class="services" *ngIf="searched_results !== null && searched_results.length !== 0">
+        <table class="table table-striped default-fontsize">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">MAS ID</th>
+                    <th scope="col">Agent ID</th>
+                    <th scope="col">Node ID</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">Create Date</th>
+                    <th scope="col">Change Date</th>  
+                    <th scope="col">Dist</th>                                                    
+                </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let res of searched_results | paginate: { itemsPerPage: 20, currentPage: q }; index as i ">
+                <th>{{i+1}}</th>
+                <td>{{res.masid}}</td>
+                <td>{{res.agentid}}</td>
+                <td>{{res.nodeid}}</td>
+                <td>{{res.desc}}</td>
+                <td>{{res.createdat}}</td>
+                <td>{{res.changedat}}</td>
+                <td>{{res.dist}}</td>
+            </tbody>
+        </table>
+        <div class="pagination mt-4 d-flex justify-content-center align-items-center">
+        <pagination-controls (pageChange)="q = $event"></pagination-controls>
     </div> 
+    </div>
+</div>          
+
+<div class="content" [hidden]="curr_state === 'list'">
+    <div id="graph">
+    </div>
 </div>
+  
+
 
 
 

@@ -1,0 +1,61 @@
+<!--start date --> 
+<mat-form-field appearance="fill" class="example-form-field">
+  <mat-label>Start date</mat-label>
+  <input matInput 
+      [matDatepicker]="startdatepicker"
+      [(ngModel)]="selectedStartDate"
+  >
+  <mat-datepicker-toggle matSuffix [for]="startdatepicker"></mat-datepicker-toggle>
+  <mat-datepicker #startdatepicker>
+      <mat-datepicker-actions>
+      <button class="btn" mat-button matDatepickerCancel>Cancel</button>
+      <button class="btn btn-primary" mat-raised-button color="primary" matDatepickerApply>OK</button>
+      </mat-datepicker-actions>
+  </mat-datepicker>
+</mat-form-field>
+<!--start time --> 
+<mat-form-field  appearance="fill" class="example-form-field mr-4">
+  <mat-label>Start time</mat-label>
+  <input matInput
+      name="selected_start_time"
+      format="24"
+      [(ngModel)]="selectedStartTime"
+      [ngxMatTimepicker]="pickerA"
+      placeholder="00:00"
+      readonly />
+  <mat-icon matSuffix (click)="pickerA.open()">
+      watch_later
+  </mat-icon>
+</mat-form-field>
+<ngx-mat-timepicker #pickerA></ngx-mat-timepicker>
+<!--end date -->                        
+<mat-form-field appearance="fill" class="example-form-field">
+  <mat-label>End date</mat-label>
+  <input matInput 
+      [matDatepicker]="enddatepicker"
+      [(ngModel)]="selectedEndDate"
+      >
+  <mat-datepicker-toggle matSuffix [for]="enddatepicker"></mat-datepicker-toggle>
+  <mat-datepicker #enddatepicker>
+      <mat-datepicker-actions>
+      <button class="btn" mat-button matDatepickerCancel>Cancel</button>
+      <button class="btn btn-primary" mat-raised-button matDatepickerApply>OK</button>
+      </mat-datepicker-actions>
+  </mat-datepicker>
+</mat-form-field>
+<!--end time --> 
+<mat-form-field appearance="fill" class="mr-4">
+  <mat-label>End time</mat-label>
+  <input matInput
+      name="selected_end_time"
+      format="24"
+      [(ngModel)]="selectedEndTime"
+      [ngxMatTimepicker]="pickerB"
+      placeholder="23:49"
+      readonly />
+  <mat-icon matSuffix
+          (click)="pickerB.open()">
+      watch_later
+  </mat-icon>
+</mat-form-field>
+<ngx-mat-timepicker #pickerB></ngx-mat-timepicker>

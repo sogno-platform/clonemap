@@ -16,9 +16,6 @@ cytoscape.use( popper);
 })
 export class DFComponent implements OnInit {
     selectedMASID:number = -1;
-    MASID: any = [];
-    alive: boolean = true;
-    fileToUpload: File = null;
     display: string = "";
     filename: string = "Choose a file...";
     searched_results: Service[] = [];
@@ -31,25 +28,6 @@ export class DFComponent implements OnInit {
         ) { }
 
     ngOnInit() {
-        this.dfService.getAlive().subscribe( (res: any) => {
-            this.alive = res.df;
-        }, error => {
-            console.log(error);
-        });
-
-        // update the sidebar
-        this.masService.getMAS().subscribe((MASs: any) => {
-            if (MASs !== null) {
-                for (let MAS of MASs) {
-                    if (MAS.status.code != 5) {
-                        this.MASID.push(MAS.id)
-                    }
-                }
-            } 
-        }, err => {
-            console.log(err)  
-        });
-
         this.route.params.subscribe((params: Params) => {
             if (params.masid) {
                 this.selectedMASID = params.masid;

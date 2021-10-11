@@ -1,0 +1,75 @@
+<app-tabs></app-tabs>
+
+<!--selection board -->
+<div  class="my-5 d-flex justify-content-center"> 
+	<app-period-selector #periodSelector></app-period-selector>   
+
+	<mat-form-field appearance="fill" class="mr-4" style="width: 20rem;">
+		<mat-label>Automatic partition?</mat-label>
+		<mat-select (selectionChange)="updatePartition($event.value)">
+			<mat-option value="Yes">Yes</mat-option>
+			<mat-option value="No">No</mat-option>
+		</mat-select>
+	</mat-form-field>
+
+	<mat-form-field appearance="fill" class="mr-4" [hidden]="autoPartition" style="width: 10rem;">
+	<mat-label>Partitions</mat-label>
+		<input matInput (change)="getPartitionNum($event.target.value)" placeholder="5">
+	</mat-form-field>
+
+	<i class="fas fa-search fa-2x mt-3 mr-5" (click)="onClickSearchButton(
+		periodSelector.selectedStartDate,
+		periodSelector.selectedEndDate,
+		periodSelector.selectedStartTime,
+		periodSelector.selectedEndTime
+	)"></i>
+
+</div>
+
+<ng-template #popContent > 
+	<div class="default-fontsize" *ngFor="let content of popoverContent">
+		{{content}}
+	</div>
+</ng-template>
+
+<div class="d-flex justify-content-center">
+<svg class="heatmap" width="1000" height="800" >
+	<rect class="grid" *ngFor="let grid of grids, index as i" 
+	[attr.fill]="grid.color" 
+	[attr.x]="grid.x * gridWidth" 
+	[attr.y]="grid.y * gridWidth" 
+	[attr.width]="gridWidth" 
+	[attr.height]="gridWidth"
+	(mouseenter)="onEnterGrid(i)" 
+	(mouseleave)="onLeaveGrid(i)" 
+	triggers="mouseenter:mouseleave" 
+	[ngbPopover]="popFrequency"
+	placement="top" 
+	container="body"
+	></rect>
+
+	
+	<rect *ngFor="let legend of colorPartitionEle, index as i"
+		[attr.x] = "700"
+		[attr.y]= "(legendWidth + 10) * i + 50"
+		[attr.width]="legendWidth"
+		[attr.height]="legendWidth"
+		[attr.fill]="legend"
+	></rect>
+
+	<text *ngFor="let text of colorLegendTexts, index as i"
+	[attr.x] = "750"
+	[attr.y]= "(legendWidth + 10) * i + 70"
+	[attr.fill]="gray"
+	> {{text}}</text>
+
+<!--                 <text class="xlabel" x="350" y="730"> agent ID of sender</text>
+	<text class="ylabel" x="-10" y="350"> agent ID of receiver</text> -->
+</svg>
+</div>
+
+<ng-template #popFrequency class="heatmap-popover" > 
+<div class="default-fontsize"> Agent Send: {{ popoverFrequency.x }} </div>
+<div class="default-fontsize"> Agent Receive : {{ popoverFrequency.y }} </div>
+<div class="default-fontsize"> Msg Count :{{ popoverFrequency.value }} </div>
+</ng-template>

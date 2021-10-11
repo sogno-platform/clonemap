@@ -1,0 +1,37 @@
+@import 'src/styles.scss' ;
+
+
+.sidebar {
+  position: fixed;
+  height: 100%;
+  width: 12rem;
+  overflow:scroll;
+  padding-top: 1rem;
+
+  >.nav {
+     padding-bottom: 10rem;
+  }
+
+  >.nav  >.nav-item {
+        padding-top:1rem;
+        padding-bottom:1px;  
+        border-radius: 1rem;
+        width: 100%;
+        text-align: center; 
+
+        a {
+           color: $primary;
+           text-decoration: none;
+        }
+        
+        &:hover {
+           background: rgb(240, 240, 240);
+        }
+
+        &.is-active {
+           background: $background-primary-color!important;
+           color:$primary;
+           font-weight: bold;
+        }
+     }
+}

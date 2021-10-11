@@ -1,0 +1,14 @@
+<ul class="nav nav-tabs justify-content-end">
+    <li class="nav-item"  >
+        <a class="nav-link" [class.active]="currState==='log'" (click)="onClickLog()" >log</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" [class.active]="currState==='logseries'" (click)="onClickLogSeries()">logSeries</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" [class.active]="currState==='stats'" (click)="onClickStats()">statistics</a>
+    </li>
+    <li class="nav-item" style="padding-right:10rem;">
+        <a class="nav-link" [class.active]="currState==='heatmap'" (click)="onClickHeatmap()">heatmap</a>
+    </li>
+</ul>

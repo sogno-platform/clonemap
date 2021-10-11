@@ -1,89 +1,80 @@
 
-<div class="sidebar">
-    <div class="nav">
-        <div class="nav-item" *ngFor="let id of MASID, index as i" routerLinkActive="is-active" [ngClass]="id === selectedMASID ? 'active' : ''">
-            <a class="list-text"  [routerLink]="['/ams', id]" >
-            <p > MAS {{ id }}</p>
-            </a>
-        </div>
-    </div>
-</div>
-
-<div *ngIf="selectedMAS === null" class="content-container d-flex justify-content-center align-items-center">
-    <h1>No MAS selected, select one...</h1>
-</div>
-
-<div *ngIf="selectedMAS !== null" class="content-container justify-content-center align-items-center" style="width: 80%;">
-    <div class="title my-4">Config</div>
-    <table class="table table-striped mb-5 default-fontsize" style="width: 40rem;">
-        <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{selectedMAS.id}}</td>
-            </tr>
-            <tr>
-                <th>Name</th>
-                <td>{{ selectedMAS.config.name }}</td>
-            </tr>
-            <tr>
-                <th>Agents per agency</th>
-                <td>{{ selectedMAS.config.agentsperagency}}</td>
-            </tr>
-            <tr>    
-                <th>DF</th>
-                <td>{{selectedMAS.config.df.active}}</td>
-            </tr>
-            <tr>
-                <th>Logging</th>
-                <td>{{selectedMAS.config.logger.active}}</td>
-            </tr>
-            <tr>
-                <th>MQTT</th>
-                <td>{{ selectedMAS.config.mqtt.active}}</td>
-            </tr>
-        </tbody>
-    </table>
-
-
-    <div class="title mb-4">Containers</div>
-    <table class="table mb-5 default-fontsize">
-        <thead>
-            <th>#</th>
-            <th>Image</th>
-            <th>Agencies</th>
-        </thead>
-        <tbody>
-        <tr *ngFor="let image of selectedMAS.imagegroups.instances, index as i" >
-            <th>{{image.id}}</th>
-            <td>{{image.config.image}}</td>
-            <td>{{image.agencies.counter}}</td>
+<div class="pl-5">
+<div class="title my-4">Config</div>
+<table class="table table-striped mb-5 default-fontsize" style="width: 40rem;">
+    <tbody>
+        <tr>
+            <th>Id</th>
+            <td>{{selectedMAS.id}}</td>
         </tr>
-        </tbody>
-    </table>
-
-    <div class="title mb-4">Agents</div>
-    <table class="table mb-5 default-fontsize">
-        <thead>
-            <th>#</th>
+        <tr>
             <th>Name</th>
-            <th>Type</th>
-            <th>Agency</th>
-        </thead>
-        <tbody>
-        <tr *ngFor="let agent of selectedMAS.agents.instances | paginate: { itemsPerPage: 12, currentPage: q };">
-            <th> {{agent.id}}</th>
-            <td>{{agent.spec.name}}</td>
-            <td>{{agent.spec.type}}</td>
-            <td>{{agent.address.agency}}</td>
+            <td>{{ selectedMAS.config.name }}</td>
         </tr>
-        </tbody>
-    </table>
+        <tr>
+            <th>Agents per agency</th>
+            <td>{{ selectedMAS.config.agentsperagency}}</td>
+        </tr>
+        <tr>    
+            <th>DF</th>
+            <td>{{selectedMAS.config.df.active}}</td>
+        </tr>
+        <tr>
+            <th>Logging</th>
+            <td>{{selectedMAS.config.logger.active}}</td>
+        </tr>
+        <tr>
+            <th>MQTT</th>
+            <td>{{ selectedMAS.config.mqtt.active}}</td>
+        </tr>
+    </tbody>
+</table>
 
-    <div class="d-flex justify-content-end align-items-center">
-    <pagination-controls class="pagination" (pageChange)="q = $event"></pagination-controls>
-    </div>
+
+<div class="title mb-4">Containers</div>
+<table class="table mb-5 default-fontsize">
+    <thead>
+        <th>#</th>
+        <th>Image</th>
+        <th>Agencies</th>
+    </thead>
+    <tbody>
+    <tr *ngFor="let image of selectedMAS.imagegroups.instances, index as i" >
+        <th>{{image.id}}</th>
+        <td>{{image.config.image}}</td>
+        <td>{{image.agencies.counter}}</td>
+    </tr>
+    </tbody>
+</table>
+
+<div class="title mb-4">Agents</div>
+<div>
+<table class="table mb-5 default-fontsize">
+    <thead>
+        <th>#</th>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Agency</th>
+    </thead>
+    <tbody>
+    <tr *ngFor="let agent of selectedMAS.agents.instances | paginate: { itemsPerPage: 12, currentPage: q } index as i;">
+        <th> {{agent.id}}</th>
+        <td>{{agent.spec.name}}</td>
+        <td>{{agent.spec.type}}</td>
+        <td>{{agent.address.agency}}</td>
+    </tr>
+    </tbody>
+</table>
+
+<div class="d-flex justify-content-end pr-5">
+<pagination-controls class="pagination" (pageChange)="q = $event"></pagination-controls>
+</div>
+</div>
 
 </div>
+
+
+
 
 
 

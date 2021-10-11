@@ -3,18 +3,14 @@ import { Routes, RouterModule } from '@angular/router';
 import { OverviewComponent} from './pages/overview/overview.component';
 import { AMSComponent} from './pages/ams/ams.component';
 import { DFComponent} from './pages/df/df.component';
-import { LoggerComponent} from './pages/logger/logger.component';
 
 
 const routes: Routes = [
   { path: '', redirectTo: '/overview', pathMatch: 'full'},
   { path: 'overview', component: OverviewComponent },
-  { path: 'ams', component: AMSComponent},
   { path: 'ams/:masid', component: AMSComponent},
-  { path: 'df', component: DFComponent},
   { path: 'df/:masid', component: DFComponent},
-  { path: 'logger', component: LoggerComponent},
-  { path: 'logger/:masid', component: LoggerComponent}
+
 ];
 
 @NgModule({

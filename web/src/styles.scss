@@ -20,9 +20,6 @@ html, body {
    width:100%;
 }
 
-app-root {
-   width: 100%;
-}
 
 header {
    position: sticky;
@@ -38,74 +35,6 @@ body {
 .default-fontsize {
    font-size: 1.6rem;
 }
-
-
-/* sidebar */
-
-.sidebar {
-   position: fixed;
-   height: 100%;
-   width: 12rem;
-   overflow:scroll;
-   padding-top: 1rem;
-
-   >.nav {
-      padding-bottom: 10rem;
-   }
-
-   >.nav  >.nav-item {
-         padding-top:1rem;
-         padding-bottom:1px;  
-         border-radius: 1rem;
-         width: 100%;
-         text-align: center; 
-
-         a {
-            color: $primary;
-            text-decoration: none;
-         }
-         
-         &:hover {
-            background: rgb(240, 240, 240);
-         }
-
-         &.is-active {
-            background: $background-primary-color!important;
-            color:$primary;
-            font-weight: bold;
-         }
-      }
-
-}
-
-.content-container {
-   margin-left: 14rem;
-   z-index: -1;
-}
-
-/* nav tabs */
-.nav-tabs .nav-item>.active>a, .nav-item>.active>a:hover, .nav-item>.active>a:focus {
-   border-color: $background-primary-color;
-   border-bottom-color: transparent;
-}
-
-.nav-tabs {
-  border-bottom: 1px solid $background-primary-color;
-  font-size: 1.6rem;
-  margin-left: 3rem;
-
-  .nav-link {
-   color: gray;
-
-   &.active {
-      color: $primary;
-      font-weight: bold;
-   }
-   
-}
-
-}
-
 
 .btn-secondary{
    color:white;

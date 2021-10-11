@@ -1,0 +1,39 @@
+.stats-dashboard {
+  margin-top: 5rem;
+}
+
+.card {
+  margin-bottom: 5rem;
+}
+
+.stats-dashboard > .card {
+  background-color: var(--secondary);
+  border: none;
+  border-radius: 3rem;
+  height: 15rem;
+}
+
+.pagination ::ng-deep .ngx-pagination .current {
+  background: var(--secondary);
+}
+
+.card-title {
+  color: white;
+  text-align: center;
+}
+
+.card-text {
+  color: white;
+  font-size: 3rem;
+  text-align: center;
+  vertical-align: middle;
+  line-height: 6rem; 
+
+}
+
+.table {
+  td, th {
+     padding-top: 1.5rem;
+     padding-bottom: 1.5rem;   
+  }
+}

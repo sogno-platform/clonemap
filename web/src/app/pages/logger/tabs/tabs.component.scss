@@ -1,0 +1,25 @@
+@import 'src/styles.scss' ;
+
+
+/* nav tabs */
+.nav-tabs .nav-item>.active>a, .nav-item>.active>a:hover, .nav-item>.active>a:focus {
+  border-color: $background-primary-color;
+  border-bottom-color: transparent;
+}
+
+.nav-tabs {
+ border-bottom: 1px solid $background-primary-color;
+ font-size: 1.6rem;
+ margin-left: 3rem;
+
+ .nav-link {
+  color: gray;
+
+  &.active {
+     color: $primary;
+     font-weight: bold;
+  }
+  
+}
+
+}

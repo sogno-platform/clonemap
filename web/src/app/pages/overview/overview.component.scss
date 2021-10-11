@@ -1,4 +1,4 @@
-@import '../../../styles.scss' ;
+@import 'src/styles.scss' ;
 
 .overview-empty {
    padding-top: 40vh;
@@ -27,10 +27,6 @@
 
 /* overview with agency*/
 
-.content-container {
-   width: 90% ;
-   padding-left: 5%;
-}
 
 .title {
    height: 5rem;
@@ -48,10 +44,6 @@
    font-size: 2rem;
 }
 
-#cards {
-   width: 100%;
-   margin-top: 5rem;
-}
 
 .table {
    margin-bottom: 0rem;

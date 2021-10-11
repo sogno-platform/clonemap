@@ -1,0 +1,37 @@
+<!--agent selection for log and log series conditions -->
+<div class= "d-flex align-content-end">
+  <div class="agent-title ml-5">agents</div>
+  <div class="agents">
+      <div class="d-flex flex-wrap">
+          <div *ngFor="let id of selectedID" class="agent-selected" (click)="onDeleteID(id)" [ngValue]="id" >
+              <p>agent {{id}} </p>
+              <div class="hidden"><i class="fas fa-trash"></i></div>
+          </div>
+          <div *ngIf="selectedID.length<9" class="more" (click)="openLg(content)">+ </div>
+      </div>
+  </div>  
+</div>
+
+
+
+<!--modal for adding agents-->
+<ng-template #content let-modal>
+    <div class="modal-header">
+        <h2 class="modal-title">Add Agent</h2>
+        <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body default-fontsize">
+        <div class="d-flex  flex-wrap">
+            <div *ngFor="let id of notSelectedID">
+                <div class="agent-not-selected"  [ngValue]="id" (click)="onAddID(id)">
+                    agent {{id}}
+                </div>
+            </div>
+        </div>       
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-primary default-fontsize" (click)="onConfirm()">OK</button>
+    </div>
+  </ng-template>
