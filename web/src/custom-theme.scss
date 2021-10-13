@@ -1,26 +1,65 @@
-
 // Custom Theming for Angular Material
+@use '~@angular/material' as mat;
 // For more information: https://material.angular.io/guide/theming
-@import '~@angular/material/theming';
 // Plus imports for other components in your app.
 
 // Include the common styles for Angular Material. We include this here so that you only
 // have to load a single css file for Angular Material in your app.
 // Be sure that you only ever include this mixin once!
-@include mat-core();
+@include mat.core();
 
 // Define the palettes for your theme using the Material Design palettes available in palette.scss
 // (imported above). For each palette, you can optionally specify a default, lighter, and darker
 // hue. Available color palettes: https://material.io/design/color/
-$clonemap-frontend-primary: mat-palette($mat-indigo);
-$clonemap-frontend-accent: mat-palette($mat-pink, A200, A100, A400);
+/* For use in src/lib/core/theming/_palette.scss */
+$mat-clonemap: (
+    50 : #ededff,
+    100 : #d1d1ff,
+    200 : #b3b3ff,
+    300 : #9494ff,
+    400 : #7d7dff,
+    500 : #6666ff,
+    600 : #5e5eff,
+    700 : #5353ff,
+    800 : #4949ff,
+    900 : #3838ff,
+    A100 : #ffffff,
+    A200 : #ffffff,
+    A400 : #e1e1ff,
+    A700 : #c8c8ff,
+    contrast: (
+        50 : #000000,
+        100 : #000000,
+        200 : #000000,
+        300 : #000000,
+        400 : #000000,
+        500 : #ffffff,
+        600 : #ffffff,
+        700 : #ffffff,
+        800 : #ffffff,
+        900 : #ffffff,
+        A100 : #000000,
+        A200 : #000000,
+        A400 : #000000,
+        A700 : #000000,
+    )
+);
+
+
+
+
+
+
+
+$clonemap-frontend-primary: mat.define-palette($mat-clonemap);
+$clonemap-frontend-accent: mat.define-palette(mat.$pink-palette, A200, A100, A400);
 
 // The warn palette is optional (defaults to red).
-$clonemap-frontend-warn: mat-palette($mat-red);
+$clonemap-frontend-warn: mat.define-palette(mat.$red-palette);
 
 // Create the theme object. A theme consists of configurations for individual
 // theming systems such as "color" or "typography".
-$clonemap-frontend-theme: mat-light-theme((
+$clonemap-frontend-theme: mat.define-light-theme((
   color: (
     primary: $clonemap-frontend-primary,
     accent: $clonemap-frontend-accent,
@@ -31,5 +70,5 @@ $clonemap-frontend-theme: mat-light-theme((
 // Include theme styles for core and each component used in your app.
 // Alternatively, you can import and @include the theme mixins for each component
 // that you are using.
-@include angular-material-theme($clonemap-frontend-theme);
+@include mat.all-component-themes($clonemap-frontend-theme);
 

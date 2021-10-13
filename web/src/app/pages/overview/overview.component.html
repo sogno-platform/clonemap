@@ -48,12 +48,12 @@
     </div>
 </div>
 
-<div *ngIf="MASID.length === 0" class="d-flex flex-column justify-content-center align-items-center">  
+<div *ngIf="MASID.length === 0" class="overview-empty d-flex flex-column justify-content-center align-items-center">  
     <div *ngIf="status==='Connecting......'" class="spinner-border process-spinner mb-5" role="status">
         <span class="sr-only">Loading...</span>
     </div>
     <h1 class="status mb-5">{{status}}</h1>
-    <button *ngIf="status==='Currently no MASs, create one......'" type='button' class="btn btn-secondary" (click)="openLg(content)">+ New MAS</button>  
+    <button *ngIf="status==='Currently no MASs, create one......'" type='button' class="btn btn-lg btn-secondary" (click)="openLg(content)">+ New MAS</button>  
 </div> 
 
 
