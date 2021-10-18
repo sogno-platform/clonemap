@@ -182,15 +182,15 @@ type AgencyInfo struct {
 
 // AgencyInfoFull contains information about agency and full info about agents it conatins (for api)
 type AgencyInfoFull struct {
-	MASID        int          `json:"masid"`            // ID of MAS
-	Name         string       `json:"name"`             // name of agency (hostname of pod given by kubernetes)
-	ID           int          `json:"id"`               // within image group unique ID (contained in name)
-	ImageGroupID int          `json:"imid"`             // ID of agency image group
-	Logger       LoggerConfig `json:"logger"`           // logger configuration
-	MQTT         MQTTConfig   `json:"mqtt"`             // MQTT configuration
-	DF           DFConfig     `json:"df"`               // DF configuration
-	MASName      string       `json:"masname"`          // name of MAS as specified by user in MASConfig
-	MASCustom    string       `json:"custom,omitempty"` // custom global configuration data from MASConfig
+	MASID        int          `json:"masid"`               // ID of MAS
+	Name         string       `json:"name"`                // name of agency (hostname of pod given by kubernetes)
+	ID           int          `json:"id"`                  // within image group unique ID (contained in name)
+	ImageGroupID int          `json:"imid"`                // ID of agency image group
+	Logger       LoggerConfig `json:"logger"`              // logger configuration
+	MQTT         MQTTConfig   `json:"mqtt"`                // MQTT configuration
+	DF           DFConfig     `json:"df"`                  // DF configuration
+	MASName      string       `json:"masname"`             // name of MAS as specified by user in MASConfig
+	MASCustom    string       `json:"mascustom,omitempty"` // custom global configuration data from MASConfig
 	Agents       []AgentInfo  `json:"agents"`
 	Status       Status       `json:"status"`
 }
