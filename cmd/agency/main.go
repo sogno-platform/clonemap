@@ -68,6 +68,7 @@ func task(ag *agency.Agent) (err error) {
 	msg, _ := ag.ACL.NewMessage(recv, 0, 0, "test message")
 	ag.ACL.SendMessage(msg)
 	ag.Logger.NewLog("app", "This is agent "+strconv.Itoa(id), "")
+	ag.Logger.NewLog("app", ag.GetMASName()+", "+ag.GetMASCustomData(), "")
 	svc := schemas.Service{
 		Desc: "agent" + strconv.Itoa(id),
 	}

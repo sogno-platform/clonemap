@@ -107,11 +107,12 @@ type MASSpec struct {
 
 // MASConfig contains configuration of MAS
 type MASConfig struct {
-	Name               string       `json:"name,omitempty"`  // name/description of MAS
-	NumAgentsPerAgency int          `json:"agentsperagency"` // number of agents per agency
-	MQTT               MQTTConfig   `json:"mqtt"`            //switch for mqtt
-	DF                 DFConfig     `json:"df"`              //switch for df
-	Logger             LoggerConfig `json:"logger"`          // logger configuration
+	Name               string       `json:"name,omitempty"`   // name/description of MAS
+	NumAgentsPerAgency int          `json:"agentsperagency"`  // number of agents per agency
+	MQTT               MQTTConfig   `json:"mqtt"`             //switch for mqtt
+	DF                 DFConfig     `json:"df"`               //switch for df
+	Logger             LoggerConfig `json:"logger"`           // logger configuration
+	Custom             string       `json:"custom,omitempty"` // custom configuration data
 }
 
 // ImageGroupInfo contains information about all agents that have the same image
@@ -166,26 +167,30 @@ type Status struct {
 
 // AgencyInfo contains information about agency spec and status (for storage)
 type AgencyInfo struct {
-	MASID        int          `json:"masid"`  // ID of MAS
-	Name         string       `json:"name"`   // name of agency (hostname of pod given by kubernetes)
-	ID           int          `json:"id"`     // within image group unique ID (contained in name)
-	ImageGroupID int          `json:"imid"`   // ID of agency image group
-	Logger       LoggerConfig `json:"logger"` // logger configuration
-	MQTT         MQTTConfig   `json:"mqtt"`   // MQTT configuration
-	DF           DFConfig     `json:"df"`     // DF configuration
-	Agents       []int        `json:"agents"`
-	Status       Status       `json:"status"`
+	MASID        int    `json:"masid"` // ID of MAS
+	Name         string `json:"name"`  // name of agency (hostname of pod given by kubernetes)
+	ID           int    `json:"id"`    // within image group unique ID (contained in name)
+	ImageGroupID int    `json:"imid"`  // ID of agency image group
+	// Logger       LoggerConfig `json:"logger"` // logger configuration
+	// MQTT         MQTTConfig   `json:"mqtt"`   // MQTT configuration
+	// DF           DFConfig     `json:"df"`     // DF configuration
+	// MASName      string       `json:"masname"`          // name of MAS as specified by user in MASConfig
+	// MASCustom    string       `json:"custom,omitempty"` // custom global configuration data from MASConfig
+	Agents []int  `json:"agents"`
+	Status Status `json:"status"`
 }
 
 // AgencyInfoFull contains information about agency and full info about agents it conatins (for api)
 type AgencyInfoFull struct {
-	MASID        int          `json:"masid"`  // ID of MAS
-	Name         string       `json:"name"`   // name of agency (hostname of pod given by kubernetes)
-	ID           int          `json:"id"`     // within image group unique ID (contained in name)
-	ImageGroupID int          `json:"imid"`   // ID of agency image group
-	Logger       LoggerConfig `json:"logger"` // logger configuration
-	MQTT         MQTTConfig   `json:"mqtt"`   // MQTT configuration
-	DF           DFConfig     `json:"df"`     // DF configuration
+	MASID        int          `json:"masid"`            // ID of MAS
+	Name         string       `json:"name"`             // name of agency (hostname of pod given by kubernetes)
+	ID           int          `json:"id"`               // within image group unique ID (contained in name)
+	ImageGroupID int          `json:"imid"`             // ID of agency image group
+	Logger       LoggerConfig `json:"logger"`           // logger configuration
+	MQTT         MQTTConfig   `json:"mqtt"`             // MQTT configuration
+	DF           DFConfig     `json:"df"`               // DF configuration
+	MASName      string       `json:"masname"`          // name of MAS as specified by user in MASConfig
+	MASCustom    string       `json:"custom,omitempty"` // custom global configuration data from MASConfig
 	Agents       []AgentInfo  `json:"agents"`
 	Status       Status       `json:"status"`
 }

@@ -388,10 +388,10 @@ func (ams *AMS) configureMAS(masSpec schemas.MASSpec) (masInfo schemas.MASInfo,
 			agencyInfo := schemas.AgencyInfo{
 				ImageGroupID: i,
 				ID:           j,
-				Logger:       masInfo.Config.Logger,
-				DF:           masInfo.Config.DF,
-				MQTT:         masInfo.Config.MQTT,
-				Name:         "-im-" + strconv.Itoa(i) + "-agency-" + strconv.Itoa(j),
+				// Logger:       masInfo.Config.Logger,
+				// DF:           masInfo.Config.DF,
+				// MQTT:         masInfo.Config.MQTT,
+				Name: "-im-" + strconv.Itoa(i) + "-agency-" + strconv.Itoa(j),
 			}
 			for k := 0; k < masSpec.Config.NumAgentsPerAgency; k++ {
 				if agentCounter >= len(masSpec.ImageGroups[i].Agents) {

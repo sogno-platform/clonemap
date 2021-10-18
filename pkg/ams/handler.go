@@ -426,7 +426,7 @@ func (ams *AMS) handleGetAgencies(w http.ResponseWriter, r *http.Request) {
 }
 
 // handleGetAgencyID is the handler for get requests to path
-// /api/clonemap/mas/{masid}/imgroup/{imid}/agencies/{agencyid}
+// /api/clonemap/mas/{masid}/imgroup/{imid}/agency/{agencyid}
 func (ams *AMS) handleGetAgencyID(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
 	vars := mux.Vars(r)
