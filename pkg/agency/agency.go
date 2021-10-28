@@ -65,7 +65,12 @@ import (
 
 // Agency contains information about agents located in agency
 type Agency struct {
-	info schemas.AgencyInfo // configuration of agency
+	info         schemas.AgencyInfo // configuration of agency
+	loggerConfig schemas.LoggerConfig
+	dfConfig     schemas.DFConfig
+	mqttConfig   schemas.MQTTConfig
+	masName      string
+	masCustom    string
 	// agents    []schemas.AgentInfo // list of agents in agency
 	localAgents    map[int]*Agent
 	remoteAgents   map[int]*Agent
@@ -171,9 +176,11 @@ func (agency *Agency) init() (err error) {
 		agency.info.ImageGroupID, agency.info.ID)
 	agency.mutex.Lock()
 	agency.info.ID = agencyInfoFull.ID
-	agency.info.Logger = agencyInfoFull.Logger
-	agency.info.DF = agencyInfoFull.DF
-	agency.info.MQTT = agencyInfoFull.MQTT
+	agency.loggerConfig = agencyInfoFull.Logger
+	agency.dfConfig = agencyInfoFull.DF
+	agency.mqttConfig = agencyInfoFull.MQTT
+	agency.masName = agencyInfoFull.MASName
+	agency.masCustom = agencyInfoFull.MASCustom
 	agency.mutex.Unlock()
 	if err != nil {
 		agency.info.Status = schemas.Status{
@@ -184,11 +191,11 @@ func (agency *Agency) init() (err error) {
 	}
 
 	agency.mutex.Lock()
-	agency.logCollector = client.NewLogCollector(agency.info.MASID, agency.info.Logger,
+	agency.logCollector = client.NewLogCollector(agency.info.MASID, agency.loggerConfig,
 		agency.logError, agency.logInfo)
-	agency.dfClient = client.NewDFClient(agency.info.DF.Host, agency.info.DF.Port,
+	agency.dfClient = client.NewDFClient(agency.dfConfig.Host, agency.dfConfig.Port,
 		time.Second*60, time.Second*1, 4)
-	agency.mqttCollector = newMQTTCollector(agency.info.MQTT, agency.info.Name, agency.logError,
+	agency.mqttCollector = newMQTTCollector(agency.mqttConfig, agency.info.Name, agency.logError,
 		agency.logInfo)
 	agency.mutex.Unlock()
 
@@ -244,9 +251,9 @@ func (agency *Agency) createAgent(agentInfo schemas.AgentInfo) (err error) {
 	agentInfo.Status.Code = status.Starting
 	msgIn := make(chan schemas.ACLMessage, 1000)
 	agency.mutex.Lock()
-	ag := newAgent(agentInfo, msgIn, agency.aclLookup, agency.logCollector, agency.info.Logger,
-		agency.mqttCollector, agency.info.DF.Active, agency.dfClient, agency.logError,
-		agency.logInfo)
+	ag := newAgent(agentInfo, agency.masName, agency.masCustom, msgIn, agency.aclLookup,
+		agency.logCollector, agency.loggerConfig, agency.mqttCollector, agency.dfConfig.Active,
+		agency.dfClient, agency.logError, agency.logInfo)
 	agency.localAgents[agentInfo.ID] = ag
 	agency.mutex.Unlock()
 	ag.startAgent(agency.agentTask)

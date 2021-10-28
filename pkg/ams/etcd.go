@@ -454,7 +454,7 @@ func (stor *etcdStorage) addAgent(masID int, imID int,
 				ID:           agencyID,
 				Name: "mas-" + strconv.Itoa(masID) + "-im-" + strconv.Itoa(imID) +
 					"-agency-" + strconv.Itoa(agencyID) + ".mas" + strconv.Itoa(masID) + "agencies",
-				Logger: stor.mas[masID].Config.Logger,
+				// Logger: stor.mas[masID].Config.Logger,
 				Agents: []int{agentID},
 			}
 

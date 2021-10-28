@@ -497,7 +497,7 @@ func (stor *fiwareStorage) getAgencyInfoFull(masID int, imID int,
 	ret.Name = agencyInfo.Name
 	ret.ID = agencyID
 	ret.ImageGroupID = imID
-	ret.Logger = agencyInfo.Logger
+	// ret.Logger = agencyInfo.Logger
 	ret.Status = agencyInfo.Status
 	ret.Agents = make([]schemas.AgentInfo, len(agencyInfo.Agents), len(agencyInfo.Agents))
 	for i := 0; i < len(ret.Agents); i++ {
@@ -776,7 +776,7 @@ func (stor *fiwareStorage) addAgent(masID int, imID int,
 			ID:           agencyID,
 			Name: "mas-" + strconv.Itoa(masID) + "-im-" + strconv.Itoa(imID) +
 				"-agency-" + strconv.Itoa(agencyID) + ".mas" + strconv.Itoa(masID) + "agencies",
-			Logger: masConfig.Logger,
+			// Logger: masConfig.Logger,
 			Agents: []int{agentID},
 		}
 		agencyEntity := orion.Entity{

@@ -85,6 +85,7 @@ func handlePeroid() (err error) {
 func task(ag *agency.Agent) (err error) {
 	time.Sleep(10 * time.Second)
 	id := ag.GetAgentID()
+<<<<<<< HEAD
 
 	// agent 0 subsribes the topic1
 	if id == 0 {
@@ -137,6 +138,13 @@ func task(ag *agency.Agent) (err error) {
 	}
 
 	// service
+=======
+	recv := (id + 1) % 2
+	msg, _ := ag.ACL.NewMessage(recv, 0, 0, "test message")
+	ag.ACL.SendMessage(msg)
+	ag.Logger.NewLog("app", "This is agent "+strconv.Itoa(id), "")
+	ag.Logger.NewLog("app", ag.GetMASName()+", "+ag.GetMASCustomData(), "")
+>>>>>>> develop
 	svc := schemas.Service{
 		Desc: "agent" + strconv.Itoa(id),
 	}

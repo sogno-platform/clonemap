@@ -62,12 +62,14 @@ type Agent struct {
 	mutex      *sync.Mutex
 	id         int // unique id of agent
 	nodeID     int
-	name       string              // Name of agent
-	aType      string              // Type of agent
-	aSubtype   string              // Subtype of agent
-	custom     string              // custom data
-	customChan chan string         // channel for custom update behavior
-	masID      int                 // ID of MAS agent is belongs to
+	name       string      // Name of agent
+	aType      string      // Type of agent
+	aSubtype   string      // Subtype of agent
+	custom     string      // custom data
+	customChan chan string // channel for custom update behavior
+	masID      int         // ID of MAS agent is belongs to
+	masName    string
+	masCustom  string
 	status     int                 // Status of agent
 	ACL        *ACL                // agent communication
 	Logger     *client.AgentLogger // logger object
@@ -79,10 +81,10 @@ type Agent struct {
 }
 
 // newAgent creates a new agent
-func newAgent(info schemas.AgentInfo, msgIn chan schemas.ACLMessage,
-	aclLookup func(int) (*ACL, error), logCol *client.LogCollector, logConfig schemas.LoggerConfig,
-	mqttCol *mqttCollector, dfActive bool, dfClient *client.DFClient, logErr *log.Logger,
-	logInf *log.Logger) (ag *Agent) {
+func newAgent(info schemas.AgentInfo, masName string, masCustom string,
+	msgIn chan schemas.ACLMessage, aclLookup func(int) (*ACL, error), logCol *client.LogCollector,
+	logConfig schemas.LoggerConfig, mqttCol *mqttCollector, dfActive bool,
+	dfClient *client.DFClient, logErr *log.Logger, logInf *log.Logger) (ag *Agent) {
 	ag = &Agent{
 		id:         info.ID,
 		nodeID:     info.Spec.NodeID,
@@ -90,6 +92,8 @@ func newAgent(info schemas.AgentInfo, msgIn chan schemas.ACLMessage,
 		aType:      info.Spec.AType,
 		aSubtype:   info.Spec.ASubtype,
 		masID:      info.MASID,
+		masName:    masName,
+		masCustom:  masCustom,
 		custom:     info.Spec.Custom,
 		customChan: nil,
 		mutex:      &sync.Mutex{},
@@ -149,6 +153,30 @@ func (agent *Agent) GetAgentName() (ret string) {
 func (agent *Agent) GetCustomData() (ret string) {
 	agent.mutex.Lock()
 	ret = agent.custom
+	agent.mutex.Unlock()
+	return
+}
+
+// GetMASID returns mas id
+func (agent *Agent) GetMASID() (ret int) {
+	agent.mutex.Lock()
+	ret = agent.masID
+	agent.mutex.Unlock()
+	return
+}
+
+// GetMASName returns mas name
+func (agent *Agent) GetMASName() (ret string) {
+	agent.mutex.Lock()
+	ret = agent.masName
+	agent.mutex.Unlock()
+	return
+}
+
+// GetMASVustom returns mas custom config
+func (agent *Agent) GetMASCustomData() (ret string) {
+	agent.mutex.Lock()
+	ret = agent.masCustom
 	agent.mutex.Unlock()
 	return
 }

@@ -98,7 +98,7 @@ type storage interface {
 	// getAgencies returns specs of all agencies in MAS
 	getAgencies(masID int) (ret schemas.Agencies, err error)
 
-	// getAgencyInfoFull returns status of one agency
+	// getAgencyInfoFull returns complete info of one agency
 	getAgencyInfoFull(masID int, imID int, agencyID int) (ret schemas.AgencyInfoFull, err error)
 
 	// registerMAS registers a new MAS with the storage and returns its ID
@@ -387,9 +387,12 @@ func (stor *localStorage) getAgencyInfoFull(masID int, imID int,
 	ret.Name = stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Name
 	ret.ID = agencyID
 	ret.ImageGroupID = imID
-	ret.Logger = stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Logger
-	ret.DF = stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].DF
-	ret.MQTT = stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].MQTT
+	// ret.Logger = stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Logger
+	ret.Logger = stor.mas[masID].Config.Logger
+	ret.DF = stor.mas[masID].Config.DF
+	ret.MQTT = stor.mas[masID].Config.MQTT
+	ret.MASName = stor.mas[masID].Config.Name
+	ret.MASCustom = stor.mas[masID].Config.Custom
 	ret.Status = stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Status
 	ret.Agents = make([]schemas.AgentInfo,
 		len(stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Agents))
@@ -557,7 +560,7 @@ func (stor *localStorage) addAgent(masID int, imID int,
 			ID:           agencyID,
 			Name: "mas-" + strconv.Itoa(masID) + "-im-" + strconv.Itoa(imID) +
 				"-agency-" + strconv.Itoa(agencyID) + ".mas" + strconv.Itoa(masID) + "agencies",
-			Logger: stor.mas[masID].Config.Logger,
+			// Logger: stor.mas[masID].Config.Logger,
 			Agents: []int{agentID},
 		}
 		stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst =

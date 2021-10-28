@@ -93,6 +93,19 @@ func (ams *AMS) handleGetMAS(w http.ResponseWriter, r *http.Request) {
 	ams.logErrors(r.URL.Path, cmapErr, httpErr)
 }
 
+// handleDeleteMAS is the handler for delete requests to path /api/clonemap/mas
+func (ams *AMS) handleDeleteMAS(w http.ResponseWriter, r *http.Request) {
+	var cmapErr, httpErr error
+	cmapErr = ams.removeAllMAS()
+	if cmapErr != nil {
+		httpErr = httpreply.CMAPError(w, cmapErr.Error())
+		ams.logErrors(r.URL.Path, cmapErr, httpErr)
+		return
+	}
+	httpErr = httpreply.Deleted(w, cmapErr)
+	ams.logErrors(r.URL.Path, cmapErr, httpErr)
+}
+
 // handlePostMAS is the handler for post requests to path /api/clonemap/mas
 func (ams *AMS) handlePostMAS(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
@@ -413,7 +426,7 @@ func (ams *AMS) handleGetAgencies(w http.ResponseWriter, r *http.Request) {
 }
 
 // handleGetAgencyID is the handler for get requests to path
-// /api/clonemap/mas/{masid}/imgroup/{imid}/agencies/{agencyid}
+// /api/clonemap/mas/{masid}/imgroup/{imid}/agency/{agencyid}
 func (ams *AMS) handleGetAgencyID(w http.ResponseWriter, r *http.Request) {
 	var cmapErr, httpErr error
 	vars := mux.Vars(r)
@@ -503,7 +516,8 @@ func (ams *AMS) server(port int) (serv *http.Server) {
 	s.Path("/clonemap").Methods("POST", "PUT", "DELETE").HandlerFunc(ams.methodNotAllowed)
 	s.Path("/clonemap/mas").Methods("GET").HandlerFunc(ams.handleGetMAS)
 	s.Path("/clonemap/mas").Methods("POST").HandlerFunc(ams.handlePostMAS)
-	s.Path("/clonemap/mas").Methods("PUT", "DELETE").HandlerFunc(ams.methodNotAllowed)
+	s.Path("/clonemap/mas").Methods("DELETE").HandlerFunc(ams.handleDeleteMAS)
+	s.Path("/clonemap/mas").Methods("PUT").HandlerFunc(ams.methodNotAllowed)
 	s.Path("/clonemap/mas/{masid}").Methods("GET").HandlerFunc(ams.handleGetMASID)
 	s.Path("/clonemap/mas/{masid}").Methods("DELETE").HandlerFunc(ams.handleDeleteMASID)
 	s.Path("/clonemap/mas/{masid}").Methods("PUT", "POST").HandlerFunc(ams.methodNotAllowed)
