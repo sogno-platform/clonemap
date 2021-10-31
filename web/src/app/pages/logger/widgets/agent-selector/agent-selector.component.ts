@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, Output } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { MasService } from 'src/app/services/mas.service';
+import { DefaultAMSService } from 'src/app/openapi-services/ams';
 import { EventEmitter } from 'stream';
 
 @Component({
@@ -17,13 +17,13 @@ export class AgentSelectorComponent implements OnInit {
       
     constructor(
         private modalService: NgbModal,
-        private masService: MasService,
+        private amsService: DefaultAMSService,
     ) { }
 
 
     ngOnInit(): void {
     
-            this.masService.getMASById(this.selectedMASID).subscribe((res: any) => {
+            this.amsService.getOneMAS(parseInt(this.selectedMASID)).subscribe((res: any) => {
                 if (res.agents.counter !== 0) {
                     this.agentID = res.agents.instances.map(item => item.id);
                     for (let i = 0; i < res.agents.counter; i++) {

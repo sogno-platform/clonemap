@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild} from '@angular/core';
-import { LoggerService} from 'src/app/services/logger.service'
-import { LogMessage } from 'src/app/models/log.model';
+import { DefaultLoggerService } from 'src/app/openapi-services/logger';
+
+import { LogMessage, topics } from 'src/app/models/log.model';
 import { forkJoin, Observable} from 'rxjs';
 import { Router, Event, NavigationEnd } from '@angular/router';
 
@@ -12,6 +13,7 @@ import { Router, Event, NavigationEnd } from '@angular/router';
 })
 export class LogComponent implements OnInit {
 
+    public topics = topics;
     alive: boolean = true;
     selectedMASID: number = -1;
 
@@ -20,7 +22,7 @@ export class LogComponent implements OnInit {
 
 
     isTopicSelected: boolean[] = [true, true, true, true, true, true];
-    topics: string[] = ["error", "debug", "msg", "status", "app" ];
+ 
     width: number = 1500;
     height: number = 2000;
     boxWidth: number = 100;
@@ -37,8 +39,8 @@ export class LogComponent implements OnInit {
     logs: LogMessage[] = [];
  
     constructor(
-        private loggerService: LoggerService,
-        private router: Router
+        private router: Router,
+        private loggerService: DefaultLoggerService,
     ) {
         this.router.events.subscribe((event: Event) => {
             if (event instanceof NavigationEnd) {
@@ -190,12 +192,17 @@ export class LogComponent implements OnInit {
          })
     }
 
+
+
     multiLogs(selectedAgent, searchStartTime, searchEndTime): Observable<any[]> {
         let res = [];
+        function enumKeys<O extends object, K extends keyof O = keyof O>(obj: O): K[] {
+            return Object.keys(obj).filter(k => Number.isNaN(+k)) as K[];
+        }
         for (let id of selectedAgent) {
-            for (let topic of this.topics) {
-                res.push(this.loggerService.getLogsInRange(this.selectedMASID.toString(),
-                id.toString(), topic, searchStartTime, searchEndTime));
+            for (const topic of enumKeys(this.topics)) {
+                res.push(this.loggerService.getLogsInRange(this.selectedMASID,
+                id, topic, searchStartTime, searchEndTime));
             }
         }
         return forkJoin(res);
@@ -253,7 +260,7 @@ export class LogComponent implements OnInit {
                 timestamp: currMsg.timestamp,
                 msg: currMsg.msg,
                 data: currMsg.data,
-                hidden: !this.isTopicSelected[this.topics.indexOf(currMsg.topic)],
+                hidden: !this.isTopicSelected[this.topics[currMsg.topic]],
                 
             });
             agentLogs[agentIndex].push(i);
@@ -270,7 +277,7 @@ export class LogComponent implements OnInit {
                         y1: 400 + this.logBoxHeight * scaledDates[i] * 1.1 + this.logBoxHeight / 2,
                         x2: this.interval * receiverIdx - direction * this.logBoxWidth / 2,
                         y2: 400 +   this.logBoxHeight * scaledDates[i] * 1.1 + this.logBoxHeight / 2,
-                        hidden: !this.isTopicSelected[this.topics.indexOf("msg")],
+                        hidden: !this.isTopicSelected[this.topics["msg"]],
                     })
                 }
             }
@@ -300,12 +307,12 @@ export class LogComponent implements OnInit {
 
     updateScaledDates() {
         for (let i = 0; i < this.logBoxes.length; i++) {
-            let idx = this.topics.indexOf(this.logBoxes[i].topic);
+            let idx = this.topics[this.logBoxes[i].topic];
             this.logBoxes[i].hidden = !this.isTopicSelected[idx];
         }
         
         for (let i = 0; i < this.communications.length; i++) {
-            let idx = this.topics.indexOf("msg")
+            let idx = this.topics["msg"];
             this.communications[i].hidden = !this.isTopicSelected[idx];
         }
     }

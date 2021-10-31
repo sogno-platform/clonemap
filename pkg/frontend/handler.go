@@ -51,7 +51,6 @@ import (
 
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/common/httpreply"
 	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
-	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -166,6 +165,13 @@ func getNLogs(r *http.Request) (masID int, agentid int, topic string, num int, e
 func (fe *Frontend) loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fe.logInfo.Println("Received Request: ", r.Method, " ", r.URL.EscapedPath())
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Headers", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, HEAD, OPTIONS, PUT, PATCH, DELETE")
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
 		next.ServeHTTP(w, r)
 	})
 }
@@ -218,13 +224,9 @@ func (fe *Frontend) server(port int) (serv *http.Server) {
 	// r.HandleFunc("/css/", http.FileServer(http.Dir("./web/css")).ServeHTTP)
 	// r.HandleFunc("/js/", http.FileServer了(http.Dir("./web/js")).ServeHTTP)
 
-	headersOk := handlers.AllowedHeaders([]string{"X-Request-With"})
-	originsOk := handlers.AllowedOrigins([]string{"*"})
-	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
-
 	serv = &http.Server{
 		Addr:    ":" + strconv.Itoa(port),
-		Handler: handlers.CORS(originsOk, headersOk, methodsOk)(r),
+		Handler: r,
 	}
 
 	return

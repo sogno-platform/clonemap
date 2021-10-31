@@ -1,12 +1,12 @@
 <div *ngIf="MASID.length !== 0">
     <div class="title mt-4 d-flex justify-content-center align-items-center">
-        <div class="title-name mr-5" >Overview</div>              
+        <div class="title-name me-5" >Overview</div>              
         <button type='button' class='btn btn-secondary' (click)="openLg(content)">+ New MAS</button>
     </div>   
     <!--display the overview of agencies with tables-->    
     <div class="d-flex flex-wrap  mt-5 ml-5">
         <div *ngFor="let MAS of MASsDisplay | paginate: { itemsPerPage: 12, currentPage: q }; index as i">
-            <div class="card mr-5">
+            <div class="card me-5">
                 <div class="card-header d-flex justify-content-between">
                     <h3 (click)="onOpenMAS(MAS.id)">MAS {{MAS.id}}</h3>
                     <button class="btn btn-secondary" (click)="onDeleteMAS(MAS.id, deleting, deleted)">

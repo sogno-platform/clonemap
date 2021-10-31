@@ -4,7 +4,7 @@
 <div  class="my-5 d-flex justify-content-center"> 
 	<app-period-selector #periodSelector></app-period-selector>   
 
-	<mat-form-field appearance="fill" class="mr-4" style="width: 20rem;">
+	<mat-form-field appearance="fill" class="me-4" style="width: 20rem;">
 		<mat-label>Automatic partition?</mat-label>
 		<mat-select (selectionChange)="updatePartition($event.value)">
 			<mat-option value="Yes">Yes</mat-option>
@@ -12,12 +12,12 @@
 		</mat-select>
 	</mat-form-field>
 
-	<mat-form-field appearance="fill" class="mr-4" [hidden]="autoPartition" style="width: 10rem;">
+	<mat-form-field appearance="fill" class="me-4" [hidden]="autoPartition" style="width: 10rem;">
 	<mat-label>Partitions</mat-label>
 		<input matInput (change)="getPartitionNum($event.target.value)" placeholder="5">
 	</mat-form-field>
 
-	<i class="fas fa-search fa-2x mt-3 mr-5" (click)="onClickSearchButton(
+	<i class="fas fa-search fa-2x mt-3 me-5" (click)="onClickSearchButton(
 		periodSelector.selectedStartDate,
 		periodSelector.selectedEndDate,
 		periodSelector.selectedStartTime,

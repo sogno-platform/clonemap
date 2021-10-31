@@ -1,11 +1,11 @@
 import { Component, OnInit, Renderer2, Inject } from '@angular/core';
-import { DfService} from "src/app/services/df.service";
-import { MasService} from "src/app/services/mas.service";
+import { DefaultAMSService } from 'src/app/openapi-services/ams';
+import { DefaultDFService } from 'src/app/openapi-services/df';
 import { ActivatedRoute, Params } from '@angular/router';
 import * as cytoscape from 'cytoscape';
 import popper from 'cytoscape-popper';
 import { forkJoin, Observable } from 'rxjs';
-import { Service } from 'src/app/models/service.model'
+import { Service } from 'src/app/openapi-services/df/model/service';
 cytoscape.use( popper);
 
 
@@ -22,8 +22,8 @@ export class DFComponent implements OnInit {
     curr_state: string = "list";
     graph: any;
     constructor(
-        private dfService: DfService,
-        private masService: MasService,
+        private dfService: DefaultDFService,
+        private amsService: DefaultAMSService,
         private route: ActivatedRoute,
         ) { }
 
@@ -31,7 +31,7 @@ export class DFComponent implements OnInit {
         this.route.params.subscribe((params: Params) => {
             if (params.masid) {
                 this.selectedMASID = params.masid;
-                this.dfService.getAllSvcs(this.selectedMASID.toString()).subscribe( (res: Service[]) => {
+                this.dfService.getAllSvcs(this.selectedMASID).subscribe( (res: Service[]) => {
                     this.searched_results = res.map((ele, idx) => {
                         ele.id = idx;
                         return ele;
@@ -46,8 +46,8 @@ export class DFComponent implements OnInit {
     getNodeAndEdge(): Observable<any>  {
         return new Observable((observer) => {
             forkJoin({
-                reqNode: this.masService.getMASById(this.selectedMASID.toString()),
-                reqSvc: this.dfService.getAllSvcs(this.selectedMASID.toString())
+                reqNode: this.amsService.getOneMAS(this.selectedMASID),
+                reqSvc: this.dfService.getAllSvcs(this.selectedMASID)
             }).subscribe(({ reqNode, reqSvc } : any ) => {
                 console.log(reqSvc)
                 console.log(reqNode)
@@ -226,7 +226,7 @@ export class DFComponent implements OnInit {
 
 
     onSearchSvcs(desc:string, nodeid:string, dist:string) {
-        let masid: string = this.selectedMASID.toString();
+        let masid: number = this.selectedMASID;
     
         if (desc === "" && nodeid === "" && dist === "") {
             this.dfService.getAllSvcs(masid).subscribe( (res: Service[]) => {
@@ -251,7 +251,7 @@ export class DFComponent implements OnInit {
         }
 
         else if (desc !== "" && nodeid !== "" && dist !== "") {
-            this.dfService.searchSvcWithinDis(masid, desc, nodeid, dist).subscribe( 
+            this.dfService.searchSvcWithinDis(masid, desc, parseInt(nodeid), parseInt(dist)).subscribe( 
                 (res: Service[])  => {
                     this.searched_results = res;
                     for (let i = 0; i < this.searched_results.length; i++) {

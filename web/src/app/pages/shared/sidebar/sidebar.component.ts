@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { MasService} from 'src/app/services/mas.service';
+import { DefaultAMSService } from 'src/app/openapi-services/ams';
 import { ActivatedRoute, Params, Router, Event, NavigationEnd} from '@angular/router';
 
 
@@ -13,7 +13,7 @@ export class SidebarComponent implements OnInit {
   MASID: number[] = []; 
   active:string = "overview";
   constructor(
-    private masService: MasService,
+    private amsService: DefaultAMSService,
     private route: ActivatedRoute,
     private router: Router,
   ) { 
@@ -35,7 +35,7 @@ export class SidebarComponent implements OnInit {
 
   ngOnInit(): void {
     // get the information for the sidebar
-    this.masService.getMAS().subscribe((MASs: any) => {
+    this.amsService.getAllMASs().subscribe((MASs: any) => {
       this.MASID = []
       if (MASs !== null) {
           for (let MAS of MASs) {

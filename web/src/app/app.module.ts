@@ -9,30 +9,25 @@ import { OverviewComponent } from './pages/overview/overview.component';
 import { AMSComponent } from './pages/ams/ams.component';
 import { DFComponent } from './pages/df/df.component';
 import { LoggerModule } from './pages/logger/logger.module';
-import { SharedModule } from './pages/shared/shared.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgxMatTimepickerModule } from 'ngx-mat-timepicker';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { NgxPaginationModule } from 'ngx-pagination';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core/';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatIconModule } from '@angular/material/icon';
+import { SharedModule } from './pages/shared/shared.module';
+
+import { AgencyApiModule } from './openapi-services/agency';
+import { AMSApiModule } from './openapi-services/ams';
+import { DFApiModule } from './openapi-services/df';
+import { LoggerApiModule } from './openapi-services/logger';
 
 
-
-
-const materialModules = [
-  MatDatepickerModule,
-  MatNativeDateModule,
-  MatFormFieldModule,
-  MatInputModule,
-  MatIconModule,
-  MatSelectModule,
-];
+const openAPIModules = [
+  AgencyApiModule,
+  AMSApiModule,
+  DFApiModule,
+  LoggerApiModule,
+]
 
 @NgModule({
   declarations: [
@@ -49,12 +44,16 @@ const materialModules = [
     BrowserAnimationsModule,
     FormsModule,
     ReactiveFormsModule,
-    ...materialModules,
     NgxMatTimepickerModule,
     NgxChartsModule,
     NgxPaginationModule,
     LoggerModule,
     SharedModule,
+    ...openAPIModules,
+  ],
+  exports: [
+    SharedModule,
+    openAPIModules,
   ],
   providers: [],
   bootstrap: [AppComponent]

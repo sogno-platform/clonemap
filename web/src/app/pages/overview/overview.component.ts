@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { MasService } from 'src/app/services/mas.service';
 import { NgbModal, NgbModalConfig } from '@ng-bootstrap/ng-bootstrap';
 import { Router, ActivatedRouteSnapshot } from '@angular/router'
 import { HttpResponse } from '@angular/common/http';
+import { DefaultAMSService } from 'src/app/openapi-services/ams';
 
 @Component({
   selector: 'app-overview',
@@ -20,15 +20,18 @@ export class OverviewComponent implements OnInit {
     status: string ="Connecting......";
     constructor(
         config: NgbModalConfig,
-        private masService: MasService,
         private modalService: NgbModal,
-        private router: Router
+        private router: Router,
+        private amsService: DefaultAMSService,
     ) {
         config.backdrop = "static";
     } 
 
     ngOnInit() {
         this.updateMAS();
+        this.amsService.getAllMASs().subscribe(res => {
+            console.log(res);
+        })
     }
 
 
@@ -62,7 +65,7 @@ export class OverviewComponent implements OnInit {
     
     onCreateMAS() {
         const result = JSON.parse(this.display);
-        this.masService.createMAS(result).subscribe(
+        this.amsService.createNewMAS(result).subscribe(
             (response) => {
             this.modalService.dismissAll();
             this.updateMAS();
@@ -76,7 +79,7 @@ export class OverviewComponent implements OnInit {
     }
 
     updateMAS() {
-        this.masService.getMAS().subscribe((MASs: any) => {
+        this.amsService.getAllMASs().subscribe((MASs: any) => {
             this.MASsDisplay = [];
             if (MASs !== null) {
                 for (let MAS of MASs) {
@@ -102,7 +105,7 @@ export class OverviewComponent implements OnInit {
     /********************   delete the MAS *************************/
     onDeleteMAS(id: string, deleting, deleted) {
         this.modalService.open(deleting, { size: 'sm', centered: true });
-        this.masService.deleteMASById(id).subscribe(
+        this.amsService.deleteOneMAS(parseInt(id)).subscribe(
             (res: HttpResponse<any>) => {
                 if (res.status === 200) {
                     this.modalService.dismissAll();

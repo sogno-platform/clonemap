@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { StatsInfo } from 'src/app/models/stats.mdoel'
-import { LoggerService} from 'src/app/services/logger.service';
 import { Router, Event, NavigationEnd } from '@angular/router';
-import { MasService } from 'src/app/services/mas.service';
+import { DefaultAMSService } from 'src/app/openapi-services/ams';
+import { DefaultLoggerService } from 'src/app/openapi-services/logger';
 
 @Component({
   selector: 'app-stats',
@@ -22,8 +22,8 @@ export class StatsComponent implements OnInit {
 
 
     constructor(
-        private loggerService: LoggerService,
-        private masService: MasService,
+        private loggerService: DefaultLoggerService,
+        private amsService: DefaultAMSService,
         private router: Router,
     ) { 
         this.router.events.subscribe((event: Event) => {
@@ -34,7 +34,7 @@ export class StatsComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        this.masService.getMASById(this.selectedMASID.toString()).subscribe((res: any) => {
+        this.amsService.getOneMAS(this.selectedMASID).subscribe((res: any) => {
             if (res.agents.counter !== 0) {
                 this.agentID = res.agents.instances.map(item => item.id);
             }
@@ -62,7 +62,7 @@ export class StatsComponent implements OnInit {
     drawStatistics(searchStartTime, searchEndTime) {
         if (this.agentStats !== -1) {
             const methods: string[] = ["max", "min", "count", "average"];
-            this.loggerService.getBehavior(this.selectedMASID.toString(), this.agentStats.toString(),
+            this.loggerService.getStats(this.selectedMASID, this.agentStats,
             this.selectedBehType, searchStartTime, searchEndTime).subscribe( (res: any) => {
                 this.statsInfo = res;
                 if (this.statsInfo.list === null) {

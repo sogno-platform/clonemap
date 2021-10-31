@@ -15,6 +15,14 @@ export interface LogSeries  {
 	value: number;				// value of the log series
 }
 
+export enum topics {
+	"error" = 0,
+	"debug" = 1, 
+	"msg" = 2, 
+	"status" = 3, 
+	"app" = 4
+}
+
 
 export interface pointSeries {
 	name: string;
@@ -27,6 +35,8 @@ class point {
 	y: number;
 	r: number;
 }
+
+
 
 
 

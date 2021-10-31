@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { LoggerService} from 'src/app/services/logger.service';
+import { DefaultLoggerService } from 'src/app/openapi-services/logger';
 import { Router, Event, NavigationEnd } from '@angular/router';
 import { LogSeries, pointSeries } from 'src/app/models/log.model';
 import { forkJoin, Observable} from 'rxjs';
@@ -47,7 +47,7 @@ export class LogseriesComponent implements OnInit {
     animations: boolean = true;
 
     constructor(
-        private loggerService: LoggerService,
+        private loggerService: DefaultLoggerService,
         private router: Router
         ) {
             this.router.events.subscribe((event: Event) => {
@@ -196,8 +196,8 @@ export class LogseriesComponent implements OnInit {
     multiNames(selectedAgent: number[]): Observable<any> {
         let res = [];
         for (let id of selectedAgent) {
-            res.push(this.loggerService.getLogSeriesNames(this.selectedMASID.toString(),
-            id.toString()));
+            res.push(this.loggerService.getLogSeriesNames(this.selectedMASID,
+            id));
         }
         return forkJoin(res);      
     }
@@ -206,8 +206,8 @@ export class LogseriesComponent implements OnInit {
     multiSeries(selectedAgent: number[], searchStartTime, searchEndTime): Observable<any> {
         let res = [];
         for (let id of selectedAgent) {
-            res.push(this.loggerService.getLogSeriesByName(this.selectedMASID.toString(),
-            id.toString(), this.selectedName, searchStartTime, searchEndTime));
+            res.push(this.loggerService.getLogSeriesInRange(this.selectedMASID,
+            id, this.selectedName, searchStartTime, searchEndTime));
         }
         return forkJoin(res);
     }

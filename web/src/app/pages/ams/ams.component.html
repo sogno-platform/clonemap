@@ -1,51 +1,65 @@
 
-<div class="pl-5">
-<div class="title my-4">Config</div>
-<table class="table table-striped mb-5 default-fontsize" style="width: 40rem;">
-    <tbody>
-        <tr>
-            <th>Id</th>
-            <td>{{selectedMAS.id}}</td>
-        </tr>
-        <tr>
-            <th>Name</th>
-            <td>{{ selectedMAS.config.name }}</td>
-        </tr>
-        <tr>
-            <th>Agents per agency</th>
-            <td>{{ selectedMAS.config.agentsperagency}}</td>
-        </tr>
-        <tr>    
-            <th>DF</th>
-            <td>{{selectedMAS.config.df.active}}</td>
-        </tr>
-        <tr>
-            <th>Logging</th>
-            <td>{{selectedMAS.config.logger.active}}</td>
-        </tr>
-        <tr>
-            <th>MQTT</th>
-            <td>{{ selectedMAS.config.mqtt.active}}</td>
-        </tr>
-    </tbody>
-</table>
+<div class="pl-5 pt-5">
+
+<div class="d-flex">
+<div class="customized-table mr-5">
+    <div class="title">
+        <p>Config</p>
+    </div> 
+    <table mat-table class="config" [dataSource]="MASConfig" class="mat-elevation-z8">
+
+        <!--- Note that these columns can be defined in any order.
+            The actual rendered columns are set as a property on the row definition" -->
+    
+        <!-- Position Column -->
+        <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef> Name </th>
+        <td mat-cell *matCellDef="let element"> {{element.name}} </td>
+        </ng-container>
+    
+        <!-- Name Column -->
+        <ng-container matColumnDef="value">
+        <th mat-header-cell *matHeaderCellDef> Value </th>
+        <td mat-cell *matCellDef="let element"> {{element.value}} </td>
+        </ng-container>
+        
+        <tr mat-header-row *matHeaderRowDef="configColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: configColumns;"></tr>
+    </table>
+</div>
+
+<div class="customized-table">
+<div class="title">Containers</div>
+<table mat-table class="config" [dataSource]="containerInfo" class="mat-elevation-z8">
 
 
-<div class="title mb-4">Containers</div>
-<table class="table mb-5 default-fontsize">
-    <thead>
-        <th>#</th>
-        <th>Image</th>
-        <th>Agencies</th>
-    </thead>
-    <tbody>
-    <tr *ngFor="let image of selectedMAS.imagegroups.instances, index as i" >
-        <th>{{image.id}}</th>
-        <td>{{image.config.image}}</td>
-        <td>{{image.agencies.counter}}</td>
-    </tr>
-    </tbody>
+    <ng-container matColumnDef="id">
+        <th mat-header-cell *matHeaderCellDef> id </th>
+        <td mat-cell *matCellDef="let element"> {{element.id}} </td>
+    </ng-container>
+
+    <!-- Position Column -->
+    <ng-container matColumnDef="image">
+    <th mat-header-cell *matHeaderCellDef> image </th>
+    <td mat-cell *matCellDef="let element"> {{element.image}} </td>
+    </ng-container>
+
+    <!-- Name Column -->
+    <ng-container matColumnDef="agencies">
+    <th mat-header-cell *matHeaderCellDef> agencies </th>
+    <td mat-cell *matCellDef="let element"> {{element.agencies}} </td>
+    </ng-container>
+    
+    <tr mat-header-row *matHeaderRowDef="containerColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: containerColumns;"></tr>
 </table>
+<mat-paginator [pageSizeOptions]="[5, 10, 20]"
+showFirstLastButtons 
+aria-label="Select page of periodic elements">
+</mat-paginator>
+</div>
+
+</div>
 
 <div class="title mb-4">Agents</div>
 <div>

@@ -76,8 +76,7 @@
 				"serve": {
 					"builder": "@angular-devkit/build-angular:dev-server",
 					"options": {
-						"browserTarget": "clonemap-frontend:build",
-						"proxyConfig": "src/proxy.conf.json"
+						"browserTarget": "clonemap-frontend:build"
 					},
 					"configurations": {
 						"production": {

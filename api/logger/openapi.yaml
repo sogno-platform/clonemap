@@ -228,7 +228,7 @@ components:
       schema:
         type: integer
     topic:
-      name: log-type
+      name: topic
       in: path
       description: type of logging
       required: true

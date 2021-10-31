@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { LoggerService} from 'src/app/services/logger.service';
+import { DefaultLoggerService } from 'src/app/openapi-services/logger';
 import { Router, Event, NavigationEnd } from '@angular/router';
 
 
@@ -23,7 +23,7 @@ export class HeatmapComponent implements OnInit {
 
         
     constructor(
-        private loggerService: LoggerService,
+        private loggerService: DefaultLoggerService,
         private router: Router
     ) { 
         this.router.events.subscribe((event: Event) => {
@@ -142,7 +142,7 @@ export class HeatmapComponent implements OnInit {
     }
 
     drawHeatmap(searchStartTime: string, searchEndTime: string) {
-    this.loggerService.getMsgHeatmap(this.selectedMASID.toString(), searchStartTime, searchEndTime).subscribe( (res: any) => {
+    this.loggerService.getMsgHeatmap(this.selectedMASID, searchStartTime, searchEndTime).subscribe( (res: any) => {
         let values: number[] = [];
         for (let i = 0; i < res.length; i++) {
             values.push(parseInt(res[i].split("-")[2]))
