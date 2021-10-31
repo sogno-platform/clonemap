@@ -169,7 +169,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/LogMessage'
 
-  /logging/stats/{masid}/heatmap/{start}/{end}:
+  /api/logging/stats/{masid}/heatmap/{start}/{end}:
     parameters:
     - $ref: '#/components/parameters/masID'
     - name: start

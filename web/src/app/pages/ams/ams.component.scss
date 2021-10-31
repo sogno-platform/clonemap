@@ -5,29 +5,34 @@
 }
 */
 
+
 .customized-table {
-   width: 600px;
+
+   .table-contents {
+      border: 4px solid gray;
+      border-radius: 0 20px 20px 20px !important;
+      
+      &.upper {
+         width: 600px;
+      }
+
+      &.lower {
+         width: 1200px;
+      }
+   }
 
    .title {
       color: gray;
       font-size:3rem;
       height: 4rem;
       width: fit-content;
-      border: 2px solid gray;
+      border: 4px solid gray;
       border-radius: 10px 10px 0 0;
       border-bottom: none;
       padding: 2rem;
       padding-bottom: 4rem;
    }
 
-
-   table {
-      width: 600px;
-      border: 2px solid gray;
-      border-radius: 0 10px 10px 10px;
-      outline: none !important;
-      box-shadow: none !important;
-   }
 }
 
 
@@ -38,12 +43,10 @@ h1 {
    text-align: center;
 }
 
-
-
-
-
-.pagination ::ng-deep .ngx-pagination .current {
-   background: var(--secondary);
+td, th {
+   padding-top: 2rem !important;
+   padding-bottom: 2rem !important;   
+   text-align: center;
 }
 
 

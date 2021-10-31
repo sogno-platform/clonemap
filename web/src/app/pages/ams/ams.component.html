@@ -1,90 +1,76 @@
 
 <div class="pl-5 pt-5">
 
-<div class="d-flex">
+<div class="d-flex mb-5">
 <div class="customized-table mr-5">
     <div class="title">
         <p>Config</p>
     </div> 
-    <table mat-table class="config" [dataSource]="MASConfig" class="mat-elevation-z8">
+    <div class="table-contents upper">
+    <table class="table default-fontsize">
+        <tbody>
+        <tr *ngFor="let item of MASConfig ">
+            <td >{{item.name}}</td>
+            <td >{{item.value}}</td>
+        </tbody>
+    </table> 
+    </div>
+</div>
 
-        <!--- Note that these columns can be defined in any order.
-            The actual rendered columns are set as a property on the row definition" -->
-    
-        <!-- Position Column -->
-        <ng-container matColumnDef="name">
-        <th mat-header-cell *matHeaderCellDef> Name </th>
-        <td mat-cell *matCellDef="let element"> {{element.name}} </td>
-        </ng-container>
-    
-        <!-- Name Column -->
-        <ng-container matColumnDef="value">
-        <th mat-header-cell *matHeaderCellDef> Value </th>
-        <td mat-cell *matCellDef="let element"> {{element.value}} </td>
-        </ng-container>
-        
-        <tr mat-header-row *matHeaderRowDef="configColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: configColumns;"></tr>
-    </table>
+<div class="customized-table mr-5">
+    <div class="title">
+        <p>Containers</p>
+    </div> 
+    <div class="table-contents upper">
+    <table class="table table-striped default-fontsize">
+        <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">image</th>
+            <th scope="col">agencies</th>                                             
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let item of containerInfo ">
+            <th>{{item.id}}</th>
+            <td>{{item.image}}</td>
+            <td>{{item.agencies}}</td>
+        </tbody>
+    </table> 
+    </div>
+</div>
+
 </div>
 
 <div class="customized-table">
-<div class="title">Containers</div>
-<table mat-table class="config" [dataSource]="containerInfo" class="mat-elevation-z8">
-
-
-    <ng-container matColumnDef="id">
-        <th mat-header-cell *matHeaderCellDef> id </th>
-        <td mat-cell *matCellDef="let element"> {{element.id}} </td>
-    </ng-container>
-
-    <!-- Position Column -->
-    <ng-container matColumnDef="image">
-    <th mat-header-cell *matHeaderCellDef> image </th>
-    <td mat-cell *matCellDef="let element"> {{element.image}} </td>
-    </ng-container>
-
-    <!-- Name Column -->
-    <ng-container matColumnDef="agencies">
-    <th mat-header-cell *matHeaderCellDef> agencies </th>
-    <td mat-cell *matCellDef="let element"> {{element.agencies}} </td>
-    </ng-container>
-    
-    <tr mat-header-row *matHeaderRowDef="containerColumns"></tr>
-    <tr mat-row *matRowDef="let row; columns: containerColumns;"></tr>
-</table>
-<mat-paginator [pageSizeOptions]="[5, 10, 20]"
-showFirstLastButtons 
-aria-label="Select page of periodic elements">
-</mat-paginator>
+    <div class="title">
+        <p>Agents</p>
+    </div> 
+    <div class="table-contents lower">
+    <table class=" table table-striped default-fontsize">
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">name</th>
+            <th scope="col">type</th>
+            <th scope="col">agency</th>                                                  
+        </tr>
+        <tbody>
+        <tr *ngFor="let item of agentsInfo ">
+            <th>{{item.id}}</th>
+            <td>{{item.name}}</td>
+            <td>{{item.type}}</td>
+            <td>{{item.agency}}</td>
+        </tbody>
+    </table> 
+    </div>
 </div>
 
-</div>
 
-<div class="title mb-4">Agents</div>
-<div>
-<table class="table mb-5 default-fontsize">
-    <thead>
-        <th>#</th>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Agency</th>
-    </thead>
-    <tbody>
-    <tr *ngFor="let agent of selectedMAS.agents.instances | paginate: { itemsPerPage: 12, currentPage: q } index as i;">
-        <th> {{agent.id}}</th>
-        <td>{{agent.spec.name}}</td>
-        <td>{{agent.spec.type}}</td>
-        <td>{{agent.address.agency}}</td>
-    </tr>
-    </tbody>
-</table>
-
-<div class="d-flex justify-content-end pr-5">
+<!-- <div class="d-flex justify-content-end pr-5">
 <pagination-controls class="pagination" (pageChange)="q = $event"></pagination-controls>
 </div>
 </div>
-
+ -->
 </div>
 
 
