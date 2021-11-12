@@ -19,3 +19,8 @@ jobs:
     - name: build ams
       working-directory: ${{ github.workspace }}/cmd/ams
       run: CGO_ENABLED=0 GOOS=linux go build -ldflags '-s' -o ams
+    - name: test
+      working-directory: ${{ github.workspace }}/pkg
+      run: |
+        go test ./... -coverprofile cover.out
+        go tool cover -func cover.out
