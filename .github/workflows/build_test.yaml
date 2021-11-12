@@ -29,7 +29,7 @@ jobs:
       working-directory: ${{ github.workspace }}/cmd/df
       run: CGO_ENABLED=0 GOOS=linux go build -ldflags '-s' -o df
     - name: build pnp
-      working-directory: ${{ github.workspace }}/cmd/pnp
+      working-directory: ${{ github.workspace }}/cmd/plugnplay
       run: CGO_ENABLED=0 GOOS=linux go build -ldflags '-s' -o pnp
     - name: build frontend
       working-directory: ${{ github.workspace }}/cmd/frontend
