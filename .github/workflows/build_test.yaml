@@ -19,7 +19,25 @@ jobs:
     - name: build ams
       working-directory: ${{ github.workspace }}/cmd/ams
       run: CGO_ENABLED=0 GOOS=linux go build -ldflags '-s' -o ams
-    - name: test
+    - name: build agency
+      working-directory: ${{ github.workspace }}/cmd/agency
+      run: CGO_ENABLED=0 GOOS=linux go build -ldflags '-s' -o agency
+    - name: build logger
+      working-directory: ${{ github.workspace }}/cmd/logger
+      run: CGO_ENABLED=0 GOOS=linux go build -ldflags '-s' -o logger
+    - name: build df
+      working-directory: ${{ github.workspace }}/cmd/df
+      run: CGO_ENABLED=0 GOOS=linux go build -ldflags '-s' -o df
+    - name: build pnp
+      working-directory: ${{ github.workspace }}/cmd/pnp
+      run: CGO_ENABLED=0 GOOS=linux go build -ldflags '-s' -o pnp
+    - name: build frontend
+      working-directory: ${{ github.workspace }}/cmd/frontend
+      run: CGO_ENABLED=0 GOOS=linux go build -ldflags '-s' -o frontend
+    - name: build kubestub
+      working-directory: ${{ github.workspace }}/cmd/kubestub
+      run: CGO_ENABLED=0 GOOS=linux go build -ldflags '-s' -o kubestub
+    - name: test all
       working-directory: ${{ github.workspace }}/pkg
       run: |
         go test ./... -coverprofile cover.out
