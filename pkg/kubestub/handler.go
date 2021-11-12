@@ -55,8 +55,8 @@ import (
 	"strconv"
 	"strings"
 
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/common/httpreply"
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
+	"github.com/RWTH-ACS/clonemap/pkg/common/httpreply"
+	"github.com/RWTH-ACS/clonemap/pkg/schemas"
 )
 
 // handleAPI is the global handler for requests to path /api

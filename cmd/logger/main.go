@@ -45,7 +45,7 @@ THE SOFTWARE.
 package main
 
 import (
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/logger"
+	"github.com/RWTH-ACS/clonemap/pkg/logger"
 )
 
 func main() {

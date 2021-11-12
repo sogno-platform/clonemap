@@ -52,9 +52,9 @@ import (
 	"log"
 	"sync"
 
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/client"
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/status"
+	"github.com/RWTH-ACS/clonemap/pkg/client"
+	"github.com/RWTH-ACS/clonemap/pkg/schemas"
+	"github.com/RWTH-ACS/clonemap/pkg/status"
 )
 
 // Agent holds information about an agent and implements functionality for agent execution

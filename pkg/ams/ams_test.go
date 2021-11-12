@@ -53,9 +53,9 @@ import (
 	"testing"
 	"time"
 
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/client"
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/common/httpreply"
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
+	"github.com/RWTH-ACS/clonemap/pkg/client"
+	"github.com/RWTH-ACS/clonemap/pkg/common/httpreply"
+	"github.com/RWTH-ACS/clonemap/pkg/schemas"
 )
 
 func TestAMS(t *testing.T) {

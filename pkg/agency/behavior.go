@@ -49,7 +49,7 @@ import (
 	"log"
 	"time"
 
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
+	"github.com/RWTH-ACS/clonemap/pkg/schemas"
 )
 
 // Behavior defines execution of a certain behavior

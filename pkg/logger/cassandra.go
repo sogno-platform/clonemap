@@ -50,7 +50,7 @@ import (
 	"fmt"
 	"time"
 
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
+	"github.com/RWTH-ACS/clonemap/pkg/schemas"
 	"github.com/gocql/gocql"
 )
 

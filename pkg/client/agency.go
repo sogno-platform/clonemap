@@ -50,9 +50,9 @@ import (
 	"strconv"
 	"time"
 
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/common/httpretry"
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/status"
+	"github.com/RWTH-ACS/clonemap/pkg/common/httpretry"
+	"github.com/RWTH-ACS/clonemap/pkg/schemas"
+	"github.com/RWTH-ACS/clonemap/pkg/status"
 )
 
 // AgencyClient is the ams client

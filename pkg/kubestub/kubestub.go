@@ -54,7 +54,7 @@ import (
 	"strconv"
 	"syscall"
 
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
+	"github.com/RWTH-ACS/clonemap/pkg/schemas"
 )
 
 // LocalStub holds context information such as a list of all started agencies

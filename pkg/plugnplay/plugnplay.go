@@ -54,7 +54,7 @@ import (
 	"os"
 	"time"
 
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/client"
+	"github.com/RWTH-ACS/clonemap/pkg/client"
 )
 
 // PnP implements the plug and play mechanism

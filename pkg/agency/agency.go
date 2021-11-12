@@ -58,9 +58,9 @@ import (
 	"syscall"
 	"time"
 
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/client"
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/status"
+	"github.com/RWTH-ACS/clonemap/pkg/client"
+	"github.com/RWTH-ACS/clonemap/pkg/schemas"
+	"github.com/RWTH-ACS/clonemap/pkg/status"
 )
 
 // Agency contains information about agents located in agency

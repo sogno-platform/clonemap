@@ -51,8 +51,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/client"
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
+	"github.com/RWTH-ACS/clonemap/pkg/client"
+	"github.com/RWTH-ACS/clonemap/pkg/schemas"
 )
 
 // remoteAgency holds the channel used for sending messages to remot agency

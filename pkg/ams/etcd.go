@@ -72,8 +72,8 @@ import (
 	"sync"
 	"time"
 
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/status"
+	"github.com/RWTH-ACS/clonemap/pkg/schemas"
+	"github.com/RWTH-ACS/clonemap/pkg/status"
 	"go.etcd.io/etcd/clientv3"
 	"go.etcd.io/etcd/clientv3/concurrency"
 	"go.etcd.io/etcd/mvcc/mvccpb"

@@ -57,8 +57,8 @@ import (
 	"sync"
 	"time"
 
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/common/httpretry"
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
+	"github.com/RWTH-ACS/clonemap/pkg/common/httpretry"
+	"github.com/RWTH-ACS/clonemap/pkg/schemas"
 )
 
 // DFClient is the ams client
