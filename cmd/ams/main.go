@@ -47,7 +47,7 @@ package main
 import (
 	"fmt"
 
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/ams"
+	"github.com/RWTH-ACS/clonemap/pkg/ams"
 )
 
 func main() {

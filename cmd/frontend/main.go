@@ -44,7 +44,7 @@ THE SOFTWARE.
 
 package main
 
-import "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/frontend"
+import "github.com/RWTH-ACS/clonemap/pkg/frontend"
 
 func main() {
 	frontend.StartFrontend()

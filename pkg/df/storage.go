@@ -52,7 +52,7 @@ import (
 
 	"github.com/rs/xid"
 
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
+	"github.com/RWTH-ACS/clonemap/pkg/schemas"
 )
 
 // storage interface for interaction with storage

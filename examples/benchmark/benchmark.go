@@ -51,8 +51,8 @@ import (
 	"strconv"
 	"time"
 
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/agency"
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
+	"github.com/RWTH-ACS/clonemap/pkg/agency"
+	"github.com/RWTH-ACS/clonemap/pkg/schemas"
 )
 
 // CustomAgentData is the custom agent configuration

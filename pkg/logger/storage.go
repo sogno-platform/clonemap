@@ -53,7 +53,7 @@ import (
 	"sync"
 	"time"
 
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
+	"github.com/RWTH-ACS/clonemap/pkg/schemas"
 )
 
 // storage is the interface for logging and state storage (either local or in db)

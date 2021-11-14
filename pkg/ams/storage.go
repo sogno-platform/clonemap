@@ -53,8 +53,8 @@ import (
 	"sync"
 	"time"
 
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/status"
+	"github.com/RWTH-ACS/clonemap/pkg/schemas"
+	"github.com/RWTH-ACS/clonemap/pkg/status"
 )
 
 // storage interface for interaction with storage

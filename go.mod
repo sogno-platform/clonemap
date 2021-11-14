@@ -1,4 +1,4 @@
-module git.rwth-aachen.de/acs/public/cloud/mas/clonemap
+module github.com/RWTH-ACS/clonemap
 
 require (
 	git.rwth-aachen.de/acs/public/cloud/fiware/gofiware v0.0.0-20200318111355-26136d7f7ea7

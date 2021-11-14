@@ -51,8 +51,8 @@ import (
 	"strconv"
 	"sync"
 
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/client"
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/schemas"
+	"github.com/RWTH-ACS/clonemap/pkg/client"
+	"github.com/RWTH-ACS/clonemap/pkg/schemas"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 

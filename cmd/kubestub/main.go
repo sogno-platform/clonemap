@@ -46,7 +46,7 @@ THE SOFTWARE.
 package main
 
 import (
-	"git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/kubestub"
+	"github.com/RWTH-ACS/clonemap/pkg/kubestub"
 )
 
 func main() {
