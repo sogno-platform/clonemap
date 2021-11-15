@@ -347,7 +347,7 @@ spec:
     spec:
       containers:
       - name: ams-container
-        image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/ams
+        image: clonemap/ams
         env:
           - name: CLONEMAP_DEPLOYMENT_TYPE
             value: "production"
@@ -561,7 +561,7 @@ spec:
     spec:
       containers:
       - name: logger-container
-        image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/logger
+        image: clonemap/logger
         env:
           - name: CLONEMAP_DEPLOYMENT_TYPE
             value: "production"
@@ -628,7 +628,7 @@ spec:
     spec:
       containers:
       - name: df-container
-        image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/df
+        image: clonemap/df
         env:
           - name: CLONEMAP_DEPLOYMENT_TYPE
             value: "production"
@@ -695,7 +695,7 @@ spec:
     spec:
       containers:
       - name: fe-container
-        image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/frontend
+        image: clonemap/frontend
         env:
           - name: CLONEMAP_DEPLOYMENT_TYPE
             value: "production"
