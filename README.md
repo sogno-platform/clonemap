@@ -66,7 +66,7 @@ at your option.
 
 [![EONERC ACS Logo](docs/eonerc_logo.png)](http://www.acs.eonerc.rwth-aachen.de)
 
-- [Stefan Dähling](mailto:sdaehling@eonerc.rwth-aachen.de)
+- [Stefan Dähling](mailto:stefan.daehling@rwth-aachen.de)
 
 [Institute for Automation of Complex Power Systems (ACS)](http://www.acs.eonerc.rwth-aachen.de)  
 [EON Energy Research Center (EONERC)](http://www.eonerc.rwth-aachen.de)  
