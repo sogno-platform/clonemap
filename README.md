@@ -5,8 +5,7 @@
 cloneMAP is a multi-agent platform (MAP) that is designed to run in a cloud environment based on [Kubernetes](https://kubernetes.io/).
 The aim of this project is to combine the advantages of cloud computing and a distributed computing paradigm such as multi-agent systems.
 
-[![pipeline status](https://git.rwth-aachen.de/acs/public/cloud/mas/clonemap/badges/master/pipeline.svg)](git.rwth-aachen.de/acs/public/cloud/mas/clonemap/commits/master)
-[![Go Report Card](https://goreportcard.com/badge/git.rwth-aachen.de/acs/public/cloud/mas/clonemap)](https://goreportcard.com/report/git.rwth-aachen.de/acs/public/cloud/mas/clonemap)
+[![Go Report Card](https://goreportcard.com/badge/github.com/rwth-acs/clonemap)](https://goreportcard.com/report/github.com/rwth-acs/clonemap)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
@@ -66,7 +65,7 @@ at your option.
 
 [![EONERC ACS Logo](docs/eonerc_logo.png)](http://www.acs.eonerc.rwth-aachen.de)
 
-- [Stefan Dähling](mailto:sdaehling@eonerc.rwth-aachen.de)
+- [Stefan Dähling](mailto:stefan.daehling@rwth-aachen.de)
 
 [Institute for Automation of Complex Power Systems (ACS)](http://www.acs.eonerc.rwth-aachen.de)  
 [EON Energy Research Center (EONERC)](http://www.eonerc.rwth-aachen.de)  

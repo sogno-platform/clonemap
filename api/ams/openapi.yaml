@@ -89,6 +89,10 @@ paths:
       responses:
         '201':
           description: Created
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/MASInfo'
     delete:
       description: delete all MASs
       responses:
@@ -151,6 +155,12 @@ paths:
       responses:
         '201':
           description: Created
+          content:
+            applications/json:
+              schema:
+                type: array
+                items:
+                  type: integer
   /api/clonemap/mas/{masid}/agents/{agentid}:
     parameters:
     - $ref: '#/components/parameters/masID'

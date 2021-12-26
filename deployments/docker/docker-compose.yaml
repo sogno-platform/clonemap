@@ -4,7 +4,7 @@ services:
   kubestub: 
     container_name: kubestub
     hostname: kubestub
-    image: clonemap/clonemap_local
+    image: clonemap/clonemap_local:${CLONEMAP_DOCKER_TAG}
     environment:
       CLONEMAP_LOG_LEVEL: ${CLONEMAP_LOG_LEVEL}
     volumes:
@@ -16,7 +16,7 @@ services:
     stop_grace_period: 30s
 
   ams: 
-    image: clonemap/ams
+    image: clonemap/ams:${CLONEMAP_DOCKER_TAG}
     environment:
       CLONEMAP_DEPLOYMENT_TYPE: ${CLONEMAP_DEPLOYMENT_TYPE}
       CLONEMAP_STORAGE_TYPE: ${CLONEMAP_STORAGE_TYPE}
