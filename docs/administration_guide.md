@@ -4,7 +4,7 @@ This administration guide provides the knowledge necessary to start, maintain an
 
 ## Local deployment
 
-Although cloneMAP is designed to be executed within a Kubernetes cluster it can also be executed locally.
+Although cloneMAP is designed to be executed on a Kubernetes cluster it can also be executed locally.
 This is ment as an easier way to test your MAS application.
 Note that microservices such as the AMS, DF and Logger cannot be scaled horizontally with this method.
 Moreover, the platform is not fault-tolerant when deployed locally and cannot be spread over several machines.
@@ -71,7 +71,7 @@ Moreover, you can set the log level to either:
 
 The kubestub container is started in foreground mode.
 It will give a message when a new container is started and show *Ready* once all specified modules are started.
-You can terminate cloneMAP terminating the kubestub container.
+You can terminate cloneMAP by terminating the kubestub container.
 In the concole where you started the kubestub container press `ctrl`+`c`.
 This process might take a few seconds since the kubestub container cleans up before terminating.
 That means that all containers started by the kubestub container are terminated.

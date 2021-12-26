@@ -70,6 +70,25 @@ func Created(w http.ResponseWriter, cmaperr error, content string, answer []byte
 	return
 }
 
+// CreatedResource returns resource after creation
+func CreatedResource(w http.ResponseWriter, v interface{}, cmaperr error) (err error) {
+	if cmaperr == nil {
+		var res []byte
+		res, err = json.Marshal(v)
+		if err == nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusCreated)
+			_, err = w.Write(res)
+		} else {
+			err = JSONMarshalError(w)
+		}
+	} else {
+		err = CMAPError(w, cmaperr.Error())
+	}
+
+	return
+}
+
 // Deleted writes standard response for ressource deleteion
 func Deleted(w http.ResponseWriter, cmaperr error) (err error) {
 	if cmaperr == nil {

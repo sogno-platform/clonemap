@@ -124,13 +124,14 @@ func (ams *AMS) handlePostMAS(w http.ResponseWriter, r *http.Request) {
 		ams.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
-	cmapErr = ams.createMAS(masSpec)
+	var masInfo schemas.MASInfo
+	masInfo, cmapErr = ams.createMAS(masSpec)
 	if cmapErr != nil {
 		httpErr = httpreply.CMAPError(w, cmapErr.Error())
 		ams.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
-	httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Ressource Created"))
+	httpErr = httpreply.CreatedResource(w, masInfo, cmapErr)
 	ams.logErrors(r.URL.Path, cmapErr, httpErr)
 }
 
@@ -241,13 +242,14 @@ func (ams *AMS) handlePostAgent(w http.ResponseWriter, r *http.Request) {
 		ams.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
-	cmapErr = ams.createAgents(masID, imgroupSpecs)
+	var agentIDs []int
+	agentIDs, cmapErr = ams.createAgents(masID, imgroupSpecs)
 	if cmapErr != nil {
 		httpErr = httpreply.CMAPError(w, cmapErr.Error())
 		ams.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
-	httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Ressource Created"))
+	httpErr = httpreply.CreatedResource(w, agentIDs, cmapErr)
 	ams.logErrors(r.URL.Path, cmapErr, httpErr)
 }
 
