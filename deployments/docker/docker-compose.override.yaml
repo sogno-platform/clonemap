@@ -12,7 +12,7 @@ services:
       - clonemap-net
 
   logger:
-    image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/logger
+    image: clonemap/logger:${CLONEMAP_DOCKER_TAG}
     environment:
       CLONEMAP_DEPLOYMENT_TYPE: ${CLONEMAP_DEPLOYMENT_TYPE}
       CLONEMAP_LOG_LEVEL: ${CLONEMAP_LOG_LEVEL}
@@ -25,7 +25,7 @@ services:
       - clonemap-net
 
   df:
-    image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/df
+    image: clonemap/df:${CLONEMAP_DOCKER_TAG}
     environment:
       CLONEMAP_DEPLOYMENT_TYPE: ${CLONEMAP_DEPLOYMENT_TYPE}
       CLONEMAP_LOG_LEVEL: ${CLONEMAP_LOG_LEVEL}
@@ -38,7 +38,7 @@ services:
       - clonemap-net
 
   pnp:
-    image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/plugnplay
+    image: clonemap/plugnplay:${CLONEMAP_DOCKER_TAG}
     environment:
       CLONEMAP_DEPLOYMENT_TYPE: ${CLONEMAP_DEPLOYMENT_TYPE}
       CLONEMAP_LOG_LEVEL: ${CLONEMAP_LOG_LEVEL}
@@ -50,7 +50,7 @@ services:
       - clonemap-net
 
   fe:
-    image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/frontend
+    image: clonemap/frontend:${CLONEMAP_DOCKER_TAG}
     environment:
       CLONEMAP_DEPLOYMENT_TYPE: ${CLONEMAP_DEPLOYMENT_TYPE}
       CLONEMAP_LOG_LEVEL: ${CLONEMAP_LOG_LEVEL}

@@ -347,8 +347,7 @@ spec:
     spec:
       containers:
       - name: ams-container
-        image: localtest/ams:latest
-        imagePullPolicy: Never
+        image: clonemap/ams
         env:
           - name: CLONEMAP_DEPLOYMENT_TYPE
             value: "production"
@@ -566,8 +565,7 @@ spec:
     spec:
       containers:
       - name: logger-container
-        image: localtest/logger:latest
-        imagePullPolicy: Never
+        image: clonemap/logger
         env:
           - name: CLONEMAP_DEPLOYMENT_TYPE
             value: "production"
@@ -634,7 +632,7 @@ spec:
     spec:
       containers:
       - name: df-container
-        image: registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/df
+        image: clonemap/df
         env:
           - name: CLONEMAP_DEPLOYMENT_TYPE
             value: "production"
@@ -701,8 +699,7 @@ spec:
     spec:
       containers:
       - name: fe-container
-        image: localtest/frontend:latest
-        imagePullPolicy: Never
+        image: clonemap/frontend
         env:
           - name: CLONEMAP_DEPLOYMENT_TYPE
             value: "production"

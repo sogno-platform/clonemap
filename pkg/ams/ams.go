@@ -264,11 +264,10 @@ func (ams *AMS) getAgencyInfoFull(masID int, imID int, agencyID int) (ret schema
 }
 
 // createMAS creates a new mas according to masconfig
-func (ams *AMS) createMAS(masSpec schemas.MASSpec) (err error) {
+func (ams *AMS) createMAS(masSpec schemas.MASSpec) (ret schemas.MASInfo, err error) {
 	// fill masInfo
-	var masInfo schemas.MASInfo
 	var numAgencies []int
-	masInfo, numAgencies, err = ams.configureMAS(masSpec)
+	ret, numAgencies, err = ams.configureMAS(masSpec)
 	if err != nil {
 		return
 	}
@@ -280,8 +279,9 @@ func (ams *AMS) createMAS(masSpec schemas.MASSpec) (err error) {
 	if err != nil {
 		return
 	}
+	ret.ID = masID
 
-	go ams.startMAS(masID, masInfo, numAgencies)
+	go ams.startMAS(masID, ret, numAgencies)
 
 	return
 }
@@ -465,8 +465,10 @@ func (ams *AMS) removeMAS(masID int) (err error) {
 	return
 }
 
-// createAgents creates new agents and adds them to an existing mas
-func (ams *AMS) createAgents(masID int, groupSpecs []schemas.ImageGroupSpec) (err error) {
+// createAgents creates new agents and adds them to an existing mas; returns slice with new
+// agent ids
+func (ams *AMS) createAgents(masID int, groupSpecs []schemas.ImageGroupSpec) (ret []int,
+	err error) {
 	for i := range groupSpecs {
 		var newGroup bool
 		var imID int
@@ -484,6 +486,7 @@ func (ams *AMS) createAgents(masID int, groupSpecs []schemas.ImageGroupSpec) (er
 			if err != nil {
 				return
 			}
+			ret = append(ret, agentID)
 			if newGroup {
 				// continue if group is new group
 				continue
