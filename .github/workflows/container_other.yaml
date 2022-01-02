@@ -1,0 +1,70 @@
+name: Container
+
+on:
+  push:
+    branches-ignore:
+      - master
+      - develop
+
+jobs:
+  container:
+    name: Container
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKER_HUB_USERNAME }}
+        password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+    - name: build and push ams
+      uses: docker/build-push-action@v2
+      with:
+        file: build/docker/ams/Dockerfile
+        push: true
+        tags: clonemap/ams:latest
+
+    - name: build and push agency
+      uses: docker/build-push-action@v2
+      with:
+        file: build/docker/agency/Dockerfile
+        push: true
+        tags: clonemap/agency:latest
+
+    - name: build and push logger
+      uses: docker/build-push-action@v2
+      with:
+        file: build/docker/logger/Dockerfile
+        push: true
+        tags: clonemap/logger:latest
+
+    - name: build and push df
+      uses: docker/build-push-action@v2
+      with:
+        file: build/docker/df/Dockerfile
+        push: true
+        tags: clonemap/df:latest
+
+    - name: build and push plugnplay
+      uses: docker/build-push-action@v2
+      with:
+        file: build/docker/plugnplay/Dockerfile
+        push: true
+        tags: clonemap/plugnplay:latest
+
+    - name: build and push frontend
+      uses: docker/build-push-action@v2
+      with:
+        file: build/docker/frontend/Dockerfile
+        push: true
+        tags: clonemap/frontend:latest
+
+    - name: build and push clonemap local
+      uses: docker/build-push-action@v2
+      with:
+        file: build/docker/clonemap_local/Dockerfile
+        push: true
+        tags: clonemap/clonemap_local:latest
