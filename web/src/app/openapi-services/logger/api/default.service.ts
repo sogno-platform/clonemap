@@ -369,7 +369,7 @@ export class DefaultLoggerService {
             responseType_ = 'text';
         }
 
-        return this.httpClient.get<Array<string>>(`${this.configuration.basePath}/logging/stats/${encodeURIComponent(String(masid))}/heatmap/${encodeURIComponent(String(start))}/${encodeURIComponent(String(end))}`,
+        return this.httpClient.get<Array<string>>(`${this.configuration.basePath}/api/logging/stats/${encodeURIComponent(String(masid))}/heatmap/${encodeURIComponent(String(start))}/${encodeURIComponent(String(end))}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,

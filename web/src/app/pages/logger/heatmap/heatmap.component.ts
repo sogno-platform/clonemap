@@ -144,6 +144,7 @@ export class HeatmapComponent implements OnInit {
     drawHeatmap(searchStartTime: string, searchEndTime: string) {
     this.loggerService.getMsgHeatmap(this.selectedMASID, searchStartTime, searchEndTime).subscribe( (res: any) => {
         let values: number[] = [];
+        let maxID: number = 0;
         for (let i = 0; i < res.length; i++) {
             values.push(parseInt(res[i].split("-")[2]))
         }
@@ -154,12 +155,20 @@ export class HeatmapComponent implements OnInit {
             this.colorLegendTexts = [];
             this.grids = [];
             for (let i = 0; i < res.length; i++) {
+                let x = res[i].split("-")[0]
+                let y = res[i].split("-")[1]
                 this.grids.push({
-                    x: res[i].split("-")[0],
-                    y: res[i].split("-")[1],
+                    x: x,
+                    y: y,
                     value: res[i].split("-")[2],
                     color: this.gridColors[i]
                 })
+                if (x > maxID) {
+                    maxID = x
+                }
+                if (y > maxID) {
+                    maxID = y
+                }
             }
         } else {
             this.grids = [];
@@ -178,14 +187,23 @@ export class HeatmapComponent implements OnInit {
                 const idx = mapIdx.get(parseInt(item.split("-")[2]));
                 const color: string = this.colorPartitionEle[this.manualConvertColor(idx, sortedSet.length)];
                 this.gridColors.push(color)
+                let x = item.split("-")[0]
+                let y = item.split("-")[1]
                 this.grids.push({
-                    x: item.split("-")[0],
-                    y: item.split("-")[1],
+                    x: x,
+                    y: y,
                     value: item.split("-")[2],
                     color: color
                 })
+                if (x > maxID) {
+                    maxID = x
+                }
+                if (y > maxID) {
+                    maxID = y
+                }
             }
         }
+        this.gridWidth = 3000 / (maxID+1)
     })
     }
 
