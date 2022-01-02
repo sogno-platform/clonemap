@@ -28,7 +28,7 @@
 <app-agent-selector #agentSelector [selectedMASID]=selectedMASID></app-agent-selector>
 
     
-<ng-template #popContent > 
+<ng-template #popContent> 
     <div class="default-fontsize" *ngFor="let content of popoverContent">
         {{content}}
     </div>
@@ -50,8 +50,8 @@
     <rect class="logBox" *ngFor="let box of logBoxes, index as i" 
         [class.hidden]="box.hidden" 
         (mouseenter)="onChangePopoverContent(i)" 
-        triggers="mouseenter:mouseleave" 
         [ngbPopover]="popContent" 
+        triggers="mouseenter:mouseleave" 
         placement="right" 
         container="body" 
         stroke="grey" 

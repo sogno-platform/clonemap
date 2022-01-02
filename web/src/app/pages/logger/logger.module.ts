@@ -6,6 +6,7 @@ import { LoggerRoutingModule } from './logger-routing.module';
 import { NgxMatTimepickerModule } from 'ngx-mat-timepicker';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { NgxPaginationModule } from 'ngx-pagination';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 
 import { SharedModule } from '../shared/shared.module';
@@ -35,6 +36,7 @@ import { PeriodSelectorComponent } from './widgets/period-selector/period-select
     NgxMatTimepickerModule,
     NgxChartsModule,
     NgxPaginationModule,
+    NgbModule,
     FormsModule,
     ReactiveFormsModule,
     SharedModule,
