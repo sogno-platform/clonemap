@@ -107,11 +107,9 @@ export class OverviewComponent implements OnInit {
         this.modalService.open(deleting, { size: 'sm', centered: true });
         this.amsService.deleteOneMAS(parseInt(id)).subscribe(
             (res: HttpResponse<any>) => {
-                if (res.status === 200) {
-                    this.modalService.dismissAll();
-                    this.modalService.open(deleted, { size: 'sm', centered: true });
-                }
-            },        
+                this.modalService.dismissAll();
+                this.modalService.open(deleted, { size: 'sm', centered: true });
+            },
             (err) => {
                 console.log(err)
             }

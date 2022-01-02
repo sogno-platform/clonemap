@@ -130,14 +130,14 @@ func (fe *Frontend) handleDeleteMASID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// return long information about specified MAS
-	var httpStatus int
-	httpStatus, cmapErr = fe.amsClient.DeleteMAS(masID)
+	// var httpStatus int
+	_, cmapErr = fe.amsClient.DeleteMAS(masID)
 	if cmapErr != nil {
 		httpErr = httpreply.CMAPError(w, cmapErr.Error())
 		fe.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
-	httpErr = httpreply.Resource(w, httpStatus, cmapErr)
+	httpErr = httpreply.Deleted(w, cmapErr)
 	fe.logErrors(r.URL.Path, cmapErr, httpErr)
 }
 
