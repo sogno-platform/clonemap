@@ -370,12 +370,12 @@ func (stor *localStorage) getAgencyInfoFull(masID int, imID int,
 	stor.mutex.Lock()
 	if len(stor.mas)-1 < masID {
 		stor.mutex.Unlock()
-		err = errors.New("agency does not exist")
+		err = errors.New("MAS does not exist")
 		return
 	}
 	if len(stor.mas[masID].ImageGroups.Inst)-1 < imID {
 		stor.mutex.Unlock()
-		err = errors.New("agency does not exist")
+		err = errors.New("imagegroup does not exist")
 		return
 	}
 	if len(stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst)-1 < agencyID {
@@ -624,10 +624,11 @@ func (stor *localStorage) removeAgentFromAgency(masID int, agentID int) (err err
 	if err != nil {
 		return
 	}
+	stor.mutex.Lock()
 	imID := agentInfo.ImageGroupID
 	if len(stor.mas[masID].ImageGroups.Inst)-1 < imID {
 		stor.mutex.Unlock()
-		err = errors.New("agency does not exist")
+		err = errors.New("imagegroup does not exist")
 		return
 	}
 	agencyID := agentInfo.AgencyID
@@ -644,6 +645,7 @@ func (stor *localStorage) removeAgentFromAgency(masID int, agentID int) (err err
 			break
 		}
 	}
+	stor.mutex.Unlock()
 	return
 }
 

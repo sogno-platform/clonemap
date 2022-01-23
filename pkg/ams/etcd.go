@@ -530,16 +530,59 @@ func (stor *etcdStorage) registerAgent(masID int, imID int, spec schemas.AgentSp
 
 // deleteAgent deletes an agent
 func (stor *etcdStorage) deleteAgent(masID int, agentID int) (err error) {
-	var info schemas.AgentInfo
-	info, err = stor.getAgentInfo(masID, agentID)
+	var agentInfo schemas.AgentInfo
+	agentInfo, err = stor.getAgentInfo(masID, agentID)
 	if err != nil {
 		return
 	}
-	info.Address.Agency = ""
-	info.Status.Code = status.Terminated
-	info.Status.LastUpdate = time.Now()
 
-	err = stor.etcdPutResource("ams/mas/"+strconv.Itoa(masID)+"/agent/"+strconv.Itoa(agentID), info)
+	stor.mutex.Lock()
+	imID := agentInfo.ImageGroupID
+	if len(stor.mas[masID].ImageGroups.Inst)-1 < imID {
+		stor.mutex.Unlock()
+		err = errors.New("imagegroup does not exist")
+		return
+	}
+	agencyID := agentInfo.AgencyID
+	if len(stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst)-1 < agencyID {
+		stor.mutex.Unlock()
+		err = errors.New("agency does not exist")
+		return
+	}
+	stor.mutex.Unlock()
+
+	// store new image group and determine ID
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	// use STM for atomic puts and retry in case values have been altered during function execution
+	_, err = concurrency.NewSTMRepeatable(ctx, stor.client, func(s concurrency.STM) error {
+		stor.mutex.Lock()
+		agencyInfo := stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID]
+		stor.mutex.Unlock()
+
+		for i := range agencyInfo.Agents {
+			if agencyInfo.Agents[i] == agentID {
+				agencyInfo.Agents = append(agencyInfo.Agents[:i], agencyInfo.Agents[i+1:]...)
+				break
+			}
+		}
+		var res []byte
+		res, err = json.Marshal(agencyInfo)
+		if err != nil {
+			return err
+		}
+		s.Put("ams/mas/"+strconv.Itoa(masID)+"/im/"+strconv.Itoa(imID)+"/agency/"+
+			strconv.Itoa(agencyID), string(res))
+
+		return err
+	})
+	cancel()
+
+	agentInfo.Address.Agency = ""
+	agentInfo.Status.Code = status.Terminated
+	agentInfo.Status.LastUpdate = time.Now()
+
+	err = stor.etcdPutResource("ams/mas/"+strconv.Itoa(masID)+"/agent/"+strconv.Itoa(agentID),
+		agentInfo)
 
 	return
 }
