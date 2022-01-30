@@ -370,12 +370,12 @@ func (stor *localStorage) getAgencyInfoFull(masID int, imID int,
 	stor.mutex.Lock()
 	if len(stor.mas)-1 < masID {
 		stor.mutex.Unlock()
-		err = errors.New("agency does not exist")
+		err = errors.New("MAS does not exist")
 		return
 	}
 	if len(stor.mas[masID].ImageGroups.Inst)-1 < imID {
 		stor.mutex.Unlock()
-		err = errors.New("agency does not exist")
+		err = errors.New("imagegroup does not exist")
 		return
 	}
 	if len(stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst)-1 < agencyID {
@@ -604,12 +604,48 @@ func (stor *localStorage) registerAgent(masID int, imID int,
 
 // deleteAgent deletes an agent
 func (stor *localStorage) deleteAgent(masID int, agentID int) (err error) {
+	err = stor.removeAgentFromAgency(masID, agentID)
+	if err != nil {
+		return
+	}
 	err = stor.setAgentAddress(masID, agentID, schemas.Address{Agency: ""})
 	if err != nil {
 		return
 	}
 	err = stor.setAgentStatus(masID, agentID, schemas.Status{Code: status.Terminated,
 		LastUpdate: time.Now()})
+	return
+}
+
+// removeAgentFromAgency removes the ID of the agent from the agency's list of agents
+func (stor *localStorage) removeAgentFromAgency(masID int, agentID int) (err error) {
+	var agentInfo schemas.AgentInfo
+	agentInfo, err = stor.getAgentInfo(masID, agentID)
+	if err != nil {
+		return
+	}
+	stor.mutex.Lock()
+	imID := agentInfo.ImageGroupID
+	if len(stor.mas[masID].ImageGroups.Inst)-1 < imID {
+		stor.mutex.Unlock()
+		err = errors.New("imagegroup does not exist")
+		return
+	}
+	agencyID := agentInfo.AgencyID
+	if len(stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst)-1 < agencyID {
+		stor.mutex.Unlock()
+		err = errors.New("agency does not exist")
+		return
+	}
+	for i := range stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Agents {
+		if stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Agents[i] == agentID {
+			stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Agents = append(
+				stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Agents[:i],
+				stor.mas[masID].ImageGroups.Inst[imID].Agencies.Inst[agencyID].Agents[i+1:]...)
+			break
+		}
+	}
+	stor.mutex.Unlock()
 	return
 }
 
