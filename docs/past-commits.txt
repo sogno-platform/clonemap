@@ -4,6 +4,16 @@ I, Stefan Daehling hereby sign-off-by all of my past commits to this repo subjec
 
 7b05b299d95a125748d2c34f80fc0bca7a564344 remove deleted agent ID from agency list in local storage
 
+1ae4ae9df9f005f2489a71b7602be24387ff66ed build images for feature branches in separate workflow
+
+be777819697806f7ce9283688bb44ed1da96e6d8 execute workflow build and test on all branches
+
+7ec40e35cc5bb257fb88cc5550ffc6831a97a0a5 fix error with deleting mas
+
+ed75f10c70d4c1d78d5aa12bfc428dbc08bb38d3 fix path for heatmap; make heatmap bigger
+
+4c34aadd8ee7146bbb69da48cc7399982cffd12a add missing ngb module to logger module
+
 831c6e572edea4a735e4990b53fc2764aa4c719c change contact email address
 
 7ec348ab79ed1b68977737d889e1e124b5b8001b fix repo path in readme batches
@@ -405,3 +415,139 @@ b52f8c9d7fadd0ef712477d8e3a4d76850f8ce93 ci fix
 27c7b02db89b0f777728f8d0d4395e00bf785be5 add ci
 
 b2a5550565c118106c2874cb2d5c5fc3545430a9 initial commit
+
+I, Stefan Daehling hereby sign-off-by for my student assistant Nydia745 all past commits to this repo subject to the Developer Certificate of Origin (DCO), Version 1.1. In the past the student assistent has used emails: qianwen.yuan12@gmail.com
+
+63150020e7cd759dffca3af7b542999295ca3f37 fix
+
+f6a1152b6a6803edb00c042e0b898707c3f1cd03 revise api and services
+
+e1ed489c3de891c6acaf3676beac6f0f3d1a32a8 fix and update
+
+b8dd6232d21d6a1d3ce11fa64e6fa15a046523f4 restructure
+
+a1d754f2e3fbbdc78de8b64e8da8d5eb8ca3e16a add documentation for webui
+
+a13d794181a0423100b23f31b4d477599f29ef86 add download function
+
+09282d11dd0f3c329c8212a15dac3b6daacd0432 fix
+
+b425aa41ac1e949b28a039f92fc4375b801bacdd fix
+
+c116f4ce5e87e3f8ea9443f01f5164f6ef0a000a fix
+
+9401f4339ac5ef145173edc6e2d4347467c4eef3 fix
+
+d61a49c98e12434bb2ff5989f7940be696b6a935 correct delete response
+
+fe7ddfb62967d4242334931ad75e0ca78f1fa493 fix
+
+161492eb4706d795dc9e0d80e97b0f426dbba0e0 fix
+
+7e42f2e152bcf7a55e22bdc80ef4c9a10c1856db partially fix
+
+260f0d1b0edf168368ab9885af4f051cd65df38a convert css to scss, convert absolute size to relative size
+
+6c4d65c0649b9348e03b4b9103003f7108e6a6b4 responsive layout
+
+c586f8942e7c25f4d5ea688ac2c0184a266d6a7f refine
+
+5821d98264f03b84d3038ac5f75db2fd6d965631 refine
+
+381e14017056dd0f5d203bd6aaa2bdf3c01dd856 refine layout with grid
+
+5b531d079cbfa27ec2517d4dad6b404f573db129 fix error
+
+9ffa9eb87078394c867b21a90586f452bbc0b515 fix
+
+9197edb1d474d0a8827b900355c2983463da570e add delete, adjust layout
+
+e3098b4b704e026fad483690c9059b0ad3458aa1 fix
+
+f9202041566ea7d01968ca97aa6988df5e67a779 fix
+
+646ff4887692041f3ea46069fc5a7254149f4492 refine heatmap
+
+edc10ee708123dfac83ff776357d18c49e779bd5 fix error
+
+b292dd0d75e331b04b46bb71f882758491b653fd add statistics
+
+087dc483cc4944fcb033b320128487a85dd6af35 add behavior topic
+
+465c68da68ae62715b08fa83ddadc7e6e7eafa8a refine structure
+
+61a48951f03b4083673d0625c8b9c99bc365f1b9 fix err in Cassandra
+
+77d38c75e611e4768bedb3016bd48c326c496b93 refine log series
+
+a903bfeb291d169ee19ece674a687f6da97c6da4 add log series
+
+1fa45805ec97854798caa9059ec0ff0fe1fe15b9 add DF graph and fix errs
+
+81496deda05761f83befa515b458e174dd2260f6 start df graph
+
+aac679422cce24bbe760a459e3b94f88aae02e5d fix errors
+
+72b60a48e591c11833f8268d0631e5e11ee7242a add search by range functions
+
+a642ede326d77c3573aa6562b0868110b2778791 fix errors and add files
+
+843e66a5fb8c194794aa60eaf098768b085de0bb restore backend and operate in frontend
+
+b961d1ede92bfc4b7617124f4ea88c0e3faf89f2 restore backend and operate in frontend
+
+e0d510b53a82286edc32ed6adb5db1b9864958b3 restore backend and operate in frontend
+
+506fc2cbb9c1c74f7e27b12a38ac623dc07b79b8 minor changes
+
+8a49c3316d13d3531c34614bacb60016f45d2b30 minor changes
+
+0c8b1fdf066de271fddb441681b03b2a22113779 refine the layout
+
+e532739ab602ac4c09326cd04b088bcfcce5cf0c close modal and update automatically
+
+b960366d759043acbb16abd1139d00b5df529326 add animations
+
+0d62421828bcae8ba2f034f5522f3186083dc191 from dev to pro
+
+f6dd01ca61430bc608d5d4e5ca0759e8410c4e56 minor changes
+
+08686182dea319f2087ae75b43fe24423b3554a2 add interactions and popover
+
+c5ef7675f3fef09f91c7649811214f6caad211e9 typos
+
+9d8c024ff1a4a650de7be636e4833078604eaca2 merge develop with webui
+
+c4445b7522e793a5533bfd79f46cbcb60da439f5 typos
+
+8589296de64deedb84882f5f5d9c43a95fc9e4da restore the DF
+
+aa0d2c6adb6f9e754b00fb4f5a4a12e7a1675812 use searched log instead
+
+1b32e0efd8d5a6b7ceb72ba9cbfa874ed977bb7c basic UML SD with randomly generated data
+
+5b09e2e68bf3b2729f14a8b0638317e8bdc935fb add UML SD demo
+
+c43a2285456935620dff1373f9a9fcc7ab5cbee3 fix errors and add logger func
+
+07e7eaccd17fab6da103f77122d53edc97b3fc45 change test file name
+
+89e21e916d8038d0a09e687b114bc898d85106d8 add comments
+
+253a7f70bd2a66f9f43e791831f75fb5536f1291 fix logo problem
+
+54ae9b69af84f81338f1b3ea975a6e1449298157 fix some router problems
+
+4943d99cf2d1a9c3c2ecc8efd175dcd279d1dc91 add functions and redeploy
+
+63d27f5e830fa171222a01cde17bfa79673f27d3 create new dockerfile
+
+fefc4e6a8395d54e609c0592a41c902c41aa0c98 add-services
+
+ee5974580e0433e03e866501ae5e6b16f46e3557 add-functions
+
+56f71e75bc3971bc4e9be474f1020e1d577b655a rewrite-in-angular
+
+c03af5c1fa9df2d9ad609af7093f3d26534a1ff7 fix-layout
+
+65f5b03ab66ca62d49d2d40fb2962f650ffcb884 initial-web
