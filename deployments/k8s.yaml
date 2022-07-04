@@ -48,125 +48,248 @@ metadata:
   name: clonemap
 ---
 
-# ------------------- etcd Role ------------------- #
+# ------------------- etcd client service ------------------- #
 
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
+apiVersion: v1
+kind: Service
 metadata:
-  name: etcd-operator
-rules:
-- apiGroups:
-  - etcd.database.coreos.com
-  resources:
-  - etcdclusters
-  - etcdbackups
-  - etcdrestores
-  verbs:
-  - "*"
-- apiGroups:
-  - apiextensions.k8s.io
-  resources:
-  - customresourcedefinitions
-  verbs:
-  - "*"
-- apiGroups:
-  - ""
-  resources:
-  - pods
-  - services
-  - endpoints
-  - persistentvolumeclaims
-  - events
-  verbs:
-  - "*"
-- apiGroups:
-  - apps
-  resources:
-  - deployments
-  verbs:
-  - "*"
-# The following permissions can be removed if not using S3 backup and TLS
-- apiGroups:
-  - ""
-  resources:
-  - secrets
-  verbs:
-  - get
----
-
-# ------------------- etcd Role Binding ------------------- #
-
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: etcd-operator
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: etcd-operator
-subjects:
-- kind: ServiceAccount
-  name: default
+  name: etcd-cluster-client
+  labels:
+    etcd_cluster: etcd-cl
   namespace: clonemap
----
-
-# ------------------- etcd operator Deployment ------------------- #
-
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  namespace: clonemap
-  name: etcd-operator
 spec:
-  replicas: 1
+  ports:
+  - name: etcd-client
+    port: 2379
+  selector:
+    etcd_cluster: etcd-cl
+---
+
+# ------------------- etcd cluster service ------------------- #
+
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+  name: etcd-cl
+  labels:
+    etcd_cluster: etcd-cl
+  namespace: clonemap
+spec:
+  clusterIP: None
+  ports:
+  - port: 2379
+    name: client
+  - port: 2380
+    name: peer
+  publishNotReadyAddresses: true
+  selector:
+    etcd_cluster: etcd-cl
+---
+
+# ------------------- etcd budget ------------------- #
+
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: etcd-cl-pdb
+  namespace: clonemap
+spec:
+  minAvailable: 51%
   selector:
     matchLabels:
-      name: etcd-operator
+      etcd_cluster: etcd-cl
+---
+
+# ------------------- etcd stateful set ------------------- #
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: etcd-cl
+  labels:
+    etcd_cluster: etcd-cl
+  namespace: clonemap
+spec:
+  serviceName: etcd-cl
+  selector:
+    matchLabels:
+      etcd_cluster: etcd-cl
+  replicas: 3
+  podManagementPolicy: Parallel
   template:
     metadata:
+      name: etcd-cl
       labels:
-        name: etcd-operator
+        app: etcd
+        etcd_cluster: etcd-cl
+        plane: control
+      namespace: clonemap
     spec:
       containers:
-      - name: etcd-operator
-        image: quay.io/coreos/etcd-operator:v0.9.2
+      - name: etcd
+        image: quay.io/coreos/etcd:v3.4.3
+        ports:
+        - containerPort: 2379
+          name: client
+        - containerPort: 2380
+          name: server
+        # yamllint disable rule:indentation rule:line-length
         command:
-        - etcd-operator
-        # Uncomment to act for resources in all namespaces. More information in doc/clusterwide.md
-        #- -cluster-wide
+        - /bin/sh
+        - -ec
+        - |
+          HOSTNAME=$(hostname)
+          eps() {
+            EPS=""
+            for i in $(seq 0 $((${INITIAL_CLUSTER_SIZE} - 1))); do
+              EPS="${EPS}${EPS:+,}http://${CLUSTER_NAME}-${i}.${CLUSTER_NAME}.${POD_NAMESPACE}.svc:2379"
+            done
+            echo ${EPS}
+          }
+          member_hash() {
+            etcdctl \
+                --endpoints=$(eps) \
+                member list | grep http://${HOSTNAME}.${CLUSTER_NAME}.${POD_NAMESPACE}.svc:2380 | cut -d',' -f1
+          }
+          num_existing() {
+            etcdctl \
+                --endpoints=$(eps) \
+                member list | wc -l
+          }
+          initial_peers() {
+            PEERS=""
+            for i in $(seq 0 $((${INITIAL_CLUSTER_SIZE} - 1))); do
+              PEERS="${PEERS}${PEERS:+,}${CLUSTER_NAME}-${i}=http://${CLUSTER_NAME}-${i}.${CLUSTER_NAME}.${POD_NAMESPACE}.svc:2380"
+            done
+            echo ${PEERS}
+          }
+          MEMBER_HASH=$(member_hash)
+          EXISTING=$(num_existing)
+          # Re-joining after failure?
+          if [ -n "${MEMBER_HASH}" ]; then
+            echo "Re-joining member ${HOSTNAME}"
+            etcdctl \
+                --endpoints=$(eps) \
+                member remove ${MEMBER_HASH}
+            rm -rf /var/run/etcd/*
+            mkdir -p /var/run/etcd/
+          fi
+          if [ ${EXISTING} -gt 0 ]; then
+            while true; do
+              echo "Waiting for ${HOSTNAME}.${CLUSTER_NAME}.${POD_NAMESPACE} to come up"
+              ping -W 1 -c 1 ${HOSTNAME}.${CLUSTER_NAME}.${POD_NAMESPACE} > /dev/null && break
+              sleep 1s
+            done
+            etcdctl \
+                --endpoints=$(eps) \
+                member add ${HOSTNAME} --peer-urls=http://${HOSTNAME}.${CLUSTER_NAME}.${POD_NAMESPACE}.svc:2380 | grep "^ETCD_" > /var/run/etcd/new_member_envs
+            if [ $? -ne 0 ]; then
+              echo "Member add ${HOSTNAME} error"
+              rm -f /var/run/etcd/new_member_envs
+              exit 1
+            fi
+            cat /var/run/etcd/new_member_envs
+            . /var/run/etcd/new_member_envs
+            exec etcd --name ${HOSTNAME} \
+                --initial-advertise-peer-urls http://${HOSTNAME}.${CLUSTER_NAME}.${POD_NAMESPACE}.svc:2380 \
+                --listen-peer-urls http://0.0.0.0:2380 \
+                --listen-client-urls http://0.0.0.0:2379 \
+                --advertise-client-urls http://${HOSTNAME}.${CLUSTER_NAME}.${POD_NAMESPACE}.svc:2379 \
+                --data-dir /var/run/etcd/default.etcd \
+                --initial-cluster ${ETCD_INITIAL_CLUSTER} \
+                --initial-cluster-state ${ETCD_INITIAL_CLUSTER_STATE} \
+                --max-request-bytes 2000000 \
+                --max-wals 1 \
+                --max-snapshots 1 \
+                --quota-backend-bytes 8589934592 \
+                --snapshot-count 5000
+          fi
+          for i in $(seq 0 $((${INITIAL_CLUSTER_SIZE} - 1))); do
+            while true; do
+              echo "Waiting for ${CLUSTER_NAME}-${i}.${CLUSTER_NAME}.${POD_NAMESPACE} to come up"
+              ping -W 1 -c 1 ${CLUSTER_NAME}-${i}.${CLUSTER_NAME}.${POD_NAMESPACE} > /dev/null && break
+              sleep 1s
+            done
+          done
+          echo "Joining member ${HOSTNAME}"
+          exec etcd --name ${HOSTNAME} \
+              --initial-advertise-peer-urls http://${HOSTNAME}.${CLUSTER_NAME}.${POD_NAMESPACE}.svc:2380 \
+              --listen-peer-urls http://0.0.0.0:2380 \
+              --listen-client-urls http://0.0.0.0:2379 \
+              --advertise-client-urls http://${HOSTNAME}.${CLUSTER_NAME}.${POD_NAMESPACE}.svc:2379 \
+              --initial-cluster-token etcd-cluster-1 \
+              --data-dir /var/run/etcd/default.etcd \
+              --initial-cluster $(initial_peers) \
+              --initial-cluster-state new \
+              --max-request-bytes 2000000 \
+              --max-wals 1 \
+              --max-snapshots 1 \
+              --quota-backend-bytes 8589934592 \
+              --snapshot-count 5000
+        # yamllint enable rule:indentation rule:line-length
         env:
-        - name: MY_POD_NAMESPACE
+        - name: INITIAL_CLUSTER_SIZE
+          value: '3'
+        - name: CLUSTER_NAME
+          # This has to match the metadata.name for things to work.
+          value: etcd-cl
+        - name: ETCDCTL_API
+          value: '3'
+        - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        - name: MY_POD_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.name
----
+        - name: ETCD_AUTO_COMPACTION_RETENTION
+          value: '5'
+        - name: ETCD_AUTO_COMPACTION_MODE
+          value: revision
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -ec
+            - etcdctl --endpoints=http://localhost:2379
+              endpoint status
+          failureThreshold: 3
+          initialDelaySeconds: 1
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 5
+        lifecycle:
+          preStop:
+            exec:
+              # yamllint disable rule:indentation
+              command:
+              - /bin/sh
+              - -ec
+              - |
+                HOSTNAME=$(hostname)
+                member_hash() {
+                  etcdctl \
+                      member list | grep http://${HOSTNAME}.${CLUSTER_NAME}.${POD_NAMESPACE}.svc:2380 | cut -d',' -f1
+                }
+                eps() {
+                  EPS=""
+                  for i in $(seq 0 $((${INITIAL_CLUSTER_SIZE} - 1))); do
+                    EPS="${EPS}${EPS:+,}http://${CLUSTER_NAME}-${i}.${CLUSTER_NAME}.${POD_NAMESPACE}.svc:2379"
+                  done
+                  echo ${EPS}
+                }
+                MEMBER_HASH=$(member_hash)
+                # Removing member from cluster
+                if [ -n "${MEMBER_HASH}" ]; then
+                  echo "Removing ${HOSTNAME} from etcd cluster"
+                  etcdctl \
+                      --endpoints=$(eps) \
+                      member remove $(member_hash)
+                  if [ $? -eq 0 ]; then
+                    # Remove everything otherwise the cluster will no longer scale-up
+                    rm -rf /var/run/etcd/*
+                  fi
+                fi
+              # yamllint enable rule:indentation
 
-# ------------------- etcd Cluster ------------------- #
-
-apiVersion: "etcd.database.coreos.com/v1beta2"
-kind: "EtcdCluster"
-metadata:
-  namespace: clonemap
-  name: "etcd-cluster"
-  ## Adding this annotation make this cluster managed by clusterwide operators
-  ## namespaced operators ignore it
-  # annotations:
-  #   etcd.database.coreos.com/scope: clusterwide
-spec:
-  size: 3
-  # pod:
-  #   resources:
-  #     limits:
-  #       cpu: 300m
-  #       memory: 400Mi
-  #     requests:
-  #       cpu: 200m
-  #       memory: 300Mi
-version: "3.2.24"
 ---
 
 # ------------------- mqtt cluster Service ------------------- #
@@ -251,8 +374,8 @@ spec:
         volumeMounts:
         - name: config-volume
           mountPath: /mosquitto/config
-      nodeSelector:
-        host: pan4
+      # nodeSelector:
+      #   host: pan4
       volumes:
       - name: config-volume
         configMap:
@@ -425,7 +548,6 @@ spec:
     app: cass
 ---
 
-
 # ------------------- Cassandra deployment ------------------- #
 
 apiVersion: apps/v1
@@ -449,8 +571,8 @@ spec:
       terminationGracePeriodSeconds: 1800
       containers:
       - name: cass-container
-        image: cassandra
-        imagePullPolicy: Never
+        image: cassandra:3
+        imagePullPolicy: Always
         ports:
         - containerPort: 7000
           name: intra-node
@@ -479,12 +601,12 @@ spec:
               - -c
               - nodetool drain
         env:
-          #- name: MAX_HEAP_SIZE
-          #  value: 512M
-          #- name: HEAP_NEWSIZE
-          #  value: 100M
+          - name: MAX_HEAP_SIZE
+            value: 512M
+          - name: HEAP_NEWSIZE
+            value: 100M
           - name: CASSANDRA_SEEDS
-            value: "cass-ssset-0.cassandra.clonemap.svc.cluster.local"
+            value: "cass-ssset-0.cassandra.clonemap.svc"
           #- name: CASSANDRA_CLUSTER_NAME
           #  value: "K8Demo"
           #- name: CASSANDRA_DC
@@ -497,7 +619,7 @@ spec:
                 fieldPath: status.podIP
 ---
 
-    # ------------------- Cassandra init job ------------------- #
+# ------------------- Cassandra init job ------------------- #
 
 apiVersion: batch/v1
 kind: Job

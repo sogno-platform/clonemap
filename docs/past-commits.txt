@@ -1,0 +1,407 @@
+I, Stefan Daehling hereby sign-off-by all of my past commits to this repo subject to the Developer Certificate of Origin (DCO), Version 1.1. In the past I have used emails: stefan.daehling@rwth-aachen.de
+
+61bd3c5446ff72cfcef7ddfebb24e4600a8febda remove agent from agency list in etcd
+
+7b05b299d95a125748d2c34f80fc0bca7a564344 remove deleted agent ID from agency list in local storage
+
+831c6e572edea4a735e4990b53fc2764aa4c719c change contact email address
+
+7ec348ab79ed1b68977737d889e1e124b5b8001b fix repo path in readme batches
+
+4f0befb8d7a78d0396a78f4988ba35b9057a3823 fixes in admin docu; adapt user guide to new path and api changes
+
+4e94ccb6c85f5ef499d9e6a8a8929f1beb1e3680 return masinfo after post; return agent ids after post
+
+22d632a82fda34df01a7b0b04dc64f52a8eb419f make docker tag in compose file a variable
+
+96b6a8c87b5a595050db8fbd64540a46fd82850f add workflow for building and pushing docker
+
+052f362f4ba72dd9b68e7424af38f8a1ce399752 change path of containers to dockerhub
+
+c2812093cbad2e17bebf684e6a2cdb2ad9ea62fa fix path in workflow
+
+bbc55edba2b4cd741437681a60c15fc0295e6b8c add build for all modules to workflow
+
+2f650ca7ad2f7e789c34a2a6e317929910e3950d add go test to workflow
+
+cb8bbe45609a6a424032a72eedb5d5d524e2d8f4 fix working directory in workflow
+
+e819f357f45fae06d6fe345032c667122835ebd1 test to trigger workflow
+
+008dd523fe77361d7444d0d0b424b4fe1bc67b1a add first workflow to build ams
+
+afbbcbf39fa8f65238e4bd741b23ad7ac2766f84 update module paths to new github repo
+
+a556200698ef72b29f3ee0869c2cc44c08763d2d change json name
+
+48b3b58f05cc97c3001664dfcbb50b3a220c6e56 make mas id, name andcustom accessible in agent
+
+fcf5291f2f1fed8382261fc79eb9a98168b5953a endpoint to remove all mas
+
+6bd21675f9c7471f91cf029a42df9c8658ebe587 fix ineffective break statements
+
+f82747dfd58b5adb463d6fb0cd80b0d52d5217db agent mqtt refactoring
+
+bb93f2aeaa07960f23ba766375616713fa6f3f42 fixes
+
+931119dc5c84a665dd203ec9993123580cffbda8 move agent df to client
+
+14025b2ad3f1a1697634a7b1265aeb69b96026e8 fix fe dockerfile
+
+6dcce920da155b9f371bb03cce0c477bbd8595cf fix dockerfile
+
+065a897fe867e88cd649fa9b8671d0670c2d9cca move agency client to new package
+
+8afc46a8b60b1b5181fb1fb809f3977012c90569 move df client to new pkg
+
+817ce21326d7228099e5c24601e13cf0203ec443 move ams client
+
+0f7a629449ca51bdfdaa0cb550b279c0bd9572fc cleanup
+
+ee1087f625ae81c3d3a2b5a1027f2dc56504b84c fixes
+
+2d55b528d0e574c6ba55a01f055dc0a1c703da4e dockerfile fix
+
+73e43c8112dde10a8d086055c31ef6d3dbbf8c55 fix dockerfiles
+
+8cd5651dceda845c66aca63328dcf9f2a1638c11 move agent logger to client; cleanup
+
+d2fc848b6959cdcc92ba2cbbb02d0f7fb99fc8e3 update k8s yaml
+
+9abee388dad757500238e18fbd5d72585ec32420 fix mosquitto version
+
+4fbe289ce8d7b45a1de60fdebfdcfa4d50189b95 get logs by time
+
+175b120d7ce9ccff7f8bf9c8ca83991965abe20d log to msg when message is sent or received
+
+c6b73d575915aeb3bedffdc01395eb8ee0c32409 fix error handling
+
+759c6fe920c0fc1621347ac8c2dc66b9cc64813e add custom config update behavior
+
+2342a1e7a1084e2e76067b4ebe5035b763bc9193 typo
+
+fd62d18a0d59320d188e29aec1520d9863a6b718 fix wrong types in ams openapi
+
+3c7ea3b3bc8d5eafc61f674a1c0062517910c322 indicate required fields in openapi specs
+
+a264c724da17f15f919af90e58e18cc6bd5ccbe1 webui fix
+
+0b65e0360295e8059d6b606f0e1ac211b1ee66b3 started to refactor logger client code
+
+ce724983082714a9c86e442725d89f563051800a added module configs
+
+c176e156b0fe2cd799b9e74a2f46cc09a5e096fb fix for ineff assignments
+
+ed12c2e1726ae98108fa106dad09f21c4fdc1cdd fix in example
+
+34fc40cfb590f26e1fa6f9f60e14fa34aa69efc4 api refactoring
+
+cdbf9cd5c75364ba799b8acc200c61368e605cbd fixes in api
+
+8cfac050fc381324a473eca43b3cf942d96f6359 refactoring
+
+7b93833251ad54aa9ba46760908226cc04c33c98 refactoring
+
+d7ce58adf4cf94174775f069db87050902b8183c use gorilla mux for agency
+
+0d2a1d1f388955465915f9863ab2414cf15d55b3 use gorilla mux for frontend api server
+
+9cc8168ef479c53bf58cdc299f5829e3066258be fix mosquitto version
+
+0da62368b02fb48abddf63693232b442ce167264 gorilla mux for df server
+
+86274e11bb02ec8926a51403890c6e752966ce80 logger handler with gorila mux
+
+327ec2696f13e8dca15abf3ad8f500e4ff7ac6db start to use gorilla mux for logger
+
+643d6b83ecee5fac46b6369f1923f0f7ea478bbb fix
+
+45bb580b8d07e7b653ad93dacfb17ee1be346bbc fix
+
+56afc30b547a8a53be5dcbc8a8df3b20e7f3c927 finish use of gorilla mux
+
+cf69fcadd94163aa7707a53856ff1d58c58d9780 continue to use gorilla mux
+
+128bf770ad30a63c5fda0dc8857e6dcafdebc234 use gorilla mux (wip)
+
+8629239b81422eee16051a0b017f5b039d5c660b test fix; graceful shutdown
+
+a52854af32a2afab19a0c80a735b2e7c81d45060 ci to go 1.15
+
+4b09969b2b1e9e2d5085eea5553f9fc8fee0bb55 update go version
+
+6bc2787c3f3de0b6437349485bf4956f067bba12 test
+
+53e0febc8d41452c9622abf7fc22f27d40c10ace add test to ci
+
+4ee4613abf698027c43acef60bcb3904b010bf85 simplify ci
+
+f508dd40626ece19b0e2620021349a2a05f855a8 add ams deploy to ci
+
+5125c0c1fcd6768185d74363bf2294f68baee1a5 ci build all modules
+
+1ccbd02a2f323e5bbe9a1926838f6b0cb42833a9 add agency to ci
+
+7f6da2f66da1ff8371fa1fb0734644f0e3b937a7 ci to docker executor
+
+eb1a15523d38de2a61a4387f1de1a43ea4e7a22a add docker compose method to admin guide
+
+6b36f08f48dcd31b27355fbd337c499ce0d6242d update logo
+
+f943839232e95252c222e7267e727b017107dd1d add docker compose
+
+87411bcdddffc881649cd70b433229b0d0996f35 implement new endpoints
+
+30fd5a21546d5092d0944d2bc0b4eba96527a759 ams endpoints to search for mas and agents
+
+ed4709cb98b0353778840637905d5e5ab195bdee agency endpoint for updating custom
+
+52650d907b3bdada983ce5896cccfff6e46be60d client refactoring
+
+2599bbaf93d24864795c032b713ed0d9739521ac agency client
+
+c3af3514f8ba38b71663a9f24f4e32a69923650e move ams cli back to separate pkg
+
+f825ae605b382e32eeef0830f3eb8b4a961412bd docker file fix
+
+2d7a76ae4db9f6b0f4c254768fc5ee0d10fc67f3 fix dockerfiles
+
+916f851c2d444a7330eee4f436477171f1c37185 endpoint for agent custom; refactor ams client
+
+aedbd515c29d4f41e97f60956f68a35984a8db09 revise docu
+
+494b373eab7a893428875e33045807c6c4dbb54a fixes, loglevel, images
+
+2f017203ef1d11e9c272d7b39223bed0f7224036 fix container name
+
+db4d135a5216addf15687061dd4fade2a9eb777a fix
+
+14f0c1e1010a183713eaf4aa4a198430b50e56b8 switch for modules in kubestub
+
+4fbcc05d26d35031f2e5eede06a9ad8e2bbe49f6 ci fix
+
+9a541bd978274242b77b322d722c76912a4c9ddf no test in ci
+
+81b92e9688657bd0ae6bf20c237205ec27a88d97 add clonemap local to ci
+
+416ea736e5bcb4428713b5f6858b200c307d0558 kubestub in container
+
+5c55954d016e9bf27bc53bab02b5b52b882e5497 add jade benchmarks
+
+cff20dccf96a0a4163472b40d98660756967603c update state every 25 ms
+
+555479abbeeef7a1b3bc40486a17720e63929f3f handle state by agency
+
+0dedd16b711e2e4c8c399b37f892c1caa9d5799a using batch operations
+
+b74dbcfea38e5e703a433e80044ee4cb791396b7 experiment
+
+eb7752de1d548e2843df787efa2947bd7626848a optimize logger
+
+cea2433e6d7d5767b4a90ad979c7e88d151cdf42 add ft benchmark
+
+4dd09045e3661433f9d34b8dae4993c9c0155175 add upload mas to frontend
+
+fe86c2115a8895db63dc6448fcc1095e9ed9b7d4 add logo to readme
+
+7e7c56e85b437dd52a9b3d147da1494ea7604cd1 list of mas on overview page
+
+4b424ca734df5b8293fbc43ce7928077bc358a9e added logo to frontend
+
+24ccb7790624715817d2b3af8f23b8fc5276358b add logo
+
+cdcd63512dfcae2ca8a3092453b97687b4edd4d8 use js modules
+
+5f99fa193c6e45c3eb54af44fd98253febe7ef5e add module liveness probe
+
+3945a56bf7e7e025a62114ec14159315afffe017 added files for handling of modules
+
+5a8f5e11206f40aa594878a1f02d1023ddc72837 frontend appearance
+
+34c046daba6ac5fc84203b3aa19e7984fb637b90 get mas info
+
+8de28a696743e9701c091afb182e24dd7be02866 fetch list of mas
+
+a237ea6b731608b2aef70db75fd7fa0f8255132c some fixes
+
+5f6b473ba13aadfee752b892e48463dbac78db8a frontend ams handler
+
+c61016053c5206110492e621b98c3da318bdf9cb fix dockerfile
+
+5b8a6ffab8e1c82081a5013856b834590fa63e32 started ams endpoints for frontend
+
+5c77c3a4cf50347e8fcef1776c47b4f093311af9 fix
+
+dbb7c7150af91875f7580f70bf2fa3cdd0e45c8d ams api change
+
+ce538c6f3bf71e11f80ee9fb00837055f8836584 add frontend to kubestub
+
+5d1da0b22d0fbc8949748a431d6f1c75232fc370 started with frontend server
+
+bb1fcb4897ebf585584f1068dd4585cf690688ff include pnp in local deployment
+
+1b4a8200469d1eeeb76d437c241c7a01fe31f187 docker for pnp
+
+e2a91056423c0614d19d496db24f826c926f94bb fixed header
+
+a4bb40db656ce59f25aaf85eea477644cbdf35f5 start agent after recv mqtt message
+
+7842836c5351aba3e6da62aa8f05e017a7d2b985 started plug and play component
+
+165ae99c992bccba6478a5e160b9ba4dcf01302c started web ui
+
+d5a9beb915001d7e6bb43b78244513038ea5ae96 remove agent
+
+491e16a0f55c80efc48bb6a91c5efb13808e4f6c handle agent delete request
+
+8b337434d2323e6c6f2c1828949c892871c9083a agency handle agent delete
+
+4bc79752a88934d2d8a9e7574f92b0ea145ef155 stop behaviors when inactive
+
+2931408512a1ee1c51e2d216e7a4370b5de7e0ca df close
+
+15bd3bce9a65c7f11f58be2556905b81d67c434f mqtt unsubscribe
+
+db0486869f9fb7be0fc532bbafba38ab87d1c2c4 close logger and mqtt when terminating agent
+
+ba157a90b7b669815a952bfa70ca52b72e5002cd use env for namepsace
+
+f475c48d1239f0a9d9091901f1a57a730a9eb150 logging fixes
+
+84f161ba80d8eac61d86fc70e201c155b2374279 fix
+
+99b7407fff3ad7c8ff36157588f5717f2b92562b fix
+
+c8c49a10cc0ff91f50f571092d23f4e341ba5469 update example
+
+e975dfb2441af55f5cc4fa1d37f1a6ef8353d690 update example
+
+4c232bf14e4bb0d192a76a085d561d451e7f4948 update ams api
+
+6ec27aed3facdba45f1933cc103b7b4f172775d8 use module switches in agency
+
+ea342ae5e574d9fdee8f0edbe1f3dcec8b84ca76 usage of fiware storage in local deployment
+
+4d1ead9c30bd1889da53e58f57de791e4e6a1656 fiware storage
+
+2642f6ca9c56ba86350849cf24deb9bf0b9a985f work on fiware storage
+
+df18d791763815ca6432b8104a2486f01a1f7c7b work on fiware storage
+
+754ca7c13723e47a81e496df99a07513d92ab250 started with ams fiware storage
+
+38d1a9ee4960eecfb62fd1dcef09ae8cefb5eabb etcd im id fix
+
+0eeaf7eab4f35f7c6c26ab77feda6249849ee8b1 etcd agency key
+
+57a70ae9c65407b73b8127c9ef406886d192a104 etcd fix
+
+441905a821d4164362e97e6a3f3546343345da46 etcd context fix
+
+51e0b0da359c26b18fe732b4742776f5e05606b5 etcd register image group fix
+
+aa7eeac2d70fa129e8c915522f1359c4f5fc23e9 deploy new image group in mas
+
+a11b4ddfd1457e2f4711f8727e3ff32d502c6c63 ams new agent
+
+aa547c9fb5ce8e9d75414561025d0df6c77f7881 fix
+
+1836fed932484eccfd646282052c81a96b8cd146 work on creation of new agents
+
+7f6a427fd92675f575279bfef34dde8bb0e1cdbb add agent to storage
+
+9fc9d70558ab6be0eac89c4a77cf4a96e4bc122a register agent
+
+49bf3901af89b866f86bf31f349d3b09ae3c3990 register image
+
+10bb2b1129f15cb52b0559f0c7492bd7eff5e68e scale mas
+
+721502776277d00f09d55c416ba8e1986fe264e6 mas delete
+
+dd361eed9acc71b85e61f0f7b9843408040c1997 remove debug output
+
+dc522bf83630cb9fddcc4f26865ae2791cab3aea test
+
+ecc2c1b6f2228d39b7aa6d88b62589b9694bfd95 test
+
+c516ae6777675349c2e5cc233c44b6c90de8faad etcd error handling
+
+6f8bda37df1ef319b46170bd06a818f6edede22d fix init from etcd
+
+cec372f5d6d79f8938419dbd654e3a3d6020106d etcd fix
+
+c9495c53e55572e270ed9e24984ce00c56d9dc5e add agent to agency in etcd storage
+
+1422e68c0d15b7b3debeb06902df1a5eed8ed1df fixes
+
+f23991250440dfac990c8af3926c41351da96ccf shorten names
+
+01279baaae5937278519c264a8e22b44b05f455f change storage structure
+
+82f4cbe39ba2b507bc76224ab073c2c14a988af0 added missing api endpoints
+
+798f7c5be9b76827b318bf7e078d70684c5d03ff etcd fix
+
+4a7d08fafc073cdf9e0a1ce7f9a25426a0d9226a update ci
+
+bdc35c47fa5f3f2c15da3292a3ba6c3728c7b982 fixes
+
+970073f9c90e31803c496d0a2e2582045d127df7 adjust kube deployment to changes
+
+ab3c48563791bacb9cb557d783aa08e1f4379730 agency using new ams endpoint
+
+71fa94d0e320ebcbd0ca9ecb7b7fb26bc69fc398 new api endpoint for agency info
+
+79889b7cc149c60e911669fc1b602a3ce21c0f11 create new name for agency in local depl
+
+20cf6de17aa7e2d309dc91cadb89cc9b961c84a3 fixes
+
+028f72ccee177db537509f8638211b6f515cbcd9 multiple image groups
+
+955093dd65b61cb97ced5f9fb2240b67be7a8b84 more changes to schemas
+
+947bb773c67fa5a3dec723c1f5fd182534974265 more changes to schemas
+
+cea49038d6cc1cbc4c04cf9f73fe2c0837f042a6 fixes
+
+e17eab2b0759404158fb3e11da5e6a762adbacad adjust ams storages to schema changes
+
+3c4011beaef5ec89dfc88166eaba3695316f7ec2 cleanup of core schemas
+
+d9f03c5413fde5f63b95085bf15014e8e7b4b0c0 move image to agentspec
+
+5f72c4c872b93e34a3094dd99db3d5609c886d75 remove docker registry from masspec
+
+f6a750158967f29fbe63628a11704ca52c39084c deployment fixes
+
+29f9c895cdfcf30d9d3c101114722778624524c3 pull secret fix
+
+ea5433fa8a345bf74441ec5bcdb3c3b10ae82b35 dont use byte array in schemas
+
+9448583e3f5806b4f81823a34e98d05ad70a2290 update readme
+
+6cda2971b19d904bab53932b60c58a6648e55ff9 package documentation
+
+a4d596785b5eeb6d4568769c73483fc413c781c7 update documentation
+
+980a2384323fbf50762ed93a545abbbc25e4a4e3 fixes based on go report
+
+f21d610d57e93f956f3de71d22ebe8f9a4bbac7d add go report card
+
+c5ca5036144bf5042c5632f99638171ac2b9ac00 remove unecessary file
+
+b567b9bb71a16d7ee1196e8648ac3bfe6f83d77b add badges
+
+b521e1ac6a8e8a06e724ab0d1dc6afc371810a88 add benchmark to ci
+
+ecd6991e1fbd309611183ddd7a9faf8ff3c8da57 added benchmark
+
+2432bac40a7e299b8c155611bef0611f822ff731 add k8s deployment
+
+d7523bed47e09dbeaf391aaefe23539c2d6124a8 remove scripts
+
+b52f8c9d7fadd0ef712477d8e3a4d76850f8ce93 ci fix
+
+27c7b02db89b0f777728f8d0d4395e00bf785be5 add ci
+
+b2a5550565c118106c2874cb2d5c5fc3545430a9 initial commit
