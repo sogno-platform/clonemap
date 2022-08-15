@@ -404,7 +404,9 @@ func (stub *LocalStub) createAgency(image string, masID int, imID int, agencyID 
 	com += image
 	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
-	if err != nil {
+	if err.Error() == "exit status 125" {
+		err = errors.New(err.Error() + ": image " + image + " not found")
+	} else if err != nil {
 		err = errors.New(err.Error() + " " + string(cmdOut))
 	}
 	return
