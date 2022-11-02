@@ -104,7 +104,7 @@ func (localdepl *localDeployment) newMAS(masID int, images schemas.ImageGroups,
 				return
 			}
 			if statusCode != http.StatusCreated {
-				err = errors.New("Cannot create agency " + fmt.Sprint(temp))
+				err = errors.New("HTTP Status " + fmt.Sprint(statusCode) + ". Cannot create agency " + fmt.Sprint(temp))
 				return
 			}
 			localdepl.containers[masID]["mas-"+strconv.Itoa(masID)+"-im-"+strconv.Itoa(i)] = temp
