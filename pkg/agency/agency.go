@@ -214,7 +214,7 @@ func (agency *Agency) terminate(gracefulStop chan os.Signal) {
 	agency.logInfo.Println("Terminating agency")
 	agency.mutex.Lock()
 	for i := range agency.localAgents {
-		agency.localAgents[i].Terminate()
+		agency.removeAgent(i)
 	}
 	agency.mutex.Unlock()
 	agency.mqttCollector.close()
@@ -226,10 +226,11 @@ func (agency *Agency) terminate(gracefulStop chan os.Signal) {
 // goroutine and waits until a runtime error occurs in an agent and is sent to the agency's channel errChan
 func (agency *Agency) catchAgentErr() {
 	err := <-agency.errChan
-	agency.logError.Fatal("Caught error: `" + err.Error() + "`. Terminating Agency") // TODO log AgentID
+	agency.logError.Fatal("Caught error: `" + err.Error() + "`.") // TODO log AgentID
+	agency.logInfo.Println("Terminating agency")
 	agency.mutex.Lock()
 	for i := range agency.localAgents {
-		agency.localAgents[i].Terminate()
+		agency.removeAgent(i)
 	}
 	agency.mutex.Unlock()
 	agency.mqttCollector.close()
