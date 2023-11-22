@@ -170,7 +170,7 @@ func (df *DF) handlePostMASGraph(w http.ResponseWriter, r *http.Request) {
 		df.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
-	httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Ressource Created"))
+	httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Resource Created"))
 	df.logErrors(r.URL.Path, cmapErr, httpErr)
 }
 

@@ -93,7 +93,7 @@ func (fe *Frontend) handlePostMAS(w http.ResponseWriter, r *http.Request) {
 		fe.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
-	httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Ressource Created"))
+	httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Resource Created"))
 	fe.logErrors(r.URL.Path, cmapErr, httpErr)
 }
 
@@ -154,7 +154,7 @@ func (fe *Frontend) handlePostAgent(w http.ResponseWriter, r *http.Request) {
 		fe.logErrors(r.URL.Path, cmapErr, httpErr)
 		return
 	}
-	httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Ressource Created"))
+	httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Resource Created"))
 	fe.logErrors(r.URL.Path, cmapErr, httpErr)
 }
 

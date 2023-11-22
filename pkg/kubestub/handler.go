@@ -62,7 +62,7 @@ import (
 // handleAPI is the global handler for requests to path /api
 func (stub *LocalStub) handleAPI(w http.ResponseWriter, r *http.Request) {
 	var err error
-	// determine which ressource is requested and handle request
+	// determine which resource is requested and handle request
 	respath := strings.Split(r.URL.EscapedPath(), "/")
 	resvalid := false
 
