@@ -85,6 +85,7 @@ type Agency struct {
 	agencyClient   *client.AgencyClient
 	logInfo        *log.Logger // logger for info logging
 	logError       *log.Logger // logger for error logging
+	errChan        chan error
 }
 
 // StartAgency is the entrance function of agency
@@ -112,6 +113,9 @@ func StartAgency(task func(*Agent) error) (err error) {
 	signal.Notify(gracefulStop, syscall.SIGTERM)
 	signal.Notify(gracefulStop, syscall.SIGINT)
 	go agency.terminate(gracefulStop)
+
+	// catch runtime errors from agents
+	go agency.catchAgentErr()
 
 	serv := agency.server(10000)
 	if err != nil {
@@ -206,9 +210,23 @@ func (agency *Agency) init() (err error) {
 // terminate takes care of terminating all parts of the MAP before exiting. It is to be called as a
 // goroutine and waits until an OS signal is inserted into the channel gracefulStop
 func (agency *Agency) terminate(gracefulStop chan os.Signal) {
-	// var err error
 	<-gracefulStop
 	agency.logInfo.Println("Terminating agency")
+	agency.mutex.Lock()
+	for i := range agency.localAgents {
+		agency.localAgents[i].Terminate()
+	}
+	agency.mutex.Unlock()
+	agency.mqttCollector.close()
+	time.Sleep(time.Second * 2)
+	os.Exit(0)
+}
+
+// catchAgentErr takes care of terminating all parts of the MAP before exiting. It is to be called as a
+// goroutine and waits until a runtime error occurs in an agent and is sent to the agency's channel errChan
+func (agency *Agency) catchAgentErr() {
+	err := <-agency.errChan
+	agency.logError.Fatal("Caught error: `" + err.Error() + "`. Terminating Agency") // TODO log AgentID
 	agency.mutex.Lock()
 	for i := range agency.localAgents {
 		agency.localAgents[i].Terminate()
@@ -256,7 +274,7 @@ func (agency *Agency) createAgent(agentInfo schemas.AgentInfo) (err error) {
 		agency.dfClient, agency.logError, agency.logInfo)
 	agency.localAgents[agentInfo.ID] = ag
 	agency.mutex.Unlock()
-	ag.startAgent(agency.agentTask)
+	ag.startAgent(agency.agentTask, agency.errChan)
 	return
 }
 
