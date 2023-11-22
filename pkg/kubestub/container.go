@@ -50,6 +50,7 @@ import (
 	"fmt"
 	"os/exec"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -377,6 +378,10 @@ func (stub *LocalStub) deleteMQTT() (err error) {
 // createAgency starts a new agency docker image
 func (stub *LocalStub) createAgency(image string, masID int, imID int, agencyID int, logging bool,
 	mqtt bool, df bool) (err error) {
+	if strings.Contains(image, ";") {
+		err = errors.New("Invalid image name '" + image + "': Image name may not include ';'")
+		return
+	}
 	agencyName := "mas-" + strconv.Itoa(masID) + "-im-" + strconv.Itoa(imID) + "-agency-" +
 		strconv.Itoa(agencyID)
 	fmt.Println("Create agency " + agencyName + " from image " + image)
