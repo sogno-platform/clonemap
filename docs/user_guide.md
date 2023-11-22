@@ -39,7 +39,7 @@ import (
     "fmt"
     "strconv"
 
-    "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/agency"
+    "github.com/RWTH-ACS/clonemap/pkg/agency"
 )
 
 func main() {
@@ -174,7 +174,7 @@ Subsequently the AMS will start all agencies which then will start the single ag
 Depending on the size the creation of a MAS might take a few seconds.
 
 ```bash
-curl -X "POST" -d @scenario.yaml <ip-address>:30009/api/clonemap/mas
+curl -X "POST" -d @scenario.json <ip-address>:30009/api/clonemap/mas
 ```
 
 The AMS is made available to the outside world via NodePort on port 30009.

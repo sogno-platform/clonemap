@@ -119,7 +119,7 @@ func stubListen() (err error) {
 
 // stubHandler answers with created
 func stubHandler(w http.ResponseWriter, r *http.Request) {
-	httpreply.Created(w, nil, "text/plain", []byte("Ressource Created"))
+	httpreply.Created(w, nil, "text/plain", []byte("Resource Created"))
 }
 
 // dummyClient makes requests to ams and terminates ams server at end

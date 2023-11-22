@@ -92,7 +92,7 @@ func (agency *Agency) handlePostAgent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	go agency.createAgent(agentInfo)
-	httpErr = httpreply.Created(w, nil, "text/plain", []byte("Ressource Created"))
+	httpErr = httpreply.Created(w, nil, "text/plain", []byte("Resource Created"))
 	agency.logErrors(r.URL.Path, cmapErr, httpErr)
 }
 
@@ -114,7 +114,7 @@ func (agency *Agency) handlePostMsgs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	agency.msgIn <- msgs
-	httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Ressource Created"))
+	httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Resource Created"))
 	agency.logErrors(r.URL.Path, cmapErr, httpErr)
 }
 
@@ -136,7 +136,7 @@ func (agency *Agency) handlePostUndeliverableMsg(w http.ResponseWriter, r *http.
 		return
 	}
 	go agency.resendUndeliverableMsg(msg)
-	httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Ressource Created"))
+	httpErr = httpreply.Created(w, cmapErr, "text/plain", []byte("Resource Created"))
 	agency.logErrors(r.URL.Path, cmapErr, httpErr)
 }
 
