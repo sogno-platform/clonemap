@@ -99,7 +99,7 @@ func (stub *LocalStub) handleAPI(w http.ResponseWriter, r *http.Request) {
 								agconfig.AgencyID, agconfig.Logging, agconfig.MQTT, agconfig.DF)
 							if err == nil {
 								stub.agencies = append(stub.agencies, agconfig)
-								err = httpreply.Created(w, nil, "text/plain", []byte("Ressource Created"))
+								err = httpreply.Created(w, nil, "text/plain", []byte("Resource Created"))
 							} else {
 								fmt.Println(err)
 								err = httpreply.CMAPError(w, err.Error())
