@@ -78,7 +78,7 @@ paths:
               schema:
                   $ref: '#/components/schemas/MASs'
     post:
-      description: create a new MAS ressource and sub-ressources
+      description: create a new MAS resource and sub-resources
       requestBody:
         description: configuration of new MAS
         content:
@@ -142,7 +142,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Agents'
     post:
-      description: create new agent ressources
+      description: create new agent resources
       requestBody:
         description: configuration of new agent
         content:
