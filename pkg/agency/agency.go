@@ -266,7 +266,7 @@ func (agency *Agency) getAgentStatus(agentID int) (ret schemas.Status, err error
 	return
 }
 
-// removeAgent creates a new mas according to masconfig
+// removeAgent terminates and removes the agent with the given ID
 func (agency *Agency) removeAgent(agentID int) (err error) {
 	agency.mutex.Lock()
 	ag, ok := agency.localAgents[agentID]

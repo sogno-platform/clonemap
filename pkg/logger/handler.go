@@ -85,7 +85,7 @@ func (logger *Logger) handlePostLogMsg(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	go logger.addAgentLogMessage(logmsg)
-	httpErr = httpreply.Created(w, nil, "text/plain", []byte("Ressource Created"))
+	httpErr = httpreply.Created(w, nil, "text/plain", []byte("Resource Created"))
 	logger.logErrors(r.URL.Path, cmapErr, httpErr)
 }
 
@@ -159,7 +159,7 @@ func (logger *Logger) handlePostLogMsgList(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	go logger.addAgentLogMessageList(logmsg)
-	httpErr = httpreply.Created(w, nil, "text/plain", []byte("Ressource Created"))
+	httpErr = httpreply.Created(w, nil, "text/plain", []byte("Resource Created"))
 	logger.logErrors(r.URL.Path, cmapErr, httpErr)
 }
 
