@@ -121,7 +121,7 @@ func (agent *Agent) startAgent(task func(*Agent) error, e chan error) (err error
 	go func() {
 		err = task(agent)
 		if err != nil {
-			agent.logInfo.Println("Encountered runtime Error: ", err.Error())
+			agent.logError.Println("Agent ", agent.GetAgentID(), " encountered runtime error: ", err.Error())
 			agent.status = status.Error
 			e <- err
 		}

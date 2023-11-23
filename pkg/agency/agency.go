@@ -208,7 +208,7 @@ func (agency *Agency) init() (err error) {
 	return
 }
 
-// terminate takes care of terminating all parts of the MAP before exiting. It is to be called as a
+// terminate takes care of terminating all parts of the Agency before exiting. It is to be called as a
 // goroutine and waits until an OS signal is inserted into the channel gracefulStop
 func (agency *Agency) terminate(gracefulStop chan os.Signal) {
 	<-gracefulStop
@@ -223,12 +223,11 @@ func (agency *Agency) terminate(gracefulStop chan os.Signal) {
 	os.Exit(0)
 }
 
-// catchAgentErr takes care of terminating all parts of the MAP before exiting. It is to be called as a
+// catchAgentErr takes care of terminating all parts of the Agency before exiting. It is to be called as a
 // goroutine and waits until a runtime error occurs in an agent and is sent to the agency's channel errChan
 func (agency *Agency) catchAgentErr() {
-	err := <-agency.errChan
-	agency.logError.Fatal("Caught error: `" + err.Error() + "`.") // TODO log AgentID
-	agency.logInfo.Println("Terminating agency")
+	<-agency.errChan
+	agency.logError.Println("Caught error. Terminating Agency")
 	agency.mutex.Lock()
 	for i := range agency.localAgents {
 		agency.removeAgent(i)
@@ -236,7 +235,7 @@ func (agency *Agency) catchAgentErr() {
 	agency.mutex.Unlock()
 	agency.mqttCollector.close()
 	time.Sleep(time.Second * 2)
-	os.Exit(0)
+	os.Exit(1)
 }
 
 // startAgents starts all the agents
