@@ -109,14 +109,12 @@ func StartAgency(task func(*Agent) error) (err error) {
 	}
 	go agency.receiveMsgs()
 
-	// catch kill signal in order to terminate agency and agents before exiting
+	// channel for kill signal
 	var gracefulStop = make(chan os.Signal, 10)
 	signal.Notify(gracefulStop, syscall.SIGTERM)
 	signal.Notify(gracefulStop, syscall.SIGINT)
+	// catch kill signal and agent errors in order to terminate agency and agents before exiting
 	go agency.terminate(gracefulStop)
-
-	// catch runtime errors from agents
-	go agency.catchAgentErr()
 
 	serv := agency.server(10000)
 	if err != nil {
@@ -211,31 +209,21 @@ func (agency *Agency) init() (err error) {
 // terminate takes care of terminating all parts of the Agency before exiting. It is to be called as a
 // goroutine and waits until an OS signal is inserted into the channel gracefulStop
 func (agency *Agency) terminate(gracefulStop chan os.Signal) {
-	<-gracefulStop
+	select {
+	case err := <-agency.errChan:
+		agency.logError.Println("Caught error: ", err.Error())
+	case sig := <-gracefulStop:
+		agency.logInfo.Println("Caught signal: ", sig.String())
+	}
 	agency.logInfo.Println("Terminating agency")
 	agency.mutex.Lock()
 	for i := range agency.localAgents {
-		agency.removeAgent(i)
+		agency.localAgents[i].Terminate()
 	}
 	agency.mutex.Unlock()
 	agency.mqttCollector.close()
 	time.Sleep(time.Second * 2)
 	os.Exit(0)
-}
-
-// catchAgentErr takes care of terminating all parts of the Agency before exiting. It is to be called as a
-// goroutine and waits until a runtime error occurs in an agent and is sent to the agency's channel errChan
-func (agency *Agency) catchAgentErr() {
-	<-agency.errChan
-	agency.logError.Println("Caught error. Terminating Agency")
-	agency.mutex.Lock()
-	for i := range agency.localAgents {
-		agency.removeAgent(i)
-	}
-	agency.mutex.Unlock()
-	agency.mqttCollector.close()
-	time.Sleep(time.Second * 2)
-	os.Exit(1)
 }
 
 // startAgents starts all the agents
