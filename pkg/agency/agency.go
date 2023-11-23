@@ -100,6 +100,7 @@ func StartAgency(task func(*Agent) error) (err error) {
 		amsClient:      client.NewAMSClient(time.Second*60, time.Second*1, 4),
 		agencyClient:   client.NewAgencyClient(time.Second*60, time.Second*1, 4),
 		logError:       log.New(os.Stderr, "[ERROR] ", log.LstdFlags),
+		errChan:        make(chan error),
 	}
 	err = agency.init()
 	if err != nil {
