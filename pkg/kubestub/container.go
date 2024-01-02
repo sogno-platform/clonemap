@@ -50,6 +50,7 @@ import (
 	"fmt"
 	"os/exec"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -59,14 +60,14 @@ func (stub *LocalStub) createBridge() (err error) {
 	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
-		err = errors.New(err.Error() + " " + string(cmdOut))
+		err = errors.New("Error when executing command \"" + com + "\": " + err.Error() + " " + string(cmdOut))
 		return
 	}
 	com = "docker network connect clonemap-net kubestub"
 	cmd = exec.Command("sh", "-c", com)
 	cmdOut, err = cmd.Output()
 	if err != nil {
-		err = errors.New(err.Error() + " " + string(cmdOut))
+		err = errors.New("Error when executing command \"" + com + "\": " + err.Error() + " " + string(cmdOut))
 	}
 	return
 }
@@ -77,14 +78,14 @@ func (stub *LocalStub) deleteBridge() (err error) {
 	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
-		err = errors.New(err.Error() + " " + string(cmdOut))
+		err = errors.New("Error when executing command \"" + com + "\": " + err.Error() + " " + string(cmdOut))
 		return
 	}
 	com = "docker network rm clonemap-net"
 	cmd = exec.Command("sh", "-c", com)
 	cmdOut, err = cmd.Output()
 	if err != nil {
-		err = errors.New(err.Error() + " " + string(cmdOut))
+		err = errors.New("Error when executing command \"" + com + "\": " + err.Error() + " " + string(cmdOut))
 	}
 	return
 }
@@ -97,7 +98,7 @@ func (stub *LocalStub) createFiware() (err error) {
 	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
-		err = errors.New(err.Error() + " " + string(cmdOut))
+		err = errors.New("Error when executing command \"" + com + "\": " + err.Error() + " " + string(cmdOut))
 		return
 	}
 
@@ -107,7 +108,7 @@ func (stub *LocalStub) createFiware() (err error) {
 	cmd = exec.Command("sh", "-c", com)
 	cmdOut, err = cmd.Output()
 	if err != nil {
-		err = errors.New(err.Error() + " " + string(cmdOut))
+		err = errors.New("Error when executing command \"" + com + "\": " + err.Error() + " " + string(cmdOut))
 		return
 	}
 	time.Sleep(time.Second * 10)
@@ -120,28 +121,28 @@ func (stub *LocalStub) deleteFiware() (err error) {
 	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
-		err = errors.New(err.Error() + " " + string(cmdOut))
+		err = errors.New("Error when executing command \"" + com + "\": " + err.Error() + " " + string(cmdOut))
 		return
 	}
 	com = "docker rm orion"
 	cmd = exec.Command("sh", "-c", com)
 	cmdOut, err = cmd.Output()
 	if err != nil {
-		err = errors.New(err.Error() + " " + string(cmdOut))
+		err = errors.New("Error when executing command \"" + com + "\": " + err.Error() + " " + string(cmdOut))
 		return
 	}
 	com = "docker stop mongodb"
 	cmd = exec.Command("sh", "-c", com)
 	cmdOut, err = cmd.Output()
 	if err != nil {
-		err = errors.New(err.Error() + " " + string(cmdOut))
+		err = errors.New("Error when executing command \"" + com + "\": " + err.Error() + " " + string(cmdOut))
 		return
 	}
 	com = "docker rm mongodb"
 	cmd = exec.Command("sh", "-c", com)
 	cmdOut, err = cmd.Output()
 	if err != nil {
-		err = errors.New(err.Error() + " " + string(cmdOut))
+		err = errors.New("Error when executing command \"" + com + "\": " + err.Error() + " " + string(cmdOut))
 	}
 	return
 }
@@ -152,7 +153,7 @@ func (stub *LocalStub) createAMS() (err error) {
 	// cmd := exec.Command("sh", "-c", com)
 	// cmdOut, err := cmd.Output()
 	// if err != nil {
-	// 	err = errors.New(err.Error() + " " + strings.Trim(string(cmdOut), "\n"))
+	// 	err = errors.New("Error when executing command \"" + com + "\": " + err.Error() + " " + strings.Trim(string(cmdOut), "\n"))
 	// } else {
 	// 	ip := strings.Trim(string(cmdOut), "\n")
 	com := "docker run -d"
@@ -169,11 +170,11 @@ func (stub *LocalStub) createAMS() (err error) {
 	}
 	com += " -e CLONEMAP_LOG_LEVEL=\"" + stub.logLevel + "\""
 	com += " -e CLONEMAP_STUB_HOSTNAME=\"kubestub\""
-	com += " registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/ams"
+	com += " clonemap/ams"
 	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
-		err = errors.New(err.Error() + " " + string(cmdOut))
+		err = errors.New("Error when executing command \"" + com + "\": " + err.Error() + " " + string(cmdOut))
 	}
 	// }
 	return
@@ -185,14 +186,14 @@ func (stub *LocalStub) deleteAMS() (err error) {
 	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
-		err = errors.New(err.Error() + " " + string(cmdOut))
+		err = errors.New("Error when executing command \"" + com + "\": " + err.Error() + " " + string(cmdOut))
 		return
 	}
 	com = "docker rm ams" //.clonemap"
 	cmd = exec.Command("sh", "-c", com)
 	cmdOut, err = cmd.Output()
 	if err != nil {
-		err = errors.New(err.Error() + " " + string(cmdOut))
+		err = errors.New("Error when executing command \"" + com + "\": " + err.Error() + " " + string(cmdOut))
 	}
 	return
 }
@@ -206,11 +207,11 @@ func (stub *LocalStub) createLogger() (err error) {
 	com += " --network=clonemap-net"
 	com += " -e CLONEMAP_DEPLOYMENT_TYPE=\"local\""
 	com += " -e CLONEMAP_LOG_LEVEL=\"" + stub.logLevel + "\""
-	com += " registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/logger"
+	com += " clonemap/logger"
 	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
-		err = errors.New(err.Error() + " " + string(cmdOut))
+		err = errors.New("Error when executing command \"" + com + "\": " + err.Error() + " " + string(cmdOut))
 	}
 	return
 }
@@ -221,14 +222,14 @@ func (stub *LocalStub) deleteLogger() (err error) {
 	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
-		err = errors.New(err.Error() + " " + string(cmdOut))
+		err = errors.New("Error when executing command \"" + com + "\": " + err.Error() + " " + string(cmdOut))
 		return
 	}
 	com = "docker rm logger" //.clonemap"
 	cmd = exec.Command("sh", "-c", com)
 	cmdOut, err = cmd.Output()
 	if err != nil {
-		err = errors.New(err.Error() + " " + string(cmdOut))
+		err = errors.New("Error when executing command \"" + com + "\": " + err.Error() + " " + string(cmdOut))
 	}
 	return
 }
@@ -242,11 +243,11 @@ func (stub *LocalStub) createDF() (err error) {
 	com += " --network=clonemap-net"
 	com += " -e CLONEMAP_DEPLOYMENT_TYPE=\"local\""
 	com += " -e CLONEMAP_LOG_LEVEL=\"" + stub.logLevel + "\""
-	com += " registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/df"
+	com += " clonemap/df"
 	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
-		err = errors.New(err.Error() + " " + string(cmdOut))
+		err = errors.New("Error when executing command \"" + com + "\": " + err.Error() + " " + string(cmdOut))
 	}
 	return
 }
@@ -257,14 +258,14 @@ func (stub *LocalStub) deleteDF() (err error) {
 	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
-		err = errors.New(err.Error() + " " + string(cmdOut))
+		err = errors.New("Error when executing command \"" + com + "\": " + err.Error() + " " + string(cmdOut))
 		return
 	}
 	com = "docker rm df" //.clonemap"
 	cmd = exec.Command("sh", "-c", com)
 	cmdOut, err = cmd.Output()
 	if err != nil {
-		err = errors.New(err.Error() + " " + string(cmdOut))
+		err = errors.New("Error when executing command \"" + com + "\": " + err.Error() + " " + string(cmdOut))
 	}
 	return
 }
@@ -277,11 +278,11 @@ func (stub *LocalStub) createPnP() (err error) {
 	com += " --network=clonemap-net"
 	com += " -e CLONEMAP_DEPLOYMENT_TYPE=\"local\""
 	com += " -e CLONEMAP_LOG_LEVEL=\"" + stub.logLevel + "\""
-	com += " registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/plugnplay"
+	com += " clonemap/plugnplay"
 	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
-		err = errors.New(err.Error() + " " + string(cmdOut))
+		err = errors.New("Error when executing command \"" + com + "\": " + err.Error() + " " + string(cmdOut))
 	}
 	return
 }
@@ -292,14 +293,14 @@ func (stub *LocalStub) deletePnP() (err error) {
 	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
-		err = errors.New(err.Error() + " " + string(cmdOut))
+		err = errors.New("Error when executing command \"" + com + "\": " + err.Error() + " " + string(cmdOut))
 		return
 	}
 	com = "docker rm pnp"
 	cmd = exec.Command("sh", "-c", com)
 	cmdOut, err = cmd.Output()
 	if err != nil {
-		err = errors.New(err.Error() + " " + string(cmdOut))
+		err = errors.New("Error when executing command \"" + com + "\": " + err.Error() + " " + string(cmdOut))
 	}
 	return
 }
@@ -313,11 +314,11 @@ func (stub *LocalStub) createFrontend() (err error) {
 	com += " --network=clonemap-net"
 	com += " -e CLONEMAP_DEPLOYMENT_TYPE=\"local\""
 	com += " -e CLONEMAP_LOG_LEVEL=\"" + stub.logLevel + "\""
-	com += " registry.git.rwth-aachen.de/acs/public/cloud/mas/clonemap/frontend"
+	com += " clonemap/frontend"
 	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
-		err = errors.New(err.Error() + " " + string(cmdOut))
+		err = errors.New("Error when executing command \"" + com + "\": " + err.Error() + " " + string(cmdOut))
 	}
 	return
 }
@@ -328,14 +329,14 @@ func (stub *LocalStub) deleteFrontend() (err error) {
 	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
-		err = errors.New(err.Error() + " " + string(cmdOut))
+		err = errors.New("Error when executing command \"" + com + "\": " + err.Error() + " " + string(cmdOut))
 		return
 	}
 	com = "docker rm fe"
 	cmd = exec.Command("sh", "-c", com)
 	cmdOut, err = cmd.Output()
 	if err != nil {
-		err = errors.New(err.Error() + " " + string(cmdOut))
+		err = errors.New("Error when executing command \"" + com + "\": " + err.Error() + " " + string(cmdOut))
 	}
 	return
 }
@@ -351,7 +352,7 @@ func (stub *LocalStub) createMQTT() (err error) {
 	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
-		err = errors.New(err.Error() + " " + string(cmdOut))
+		err = errors.New("Error when executing command \"" + com + "\": " + err.Error() + " " + string(cmdOut))
 	}
 	return
 }
@@ -362,14 +363,14 @@ func (stub *LocalStub) deleteMQTT() (err error) {
 	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
-		err = errors.New(err.Error() + " " + string(cmdOut))
+		err = errors.New("Error when executing command \"" + com + "\": " + err.Error() + " " + string(cmdOut))
 		return
 	}
 	com = "docker rm mqtt" //.clonemap"
 	cmd = exec.Command("sh", "-c", com)
 	cmdOut, err = cmd.Output()
 	if err != nil {
-		err = errors.New(err.Error() + " " + string(cmdOut))
+		err = errors.New("Error when executing command \"" + com + "\": " + err.Error() + " " + string(cmdOut))
 	}
 	return
 }
@@ -377,6 +378,10 @@ func (stub *LocalStub) deleteMQTT() (err error) {
 // createAgency starts a new agency docker image
 func (stub *LocalStub) createAgency(image string, masID int, imID int, agencyID int, logging bool,
 	mqtt bool, df bool) (err error) {
+	if strings.Contains(image, ";") {
+		err = errors.New("Invalid image name '" + image + "': Image name may not include ';'")
+		return
+	}
 	agencyName := "mas-" + strconv.Itoa(masID) + "-im-" + strconv.Itoa(imID) + "-agency-" +
 		strconv.Itoa(agencyID)
 	fmt.Println("Create agency " + agencyName + " from image " + image)
@@ -405,7 +410,7 @@ func (stub *LocalStub) createAgency(image string, masID int, imID int, agencyID 
 	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
-		err = errors.New(err.Error() + " " + string(cmdOut))
+		err = errors.New("Error when executing command \"" + com + "\": " + err.Error() + " " + string(cmdOut))
 	}
 	return
 }
@@ -418,7 +423,7 @@ func (stub *LocalStub) deleteAgency(masID int, imID int, agencyID int) (err erro
 	cmd := exec.Command("sh", "-c", com)
 	cmdOut, err := cmd.Output()
 	if err != nil {
-		err = errors.New(err.Error() + " " + string(cmdOut))
+		err = errors.New("Error when executing command \"" + com + "\": " + err.Error() + " " + string(cmdOut))
 		return
 	}
 	com = "docker rm "
@@ -427,7 +432,7 @@ func (stub *LocalStub) deleteAgency(masID int, imID int, agencyID int) (err erro
 	cmd = exec.Command("sh", "-c", com)
 	cmdOut, err = cmd.Output()
 	if err != nil {
-		err = errors.New(err.Error() + " " + string(cmdOut))
+		err = errors.New("Error when executing command \"" + com + "\": " + err.Error() + " " + string(cmdOut))
 	}
 	return
 }

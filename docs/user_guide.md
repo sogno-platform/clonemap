@@ -23,14 +23,11 @@ Implement a task function that takes a pointer to an *Agent* object as parameter
 Start the agency using that task function.
 Every started agent will execute this task function as seperate go-routine.
 
-In the base directory of your project create your Go module file `go.mod`
+In the base directory of your project create your Go module file `go.mod` and add clonemap as dependency
 
-```Go
-module example
-
-require (
-    git.rwth-aachen.de/acs/public/cloud/mas/clonemap v0.0.0-20200109090525-86fd277abf43
-)
+```bash
+go mod init example
+go get github.com/RWTH-ACS/clonemap/pkg/agency@develop
 ```
 
 The following Go code is used for the implementation of the behavior
@@ -42,7 +39,7 @@ import (
     "fmt"
     "strconv"
 
-    "git.rwth-aachen.de/acs/public/cloud/mas/clonemap/pkg/agency"
+    "github.com/RWTH-ACS/clonemap/pkg/agency"
 )
 
 func main() {
@@ -76,7 +73,7 @@ The API specification for the agency can be found in [api/agency](../api/agency/
 For interaction with other components, e.g. the DF, you have to implement clients that make use of the corresponding API.
 All REST APIs are specified using the openapi 3 format.
 
-A Python package for the implementation of agents in Python is already available [here](https://git.rwth-aachen.de/acs/public/cloud/mas/cmapy).
+A Python package for the implementation of agents in Python is already available [here](https://github.com/RWTH-ACS/clonemapy).
 
 ### Step 2 Building the Docker image
 
@@ -121,10 +118,14 @@ Create the file `scenario.json` with following content.
     "config":{
         "name":"test",
         "agentsperagency":1,
-        "logging":true,
-        "mqtt":true,
-        "df":false,
-        "log":{
+        "mqtt":{
+            "active":true
+        },
+        "df":{
+            "active":true
+        },
+        "logger":{
+            "active":true,
             "msg":true,
             "app":true,
             "status":true,
@@ -173,7 +174,7 @@ Subsequently the AMS will start all agencies which then will start the single ag
 Depending on the size the creation of a MAS might take a few seconds.
 
 ```bash
-curl -X "POST" -d @scenario.yaml <ip-address>:30009/api/clonemap/mas
+curl -X "POST" -d @scenario.json <ip-address>:30009/api/clonemap/mas
 ```
 
 The AMS is made available to the outside world via NodePort on port 30009.

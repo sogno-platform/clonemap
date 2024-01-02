@@ -58,7 +58,7 @@ func MethodNotAllowed(w http.ResponseWriter) (err error) {
 	return
 }
 
-// Created writes standard response for ressource creation
+// Created writes standard response for resource creation
 func Created(w http.ResponseWriter, cmaperr error, content string, answer []byte) (err error) {
 	if cmaperr == nil {
 		w.Header().Set("Content-Type", content)
@@ -70,31 +70,50 @@ func Created(w http.ResponseWriter, cmaperr error, content string, answer []byte
 	return
 }
 
-// Deleted writes standard response for ressource deleteion
+// CreatedResource returns resource after creation
+func CreatedResource(w http.ResponseWriter, v interface{}, cmaperr error) (err error) {
+	if cmaperr == nil {
+		var res []byte
+		res, err = json.Marshal(v)
+		if err == nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusCreated)
+			_, err = w.Write(res)
+		} else {
+			err = JSONMarshalError(w)
+		}
+	} else {
+		err = CMAPError(w, cmaperr.Error())
+	}
+
+	return
+}
+
+// Deleted writes standard response for resource deleteion
 func Deleted(w http.ResponseWriter, cmaperr error) (err error) {
 	if cmaperr == nil {
 		w.Header().Set("Content-Type", "text/plain")
 		w.WriteHeader(http.StatusOK)
-		_, err = w.Write([]byte("Ressource deleted"))
+		_, err = w.Write([]byte("Resource deleted"))
 	} else {
 		err = CMAPError(w, cmaperr.Error())
 	}
 	return
 }
 
-// Updated writes standard response for ressource update
+// Updated writes standard response for resource update
 func Updated(w http.ResponseWriter, cmaperr error) (err error) {
 	if cmaperr == nil {
 		w.Header().Set("Content-Type", "text/plain")
 		w.WriteHeader(http.StatusOK)
-		_, err = w.Write([]byte("Ressource updated"))
+		_, err = w.Write([]byte("Resource updated"))
 	} else {
 		err = CMAPError(w, cmaperr.Error())
 	}
 	return
 }
 
-// Resource writes standard response for ressource get
+// Resource writes standard response for resource get
 func Resource(w http.ResponseWriter, v interface{}, cmaperr error) (err error) {
 	if cmaperr == nil {
 		var res []byte
@@ -169,10 +188,10 @@ func CMAPError(w http.ResponseWriter, description string) (err error) {
 	return
 }
 
-// NotFoundError writes standard response for Ressource not found Error
+// NotFoundError writes standard response for Resource not found Error
 func NotFoundError(w http.ResponseWriter) (err error) {
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusNotFound)
-	_, err = w.Write([]byte("Ressource Not Found"))
+	_, err = w.Write([]byte("Resource Not Found"))
 	return
 }

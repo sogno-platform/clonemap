@@ -85,6 +85,7 @@ type Agency struct {
 	agencyClient   *client.AgencyClient
 	logInfo        *log.Logger // logger for info logging
 	logError       *log.Logger // logger for error logging
+	errChan        chan error
 }
 
 // StartAgency is the entrance function of agency
@@ -99,6 +100,7 @@ func StartAgency(task func(*Agent) error) (err error) {
 		amsClient:      client.NewAMSClient(time.Second*60, time.Second*1, 4),
 		agencyClient:   client.NewAgencyClient(time.Second*60, time.Second*1, 4),
 		logError:       log.New(os.Stderr, "[ERROR] ", log.LstdFlags),
+		errChan:        make(chan error),
 	}
 	err = agency.init()
 	if err != nil {
@@ -107,10 +109,11 @@ func StartAgency(task func(*Agent) error) (err error) {
 	}
 	go agency.receiveMsgs()
 
-	// catch kill signal in order to terminate agency and agents before exiting
+	// channel for kill signal
 	var gracefulStop = make(chan os.Signal, 10)
 	signal.Notify(gracefulStop, syscall.SIGTERM)
 	signal.Notify(gracefulStop, syscall.SIGINT)
+	// catch kill signal and agent errors in order to terminate agency and agents before exiting
 	go agency.terminate(gracefulStop)
 
 	serv := agency.server(10000)
@@ -203,11 +206,15 @@ func (agency *Agency) init() (err error) {
 	return
 }
 
-// terminate takes care of terminating all parts of the MAP before exiting. It is to be called as a
+// terminate takes care of terminating all parts of the Agency before exiting. It is to be called as a
 // goroutine and waits until an OS signal is inserted into the channel gracefulStop
 func (agency *Agency) terminate(gracefulStop chan os.Signal) {
-	// var err error
-	<-gracefulStop
+	select {
+	case err := <-agency.errChan:
+		agency.logError.Println("Caught error: ", err.Error())
+	case sig := <-gracefulStop:
+		agency.logInfo.Println("Caught signal: ", sig.String())
+	}
 	agency.logInfo.Println("Terminating agency")
 	agency.mutex.Lock()
 	for i := range agency.localAgents {
@@ -256,7 +263,7 @@ func (agency *Agency) createAgent(agentInfo schemas.AgentInfo) (err error) {
 		agency.dfClient, agency.logError, agency.logInfo)
 	agency.localAgents[agentInfo.ID] = ag
 	agency.mutex.Unlock()
-	ag.startAgent(agency.agentTask)
+	ag.startAgent(agency.agentTask, agency.errChan)
 	return
 }
 
@@ -266,7 +273,7 @@ func (agency *Agency) getAgentStatus(agentID int) (ret schemas.Status, err error
 	return
 }
 
-// removeAgent creates a new mas according to masconfig
+// removeAgent terminates and removes the agent with the given ID
 func (agency *Agency) removeAgent(agentID int) (err error) {
 	agency.mutex.Lock()
 	ag, ok := agency.localAgents[agentID]

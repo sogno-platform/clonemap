@@ -116,11 +116,18 @@ func newAgent(info schemas.AgentInfo, masName string, masCustom string,
 	return
 }
 
-// startAgent starts an agent. It requires an agent task to be executed and the ID of the agent
-func (agent *Agent) startAgent(task func(*Agent) error) (err error) {
-	go task(agent)
+// startAgent starts an agent. It requires an agent task to be executed and the channel to send runtime errors to
+func (agent *Agent) startAgent(task func(*Agent) error, e chan error) (err error) {
+	go func() {
+		err = task(agent)
+		if err != nil {
+			agent.logError.Println("Agent ", agent.GetAgentID(), " encountered runtime error: ", err.Error())
+			agent.status = status.Error
+			e <- err
+		}
+	}()
 	agent.status = status.Running
-	agent.logInfo.Println("Started agent ", agent.GetAgentID())
+	agent.logInfo.Println("Started Agent ", agent.GetAgentID())
 	return
 }
 
